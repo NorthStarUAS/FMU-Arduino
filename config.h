@@ -1,5 +1,5 @@
-#ifndef _APM2_CONFIG_H_INCLUDED
-#define _APM2_CONFIG_H_INCLUDED
+#ifndef _AURA_CONFIG_H_INCLUDED
+#define _AURA_CONFIG_H_INCLUDED
 
 
 // Firmware rev (needs to be updated here manually to match release number)
@@ -102,5 +102,5 @@ extern config_t config;
 
 extern uint16_t apm2_serial_number;
 
-#endif /* _APM2_CONFIG_H_INCLUDED */
+#endif /* _AURA_CONFIG_H_INCLUDED */
 

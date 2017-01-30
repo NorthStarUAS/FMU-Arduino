@@ -19,8 +19,25 @@ volatile float imu_ax, imu_ay, imu_az, imu_gx, imu_gy, imu_gz, imu_hx, imu_hy, i
 
 void setup() {
     // put your setup code here, to run once:
-    Serial.begin(115200);
+    Serial.begin(DEFAULT_BAUD);
+    delay(500);
+    Serial.println("\nAura Sensors");
     
+    // The following code (when enabled) will force setting a specific device serial number.
+    set_serial_number(108);
+    read_serial_number();
+    
+    if ( !config_read_eeprom() ) {
+        config_load_defaults();
+        config_write_eeprom();
+    }
+    
+    Serial.print("Firmware Revision: ");
+    Serial.println(FIRMWARE_REV);
+    Serial.print("Serial Number: ");
+    Serial.println(read_serial_number());
+    delay(100);
+
     // initialize the IMU
     if(IMU.begin(MPU_9250_ACCEL_RANGE,MPU_9250_GYRO_RANGE) < 0){}
     
@@ -35,6 +52,7 @@ void loop() {
     Serial.print(imu_gx); Serial.print(" ");
     Serial.print(imu_gy); Serial.print(" ");
     Serial.println(imu_gz);
+    delay(1000);
 
 }
 
