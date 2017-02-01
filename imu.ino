@@ -10,7 +10,7 @@ const mpu9250_dlpf_bandwidth MPU9250_BANDWIDTH = DLPF_BANDWIDTH_41HZ;
 const uint8_t MPU9250_SRD = 9;  // Data Output Rate = 1000 / (1 + SRD)
 const uint8_t SYNC_PIN = 2;
 
-volatile float imu_ax, imu_ay, imu_az, imu_gx, imu_gy, imu_gz, imu_hx, imu_hy, imu_hz, imu_t;
+volatile float imu_sensors[10];
 
 void imu_setup() {
     // initialize the IMU
@@ -28,33 +28,40 @@ void dataAcquisition() {
     float ax, ay, az, gx, gy, gz, hx, hy, hz, t;
     IMU.getMotion10(&ax, &ay, &az, &gx, &gy, &gz, &hx, &hy, &hz, &t);
     cli();
-    imu_gx = gx;
-    imu_gy = gy;
-    imu_gz = gz;
+    imu_sensors[0] = ax;
+    imu_sensors[1] = ay;
+    imu_sensors[2] = az;
+    imu_sensors[3] = gx;
+    imu_sensors[4] = gy;
+    imu_sensors[5] = gz;
+    imu_sensors[6] = hx;
+    imu_sensors[7] = hy;
+    imu_sensors[8] = hz;
+    imu_sensors[9] = t;
     sei();
 }
 
 
 void calibrate_gyros() {
-    float gxs = imu_gx;
-    float gys = imu_gy;
-    float gzs = imu_gz;
-    float gxf = imu_gx;
-    float gyf = imu_gy;
-    float gzf = imu_gz;
+    float gxs = imu_sensors[3];
+    float gys = imu_sensors[4];
+    float gzs = imu_sensors[5];
+    float gxf = imu_sensors[3];
+    float gyf = imu_sensors[4];
+    float gzf = imu_sensors[5];
     const float cutoff = 0.005;
     elapsedMillis total_timer = 0;
     elapsedMillis good_timer = 0;
     elapsedMillis output_timer = 0;
 
     Serial.print("Calibrating gyros: ");
-    while ( 1 ) {
-        gxf = 0.9 * gxf + 0.1 * imu_gx;
-        gyf = 0.9 * gyf + 0.1 * imu_gy;
-        gzf = 0.9 * gzf + 0.1 * imu_gz;
-        gxs = 0.99 * gxs + 0.01 * imu_gx;
-        gys = 0.99 * gys + 0.01 * imu_gy;
-        gzs = 0.99 * gzs + 0.01 * imu_gz;
+    while ( true ) {
+        gxf = 0.9 * gxf + 0.1 * imu_sensors[3];
+        gyf = 0.9 * gyf + 0.1 * imu_sensors[4];
+        gzf = 0.9 * gzf + 0.1 * imu_sensors[5];
+        gxs = 0.99 * gxs + 0.01 * imu_sensors[3];
+        gys = 0.99 * gys + 0.01 * imu_sensors[4];
+        gzs = 0.99 * gzs + 0.01 * imu_sensors[5];
     
         float dx = fabs(gxs - gxf);
         float dy = fabs(gys - gyf);
@@ -91,8 +98,9 @@ void calibrate_gyros() {
 
 
 void print_imu() {
-    Serial.print(imu_gx); Serial.print(" ");
-    Serial.print(imu_gy); Serial.print(" ");
-    Serial.println(imu_gz);
+    for ( int i = 0; i < 6; i++ ) {
+        Serial.print(imu_sensors[i],4); Serial.print(" ");
+    }
+    Serial.println(imu_sensors[9],2);
 }
 
