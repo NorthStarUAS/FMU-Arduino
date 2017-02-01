@@ -36,16 +36,19 @@ void dataAcquisition() {
 
 
 void calibrate_gyros() {
-    static float gxs = imu_gx;
-    static float gys = imu_gy;
-    static float gzs = imu_gz;
-    static float gxf = imu_gx;
-    static float gyf = imu_gy;
-    static float gzf = imu_gz;
-    static float maxdiff = 0.0;
+    float gxs = imu_gx;
+    float gys = imu_gy;
+    float gzs = imu_gz;
+    float gxf = imu_gx;
+    float gyf = imu_gy;
+    float gzf = imu_gz;
+    const float cutoff = 0.005;
+    elapsedMillis total_timer = 0;
+    elapsedMillis good_timer = 0;
+    elapsedMillis output_timer = 0;
 
-    Serial.print("Calibrating gyros...");
-    for ( int i = 0; i < 1000; i++ ) {
+    Serial.print("Calibrating gyros: ");
+    while ( 1 ) {
         gxf = 0.9 * gxf + 0.1 * imu_gx;
         gyf = 0.9 * gyf + 0.1 * imu_gy;
         gzf = 0.9 * gzf + 0.1 * imu_gz;
@@ -56,12 +59,26 @@ void calibrate_gyros() {
         float dx = fabs(gxs - gxf);
         float dy = fabs(gys - gyf);
         float dz = fabs(gzs - gzf);
-        if ( dx > maxdiff ) { maxdiff = dx; }
-        if ( dy > maxdiff ) { maxdiff = dy; }
-        if ( dz > maxdiff ) { maxdiff = dz; }
-
-        Serial.println(maxdiff,4);
-        delay(10);
+        if ( dx > cutoff || dy > cutoff || dz > cutoff ) {
+            good_timer = 0;
+        }
+        if ( output_timer > 1000 ) {
+            output_timer = 0;
+            if ( good_timer < 1000 ) {
+                Serial.print("X");
+            } else {
+                Serial.print("*");
+            }
+        }
+        if (good_timer > 4000) {
+            Serial.println(" :)");
+            break;
+        }
+        if (total_timer > 15000) {
+            Serial.println(" :(");
+            break;
+        }
+       delay(10);
     }
     Serial.print("Average gyros: ");
     Serial.print(gxs,4);
