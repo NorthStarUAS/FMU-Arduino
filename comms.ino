@@ -355,7 +355,7 @@ void write_pilot_in_ascii()
     // receiver input data
     Serial.print("RCIN:");
     for ( int i = 0; i < MAX_CHANNELS - 1; i++ ) {
-        // fixme: Serial.print(receiver_norm[i], 3);
+        Serial.print(receiver_norm[i], 3);
         Serial.print(" ");
     }
     // fixme: Serial.println(receiver_norm[MAX_CHANNELS-1], 3);
@@ -378,7 +378,7 @@ uint8_t write_imu_bin()
 {
     byte buf[3];
     byte cksum0, cksum1;
-    // fixme: byte size = 4 /* for timestamp */ + 2 * MAX_IMU_SENSORS + 6 /* for mags */;
+    byte size = 4 /* for timestamp */ + 2 * 10 /* 10 imu values */;
     byte packet_buf[256]; // hopefully never larger than this!
     byte *packet = packet_buf;
     
@@ -394,7 +394,7 @@ uint8_t write_imu_bin()
     Serial.write( buf, 1 );
 
     // packet length (1 byte)
-    // fixme: buf[0] = size;
+    buf[0] = size;
     Serial.write( buf, 1 );
 
     // fixme: *(uint32_t *)packet = imu_micros; packet += 4;
@@ -403,13 +403,13 @@ uint8_t write_imu_bin()
   
     // gyro data
     for ( int i = 0; i < 3; i++ ) {
-	// fixme: val = imu_sensors[i] / MPU6000_gyro_scale;
+	      // fixme: val = imu_calib[i] / MPU6000_gyro_scale;
         *(int16_t *)packet = val; packet += 2;
     }
 
     // accel data
     for ( int i = 3; i < 6; i++ ) {
-	// fixme: val = imu_sensors[i] / MPU6000_accel_scale;
+	      // fixme: val = imu_calib[i] / MPU6000_accel_scale;
         *(int16_t *)packet = val; packet += 2;
     }
   
@@ -418,34 +418,31 @@ uint8_t write_imu_bin()
     // fixme: *(int16_t *)packet = compass.mag_y; packet += 2;
     // fixme: *(int16_t *)packet = compass.mag_z; packet += 2;
 
-    // fixme: val = imu_sensors[6] / MPU6000_temp_scale;
+    // fixme: val = imu_calib[9] / MPU6000_temp_scale;
     // fixme: *(int16_t *)packet = val; packet += 2;
 
     // write packet
-    // fixme: Serial.write( packet_buf, size );
+    Serial.write( packet_buf, size );
 
     // check sum (2 bytes)
-    // fixme: ugear_cksum( IMU_PACKET_ID, size, packet_buf, size, &cksum0, &cksum1 );
+    ugear_cksum( IMU_PACKET_ID, size, packet_buf, size, &cksum0, &cksum1 );
     buf[0] = cksum0; 
     buf[1] = cksum1; 
     buf[2] = 0;
     Serial.write( buf, 2 );
     
-    // fixme: return size + 6;
+    return size + 6;
 }
 
 void write_imu_ascii()
 {
     // output imu data
     Serial.print("IMU:");
-    for ( int i = 0; i < 6; i++ ) {
-        // fixme: Serial.print(imu_sensors[i]);
+    for ( int i = 0; i < 9; i++ ) {
+        // fixme: Serial.print(imu_calib[i], 3);
         Serial.print(",");
     }
-    // fixme: Serial.print(compass.mag_x); Serial.print(",");
-    // fixme: Serial.print(compass.mag_y); Serial.print(",");
-    // fixme: Serial.print(compass.mag_z); Serial.print(",");
-    // fixme: Serial.println(imu_sensors[6]); // temp C last
+    Serial.println(imu_calib[9]); // temp C last
 }
 
 /* output a binary representation of the GPS data */

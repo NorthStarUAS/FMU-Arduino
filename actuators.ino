@@ -209,13 +209,13 @@ void sas_update( float control_norm[MAX_CHANNELS] ) {
         }
     }
     if ( config.sas_rollaxis ) {
-        // fixme: control_norm[0] -= tune * config.sas_rollgain * imu_sensors[0];
+        control_norm[0] -= tune * config.sas_rollgain * imu_calib[0];
     }
     if ( config.sas_pitchaxis ) {
-        // fixme: control_norm[1] -= tune * config.sas_pitchgain * imu_sensors[1];
+        control_norm[1] -= tune * config.sas_pitchgain * imu_calib[1];
     }
     if ( config.sas_yawaxis ) {
-        // fixme: control_norm[3] -= tune * config.sas_yawgain * imu_sensors[2];
+        control_norm[3] -= tune * config.sas_yawgain * imu_calib[2];
     }
 }
 

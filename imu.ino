@@ -16,7 +16,6 @@ const uint8_t SYNC_PIN = 2;
 
 volatile float imu_sensors_shared[10]; // the volatile (shared) storage for the imu sensors
 float imu_raw[10]; // the 'safe' but raw version of the imu sensors
-float imu_calib[10]; // the 'safe' and calibrated version of the imu sensors
 float gyro_calib[3] = { 0.0, 0.0, 0.0 };
 
 
