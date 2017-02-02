@@ -1,5 +1,6 @@
 #include <HardwareSerial.h>
 
+#include "UBLOX.h"
 #include "config.h"
 
 // shared with imu module
@@ -10,6 +11,10 @@ float imu_calib[10]; // the 'safe' and calibrated version of the imu sensors
 #define NUM_CHANNELS 8 // fixme: think this through, implies packet size, parsing/processing time, would be nice to make it 16 though ...
 float receiver_norm[MAX_CHANNELS];
 
+bool new_gps_data = false;
+UBLOX gps(3); // ublox m8n
+gpsData uBloxData;
+
 void setup() {
     // put your setup code here, to run once:
     Serial.begin(DEFAULT_BAUD);
@@ -17,7 +22,7 @@ void setup() {
     Serial.println("\nAura Sensors");
     
     // The following code (when enabled) will force setting a specific device serial number.
-    set_serial_number(108);
+    // set_serial_number(108);
     read_serial_number();
     
     if ( !config_read_eeprom() ) {
@@ -37,6 +42,9 @@ void setup() {
 
     // initialize the SBUS receiver
     sbus_setup();
+
+    // initialize the gps receiver
+    gps.begin(115200); 
 }
 
 void loop() {
@@ -51,15 +59,19 @@ void loop() {
     
     while ( sbus_process() ); // keep processing while there is data in the uart buffer
 
+    /* look for a good GPS data packet */
+    if ( gps.read(&uBloxData) ) {
+        new_gps_data = true;
+    }
+    
     if ( myTimer > 500 ) {
         myTimer = 0;
         if ( gyros_calibrated == 2 ) {
             imu_print();
-            write_pilot_in_ascii();
+            //write_pilot_in_ascii();
+            write_gps_ascii();
         }
         
     }
 }
-
-
 
