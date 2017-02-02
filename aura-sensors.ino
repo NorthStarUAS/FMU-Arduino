@@ -2,6 +2,10 @@
 
 #include "config.h"
 
+// shared with imu module
+volatile bool new_imu_data = false;
+int gyros_calibrated = 0; // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished
+
 
 void setup() {
     // put your setup code here, to run once:
@@ -27,14 +31,24 @@ void setup() {
     // initialize the IMU
     imu_setup();
     delay(100);
-    calibrate_gyros();
 }
 
 void loop() {
+    static elapsedMillis myTimer = 0;
     // put your main code here, to run repeatedly:
-    print_imu();
-    delay(1000);
-
+    if ( new_imu_data ) {
+        cli();
+        new_imu_data = false;
+        sei();
+        update_imu();
+    }
+    if ( myTimer > 500 ) {
+        myTimer = 0;
+        if ( gyros_calibrated == 2 ) {
+            imu_print();
+        }
+    }
 }
+
 
 
