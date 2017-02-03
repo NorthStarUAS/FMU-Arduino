@@ -70,13 +70,12 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 	}
 	// fixme: pwm_pwm2norm( autopilot_pwm, autopilot_norm );
 
-#if 0 // fixme
-	if ( receiver_norm[CH_8] > 0.0 ) {
+	if ( receiver_norm[0] > 0.0 ) {
 	    // autopilot mode active (determined elsewhere when each
 	    // new receiver frame is ready) mix the inputs and write
 	    // the actuator outputs now
-            sas_update( autopilot_norm );
-            // don't overwrite manual ch7 value if sas_ch7tune enabled
+      sas_update( autopilot_norm );
+      // don't overwrite manual ch7 value if sas_ch7tune enabled
 	    mixing_update( autopilot_norm, true /* ch1-6 */, !config.sas_ch7tune /* ch7 */, true /* no ch8 */ );
 	    pwm_update();
 	} else {
@@ -92,7 +91,6 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             // don't overwrite manual ch7 value if sas_ch7tune enabled
             mixing_update( autopilot_norm, false /* ch1-6 */, !config.sas_ch7tune /* ch7 */, true /* no ch8 */ );
 	}
- #endif // fixme
 	result = true;
 
 #if 0

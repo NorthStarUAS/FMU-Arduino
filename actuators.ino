@@ -249,20 +249,20 @@ void mixing_update( float control_norm[MAX_CHANNELS], bool do_ch1_6, bool do_ch7
   
     // copy default assignments as if no mixing
     if ( do_ch1_6 ) {
-        // fixme: actuator_norm[0] = aileron_cmd;
-        // fixme: actuator_norm[1] = elevator_cmd;
-        // fixme: actuator_norm[2] = throttle_cmd;
-        // fixme: actuator_norm[3] = rudder_cmd;
-        // fixme: actuator_norm[4] = gear_cmd;
-        // fixme: actuator_norm[5] = flap_cmd;
+        actuator_norm[0] = aileron_cmd;
+        actuator_norm[1] = elevator_cmd;
+        actuator_norm[2] = throttle_cmd;
+        actuator_norm[3] = rudder_cmd;
+        actuator_norm[4] = gear_cmd;
+        actuator_norm[5] = flap_cmd;
     }
     if ( do_ch7 ) {
-        // fixme: actuator_norm[6] = ch7_cmd;
+        actuator_norm[6] = ch7_cmd;
     }
     if ( do_ch8 ) {
-        // fixme: actuator_norm[7] = ch8_cmd;
+        actuator_norm[7] = ch8_cmd;
     }
-    #if 0 // fixme
+
     if ( do_ch1_6 ) {
         // elevon and flaperon mixing are mutually exclusive
         if ( config.mix_elevon ) {
@@ -285,18 +285,15 @@ void mixing_update( float control_norm[MAX_CHANNELS], bool do_ch1_6, bool do_ch7
     
     // compute pwm actuator output values from the normalized values
     pwm_norm2pwm( actuator_norm, actuator_pwm );
-    #endif // fixme
 }
 
 
 // set default raw actuator values
 void actuator_set_defaults() {
-  #if 0 // fixme
     for ( int i = 0; i < MAX_CHANNELS; i++ ) {
         actuator_norm[i] = 0.0;
     }
     pwm_norm2pwm(actuator_norm, actuator_pwm);
-    #endif // fixme
 }
 
 

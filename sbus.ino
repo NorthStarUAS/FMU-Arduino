@@ -117,7 +117,7 @@ void sbus_parse() {
     
     sbus_raw2norm(sbus_raw, receiver_norm);
     
-    if ( receiver_norm[8] < 0.0 ) {
+    if ( receiver_norm[0] < 0.0 ) {
         // manual pass through requested, let's get it done right now
         sas_update( receiver_norm );
         mixing_update( receiver_norm, true /* ch1-6 */, true /* ch7 */, false /* no ch8 */ );

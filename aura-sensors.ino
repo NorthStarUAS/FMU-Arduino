@@ -10,6 +10,9 @@ float imu_calib[10]; // the 'safe' and calibrated version of the imu sensors
 
 #define NUM_CHANNELS 8 // fixme: think this through, implies packet size, parsing/processing time, would be nice to make it 16 though ...
 float receiver_norm[MAX_CHANNELS];
+float autopilot_norm[MAX_CHANNELS];
+float actuator_norm[MAX_CHANNELS];
+uint16_t actuator_pwm[MAX_PWM_CHANNELS];
 
 bool new_gps_data = false;
 UBLOX gps(3); // ublox m8n
@@ -43,6 +46,9 @@ void setup() {
     // initialize the SBUS receiver
     sbus_setup();
 
+    // initialize PWM output
+    pwm_setup();
+
     // initialize the gps receiver
     gps.begin(115200); 
 }
@@ -69,7 +75,7 @@ void loop() {
         if ( gyros_calibrated == 2 ) {
             imu_print();
             //write_pilot_in_ascii();
-            write_gps_ascii();
+            //write_gps_ascii();
         }
         
     }
