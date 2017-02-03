@@ -23,10 +23,8 @@
 //////////////////////////////////////////////////////////////////////////
 
 // Maximum number of input or output channels supported
-// NUM_CHANNELS is defined in the RC module (as 8)
-// Note to self: don't try to fight the 16 channel sbus battle until (if?) we drop PWM input support entirely
 #define MAX_CHANNELS 16
-#define MAX_PWM_CHANNELS 5
+#define NUM_PWM_CHANNELS 5
 
 // this is the hardware PWM generation rate
 // note the default is 50hz and this is the max we can drive analog servos

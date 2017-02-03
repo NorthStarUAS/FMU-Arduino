@@ -8,11 +8,10 @@ volatile bool new_imu_data = false;
 int gyros_calibrated = 0; // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished
 float imu_calib[10]; // the 'safe' and calibrated version of the imu sensors
 
-#define NUM_CHANNELS 8 // fixme: think this through, implies packet size, parsing/processing time, would be nice to make it 16 though ...
 float receiver_norm[MAX_CHANNELS];
 float autopilot_norm[MAX_CHANNELS];
 float actuator_norm[MAX_CHANNELS];
-uint16_t actuator_pwm[MAX_PWM_CHANNELS];
+uint16_t actuator_pwm[NUM_PWM_CHANNELS];
 
 bool new_gps_data = false;
 UBLOX gps(3); // ublox m8n

@@ -18,7 +18,7 @@ void pwm_setup() {
 
 // compute normalized command values from the raw pwm values
 void pwm_pwm2norm( uint16_t *pwm, float *norm ) {
-    for ( int i = 0; i < NUM_CHANNELS; i++ ) {
+    for ( int i = 0; i < NUM_PWM_CHANNELS; i++ ) {
         // convert to normalized form
         if ( symmetrical[i] ) {
             // i.e. aileron, rudder, elevator
@@ -34,7 +34,7 @@ void pwm_pwm2norm( uint16_t *pwm, float *norm ) {
 // compute raw pwm values from normalized command values.
 // (handle actuator reversing here.)
 void pwm_norm2pwm( float *norm, uint16_t *pwm ) {
-    for ( int i = 0; i < MAX_PWM_CHANNELS; i++ ) {
+    for ( int i = 0; i < NUM_PWM_CHANNELS; i++ ) {
         // convert to pulse length (special case ch6 when in flaperon mode)
         if ( symmetrical[i] || (i == 5 && config.mix_flaperon) ) {
             // i.e. aileron, rudder, elevator
@@ -61,9 +61,9 @@ void pwm_norm2pwm( float *norm, uint16_t *pwm ) {
 
 // write the raw actuator values to the RC system
 int pwm_update() {
-    Serial.println("pwm_update()");
     // sending servo pwm commands
-    for ( uint8_t i = 0; i < MAX_PWM_CHANNELS; i++ ) {
+    for ( uint8_t i = 0; i < NUM_PWM_CHANNELS; i++ ) {
+        actuator_pwm[i] = 1100;
         analogWrite(servoPins[i],actuator_pwm[i] / ((1/((float) servoFreq_hz)) * 1000000.0f )*65535.0f);
     }
     return 0;

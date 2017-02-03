@@ -207,10 +207,10 @@ void sbus_raw2norm( uint16_t *raw, float *norm ) {
         // convert to normalized form
         if ( symmetrical[i] ) {
             // i.e. aileron, rudder, elevator
-	    norm[i] = (float)((int)raw[i] - SBUS_CENTER_VALUE) / SBUS_HALF_RANGE;
+	          norm[i] = (float)((int)raw[i] - SBUS_CENTER_VALUE) / SBUS_HALF_RANGE;
         } else {
-	    // i.e. throttle, flaps
-	    norm[i] = (float)((int)raw[i] - SBUS_MIN_VALUE) / SBUS_RANGE;
+	          // i.e. throttle, flaps
+	          norm[i] = (float)((int)raw[i] - SBUS_MIN_VALUE) / SBUS_RANGE;
         }
     }
 }

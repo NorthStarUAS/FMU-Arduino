@@ -23,7 +23,6 @@
 #define MIX_VTAIL 6
 #define MIX_DIFF_THRUST 7
 
-
 // define if a channel is symmetrical or not (i.e. mapped to [0,1] for throttle, flaps, spoilers; [-1,1] for aileron, elevator, rudder
 bool symmetrical[MAX_CHANNELS] = {1, 1, 0, 1, 0, 0, 0, 1};
 
