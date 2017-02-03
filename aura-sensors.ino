@@ -19,8 +19,10 @@ gpsData uBloxData;
 
 void setup() {
     // put your setup code here, to run once:
+
     Serial.begin(DEFAULT_BAUD);
     delay(500); // needed delay before attempting to print anything
+    
     Serial.println("\nAura Sensors");
     
     // The following code (when enabled) will force setting a specific device serial number.
@@ -31,7 +33,13 @@ void setup() {
         config_load_defaults();
         config_write_eeprom();
     }
-    
+
+    Serial.print("F_CPU: ");
+    Serial.println(F_CPU);
+    Serial.print("F_PLL: ");
+    Serial.println(F_PLL);
+    Serial.print("BAUD2DIV: ");
+    Serial.println(BAUD2DIV(115200));
     Serial.print("Firmware Revision: ");
     Serial.println(FIRMWARE_REV);
     Serial.print("Serial Number: ");
@@ -75,8 +83,7 @@ void loop() {
             imu_print();
             //write_pilot_in_ascii();
             //write_gps_ascii();
-        }
-        
+        }  
     }
 }
 
