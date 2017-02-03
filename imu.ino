@@ -47,16 +47,17 @@ void dataAcquisition() {
     imu_sensors_shared[8] = hz;
     imu_sensors_shared[9] = t;
     new_imu_data = true;
+    imu_counter++;
 }
 
 
 // copy the dangerous 'volatile' shared version of imu data to the safe global copy.
 void update_imu() {
-    cli();
+    noInterrupts();
     for ( int i = 0; i < 10; i++ ) {
         imu_raw[i] = imu_sensors_shared[i];
     }
-    sei();
+    interrupts();
     for ( int i = 0; i < 10; i++ ) {
         imu_calib[i] = imu_raw[i];
     }

@@ -1,7 +1,6 @@
 #ifndef _AURA_CONFIG_H_INCLUDED
 #define _AURA_CONFIG_H_INCLUDED
 
-
 // Firmware rev (needs to be updated here manually to match release number)
 #define FIRMWARE_REV 300
 
