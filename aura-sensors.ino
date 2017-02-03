@@ -89,13 +89,15 @@ NAVdata nav_data;
 
 void loop() {
     // put your main code here, to run repeatedly:
-    
+
+    Serial.println("Start of main loop");
     static elapsedMillis myTimer = 0;
-    if ( new_imu_data ) {
-        Serial.println("new imu data");
-        noInterrupts();
+    static bool have_gps = false;
+    dataAcquisition();
+    if ( new_imu_data && have_gps ) {
+        Serial.println("new imu data and have gps");
+        write_gps_ascii();
         new_imu_data = false;
-        interrupts();
         update_imu();
         //fixme:
         imu_data.time = millis();
@@ -117,13 +119,17 @@ void loop() {
         Serial.print(nav_data.phi * 57.3); Serial.print(" ");
         Serial.print(nav_data.the * 57.3); Serial.print(" ");
         Serial.print(nav_data.psi * 57.3); Serial.println();
+    } else if ( new_imu_data ) {
+        Serial.println("have imu, but haven't seen gps yet ...");
     }
     
     while ( sbus_process() ); // keep processing while there is data in the uart buffer
 
     /* look for a good GPS data packet */
     if ( gps.read(&uBloxData) ) {
+        Serial.println("gps.read() returned true");
         new_gps_data = true;
+        have_gps = true;
         gps_data.time = millis();
         gps_data.unix_sec = millis();
         gps_data.lat = uBloxData.lat;
@@ -132,6 +138,7 @@ void loop() {
         gps_data.vn = uBloxData.velN;
         gps_data.ve = uBloxData.velE;
         gps_data.vd = uBloxData.velD;
+        gps_data.newData = 1;
     }
     
     if ( myTimer > 500 ) {
@@ -139,15 +146,12 @@ void loop() {
         if ( gyros_calibrated == 2 ) {
             imu_print();
             //write_pilot_in_ascii();
-            //write_gps_ascii();
+            write_gps_ascii();
         }  
     }
 
     unsigned long int c;
-    noInterrupts();
     c = imu_counter;
-    interrupts();
     Serial.print("imu:"); Serial.println(c);
-    delay(20);
 }
 

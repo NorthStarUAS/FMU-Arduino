@@ -25,9 +25,9 @@ void imu_setup() {
     if(IMU.begin(MPU_9250_ACCEL_RANGE,MPU_9250_GYRO_RANGE) < 0){}
     
     // set the DLPF and interrupts
-    if(IMU.setFilt(MPU9250_BANDWIDTH,MPU9250_SRD) < 0){}
-    pinMode(SYNC_PIN,INPUT);
-    attachInterrupt(SYNC_PIN, dataAcquisition, RISING);
+    //if(IMU.setFilt(MPU9250_BANDWIDTH,MPU9250_SRD) < 0){}
+    //pinMode(SYNC_PIN,INPUT);
+    //attachInterrupt(SYNC_PIN, dataAcquisition, RISING);
 }
 
 
@@ -53,11 +53,9 @@ void dataAcquisition() {
 
 // copy the dangerous 'volatile' shared version of imu data to the safe global copy.
 void update_imu() {
-    noInterrupts();
     for ( int i = 0; i < 10; i++ ) {
         imu_raw[i] = imu_sensors_shared[i];
     }
-    interrupts();
     for ( int i = 0; i < 10; i++ ) {
         imu_calib[i] = imu_raw[i];
     }
