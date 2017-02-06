@@ -38,7 +38,7 @@ float ch8_cmd = 0.0;
 
 // reset pwm output rates to safe startup defaults
 void pwm_rate_defaults() {
-    for ( int i = 0; i < MAX_CHANNELS; i++ ) {
+    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         config.pwm_hz[i] = 50;
     }
 }
@@ -46,7 +46,7 @@ void pwm_rate_defaults() {
 
 // reset actuator gains (reversing) to startup defaults
 void act_gain_defaults() {
-    for ( int i = 0; i < MAX_CHANNELS; i++ ) {
+    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         config.act_gain[i] = 1.0;
     }
 }
@@ -100,7 +100,7 @@ void mixing_defaults() {
 
 bool act_gain_command_parse(byte *buf) {
     uint8_t ch = buf[0];
-    if ( ch >= MAX_CHANNELS ) {
+    if ( ch >= PWM_CHANNELS ) {
         return false;
     }
 
@@ -200,7 +200,7 @@ bool mixing_command_parse(byte *buf) {
 
 
 // compute the sas compensation in normalized 'command' space so that we can do proper output channel mixing later
-void sas_update( float control_norm[MAX_CHANNELS] ) {
+void sas_update( float control_norm[SBUS_CHANNELS] ) {
     // mixing modes that work at the 'command' level (before actuator value assignment)
 
     float tune = 1.0;
@@ -224,7 +224,7 @@ void sas_update( float control_norm[MAX_CHANNELS] ) {
 }
 
 // compute the actuator (servo) values for each channel.  Handle all the requested mixing modes here.
-void mixing_update( float control_norm[MAX_CHANNELS] ) {
+void mixing_update( float control_norm[SBUS_CHANNELS] ) {
     aileron_cmd = control_norm[3];
     elevator_cmd = control_norm[4];
     throttle_cmd = control_norm[2];
@@ -276,7 +276,7 @@ void mixing_update( float control_norm[MAX_CHANNELS] ) {
 
 // set default raw actuator values
 void actuator_set_defaults() {
-    for ( int i = 0; i < MAX_CHANNELS; i++ ) {
+    for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
         actuator_norm[i] = 0.0;
     }
     pwm_norm2pwm(actuator_norm, actuator_pwm);

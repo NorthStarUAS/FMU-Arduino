@@ -57,13 +57,13 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
     int counter = 0;
     bool result = false;
 
-    if ( id == FLIGHT_COMMAND_PACKET_ID && message_size == MAX_CHANNELS * 2 ) {
+    if ( id == FLIGHT_COMMAND_PACKET_ID && message_size == SBUS_CHANNELS * 2 ) {
 	/* flight commands are 2 bytes, lo byte first, then hi byte.
 	 * Integer values correspond to servo pulse lenght in us 1100
 	 * is a normal minimum value, 1500 is center, 1900 is a normal
 	 * maximum value although the min and max can be extended a
 	 * bit. */
-	for ( int i = 0; i < MAX_CHANNELS; i++ ) {
+	for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
 	    byte lo = buf[counter++];
 	    byte hi = buf[counter++];
 	    // fixme: autopilot_pwm[i] = hi*256 + lo;
@@ -121,14 +121,14 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 	result = true;
 #endif
 
-    } else if ( id == PWM_RATE_PACKET_ID && message_size == MAX_CHANNELS * 2 ) {
+    } else if ( id == PWM_RATE_PACKET_ID && message_size == PWM_CHANNELS * 2 ) {
 	//Serial.println("read PWM command");
 	/* note that CH1/CH2, CH3/CH4/CH5, and CH6/CH7/CH8 run off
 	 * grouped timers so setting any of the group will also force
 	 * the same rate for the other channels in the group, channels
 	 * with rate of 0 are left untouched (but will be affected if
 	 * another group member rate is set.) */
-	for ( int i = 0; i < MAX_CHANNELS; i++ ) {
+	for ( int i = 0; i < PWM_CHANNELS; i++ ) {
 	    uint8_t lo = buf[counter++];
 	    uint8_t hi = buf[counter++];
 	    uint16_t rate = hi*256 + lo;
@@ -188,15 +188,15 @@ bool read_commands()
     // Serial.print("top: "); Serial.println(state);
 
     if ( state == 0 ) {
-	while ( Serial.available() >= 1 ) {
-	    // scan for start of message
-	    input = Serial.read();
-	    if ( input == START_OF_MSG0 ) {
-		// Serial.println("start of msg0");
-		state = 1;
-		break;
+	    while ( Serial.available() >= 1 ) {
+	      // scan for start of message
+	      input = Serial.read();
+	      if ( input == START_OF_MSG0 ) {
+		      // Serial.println("start of msg0");
+		      state = 1;
+		      break;
+	      }
 	    }
-	}
     }
     if ( state == 1 ) {
 	if ( Serial.available() >= 1 ) {
@@ -310,7 +310,7 @@ uint8_t write_pilot_in_bin()
 {
     byte buf[3];
     byte cksum0, cksum1;
-    byte size = 2 * MAX_CHANNELS;
+    byte size = 2 * SBUS_CHANNELS;
     byte packet_buf[256]; // hopefully never larger than this!
     byte *packet = packet_buf;
 
@@ -326,11 +326,11 @@ uint8_t write_pilot_in_bin()
     Serial.write( buf, 1 );
 
     // packet length (1 byte)
-    buf[0] = 2 * MAX_CHANNELS;
+    buf[0] = 2 * SBUS_CHANNELS;
     Serial.write( buf, 1 );
 
     // receiver data
-    for ( int i = 0; i < MAX_CHANNELS; i++ ) {
+    for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
 	// fixme: int16_t val = receiver_norm[i] * 16384.0;
   // fixme:	*(int16_t *)packet = val; packet += 2;
     }
@@ -372,12 +372,12 @@ void write_actuator_out_ascii()
 {
     // actuator output
     Serial.print("RCOUT:");
-    for ( int i = 0; i < MAX_CHANNELS - 1; i++ ) {
+    for ( int i = 0; i < SBUS_CHANNELS - 1; i++ ) {
 
         // fixme: Serial.print(actuator_pwm[i]);
         Serial.print(" ");
     }
-    // fixme: Serial.println(actuator_pwm[MAX_CHANNELS-1]);
+    // fixme: Serial.println(actuator_pwm[SBUS_CHANNELS-1]);
 }
 
 /* output a binary representation of the IMU data (note: scaled to 16bit values) */

@@ -8,10 +8,10 @@ volatile bool new_imu_data = false;
 int gyros_calibrated = 0; // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished
 float imu_calib[10]; // the 'safe' and calibrated version of the imu sensors
 
-float receiver_norm[MAX_CHANNELS];
-float autopilot_norm[MAX_CHANNELS];
-float actuator_norm[MAX_CHANNELS];
-uint16_t actuator_pwm[NUM_PWM_CHANNELS];
+float receiver_norm[SBUS_CHANNELS];
+float autopilot_norm[SBUS_CHANNELS];
+float actuator_norm[SBUS_CHANNELS];
+uint16_t actuator_pwm[PWM_CHANNELS];
 
 bool new_gps_data = false;
 UBLOX gps(3); // ublox m8n
@@ -29,7 +29,7 @@ void setup() {
     // set_serial_number(108);
     read_serial_number();
     
-    if ( true || !config_read_eeprom() ) {
+    if ( /* true || */ !config_read_eeprom() ) {
         config_load_defaults();
         config_write_eeprom();
     }

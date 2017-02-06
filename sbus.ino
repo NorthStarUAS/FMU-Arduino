@@ -57,11 +57,11 @@ typedef union {
     
 static SBUS_DATA_U sbus_data;
 static uint16_t sbus_ch_data[ SBUS_CH_MAX ];
-uint16_t sbus_raw[MAX_CHANNELS];
+uint16_t sbus_raw[SBUS_CHANNELS];
 
 // define if an sbus input channel is symmetrical or not (i.e. mapped to [0,1] for throttle, flaps, spoilers;
 // [-1,1] for aileron, elevator, rudder
-bool sbus_symmetrical[MAX_CHANNELS] = {1, 1, 0, 1, 1, 1, 0, 0};
+bool sbus_symmetrical[SBUS_CHANNELS] = {1, 1, 0, 1, 1, 1, 0, 0};
 
 void sbus_parse() {
     // we don't need to return from these, these are just notifying us of receiver state
@@ -114,8 +114,8 @@ void sbus_parse() {
     }
 #endif
     
-    // copy sbus values to receiver_raw (just the first MAX_CHANNELS)
-    for ( int i = 0; i < MAX_CHANNELS; i++ ) {
+    // copy sbus values to receiver_raw
+    for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
         sbus_raw[i] = sbus_ch_data[i];
     }
     
@@ -207,7 +207,7 @@ bool sbus_process() {
 
 // compute normalized command values from the raw sbus values
 void sbus_raw2norm( uint16_t *raw, float *norm ) {
-    for ( int i = 0; i < MAX_CHANNELS; i++ ) {
+    for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
         // convert to normalized form
         if ( sbus_symmetrical[i] ) {
             // i.e. aileron, rudder, elevator

@@ -23,8 +23,8 @@
 //////////////////////////////////////////////////////////////////////////
 
 // Maximum number of input or output channels supported
-#define MAX_CHANNELS 16
-#define NUM_PWM_CHANNELS 5
+#define SBUS_CHANNELS 16
+#define PWM_CHANNELS 5
 
 // this is the hardware PWM generation rate
 // note the default is 50hz and this is the max we can drive analog servos
@@ -57,10 +57,10 @@ typedef struct {
     /* hz for pwm output signal, 50hz default for analog servos, maximum rate is servo dependent:
        digital servos can usually do 200-250hz
        analog servos and ESC's typically require 50hz */
-    uint16_t pwm_hz[MAX_CHANNELS];
+    uint16_t pwm_hz[PWM_CHANNELS];
     
-    /* actuator gain (reversing) */
-    float act_gain[MAX_CHANNELS];
+    /* actuator gain (reversing/scaling) */
+    float act_gain[PWM_CHANNELS];
     
     /* mixing modes */
     bool mix_autocoord;
