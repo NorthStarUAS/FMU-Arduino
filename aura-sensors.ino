@@ -23,7 +23,7 @@ uint16_t actuator_pwm[NUM_PWM_CHANNELS];
 
 bool new_gps_data = false;
 UBLOX gps(3); // ublox m8n
-gpsData uBloxData;
+gdata uBloxData;
 
 void setup() {
     // put your setup code here, to run once:
