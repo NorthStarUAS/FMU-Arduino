@@ -38,9 +38,9 @@ void config_load_defaults() {
     Serial.println("Setting default config ...");
     config.version = CONFIG_VERSION;
     // fixme: pwm_rate_defaults();
-    // fixme: act_gain_defaults();
-    // fixme: mixing_defaults();
-    // fixme: sas_defaults();
+    act_gain_defaults();
+    mixing_defaults();
+    sas_defaults();
 }
 
 int config_read_eeprom() {

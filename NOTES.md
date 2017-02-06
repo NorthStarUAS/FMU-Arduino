@@ -56,7 +56,7 @@ latter approach.  So here are the official mappings:
 * Channel 17-18 (Digital on/off): Unassigned
 
 Note: Mixing modes are handled on board the aura-sensors module (aka
-"Smart" receiver.)  This simplifies transmitter programming and many
+"smart" receiver.)  This simplifies transmitter programming and many
 other aircraft setup tasks tremendously.
 
 
@@ -64,7 +64,7 @@ other aircraft setup tasks tremendously.
 
 Briefly, the supported mixing modes at the time of writing are:
 
-* Dumb rudder autocoordination
+* Rudder autocoordination (simple)
 * Elevator trim proportional to throttle
 * Elevator trim proportional to flaps
 * Flying wing (elevon) mixing
@@ -93,3 +93,11 @@ Elevon configuration:
 Flaperon configuration:
 
 * Channels 1 and 4 are the flaperon servos (todo: sort left vs. right)
+
+Vtail configuration
+
+* Channels 2 and 3 (todo: sort left, right)
+
+Differential thrust
+
+* Channels 0 and 6 (todo: test, sort left, right)

@@ -208,32 +208,24 @@ void sas_update( float control_norm[MAX_CHANNELS] ) {
         }
     }
     if ( config.sas_rollaxis ) {
-        control_norm[0] -= tune * config.sas_rollgain * imu_calib[0];
+        control_norm[3] -= tune * config.sas_rollgain * imu_calib[0];
     }
     if ( config.sas_pitchaxis ) {
-        control_norm[1] -= tune * config.sas_pitchgain * imu_calib[1];
+        control_norm[4] -= tune * config.sas_pitchgain * imu_calib[1];
     }
     if ( config.sas_yawaxis ) {
-        control_norm[3] -= tune * config.sas_yawgain * imu_calib[2];
+        control_norm[5] -= tune * config.sas_yawgain * imu_calib[2];
     }
 }
 
 // compute the actuator (servo) values for each channel.  Handle all the requested mixing modes here.
-void mixing_update( float control_norm[MAX_CHANNELS], bool do_ch1_6, bool do_ch7, bool do_ch8 ) {
-    if ( do_ch1_6 ) {
-        aileron_cmd = control_norm[0];
-        elevator_cmd = control_norm[1];
-        throttle_cmd = control_norm[2];
-        rudder_cmd = control_norm[3];
-        gear_cmd = control_norm[4];
-        flap_cmd = control_norm[5];
-    }
-    if ( do_ch7 ) {
-        ch7_cmd = control_norm[6];
-    }
-    if ( do_ch8 ) {
-        ch8_cmd = control_norm[7];
-    }
+void mixing_update( float control_norm[MAX_CHANNELS] ) {
+    aileron_cmd = control_norm[3];
+    elevator_cmd = control_norm[4];
+    throttle_cmd = control_norm[2];
+    rudder_cmd = control_norm[5];
+    flap_cmd = control_norm[6];
+    gear_cmd = control_norm[7];
         
     // mixing modes that work at the 'command' level (before actuator value assignment)
     if ( config.mix_autocoord ) {
@@ -246,42 +238,32 @@ void mixing_update( float control_norm[MAX_CHANNELS], bool do_ch1_6, bool do_ch7
         elevator_cmd += config.mix_Gef * flap_cmd;
     }
   
-    // copy default assignments as if no mixing
-    if ( do_ch1_6 ) {
-        actuator_norm[0] = aileron_cmd;
-        actuator_norm[1] = elevator_cmd;
-        actuator_norm[2] = throttle_cmd;
-        actuator_norm[3] = rudder_cmd;
-        actuator_norm[4] = gear_cmd;
-        actuator_norm[5] = flap_cmd;
+    actuator_norm[0] = throttle_cmd;
+    actuator_norm[1] = aileron_cmd;
+    actuator_norm[2] = elevator_cmd;
+    actuator_norm[3] = rudder_cmd;
+    actuator_norm[4] = flap_cmd;
+    actuator_norm[5] = gear_cmd;
+ 
+    // elevon and flaperon mixing are mutually exclusive
+    if ( config.mix_elevon ) {
+        actuator_norm[1] = config.mix_Gea * aileron_cmd + config.mix_Gee * elevator_cmd;
+        actuator_norm[2] = config.mix_Gea * aileron_cmd - config.mix_Gee * elevator_cmd;
+    } else if ( config.mix_flaperon ) {
+        actuator_norm[1] = config.mix_Gfa * aileron_cmd + config.mix_Gff * flap_cmd;
+        actuator_norm[4] = -config.mix_Gfa * aileron_cmd + config.mix_Gff * flap_cmd;
     }
-    if ( do_ch7 ) {
-        actuator_norm[6] = ch7_cmd;
+    // vtail mixing can't work with elevon mixing
+    if ( config.mix_vtail && !config.mix_elevon) {
+        actuator_norm[2] = config.mix_Gve * elevator_cmd + config.mix_Gvr * rudder_cmd;
+        actuator_norm[3] = config.mix_Gve * elevator_cmd - config.mix_Gvr * rudder_cmd;
     }
-    if ( do_ch8 ) {
-        actuator_norm[7] = ch8_cmd;
+    if ( config.mix_diff_thrust ) {
+        // fixme: never tested in the wild (need to think through channel assignments)
+        // actuator_norm[0] = config.mix_Gtt * throttle_cmd + config.mix_Gtr * rudder_cmd;
+        // actuator_norm[5] = config.mix_Gtt * throttle_cmd - config.mix_Gtr * rudder_cmd;
     }
 
-    if ( do_ch1_6 ) {
-        // elevon and flaperon mixing are mutually exclusive
-        if ( config.mix_elevon ) {
-            actuator_norm[0] = config.mix_Gea * aileron_cmd + config.mix_Gee * elevator_cmd;
-            actuator_norm[1] = config.mix_Gea * aileron_cmd - config.mix_Gee * elevator_cmd;
-        } else if ( config.mix_flaperon ) {
-            actuator_norm[0] = config.mix_Gfa * aileron_cmd + config.mix_Gff * flap_cmd;
-            actuator_norm[5] = -config.mix_Gfa * aileron_cmd + config.mix_Gff * flap_cmd;
-        }
-        // vtail mixing can't work with elevon mixing
-        if ( config.mix_vtail && !config.mix_elevon) {
-            actuator_norm[1] = config.mix_Gve * elevator_cmd + config.mix_Gvr * rudder_cmd;
-            actuator_norm[3] = config.mix_Gve * elevator_cmd - config.mix_Gvr * rudder_cmd;
-        }
-        if ( config.mix_diff_thrust ) {
-            actuator_norm[2] = config.mix_Gtt * throttle_cmd + config.mix_Gtr * rudder_cmd;
-            actuator_norm[4] = config.mix_Gtt * throttle_cmd - config.mix_Gtr * rudder_cmd;
-        }
-    }
-    
     // compute pwm actuator output values from the normalized values
     pwm_norm2pwm( actuator_norm, actuator_pwm );
 }

@@ -75,10 +75,10 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 	    // new receiver frame is ready) mix the inputs and write
 	    // the actuator outputs now
       sas_update( autopilot_norm );
-      // don't overwrite manual ch7 value if sas_ch7tune enabled
-	    mixing_update( autopilot_norm, true /* ch1-6 */, !config.sas_ch7tune /* ch7 */, true /* no ch8 */ );
+	    mixing_update( autopilot_norm );
 	    pwm_update();
 	} else {
+      // fixme
 	    // we are in manual mode
 	    // update ch8 only from the autopilot.  We don't pass the
 	    // auto/manual switch state through to a servo.  Instead
@@ -88,8 +88,8 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 	    // autopilot, no matter what the state, but we'll let the
 	    // output to the APM_RC wait until it happens
 	    // automatically with the next receiver frame.
-            // don't overwrite manual ch7 value if sas_ch7tune enabled
-            mixing_update( autopilot_norm, false /* ch1-6 */, !config.sas_ch7tune /* ch7 */, true /* no ch8 */ );
+      // don't overwrite manual ch7 value if sas_ch7tune enabled
+      // fixme? mixing_update( autopilot_norm, false /* ch1-6 */, !config.sas_ch7tune /* ch7 */, true /* no ch8 */ );
 	}
 	result = true;
 
@@ -350,9 +350,18 @@ uint8_t write_pilot_in_bin()
 
 void write_pilot_in_ascii()
 {
-    // receiver input data
-    Serial.print("RCIN:");
-    for ( int i = 0; i < MAX_CHANNELS - 1; i++ ) {
+    // pilot (receiver) input data
+    if ( receiver_norm[0] < 0 ) {
+        Serial.print("Man ");
+    } else {
+        Serial.print("Auto ");
+    }
+    if ( receiver_norm[1] < 0 ) {
+        Serial.print("Thr dis ");
+    } else {
+        Serial.print("Thr en ");
+    }
+    for ( int i = 0; i < 6; i++ ) {
         Serial.print(receiver_norm[i], 3);
         Serial.print(" ");
     }
