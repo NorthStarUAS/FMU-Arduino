@@ -15,15 +15,15 @@ uint16_t actuator_pwm[NUM_PWM_CHANNELS];
 
 bool new_gps_data = false;
 UBLOX gps(3); // ublox m8n
-gpsData uBloxData;
+gdata uBloxData;
 
 void setup() {
     // put your setup code here, to run once:
 
     Serial.begin(DEFAULT_BAUD);
-    delay(500); // needed delay before attempting to print anything
+    delay(600); // needed delay before attempting to print anything
     
-    Serial.println("\nAura Sensors");
+    Serial.print("\nAura Sensors: Rev "); Serial.println(FIRMWARE_REV);
     
     // The following code (when enabled) will force setting a specific device serial number.
     // set_serial_number(108);
@@ -34,14 +34,10 @@ void setup() {
         config_write_eeprom();
     }
 
-    Serial.print("F_CPU: ");
-    Serial.println(F_CPU);
-    Serial.print("F_PLL: ");
-    Serial.println(F_PLL);
-    Serial.print("BAUD2DIV: ");
-    Serial.println(BAUD2DIV(115200));
-    Serial.print("Firmware Revision: ");
-    Serial.println(FIRMWARE_REV);
+    // Serial.print("F_CPU: "); Serial.println(F_CPU);
+    // Serial.print("F_PLL: "); Serial.println(F_PLL);
+    // Serial.print("BAUD2DIV: "); Serial.println(BAUD2DIV(115200));
+    
     Serial.print("Serial Number: ");
     Serial.println(read_serial_number());
     delay(100);
