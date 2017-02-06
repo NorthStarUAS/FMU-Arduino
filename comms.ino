@@ -361,11 +361,11 @@ void write_pilot_in_ascii()
     } else {
         Serial.print("Thr en ");
     }
-    for ( int i = 0; i < 6; i++ ) {
+    for ( int i = 0; i < 7; i++ ) {
         Serial.print(receiver_norm[i], 3);
         Serial.print(" ");
     }
-    Serial.println(receiver_norm[MAX_CHANNELS-1], 3);
+    Serial.println();
 }
 
 void write_actuator_out_ascii()

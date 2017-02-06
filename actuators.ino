@@ -23,9 +23,6 @@
 #define MIX_VTAIL 6
 #define MIX_DIFF_THRUST 7
 
-// define if a channel is symmetrical or not (i.e. mapped to [0,1] for throttle, flaps, spoilers; [-1,1] for aileron, elevator, rudder
-bool symmetrical[MAX_CHANNELS] = {1, 1, 0, 1, 0, 0, 0, 1};
-
 // official flight command values.  These could source from the RC receiver or the autopilot depending on the auto/manual
 // selection switch state.  These are pre-mix commands and will be mixed and written to the actuators for both manual and
 // autonomous flight modes.
@@ -65,6 +62,14 @@ void sas_defaults() {
     config.sas_pitchgain = 0.0;
     config.sas_yawgain = 0.0;
     config.sas_ch7gain = 2.0;
+
+    // temp fixme:
+    config.sas_rollaxis = true;
+    config.sas_pitchaxis = true;
+    config.sas_yawaxis = true;
+    config.sas_rollgain = 0.2;
+    config.sas_pitchgain = 0.2;
+    config.sas_yawgain = 0.2;
 };
 
 
@@ -197,7 +202,7 @@ bool mixing_command_parse(byte *buf) {
 // compute the sas compensation in normalized 'command' space so that we can do proper output channel mixing later
 void sas_update( float control_norm[MAX_CHANNELS] ) {
     // mixing modes that work at the 'command' level (before actuator value assignment)
-    
+
     float tune = 1.0;
     if ( config.sas_ch7tune ) {
         // fixme: tune = config.sas_ch7gain * receiver_norm[6];
@@ -208,13 +213,13 @@ void sas_update( float control_norm[MAX_CHANNELS] ) {
         }
     }
     if ( config.sas_rollaxis ) {
-        control_norm[3] -= tune * config.sas_rollgain * imu_calib[0];
+        control_norm[3] -= tune * config.sas_rollgain * imu_calib[3];  // p
     }
     if ( config.sas_pitchaxis ) {
-        control_norm[4] -= tune * config.sas_pitchgain * imu_calib[1];
+        control_norm[4] -= tune * config.sas_pitchgain * imu_calib[4]; // q
     }
     if ( config.sas_yawaxis ) {
-        control_norm[5] -= tune * config.sas_yawgain * imu_calib[2];
+        control_norm[5] -= tune * config.sas_yawgain * imu_calib[5];   // r
     }
 }
 
@@ -237,7 +242,7 @@ void mixing_update( float control_norm[MAX_CHANNELS] ) {
     if ( config.mix_flap_trim ) {
         elevator_cmd += config.mix_Gef * flap_cmd;
     }
-  
+
     actuator_norm[0] = throttle_cmd;
     actuator_norm[1] = aileron_cmd;
     actuator_norm[2] = elevator_cmd;
@@ -263,7 +268,7 @@ void mixing_update( float control_norm[MAX_CHANNELS] ) {
         // actuator_norm[0] = config.mix_Gtt * throttle_cmd + config.mix_Gtr * rudder_cmd;
         // actuator_norm[5] = config.mix_Gtt * throttle_cmd - config.mix_Gtr * rudder_cmd;
     }
-
+    
     // compute pwm actuator output values from the normalized values
     pwm_norm2pwm( actuator_norm, actuator_pwm );
 }

@@ -120,7 +120,7 @@ void sbus_parse() {
     }
     
     sbus_raw2norm(sbus_raw, receiver_norm);
-    
+
     if ( receiver_norm[0] < 0.0 ) {
         // manual flight mode requested, let's get it done right now
         sas_update( receiver_norm );
@@ -130,9 +130,9 @@ void sbus_parse() {
         // autopilot mode, but let's update the sas gain tuning channel if requested
         // fixme: mixing_update( receiver_norm, false /* ch1-6 */, config.sas_ch7gain /* ch7 */, false /* no ch8 */ );
     }
-    //Serial.print(sbus_raw[CH_1]);
+    //Serial.print(sbus_raw[6]);
     //Serial.print(" ");
-    //Serial.println(receiver_norm[CH_1]);
+    //Serial.println(receiver_norm[6]);
 }
 
 // setup the sbus (currently hard coded on Serial2)

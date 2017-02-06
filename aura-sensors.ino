@@ -29,7 +29,7 @@ void setup() {
     // set_serial_number(108);
     read_serial_number();
     
-    if ( !config_read_eeprom() ) {
+    if ( true || !config_read_eeprom() ) {
         config_load_defaults();
         config_write_eeprom();
     }
@@ -77,7 +77,7 @@ void loop() {
         myTimer = 0;
         if ( gyros_calibrated == 2 ) {
             imu_print();
-            write_pilot_in_ascii();
+            //write_pilot_in_ascii();
             //write_gps_ascii();
         }  
     }
