@@ -144,7 +144,6 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         }
         write_ack_bin( id, 0 );
         result = true;
-#if 0 // fixme
     } else if ( id == ACT_GAIN_PACKET_ID && message_size == 3 ) {
         if ( act_gain_command_parse( buf ) ) {
             write_ack_bin( id, buf[0] /* sub command */ );
@@ -170,7 +169,6 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         config_write_eeprom();
         write_ack_bin( id, 0 );
         result = true;
-#endif // fixme
     }
     return result;
 }
@@ -331,8 +329,8 @@ uint8_t write_pilot_in_bin()
 
     // receiver data
     for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
-        // fixme: int16_t val = receiver_norm[i] * 16384.0;
-        // fixme:       *(int16_t *)packet = val; packet += 2;
+        int16_t val = receiver_norm[i] * 16384.0;
+        *(int16_t *)packet = val; packet += 2;
     }
     
     // write packet
@@ -372,11 +370,11 @@ void write_actuator_out_ascii()
 {
     // actuator output
     Serial.print("RCOUT:");
-    for ( int i = 0; i < SBUS_CHANNELS - 1; i++ ) {
-        // fixme: Serial.print(actuator_pwm[i]);
+    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
+        Serial.print(actuator_pwm[i]);
         Serial.print(" ");
     }
-    // fixme: Serial.println(actuator_pwm[SBUS_CHANNELS-1]);
+    Serial.println();
 }
 
 /* output a binary representation of the IMU data (note: scaled to 16bit values) */
@@ -444,11 +442,11 @@ void write_imu_ascii()
 {
     // output imu data
     Serial.print("IMU:");
-    for ( int i = 0; i < 9; i++ ) {
-        // fixme: Serial.print(imu_calib[i], 3);
-        Serial.print(",");
+    for ( int i = 0; i < 10; i++ ) {
+        Serial.print(imu_calib[i], 3);
+        Serial.print(" ");
     }
-    Serial.println(imu_calib[9]); // temp C last
+    Serial.println();
 }
 
 /* output a binary representation of the GPS data */

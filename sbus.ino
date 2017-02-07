@@ -128,9 +128,6 @@ void sbus_parse() {
         sas_update( receiver_norm );
         mixing_update( receiver_norm );
         pwm_update(); // for the outputs
-    } else {
-        // autopilot mode, but let's update the sas gain tuning channel if requested
-        // fixme: mixing_update( receiver_norm, false /* ch1-6 */, config.sas_ch7gain /* ch7 */, false /* no ch8 */ );
     }
 }
 
