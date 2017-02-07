@@ -14,7 +14,7 @@
 #define ACK_PACKET_ID 20
 
 #define PWM_RATE_PACKET_ID 21
-#define BAUD_PACKET_ID 22
+//#define BAUD_PACKET_ID 22
 #define FLIGHT_COMMAND_PACKET_ID 23
 #define ACT_GAIN_PACKET_ID 24
 #define MIX_MODE_PACKET_ID 25
@@ -74,11 +74,11 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 	    // autopilot mode active (determined elsewhere when each
 	    // new receiver frame is ready) mix the inputs and write
 	    // the actuator outputs now
-      sas_update( autopilot_norm );
+	    sas_update( autopilot_norm );
 	    mixing_update( autopilot_norm );
 	    pwm_update();
 	} else {
-      // fixme
+	    // fixme
 	    // we are in manual mode
 	    // update ch8 only from the autopilot.  We don't pass the
 	    // auto/manual switch state through to a servo.  Instead
@@ -88,8 +88,8 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 	    // autopilot, no matter what the state, but we'll let the
 	    // output to the APM_RC wait until it happens
 	    // automatically with the next receiver frame.
-      // don't overwrite manual ch7 value if sas_ch7tune enabled
-      // fixme? mixing_update( autopilot_norm, false /* ch1-6 */, !config.sas_ch7tune /* ch7 */, true /* no ch8 */ );
+	    // don't overwrite manual ch7 value if sas_ch7tune enabled
+	    // fixme? mixing_update( autopilot_norm, false /* ch1-6 */, !config.sas_ch7tune /* ch7 */, true /* no ch8 */ );
 	}
 	result = true;
 
@@ -97,8 +97,8 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 	// disable baud changing until I have more time to work out
 	// the nuances seems like when the remote end closes and
 	// reopens at the new baud, this side may get reset and put
-	// back to 115,200 and the whole app starts over -- when connected
-        // via the usb port.
+	// back to 115,200 and the whole app starts over -- when
+	// connected via the usb port.
     } else if ( id == BAUD_PACKET_ID && message_size == 4 ) {
 	//Serial.println("read Baud command");
 	/* of course changing baud could can break communication until
@@ -144,7 +144,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 	}
 	write_ack_bin( id, 0 );
 	result = true;
-  #if 0 // fixme
+#if 0 // fixme
     } else if ( id == ACT_GAIN_PACKET_ID && message_size == 3 ) {
 	if ( act_gain_command_parse( buf ) ) {
 	    write_ack_bin( id, buf[0] /* sub command */ );
@@ -170,7 +170,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 	config_write_eeprom();
 	write_ack_bin( id, 0 );
 	result = true;
-  #endif // fixme
+#endif // fixme
     }
     return result;
 }
@@ -188,15 +188,15 @@ bool read_commands()
     // Serial.print("top: "); Serial.println(state);
 
     if ( state == 0 ) {
-	    while ( Serial.available() >= 1 ) {
-	      // scan for start of message
-	      input = Serial.read();
-	      if ( input == START_OF_MSG0 ) {
-		      // Serial.println("start of msg0");
-		      state = 1;
-		      break;
-	      }
+	while ( Serial.available() >= 1 ) {
+	    // scan for start of message
+	    input = Serial.read();
+	    if ( input == START_OF_MSG0 ) {
+		// Serial.println("start of msg0");
+		state = 1;
+		break;
 	    }
+	}
     }
     if ( state == 1 ) {
 	if ( Serial.available() >= 1 ) {
@@ -332,7 +332,7 @@ uint8_t write_pilot_in_bin()
     // receiver data
     for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
 	// fixme: int16_t val = receiver_norm[i] * 16384.0;
-  // fixme:	*(int16_t *)packet = val; packet += 2;
+	// fixme:	*(int16_t *)packet = val; packet += 2;
     }
     
     // write packet
@@ -373,7 +373,6 @@ void write_actuator_out_ascii()
     // actuator output
     Serial.print("RCOUT:");
     for ( int i = 0; i < SBUS_CHANNELS - 1; i++ ) {
-
         // fixme: Serial.print(actuator_pwm[i]);
         Serial.print(" ");
     }
@@ -410,13 +409,13 @@ uint8_t write_imu_bin()
   
     // gyro data
     for ( int i = 0; i < 3; i++ ) {
-	      // fixme: val = imu_calib[i] / MPU6000_gyro_scale;
+	// fixme: val = imu_calib[i] / MPU6000_gyro_scale;
         *(int16_t *)packet = val; packet += 2;
     }
 
     // accel data
     for ( int i = 3; i < 6; i++ ) {
-	      // fixme: val = imu_calib[i] / MPU6000_accel_scale;
+	// fixme: val = imu_calib[i] / MPU6000_accel_scale;
         *(int16_t *)packet = val; packet += 2;
     }
   
@@ -509,7 +508,7 @@ uint8_t write_gps_bin()
     new_gps_data = false;
     
     return size + 6;
-    #endif // fixme
+#endif // fixme
 }
 
 #define T6 1000000
@@ -598,12 +597,12 @@ uint8_t write_baro_bin()
     Serial.write( buf, 2 );
     
     return size + 6;
-    #endif // fixme
+#endif // fixme
 }
 
 void write_baro_ascii()
 {
-  #if 0 // fixme
+#if 0 // fixme
     if ( !baro.healthy ) {
 	return;
     }
@@ -617,8 +616,8 @@ void write_baro_ascii()
     Serial.print(" climb=");
     Serial.print(baro.get_climb_rate());
     Serial.print(" samples="),
-    Serial.println(baro.get_pressure_samples());
-    #endif // fixme
+	Serial.println(baro.get_pressure_samples());
+#endif // fixme
 }
 
 /* output a binary representation of the analog input data */
@@ -653,7 +652,7 @@ uint8_t write_analog_bin()
 	packet[size++] = byte(lo);
 	packet[size++] = byte(hi);
     }
-    #endif // fixme
+#endif // fixme
     
     // write packet
     Serial.write( packet, size );
@@ -671,10 +670,10 @@ uint8_t write_analog_bin()
 void write_analog_ascii()
 {
     /*
-    static float amp_filt = 0.0;
-    amp_filt = 0.999 * amp_filt + 0.001 * battery_amps;
+      static float amp_filt = 0.0;
+      amp_filt = 0.999 * amp_filt + 0.001 * battery_amps;
     */
-    #if 0 // fixme
+#if 0 // fixme
     // output servo data
     Serial.print("Analog:");
     for ( int i = 0; i < MAX_ANALOG_INPUTS - 1; i++ ) {
@@ -682,12 +681,12 @@ void write_analog_ascii()
         Serial.print(" ");
     }
     Serial.println((float)analog[MAX_ANALOG_INPUTS-1] / 1000.0, 2);
-    #endif // fixme
+#endif // fixme
     /*
-    Serial.printf("%.2f ", vcc_average);
-    Serial.printf("%.2f ", (float)battery_voltage);
-    Serial.printf("%.4f ", (float)amp_filt);
-    Serial.printf("%.4f\n", (float)amps_sum);
+      Serial.printf("%.2f ", vcc_average);
+      Serial.printf("%.2f ", (float)battery_voltage);
+      Serial.printf("%.4f ", (float)amp_filt);
+      Serial.printf("%.4f\n", (float)amps_sum);
     */
 }
 

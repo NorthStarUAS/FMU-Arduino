@@ -69,7 +69,7 @@ void loop() {
     while ( sbus_process() ); // keep processing while there is data in the uart buffer
 
     /* look for a good GPS data packet */
-    if ( gps.read(&uBloxData) ) {
+    while ( gps.read(&uBloxData) ) {
         new_gps_data = true;
     }
     

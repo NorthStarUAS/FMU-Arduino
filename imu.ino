@@ -10,12 +10,17 @@ const mpu9250_dlpf_bandwidth MPU9250_BANDWIDTH = DLPF_BANDWIDTH_41HZ;
 const uint8_t MPU9250_SRD = 9;  // Data Output Rate = 1000 / (1 + SRD)
 const uint8_t SYNC_PIN = 2;
 
-// any code that reads imu_sensors_shared should protect those reads with cli() / sei() calls because
-// this array is modified by an ISR that could be called at any time, even in the middle of a variable
+// any code that reads imu_sensors_shared should protect those reads
+// with cli() / sei() calls because this array is modified by an ISR
+// that could be called at any time, even in the middle of a variable
 // read which could lead to corrupted values.
 
-volatile float imu_sensors_shared[10]; // the volatile (shared) storage for the imu sensors
-float imu_raw[10]; // the 'safe' but raw version of the imu sensors
+// the volatile (shared) storage for the imu sensors
+volatile float imu_sensors_shared[10];
+
+// the 'safe' but raw version of the imu sensors
+float imu_raw[10];
+
 float gyro_calib[3] = { 0.0, 0.0, 0.0 };
 
 
@@ -50,7 +55,8 @@ void dataAcquisition() {
 }
 
 
-// copy the dangerous 'volatile' shared version of imu data to the safe global copy.
+// copy the dangerous 'volatile' shared version of imu data to the
+// safe global copy.
 void update_imu() {
     cli();
     for ( int i = 0; i < 10; i++ ) {
@@ -78,9 +84,11 @@ void imu_print() {
 }
 
 
-// stay alive for up to 15 seconds looking for agreement between a 1 second low pass filter and a 0.1 second
-// low pass filter.  If these agree (close enough) for 4 consecutive seconds, then we calibrate with the
-// 1 sec low pass filter value.  If time expires the calibration fails and we run with raw gyro values.
+// stay alive for up to 15 seconds looking for agreement between a 1
+// second low pass filter and a 0.1 second low pass filter.  If these
+// agree (close enough) for 4 consecutive seconds, then we calibrate
+// with the 1 sec low pass filter value.  If time expires the
+// calibration fails and we run with raw gyro values.
 void calibrate_gyros() {
     static float gxs = imu_raw[3];
     static float gys = imu_raw[4];

@@ -16,8 +16,8 @@
 
 #define SBUS_CH_MAX 16
 
-// Structure defining the contents of the SBUS data payload (23 bytes).
-// Each of the channel fields (ch1:ch16) occupies 11 bytes.
+// Structure defining the contents of the SBUS data payload (23
+// bytes).  Each of the channel fields (ch1:ch16) occupies 11 bytes.
 typedef union {
     byte buf[SBUS_PAYLOAD_LEN];
 
@@ -59,12 +59,14 @@ static SBUS_DATA_U sbus_data;
 static uint16_t sbus_ch_data[ SBUS_CH_MAX ];
 uint16_t sbus_raw[SBUS_CHANNELS];
 
-// define if an sbus input channel is symmetrical or not (i.e. mapped to [0,1] for throttle, flaps, spoilers;
-// [-1,1] for aileron, elevator, rudder
+// define if an sbus input channel is symmetrical or not (i.e. mapped
+// to [0,1] for throttle, flaps, spoilers; [-1,1] for aileron,
+// elevator, rudder
 bool sbus_symmetrical[SBUS_CHANNELS] = {1, 1, 0, 1, 1, 1, 0, 0};
 
 void sbus_parse() {
-    // we don't need to return from these, these are just notifying us of receiver state
+    // we don't need to return from these, these are just notifying us
+    // of receiver state
     if ( sbus_data.failsafe_act ) {
         // Serial.println("SBUS: failsafe activated!");
     }
@@ -130,9 +132,6 @@ void sbus_parse() {
         // autopilot mode, but let's update the sas gain tuning channel if requested
         // fixme: mixing_update( receiver_norm, false /* ch1-6 */, config.sas_ch7gain /* ch7 */, false /* no ch8 */ );
     }
-    //Serial.print(sbus_raw[6]);
-    //Serial.print(" ");
-    //Serial.println(receiver_norm[6]);
 }
 
 // setup the sbus (currently hard coded on Serial2)
@@ -141,9 +140,10 @@ bool sbus_setup() {
     Serial.println("SBUS on Serial2 (SERIAL_8E2)");
 }
 
-// read available bytes on the sbus uart and return true if any new data is read
-// when a full packet is read, send that to the parser which will push the new data into the various data
-// structures and trigger and output of new actuator (currently PWM only) values.
+// read available bytes on the sbus uart and return true if any new
+// data is read when a full packet is read, send that to the parser
+// which will push the new data into the various data structures and
+// trigger and output of new actuator (currently PWM only) values.
 bool sbus_process() {
     static byte state = 0;
     byte input;
@@ -193,9 +193,9 @@ bool sbus_process() {
                     input = Serial2.read();
                 }
                 if ( input == SBUS_FOOTER_VALUE ) {
-                   // set state to zero so we begin parsing the next new frame correctly
-                   // (but something went wrong with this frame so don't parse the data/discard.)
-                   state = 0;
+		    // set state to zero so we begin parsing the next new frame correctly
+		    // (but something went wrong with this frame so don't parse the data/discard.)
+		    state = 0;
                 }
             }
         }
@@ -204,22 +204,17 @@ bool sbus_process() {
     return new_data;
 }
 
-
 // compute normalized command values from the raw sbus values
 void sbus_raw2norm( uint16_t *raw, float *norm ) {
     for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
         // convert to normalized form
         if ( sbus_symmetrical[i] ) {
             // i.e. aileron, rudder, elevator
-	          norm[i] = (float)((int)raw[i] - SBUS_CENTER_VALUE) / SBUS_HALF_RANGE;
+	    norm[i] = (float)((int)raw[i] - SBUS_CENTER_VALUE) / SBUS_HALF_RANGE;
         } else {
-	          // i.e. throttle, flaps
-	          norm[i] = (float)((int)raw[i] - SBUS_MIN_VALUE) / SBUS_RANGE;
+	    // i.e. throttle, flaps
+	    norm[i] = (float)((int)raw[i] - SBUS_MIN_VALUE) / SBUS_RANGE;
         }
-        //Serial.print(norm[i], 2); Serial.print(" ");
     }
-    //Serial.println();
 }
-
-
 

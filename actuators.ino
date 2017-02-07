@@ -2,7 +2,8 @@
 
 #include "config.h"
 
-// Actuator gain (reversing) commands, format is cmd(byte) ch(byte) gain(float)
+// Actuator gain (reversing) commands, format is cmd(byte) ch(byte)
+// gain(float)
 #define ACT_GAIN_DEFAULTS 0
 #define ACT_GAIN_SET 1
 
@@ -13,7 +14,8 @@
 #define SAS_YAWAXIS 3
 #define SAS_CH7_TUNE 10
 
-// Mix mode commands, format is cmd(byte), gain 1(float), gain 2(float)
+// Mix mode commands, format is cmd(byte), gain 1(float), gain
+// 2(float)
 #define MIX_DEFAULTS 0
 #define MIX_AUTOCOORDINATE 1
 #define MIX_THROTTLE_TRIM 2
@@ -23,9 +25,11 @@
 #define MIX_VTAIL 6
 #define MIX_DIFF_THRUST 7
 
-// official flight command values.  These could source from the RC receiver or the autopilot depending on the auto/manual
-// selection switch state.  These are pre-mix commands and will be mixed and written to the actuators for both manual and
-// autonomous flight modes.
+// official flight command values.  These could source from the RC
+// receiver or the autopilot depending on the auto/manual selection
+// switch state.  These are pre-mix commands and will be mixed and
+// written to the actuators for both manual and autonomous flight
+// modes.
 float aileron_cmd = 0.0;
 float elevator_cmd = 0.0;
 float throttle_cmd = 0.0;
@@ -35,14 +39,12 @@ float flap_cmd = 0.0;
 float ch7_cmd = 0.0;
 float ch8_cmd = 0.0;
 
-
 // reset pwm output rates to safe startup defaults
 void pwm_rate_defaults() {
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         config.pwm_hz[i] = 50;
     }
 }
-
 
 // reset actuator gains (reversing) to startup defaults
 void act_gain_defaults() {
@@ -62,14 +64,6 @@ void sas_defaults() {
     config.sas_pitchgain = 0.0;
     config.sas_yawgain = 0.0;
     config.sas_ch7gain = 2.0;
-
-    // temp fixme:
-    config.sas_rollaxis = true;
-    config.sas_pitchaxis = true;
-    config.sas_yawaxis = true;
-    config.sas_rollgain = 0.2;
-    config.sas_pitchgain = 0.2;
-    config.sas_yawgain = 0.2;
 };
 
 
@@ -83,20 +77,19 @@ void mixing_defaults() {
     config.mix_vtail = false;
     config.mix_diff_thrust = false;
 
-    config.mix_Gac = 0.5; // aileron gain for autocoordination
-    config.mix_Get = -0.1; // elevator trim w/ throttle gain
-    config.mix_Gef = 0.1; // elevator trim w/ flap gain
+    config.mix_Gac = 0.5;	// aileron gain for autocoordination
+    config.mix_Get = -0.1;	// elevator trim w/ throttle gain
+    config.mix_Gef = 0.1;	// elevator trim w/ flap gain
 
-    config.mix_Gea = 1.0; // aileron gain for elevons
-    config.mix_Gee = 1.0; // elevator gain for elevons
-    config.mix_Gfa = 1.0; // aileron gain for flaperons
-    config.mix_Gff = 1.0; // flaps gain for flaperons
-    config.mix_Gve = 1.0; // elevator gain for vtail
-    config.mix_Gvr = 1.0; // rudder gain for vtail
-    config.mix_Gtt = 1.0; // throttle gain for diff thrust
-    config.mix_Gtr = 0.1; // rudder gain for diff thrust
+    config.mix_Gea = 1.0;	// aileron gain for elevons
+    config.mix_Gee = 1.0;	// elevator gain for elevons
+    config.mix_Gfa = 1.0;	// aileron gain for flaperons
+    config.mix_Gff = 1.0;	// flaps gain for flaperons
+    config.mix_Gve = 1.0;	// elevator gain for vtail
+    config.mix_Gvr = 1.0;	// rudder gain for vtail
+    config.mix_Gtt = 1.0;	// throttle gain for diff thrust
+    config.mix_Gtr = 0.1;	// rudder gain for diff thrust
 };
-
 
 bool act_gain_command_parse(byte *buf) {
     uint8_t ch = buf[0];
@@ -199,9 +192,11 @@ bool mixing_command_parse(byte *buf) {
 }
 
 
-// compute the sas compensation in normalized 'command' space so that we can do proper output channel mixing later
+// compute the sas compensation in normalized 'command' space so that
+// we can do proper output channel mixing later
 void sas_update( float control_norm[SBUS_CHANNELS] ) {
-    // mixing modes that work at the 'command' level (before actuator value assignment)
+    // mixing modes that work at the 'command' level (before actuator
+    // value assignment)
 
     float tune = 1.0;
     if ( config.sas_ch7tune ) {
@@ -223,7 +218,8 @@ void sas_update( float control_norm[SBUS_CHANNELS] ) {
     }
 }
 
-// compute the actuator (servo) values for each channel.  Handle all the requested mixing modes here.
+// compute the actuator (servo) values for each channel.  Handle all
+// the requested mixing modes here.
 void mixing_update( float control_norm[SBUS_CHANNELS] ) {
     aileron_cmd = control_norm[3];
     elevator_cmd = control_norm[4];
@@ -232,7 +228,8 @@ void mixing_update( float control_norm[SBUS_CHANNELS] ) {
     flap_cmd = control_norm[6];
     gear_cmd = control_norm[7];
         
-    // mixing modes that work at the 'command' level (before actuator value assignment)
+    // mixing modes that work at the 'command' level (before actuator
+    // value assignment)
     if ( config.mix_autocoord ) {
         rudder_cmd += config.mix_Gac * aileron_cmd;
     }
@@ -273,7 +270,6 @@ void mixing_update( float control_norm[SBUS_CHANNELS] ) {
     pwm_norm2pwm( actuator_norm, actuator_pwm );
 }
 
-
 // set default raw actuator values
 void actuator_set_defaults() {
     for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
@@ -281,6 +277,3 @@ void actuator_set_defaults() {
     }
     pwm_norm2pwm(actuator_norm, actuator_pwm);
 }
-
-
-
