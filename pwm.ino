@@ -24,10 +24,10 @@ void pwm_pwm2norm( uint16_t *pwm, float *norm ) {
         // convert to normalized form
         if ( pwm_symmetrical[i] ) {
             // i.e. aileron, rudder, elevator
-	    norm[i] = (float)((int)pwm[i] - PWM_CENTER) / PWM_HALF_RANGE;
+            norm[i] = (float)((int)pwm[i] - PWM_CENTER) / PWM_HALF_RANGE;
         } else {
-	    // i.e. throttle, flaps
-	    norm[i] = (float)((int)pwm[i] - PWM_MIN) / PWM_RANGE;
+            // i.e. throttle, flaps
+            norm[i] = (float)((int)pwm[i] - PWM_MIN) / PWM_RANGE;
         }
     }
 }
@@ -41,13 +41,13 @@ void pwm_norm2pwm( float *norm, uint16_t *pwm ) {
             // i.e. aileron, rudder, elevator
             //Serial.println(i);
             //Serial.println(config.act_rev[i]);
-	    pwm[i] = PWM_CENTER + (int)(PWM_HALF_RANGE * norm[i] * config.act_gain[i]);
+            pwm[i] = PWM_CENTER + (int)(PWM_HALF_RANGE * norm[i] * config.act_gain[i]);
         } else {
-	    // i.e. throttle, flaps
+            // i.e. throttle, flaps
             if ( config.act_gain[i] > 0.0 ) {
-		pwm[i] = PWM_MIN + (int)(PWM_RANGE * norm[i] * config.act_gain[i]);
+                pwm[i] = PWM_MIN + (int)(PWM_RANGE * norm[i] * config.act_gain[i]);
             } else {
-		pwm[i] = PWM_MAX + (int)(PWM_RANGE * norm[i] * config.act_gain[i]);
+                pwm[i] = PWM_MAX + (int)(PWM_RANGE * norm[i] * config.act_gain[i]);
             }
         }
         if ( pwm[i] < PWM_MIN ) {

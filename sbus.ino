@@ -22,36 +22,36 @@ typedef union {
     byte buf[SBUS_PAYLOAD_LEN];
 
     struct __attribute__ ((packed)) {
-	uint32_t ch1          : 11;
-	uint32_t ch2          : 11;
-	uint32_t ch3_lo       : 10;
+        uint32_t ch1          : 11;
+        uint32_t ch2          : 11;
+        uint32_t ch3_lo       : 10;
 
-	uint32_t ch3_hi       :  1;
-	uint32_t ch4          : 11;
-	uint32_t ch5          : 11;
-	uint32_t ch6_lo       :  9;
+        uint32_t ch3_hi       :  1;
+        uint32_t ch4          : 11;
+        uint32_t ch5          : 11;
+        uint32_t ch6_lo       :  9;
 
-	uint32_t ch6_hi       :  2;
-	uint32_t ch7          : 11;
-	uint32_t ch8          : 11;
-	uint32_t ch9_lo       :  8;
+        uint32_t ch6_hi       :  2;
+        uint32_t ch7          : 11;
+        uint32_t ch8          : 11;
+        uint32_t ch9_lo       :  8;
 
-	uint32_t ch9_hi       :  3;
-	uint32_t ch10         : 11;
-	uint32_t ch11         : 11;
-	uint32_t ch12_lo      :  7;
+        uint32_t ch9_hi       :  3;
+        uint32_t ch10         : 11;
+        uint32_t ch11         : 11;
+        uint32_t ch12_lo      :  7;
 
-	uint32_t ch12_hi      :  4;
-	uint32_t ch13         : 11;
-	uint32_t ch14         : 11;
-	uint32_t ch15_lo      :  6;
+        uint32_t ch12_hi      :  4;
+        uint32_t ch13         : 11;
+        uint32_t ch14         : 11;
+        uint32_t ch15_lo      :  6;
 
-	uint32_t ch15_hi      :  5;
-	uint32_t ch16         : 11;
-	uint32_t ch17         :  1; // digital channel
-	uint32_t ch18         :  1; // digital channel
-	uint32_t frame_lost   :  1;
-	uint32_t failsafe_act :  1;
+        uint32_t ch15_hi      :  5;
+        uint32_t ch16         : 11;
+        uint32_t ch17         :  1; // digital channel
+        uint32_t ch18         :  1; // digital channel
+        uint32_t frame_lost   :  1;
+        uint32_t failsafe_act :  1;
     };
 } SBUS_DATA_U;
     
@@ -166,14 +166,14 @@ bool sbus_process() {
         // fill in sbus frame (when enough bytes are available)
         if ( Serial2.available() >= SBUS_PAYLOAD_LEN ) {
             new_data = true;
-     	    for ( int i = 0; i < SBUS_PAYLOAD_LEN; i++ ) {
+            for ( int i = 0; i < SBUS_PAYLOAD_LEN; i++ ) {
                 input = Serial2.read();
                 //Serial.print(" ");
                 //Serial.print(input, DEC);
-		sbus_data.buf[i] = input;
-	    }
+                sbus_data.buf[i] = input;
+            }
             //Serial.println();
-	    state = 2;
+            state = 2;
         }   
     }
     if  ( state == 2 ) {
@@ -193,9 +193,9 @@ bool sbus_process() {
                     input = Serial2.read();
                 }
                 if ( input == SBUS_FOOTER_VALUE ) {
-		    // set state to zero so we begin parsing the next new frame correctly
-		    // (but something went wrong with this frame so don't parse the data/discard.)
-		    state = 0;
+                    // set state to zero so we begin parsing the next new frame correctly
+                    // (but something went wrong with this frame so don't parse the data/discard.)
+                    state = 0;
                 }
             }
         }
@@ -210,10 +210,10 @@ void sbus_raw2norm( uint16_t *raw, float *norm ) {
         // convert to normalized form
         if ( sbus_symmetrical[i] ) {
             // i.e. aileron, rudder, elevator
-	    norm[i] = (float)((int)raw[i] - SBUS_CENTER_VALUE) / SBUS_HALF_RANGE;
+            norm[i] = (float)((int)raw[i] - SBUS_CENTER_VALUE) / SBUS_HALF_RANGE;
         } else {
-	    // i.e. throttle, flaps
-	    norm[i] = (float)((int)raw[i] - SBUS_MIN_VALUE) / SBUS_RANGE;
+            // i.e. throttle, flaps
+            norm[i] = (float)((int)raw[i] - SBUS_MIN_VALUE) / SBUS_RANGE;
         }
     }
 }

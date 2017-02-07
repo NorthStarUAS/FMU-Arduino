@@ -42,7 +42,7 @@ float ch8_cmd = 0.0;
 // reset pwm output rates to safe startup defaults
 void pwm_rate_defaults() {
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-        config.pwm_hz[i] = 50;
+         config.pwm_hz[i] = 50;    
     }
 }
 
@@ -77,18 +77,18 @@ void mixing_defaults() {
     config.mix_vtail = false;
     config.mix_diff_thrust = false;
 
-    config.mix_Gac = 0.5;	// aileron gain for autocoordination
-    config.mix_Get = -0.1;	// elevator trim w/ throttle gain
-    config.mix_Gef = 0.1;	// elevator trim w/ flap gain
+    config.mix_Gac = 0.5;       // aileron gain for autocoordination
+    config.mix_Get = -0.1;      // elevator trim w/ throttle gain
+    config.mix_Gef = 0.1;       // elevator trim w/ flap gain
 
-    config.mix_Gea = 1.0;	// aileron gain for elevons
-    config.mix_Gee = 1.0;	// elevator gain for elevons
-    config.mix_Gfa = 1.0;	// aileron gain for flaperons
-    config.mix_Gff = 1.0;	// flaps gain for flaperons
-    config.mix_Gve = 1.0;	// elevator gain for vtail
-    config.mix_Gvr = 1.0;	// rudder gain for vtail
-    config.mix_Gtt = 1.0;	// throttle gain for diff thrust
-    config.mix_Gtr = 0.1;	// rudder gain for diff thrust
+    config.mix_Gea = 1.0;       // aileron gain for elevons
+    config.mix_Gee = 1.0;       // elevator gain for elevons
+    config.mix_Gfa = 1.0;       // aileron gain for flaperons
+    config.mix_Gff = 1.0;       // flaps gain for flaperons
+    config.mix_Gve = 1.0;       // elevator gain for vtail
+    config.mix_Gvr = 1.0;       // rudder gain for vtail
+    config.mix_Gtt = 1.0;       // throttle gain for diff thrust
+    config.mix_Gtr = 0.1;       // rudder gain for diff thrust
 };
 
 bool act_gain_command_parse(byte *buf) {

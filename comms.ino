@@ -31,7 +31,7 @@
 
 
 void ugear_cksum( byte hdr1, byte hdr2, byte *buf, byte size,
-		  byte *cksum0, byte *cksum1 )
+                  byte *cksum0, byte *cksum1 )
 {
     byte c0 = 0;
     byte c1 = 0;
@@ -43,8 +43,8 @@ void ugear_cksum( byte hdr1, byte hdr2, byte *buf, byte size,
     c1 += c0;
 
     for ( byte i = 0; i < size; i++ ) {
-	c0 += (byte)buf[i];
-	c1 += c0;
+        c0 += (byte)buf[i];
+        c1 += c0;
     }
 
     *cksum0 = c0;
@@ -58,118 +58,118 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
     bool result = false;
 
     if ( id == FLIGHT_COMMAND_PACKET_ID && message_size == SBUS_CHANNELS * 2 ) {
-	/* flight commands are 2 bytes, lo byte first, then hi byte.
-	 * Integer values correspond to servo pulse lenght in us 1100
-	 * is a normal minimum value, 1500 is center, 1900 is a normal
-	 * maximum value although the min and max can be extended a
-	 * bit. */
-	for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
-	    byte lo = buf[counter++];
-	    byte hi = buf[counter++];
-	    // fixme: autopilot_pwm[i] = hi*256 + lo;
-	}
-	// fixme: pwm_pwm2norm( autopilot_pwm, autopilot_norm );
+        /* flight commands are 2 bytes, lo byte first, then hi byte.
+         * Integer values correspond to servo pulse lenght in us 1100
+         * is a normal minimum value, 1500 is center, 1900 is a normal
+         * maximum value although the min and max can be extended a
+         * bit. */
+        for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
+            byte lo = buf[counter++];
+            byte hi = buf[counter++];
+            // fixme: autopilot_pwm[i] = hi*256 + lo;
+        }
+        // fixme: pwm_pwm2norm( autopilot_pwm, autopilot_norm );
 
-	if ( receiver_norm[0] > 0.0 ) {
-	    // autopilot mode active (determined elsewhere when each
-	    // new receiver frame is ready) mix the inputs and write
-	    // the actuator outputs now
-	    sas_update( autopilot_norm );
-	    mixing_update( autopilot_norm );
-	    pwm_update();
-	} else {
-	    // fixme
-	    // we are in manual mode
-	    // update ch8 only from the autopilot.  We don't pass the
-	    // auto/manual switch state through to a servo.  Instead
-	    // we simply relay ch8 from the autopilot to the actuator
-	    // which gives the autopilot an extra useful output
-	    // channel.  This channel is always driven by the
-	    // autopilot, no matter what the state, but we'll let the
-	    // output to the APM_RC wait until it happens
-	    // automatically with the next receiver frame.
-	    // don't overwrite manual ch7 value if sas_ch7tune enabled
-	    // fixme? mixing_update( autopilot_norm, false /* ch1-6 */, !config.sas_ch7tune /* ch7 */, true /* no ch8 */ );
-	}
-	result = true;
+        if ( receiver_norm[0] > 0.0 ) {
+            // autopilot mode active (determined elsewhere when each
+            // new receiver frame is ready) mix the inputs and write
+            // the actuator outputs now
+            sas_update( autopilot_norm );
+            mixing_update( autopilot_norm );
+            pwm_update();
+        } else {
+            // fixme
+            // we are in manual mode
+            // update ch8 only from the autopilot.  We don't pass the
+            // auto/manual switch state through to a servo.  Instead
+            // we simply relay ch8 from the autopilot to the actuator
+            // which gives the autopilot an extra useful output
+            // channel.  This channel is always driven by the
+            // autopilot, no matter what the state, but we'll let the
+            // output to the APM_RC wait until it happens
+            // automatically with the next receiver frame.
+            // don't overwrite manual ch7 value if sas_ch7tune enabled
+            // fixme? mixing_update( autopilot_norm, false /* ch1-6 */, !config.sas_ch7tune /* ch7 */, true /* no ch8 */ );
+        }
+        result = true;
 
 #if 0
-	// disable baud changing until I have more time to work out
-	// the nuances seems like when the remote end closes and
-	// reopens at the new baud, this side may get reset and put
-	// back to 115,200 and the whole app starts over -- when
-	// connected via the usb port.
+        // disable baud changing until I have more time to work out
+        // the nuances seems like when the remote end closes and
+        // reopens at the new baud, this side may get reset and put
+        // back to 115,200 and the whole app starts over -- when
+        // connected via the usb port.
     } else if ( id == BAUD_PACKET_ID && message_size == 4 ) {
-	//Serial.println("read Baud command");
-	/* of course changing baud could can break communication until
-	   the requesting side changes it's own baud rate to match*/
-	uint32_t baud = *(uint32_t *)buf;
-	// Serial.printf("Changing baud to %ld.  See you on the other side!\n", baud);
-	/* sends "ack" at both old baud and new baud rates */
-	write_ack_bin( id );
-	Serial.flush();
-	delay(100);
-	Serial.end();
+        //Serial.println("read Baud command");
+        /* of course changing baud could can break communication until
+           the requesting side changes it's own baud rate to match*/
+        uint32_t baud = *(uint32_t *)buf;
+        // Serial.printf("Changing baud to %ld.  See you on the other side!\n", baud);
+        /* sends "ack" at both old baud and new baud rates */
+        write_ack_bin( id );
+        Serial.flush();
+        delay(100);
+        Serial.end();
     
-	Serial.begin(baud);
-	delay(500);
+        Serial.begin(baud);
+        delay(500);
     
-	write_ack_bin( id );
-	write_ack_bin( id );
-	write_ack_bin( id );
+        write_ack_bin( id );
+        write_ack_bin( id );
+        write_ack_bin( id );
     
-	result = true;
+        result = true;
 #endif
 
     } else if ( id == PWM_RATE_PACKET_ID && message_size == PWM_CHANNELS * 2 ) {
-	//Serial.println("read PWM command");
-	/* note that CH1/CH2, CH3/CH4/CH5, and CH6/CH7/CH8 run off
-	 * grouped timers so setting any of the group will also force
-	 * the same rate for the other channels in the group, channels
-	 * with rate of 0 are left untouched (but will be affected if
-	 * another group member rate is set.) */
-	for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-	    uint8_t lo = buf[counter++];
-	    uint8_t hi = buf[counter++];
-	    uint16_t rate = hi*256 + lo;
-	    //Serial.printf("ch %d rate %d\n", i, rate);
-	    if ( rate > 0 ) {
+        //Serial.println("read PWM command");
+        /* note that CH1/CH2, CH3/CH4/CH5, and CH6/CH7/CH8 run off
+         * grouped timers so setting any of the group will also force
+         * the same rate for the other channels in the group, channels
+         * with rate of 0 are left untouched (but will be affected if
+         * another group member rate is set.) */
+        for ( int i = 0; i < PWM_CHANNELS; i++ ) {
+            uint8_t lo = buf[counter++];
+            uint8_t hi = buf[counter++];
+            uint16_t rate = hi*256 + lo;
+            //Serial.printf("ch %d rate %d\n", i, rate);
+            if ( rate > 0 ) {
                 config.pwm_hz[i] = rate;
                 // sanity checks
-		if ( rate < 50 ) { rate = 50; }
-		if ( rate > 250 ) { rate = 250; }
+                if ( rate < 50 ) { rate = 50; }
+                if ( rate > 250 ) { rate = 250; }
                 uint32_t ch_mask = _BV(i);
-		// fixme: APM_RC.SetFastOutputChannels( ch_mask, rate );
-	    }
-	}
-	write_ack_bin( id, 0 );
-	result = true;
+                // fixme: APM_RC.SetFastOutputChannels( ch_mask, rate );
+            }
+        }
+        write_ack_bin( id, 0 );
+        result = true;
 #if 0 // fixme
     } else if ( id == ACT_GAIN_PACKET_ID && message_size == 3 ) {
-	if ( act_gain_command_parse( buf ) ) {
-	    write_ack_bin( id, buf[0] /* sub command */ );
+        if ( act_gain_command_parse( buf ) ) {
+            write_ack_bin( id, buf[0] /* sub command */ );
             result = true;
-	}
+        }
     } else if ( id == SAS_MODE_PACKET_ID && message_size == 4 ) {
-	if ( sas_command_parse( buf ) ) {
-	    write_ack_bin( id, buf[0] /* sub command */ );
+        if ( sas_command_parse( buf ) ) {
+            write_ack_bin( id, buf[0] /* sub command */ );
             result = true;
-	}
+        }
     } else if ( id == MIX_MODE_PACKET_ID && message_size == 6 ) {
-	if ( mixing_command_parse( buf ) ) {
-	    write_ack_bin( id, buf[0] /* sub command */ );
+        if ( mixing_command_parse( buf ) ) {
+            write_ack_bin( id, buf[0] /* sub command */ );
             result = true;
-	}
+        }
     } else if ( id == SERIAL_NUMBER_PACKET_ID && message_size == 2 ) {
-	uint8_t lo = buf[0];
-	uint8_t hi = buf[1];
-	set_serial_number(hi*256 + lo);
-	write_ack_bin( id, 0 );
-	result = true;
+        uint8_t lo = buf[0];
+        uint8_t hi = buf[1];
+        set_serial_number(hi*256 + lo);
+        write_ack_bin( id, 0 );
+        result = true;
     } else if ( id == WRITE_EEPROM_PACKET_ID && message_size == 0 ) {
-	config_write_eeprom();
-	write_ack_bin( id, 0 );
-	result = true;
+        config_write_eeprom();
+        write_ack_bin( id, 0 );
+        result = true;
 #endif // fixme
     }
     return result;
@@ -188,78 +188,78 @@ bool read_commands()
     // Serial.print("top: "); Serial.println(state);
 
     if ( state == 0 ) {
-	while ( Serial.available() >= 1 ) {
-	    // scan for start of message
-	    input = Serial.read();
-	    if ( input == START_OF_MSG0 ) {
-		// Serial.println("start of msg0");
-		state = 1;
-		break;
-	    }
-	}
+        while ( Serial.available() >= 1 ) {
+            // scan for start of message
+            input = Serial.read();
+            if ( input == START_OF_MSG0 ) {
+                // Serial.println("start of msg0");
+                state = 1;
+                break;
+            }
+        }
     }
     if ( state == 1 ) {
-	if ( Serial.available() >= 1 ) {
-	    input = Serial.read();
-	    if ( input == START_OF_MSG1 ) {
-		// Serial.println("start of msg1");
-		state = 2;
-	    } 
-	    else if ( input == START_OF_MSG0 ) {
-		// no change
-	    }
-	    else {
-		// oops
-		state = 0;
-	    }
-	}
+        if ( Serial.available() >= 1 ) {
+            input = Serial.read();
+            if ( input == START_OF_MSG1 ) {
+                // Serial.println("start of msg1");
+                state = 2;
+            } 
+            else if ( input == START_OF_MSG0 ) {
+                // no change
+            }
+            else {
+                // oops
+                state = 0;
+            }
+        }
     }
     if ( state == 2 ) {
-	if ( Serial.available() >= 2 ) {
-	    message_id = Serial.read();
-	    //Serial.print("id="); Serial.println(message_id);
-	    message_size = Serial.read();
-	    //Serial.print("size="); Serial.println(message_size);
-	    //if ( message_id != COMMAND_PACKET_ID ) {
-	    // ignore bogus message id's
-	    //  state = 0;
-	    //} else
-	    if ( message_size > 20 ) {
-		// ignore nonsensical sizes
-		state = 0;
-	    } 
-	    else {
-		state = 3;
-	    }
-	}
+        if ( Serial.available() >= 2 ) {
+            message_id = Serial.read();
+            //Serial.print("id="); Serial.println(message_id);
+            message_size = Serial.read();
+            //Serial.print("size="); Serial.println(message_size);
+            //if ( message_id != COMMAND_PACKET_ID ) {
+            // ignore bogus message id's
+            //  state = 0;
+            //} else
+            if ( message_size > 20 ) {
+                // ignore nonsensical sizes
+                state = 0;
+            } 
+            else {
+                state = 3;
+            }
+        }
     }
     if ( state == 3 ) {
-	if ( Serial.available() >= message_size ) {
-	    for ( int i = 0; i < message_size; i++ ) {
-		buf[i] = Serial.read();
-		// Serial.println(buf[i], DEC);
-	    }
-	    state = 4;
-	}
+        if ( Serial.available() >= message_size ) {
+            for ( int i = 0; i < message_size; i++ ) {
+                buf[i] = Serial.read();
+                // Serial.println(buf[i], DEC);
+            }
+            state = 4;
+        }
     }
     if ( state == 4 ) {
-	if ( Serial.available() >= 2 ) {
-	    cksum0 = Serial.read();
-	    cksum1 = Serial.read();
-	    byte new_cksum0, new_cksum1;
-	    ugear_cksum( message_id, message_size, buf, message_size, &new_cksum0, &new_cksum1 );
-	    if ( cksum0 == new_cksum0 && cksum1 == new_cksum1 ) {
-		//Serial.println("passed check sum!");
-		parse_message_bin( message_id, buf, message_size );
-		new_data = true;
-		// fixme: binary_output = true;
-		state = 0;
-	    } else {
-		// Serial.println("failed check sum");
-		// check sum failure
-		state = 0;
-	    }
-	}
+        if ( Serial.available() >= 2 ) {
+            cksum0 = Serial.read();
+            cksum1 = Serial.read();
+            byte new_cksum0, new_cksum1;
+            ugear_cksum( message_id, message_size, buf, message_size, &new_cksum0, &new_cksum1 );
+            if ( cksum0 == new_cksum0 && cksum1 == new_cksum1 ) {
+                //Serial.println("passed check sum!");
+                parse_message_bin( message_id, buf, message_size );
+                new_data = true;
+                // fixme: binary_output = true;
+                state = 0;
+            } else {
+                // Serial.println("failed check sum");
+                // check sum failure
+                state = 0;
+            }
+        }
     }
 
     return new_data;
@@ -331,8 +331,8 @@ uint8_t write_pilot_in_bin()
 
     // receiver data
     for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
-	// fixme: int16_t val = receiver_norm[i] * 16384.0;
-	// fixme:	*(int16_t *)packet = val; packet += 2;
+        // fixme: int16_t val = receiver_norm[i] * 16384.0;
+        // fixme:       *(int16_t *)packet = val; packet += 2;
     }
     
     // write packet
@@ -409,13 +409,13 @@ uint8_t write_imu_bin()
   
     // gyro data
     for ( int i = 0; i < 3; i++ ) {
-	// fixme: val = imu_calib[i] / MPU6000_gyro_scale;
+        // fixme: val = imu_calib[i] / MPU6000_gyro_scale;
         *(int16_t *)packet = val; packet += 2;
     }
 
     // accel data
     for ( int i = 3; i < 6; i++ ) {
-	// fixme: val = imu_calib[i] / MPU6000_accel_scale;
+        // fixme: val = imu_calib[i] / MPU6000_accel_scale;
         *(int16_t *)packet = val; packet += 2;
     }
   
@@ -462,7 +462,7 @@ uint8_t write_gps_bin()
 
 #if 0 // fixme
     if ( !new_gps_data ) {
-	return 0;
+        return 0;
     }
     
     // start of message sync bytes
@@ -561,7 +561,7 @@ uint8_t write_baro_bin()
     byte *packet = packet_buf;
 #if 0 // fixme
     if ( !baro.healthy ) {
-	return 0;
+        return 0;
     }
     
     // start of message sync bytes
@@ -604,7 +604,7 @@ void write_baro_ascii()
 {
 #if 0 // fixme
     if ( !baro.healthy ) {
-	return;
+        return;
     }
     // output barometer data
     Serial.print("Pressure:");
@@ -616,7 +616,7 @@ void write_baro_ascii()
     Serial.print(" climb=");
     Serial.print(baro.get_climb_rate());
     Serial.print(" samples="),
-	Serial.println(baro.get_pressure_samples());
+        Serial.println(baro.get_pressure_samples());
 #endif // fixme
 }
 
@@ -646,11 +646,11 @@ uint8_t write_analog_bin()
 #if 0 // fixme
     // channel data
     for ( int i = 0; i < MAX_ANALOG_INPUTS; i++ ) {
-	uint16_t val = analog[i];
-	int hi = val / 256;
-	int lo = val - (hi * 256);
-	packet[size++] = byte(lo);
-	packet[size++] = byte(hi);
+        uint16_t val = analog[i];
+        int hi = val / 256;
+        int lo = val - (hi * 256);
+        packet[size++] = byte(lo);
+        packet[size++] = byte(hi);
     }
 #endif // fixme
     
