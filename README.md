@@ -17,13 +17,13 @@ meager soldering skills (i.e. you can solder 0.1" headers onto a board.)
 * SBUS input (direct) with support for 16 channels.
 * UBLOX8 support
 * Eeprom support for saving/loading config as well as assigning a serial #.
+* PWM output support
+* Onboard 3-axis stability (simple dampening) system
+* "Smart reciever" capability.  Handles major mixing and modes on the
+  airplane side allowing flight with a 'dumb' radio.
 
 # Pending
 
-* PWM output support
-* Onboard roll, pitch, yaw damening direct with gyros. (Simple stabilization.)
-* "Smart reciever" features which can move all the mixing and modes to the
-  airplane side allowing flight with a 'dumb' radio.
 * Full 2-way serial communication with any host computer enabling a 
   "big processor/little processor" architecture.  Hard real time tasks run on
   the "little" processor.  High level functions run on the big processor (like
