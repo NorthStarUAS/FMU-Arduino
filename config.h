@@ -10,14 +10,9 @@
 // uart link to the host.
 #define MASTER_HZ 100
 
-// This comment relates to the APM2 (atmega256) and not necessarily
-// (?!?) the Teensy: Starting communication baud (16000000/16)/x where
-// x is an integer produces the possible baud rates.  Note this is not
-// the standard 300, 1200, 4800, 9600, 115,200, etc. series.  We can
-// get close enough at the lower baud rates so both ends tolerate any
-// slight discrepancy, but above 115,200 we diverge enough that it may
-// not always work well end to end.  500,000 baud is a 1-to-1 match.
-#define DEFAULT_BAUD 115200
+// Please read the important notes in the source tree about Teensy
+// baud rates vs. host baud rates.
+#define DEFAULT_BAUD 500000
 
 
 //////////////////////////////////////////////////////////////////////////

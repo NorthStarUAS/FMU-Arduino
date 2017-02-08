@@ -30,6 +30,7 @@
 #define STATUS_INFO_PACKET_ID 55
 
 
+
 void ugear_cksum( byte hdr1, byte hdr2, byte *buf, byte size,
                   byte *cksum0, byte *cksum1 )
 {
@@ -250,7 +251,7 @@ bool read_commands()
                 //Serial.println("passed check sum!");
                 parse_message_bin( message_id, buf, message_size );
                 new_data = true;
-                // fixme: binary_output = true;
+                binary_output = true;
                 state = 0;
             } else {
                 // Serial.println("failed check sum");
@@ -401,30 +402,12 @@ uint8_t write_imu_bin()
     buf[0] = size;
     Serial.write( buf, 1 );
 
-    // fixme: *(uint32_t *)packet = imu_micros; packet += 4;
+    *(uint32_t *)packet = imu_micros; packet += 4;
 
-    int16_t val = 0;
-  
-    // gyro data
-    for ( int i = 0; i < 3; i++ ) {
-        // fixme: val = imu_calib[i] / MPU6000_gyro_scale;
-        *(int16_t *)packet = val; packet += 2;
+    for ( int i = 0; i < 10; i++ ) {
+        *(int16_t *)packet = imu_packed[i]; packet += 2;
     }
-
-    // accel data
-    for ( int i = 3; i < 6; i++ ) {
-        // fixme: val = imu_calib[i] / MPU6000_accel_scale;
-        *(int16_t *)packet = val; packet += 2;
-    }
-  
-    // mag is a signed int16_t but transport it as unsigned
-    // fixme: *(int16_t *)packet = compass.mag_x; packet += 2;
-    // fixme: *(int16_t *)packet = compass.mag_y; packet += 2;
-    // fixme: *(int16_t *)packet = compass.mag_z; packet += 2;
-
-    // fixme: val = imu_calib[9] / MPU6000_temp_scale;
-    // fixme: *(int16_t *)packet = val; packet += 2;
-
+    
     // write packet
     Serial.write( packet_buf, size );
 
