@@ -20,7 +20,7 @@ uint16_t actuator_pwm[PWM_CHANNELS];
 // GPS
 bool new_gps_data = false;
 UBLOX gps(3); // ublox m8n
-gdata uBloxData;
+nav_pvt gps_data;
 
 // COMS
 bool binary_output = false; // start with ascii output (then switch to binary if we get binary commands in
@@ -95,21 +95,22 @@ void loop() {
                 myTimer = 0;
                 // write_pilot_in_ascii();
                 // write_actuator_out_ascii();
-                // write_gps_ascii();
+                write_gps_ascii();
                 // write_baro_ascii();
                 // write_analog_ascii();
                 // write_status_info_ascii();
-                write_imu_ascii();
+                // write_imu_ascii();
             }
         }
     }
 
     while ( sbus_process() ); // keep processing while there is data in the uart buffer
 
-    /* look for a good GPS data packet */
-    while ( gps.read(&uBloxData) ) {
+    if ( gps.read_ublox8() ) {
         new_gps_data = true;
+        gps_data = gps.get_data();
     }
+
     
     // suck in any host commmands (would I want to check for host commands
     // at a higher rate? imu rate?)

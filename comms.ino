@@ -206,8 +206,7 @@ bool read_commands()
             } 
             else if ( input == START_OF_MSG0 ) {
                 // no change
-            }
-            else {
+            } else {
                 // oops
                 state = 0;
             }
@@ -498,35 +497,35 @@ void write_gps_ascii() {
     if ( new_gps_data ) {
         Serial.print("GPS:");
         Serial.print(" Lat:");
-        //Serial.print((double)uBloxData.lat / T7, DEC);
-        Serial.print(uBloxData.lat);
+        Serial.print((double)gps_data.lat / T7, DEC);
+        //Serial.print(gps_data.lat);
         Serial.print(" Lon:");
-        //Serial.print((double)uBloxData.lon / T7, DEC);
-        Serial.print(uBloxData.lon);
+        Serial.print((double)gps_data.lon / T7, DEC);
+        //Serial.print(gps_data.lon);
         Serial.print(" Alt:");
-        Serial.print((float)uBloxData.hMSL, DEC);
+        Serial.print((float)gps_data.hMSL, DEC);
         Serial.print(" Vel:");
-        Serial.print(uBloxData.velN);
+        Serial.print(gps_data.velN);
         Serial.print(", ");
-        Serial.print(uBloxData.velE);
+        Serial.print(gps_data.velE);
         Serial.print(", ");
-        Serial.print(uBloxData.velD);
+        Serial.print(gps_data.velD);
         Serial.print(" GSP:");
-        Serial.print(uBloxData.gSpeed, DEC);
+        Serial.print(gps_data.gSpeed, DEC);
         Serial.print(" COG:");
-        Serial.print(uBloxData.heading, DEC);
+        Serial.print(gps_data.heading, DEC);
         Serial.print(" SAT:");
-        Serial.print(uBloxData.numSV, DEC);
+        Serial.print(gps_data.numSV, DEC);
         Serial.print(" FIX:");
-        Serial.print(uBloxData.fixType, DEC);
+        Serial.print(gps_data.fixType, DEC);
         Serial.print(" TIM:");
-        Serial.print(uBloxData.utcHour); Serial.print(':');
-        Serial.print(uBloxData.utcMin); Serial.print(':');
-        Serial.print(uBloxData.utcSec);
+        Serial.print(gps_data.hour); Serial.print(':');
+        Serial.print(gps_data.min); Serial.print(':');
+        Serial.print(gps_data.sec);
         Serial.print(" DATE:");
-        Serial.print(uBloxData.utcMonth); Serial.print('/');
-        Serial.print(uBloxData.utcDay); Serial.print('/');
-        Serial.print(uBloxData.utcYear);
+        Serial.print(gps_data.month); Serial.print('/');
+        Serial.print(gps_data.day); Serial.print('/');
+        Serial.print(gps_data.year);
         Serial.println();
         new_gps_data = false; // mark the data as read
     }
