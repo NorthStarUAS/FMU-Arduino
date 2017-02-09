@@ -26,11 +26,15 @@ nav_pvt gps_data;
 bool binary_output = false; // start with ascii output (then switch to binary if we get binary commands in
 unsigned long output_counter = 0;
 unsigned long write_millis = 0;
+int LED = 13;
 
 
 void setup() {
     // put your setup code here, to run once:
-
+    
+    pinMode(LED, OUTPUT);
+    digitalWrite(LED, HIGH);
+  
     Serial.begin(DEFAULT_BAUD);
     delay(600); // needed delay before attempting to print anything
     
@@ -65,7 +69,7 @@ void setup() {
 
     // initialize the gps receiver
     gps.begin(115200);
-
+  
     // initialize comms channel write stats timer
     write_millis = millis();
 }
@@ -73,7 +77,11 @@ void setup() {
 void loop() {
     // put your main code here, to run repeatedly:
     static elapsedMillis myTimer = 0;
-
+    static elapsedMillis airdataTimer = 0;
+    static elapsedMillis blinkTimer = 0;
+    static int blink_rate = 100;
+    static bool blink_state = true;
+    
     // When new IMU data is ready (new pulse from IMU), go out and grab the IMU data
     // and output fresh IMU message plus the most recent data from everything else.
     if ( new_imu_data ) {
@@ -115,8 +123,31 @@ void loop() {
         gps_data = gps.get_data();
     }
 
+    if ( airdataTimer > 100 ) {
+        airdataTimer = 0;
+        // roughly 100hz airdata polling
+        // airdata_update();
+    }
     
     // suck in any host commmands (would I want to check for host commands
     // at a higher rate? imu rate?)
     while ( read_commands() );
+
+    // blinking
+    if ( gyros_calibrated < 2 ) {
+        blink_rate = 100;
+    } else if ( gps_data.fixType < 3 ) {
+        blink_rate = 400;
+    } else {
+        blink_rate = 1000;
+    }
+    if ( blink_state && blinkTimer >= blink_rate*0.7 ) {
+        blinkTimer = 0;
+        blink_state = false;
+        digitalWrite(LED, LOW);
+    } else if ( !blink_state && blinkTimer >= blink_rate*0.3 ) {
+        blinkTimer = 0;
+        blink_state = true;
+        digitalWrite(LED, HIGH);
+    }
 }

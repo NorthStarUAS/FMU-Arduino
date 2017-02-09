@@ -443,13 +443,13 @@ void write_gps_ascii() {
         Serial.print((double)gps_data.lon / T7, DEC);
         //Serial.print(gps_data.lon);
         Serial.print(" Alt:");
-        Serial.print((float)gps_data.hMSL, DEC);
+        Serial.print((float)gps_data.hMSL / 1000.0);
         Serial.print(" Vel:");
-        Serial.print(gps_data.velN);
+        Serial.print(gps_data.velN / 1000.0);
         Serial.print(", ");
-        Serial.print(gps_data.velE);
+        Serial.print(gps_data.velE / 1000.0);
         Serial.print(", ");
-        Serial.print(gps_data.velD);
+        Serial.print(gps_data.velD / 1000.0);
         Serial.print(" GSP:");
         Serial.print(gps_data.gSpeed, DEC);
         Serial.print(" COG:");

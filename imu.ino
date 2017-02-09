@@ -69,6 +69,9 @@ void dataAcquisition() {
     imu_sensors_shared[9] = t;
     
     new_imu_data = true;
+
+    // test
+    airdata_update();
 }
 
 
