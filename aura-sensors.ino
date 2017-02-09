@@ -19,7 +19,7 @@ uint16_t actuator_pwm[PWM_CHANNELS];
 
 // GPS
 bool new_gps_data = false;
-UBLOX gps(3); // ublox m8n
+UBLOX gps(&Serial3); // ublox m8n
 nav_pvt gps_data;
 
 // COMS
