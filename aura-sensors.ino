@@ -81,7 +81,7 @@ void loop() {
         // output keyed off new IMU data
         if ( binary_output ) {
             //output_counter += write_pilot_in_bin();
-            //output_counter += write_gps_bin();
+            output_counter += write_gps_bin();
             //output_counter += write_baro_bin();
             //output_counter += write_analog_bin();
             // do a little extra dance with the return value because write_status_info_bin()

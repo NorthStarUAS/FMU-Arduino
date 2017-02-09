@@ -436,11 +436,8 @@ uint8_t write_gps_bin()
 {
     byte buf[3];
     byte cksum0, cksum1;
-    byte size = 30;
-    byte packet_buf[256]; // hopefully never larger than this!
-    byte *packet = packet_buf;
+    byte size = sizeof(gps_data);
 
-#if 0 // fixme
     if ( !new_gps_data ) {
         return 0;
     }
@@ -460,26 +457,11 @@ uint8_t write_gps_bin()
     buf[0] = size;
     Serial.write( buf, 1 );
 
-    *(uint32_t *)packet = g_gps->time; packet += 4;
-    *(uint32_t *)packet = g_gps->date; packet += 4;
-    *(int32_t *)packet = g_gps->latitude; packet += 4;
-    *(int32_t *)packet = g_gps->longitude; packet += 4;
-    *(int32_t *)packet = g_gps->altitude; packet += 4;
-    //*(uint16_t *)packet = (uint16_t)g_gps->ground_speed; packet += 2;
-    //if ( g_gps->ground_course < 0 ) { g_gps->ground_course += 36000; }
-    //*(uint16_t *)packet = (uint16_t)g_gps->ground_course; packet += 2;
-    *(int16_t *)packet = (int16_t)g_gps->vn_cms; packet += 2;
-    *(int16_t *)packet = (int16_t)g_gps->ve_cms; packet += 2;
-    *(int16_t *)packet = (int16_t)g_gps->vd_cms; packet += 2;
-    *(int16_t *)packet = g_gps->pdop; packet += 2;
-    *(uint8_t *)packet = g_gps->num_sats; packet += 1;
-    *(uint8_t *)packet = g_gps->status(); packet += 1;
-  
     // write packet
-    Serial.write( packet_buf, size );
+    Serial.write( (byte *)&gps_data, size );
 
     // check sum (2 bytes)
-    ugear_cksum( GPS_PACKET_ID, size, packet_buf, size, &cksum0, &cksum1 );
+    ugear_cksum( GPS_PACKET_ID, size, (byte *)(&gps_data), size, &cksum0, &cksum1 );
     buf[0] = cksum0; 
     buf[1] = cksum1; 
     buf[2] = 0;
@@ -488,7 +470,6 @@ uint8_t write_gps_bin()
     new_gps_data = false;
     
     return size + 6;
-#endif // fixme
 }
 
 #define T6 1000000
