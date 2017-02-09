@@ -50,6 +50,7 @@
 // config structure saved to eeprom
 //////////////////////////////////////////////////////////////////////////
 
+#pragma pack(push, 1)           // set alignment to 1 byte boundary
 typedef struct {
     int version;
     
@@ -95,6 +96,7 @@ typedef struct {
     float sas_yawgain;
     float sas_ch7gain;
 } config_t;
+#pragma pack(pop)
 
 extern config_t config;
 

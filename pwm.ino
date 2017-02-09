@@ -7,6 +7,7 @@ const int servoPins[5] = {3,4,5,6,23};
 bool pwm_symmetrical[PWM_CHANNELS] = {0, 1, 1, 1, 0};
 
 void pwm_setup() {
+    // fixme: honor config rates
     // setting up pwm outputs and rates
     analogWriteResolution(16);
     for ( uint8_t i = 0; i < sizeof(servoPins)/sizeof(int); i++ ) {

@@ -13,13 +13,13 @@
 
 #define ACK_PACKET_ID 20
 
-#define PWM_RATE_PACKET_ID 21
+#define CONFIG_PACKET_ID 21
 //#define BAUD_PACKET_ID 22
 #define FLIGHT_COMMAND_PACKET_ID 23
-#define ACT_GAIN_PACKET_ID 24
-#define MIX_MODE_PACKET_ID 25
-#define SAS_MODE_PACKET_ID 26
-#define SERIAL_NUMBER_PACKET_ID 27
+//#define ACT_GAIN_PACKET_ID 24
+//#define MIX_MODE_PACKET_ID 25
+//#define SAS_MODE_PACKET_ID 26
+//#define SERIAL_NUMBER_PACKET_ID 27
 #define WRITE_EEPROM_PACKET_ID 28
 
 #define PILOT_PACKET_ID 50
@@ -122,48 +122,10 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         result = true;
 #endif
 
-    } else if ( id == PWM_RATE_PACKET_ID && message_size == PWM_CHANNELS * 2 ) {
-        //Serial.println("read PWM command");
-        /* note that CH1/CH2, CH3/CH4/CH5, and CH6/CH7/CH8 run off
-         * grouped timers so setting any of the group will also force
-         * the same rate for the other channels in the group, channels
-         * with rate of 0 are left untouched (but will be affected if
-         * another group member rate is set.) */
-        for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-            uint8_t lo = buf[counter++];
-            uint8_t hi = buf[counter++];
-            uint16_t rate = hi*256 + lo;
-            //Serial.printf("ch %d rate %d\n", i, rate);
-            if ( rate > 0 ) {
-                config.pwm_hz[i] = rate;
-                // sanity checks
-                if ( rate < 50 ) { rate = 50; }
-                if ( rate > 250 ) { rate = 250; }
-                uint32_t ch_mask = _BV(i);
-                // fixme: APM_RC.SetFastOutputChannels( ch_mask, rate );
-            }
-        }
-        write_ack_bin( id, 0 );
-        result = true;
-    } else if ( id == ACT_GAIN_PACKET_ID && message_size == 3 ) {
-        if ( act_gain_command_parse( buf ) ) {
-            write_ack_bin( id, buf[0] /* sub command */ );
-            result = true;
-        }
-    } else if ( id == SAS_MODE_PACKET_ID && message_size == 4 ) {
-        if ( sas_command_parse( buf ) ) {
-            write_ack_bin( id, buf[0] /* sub command */ );
-            result = true;
-        }
-    } else if ( id == MIX_MODE_PACKET_ID && message_size == 6 ) {
-        if ( mixing_command_parse( buf ) ) {
-            write_ack_bin( id, buf[0] /* sub command */ );
-            result = true;
-        }
-    } else if ( id == SERIAL_NUMBER_PACKET_ID && message_size == 2 ) {
-        uint8_t lo = buf[0];
-        uint8_t hi = buf[1];
-        set_serial_number(hi*256 + lo);
+    } else if ( id == CONFIG_PACKET_ID && message_size == sizeof(config) ) {
+        // Serial.println("read configuration");
+        config = *(config_t *)buf;
+        pwm_setup();  // reset pwm rates in case they've been changed
         write_ack_bin( id, 0 );
         result = true;
     } else if ( id == WRITE_EEPROM_PACKET_ID && message_size == 0 ) {
@@ -215,14 +177,10 @@ bool read_commands()
     if ( state == 2 ) {
         if ( Serial.available() >= 2 ) {
             message_id = Serial.read();
-            //Serial.print("id="); Serial.println(message_id);
+            // Serial.print("id="); Serial.println(message_id);
             message_size = Serial.read();
-            //Serial.print("size="); Serial.println(message_size);
-            //if ( message_id != COMMAND_PACKET_ID ) {
-            // ignore bogus message id's
-            //  state = 0;
-            //} else
-            if ( message_size > 20 ) {
+            // Serial.print("size="); Serial.println(message_size);
+            if ( message_size > 200 ) {
                 // ignore nonsensical sizes
                 state = 0;
             } 
@@ -247,7 +205,8 @@ bool read_commands()
             byte new_cksum0, new_cksum1;
             ugear_cksum( message_id, message_size, buf, message_size, &new_cksum0, &new_cksum1 );
             if ( cksum0 == new_cksum0 && cksum1 == new_cksum1 ) {
-                //Serial.println("passed check sum!");
+                // Serial.println("passed check sum!");
+                // Serial.print("size="); Serial.println(message_size);
                 parse_message_bin( message_id, buf, message_size );
                 new_data = true;
                 binary_output = true;
@@ -350,14 +309,14 @@ void write_pilot_in_ascii()
 {
     // pilot (receiver) input data
     if ( receiver_norm[0] < 0 ) {
-        Serial.print("Man ");
+        Serial.print("(Manual) ");
     } else {
-        Serial.print("Auto ");
+        Serial.print("(Auto) ");
     }
     if ( receiver_norm[1] < 0 ) {
-        Serial.print("Thr dis ");
+        Serial.print("(Throttle safety) ");
     } else {
-        Serial.print("Thr en ");
+        Serial.print("(Throttle enable) ");
     }
     for ( int i = 0; i < 7; i++ ) {
         Serial.print(receiver_norm[i], 3);
@@ -515,12 +474,13 @@ void write_gps_ascii() {
 /* output a binary representation of the barometer data */
 uint8_t write_baro_bin()
 {
+#if 0 // fixme
     byte buf[3];
     byte cksum0, cksum1;
     byte size = 12;
     byte packet_buf[256]; // hopefully never larger than this!
     byte *packet = packet_buf;
-#if 0 // fixme
+
     if ( !baro.healthy ) {
         return 0;
     }
@@ -584,6 +544,7 @@ void write_baro_ascii()
 /* output a binary representation of the analog input data */
 uint8_t write_analog_bin()
 {
+#if 0 // fixme
     byte buf[3];
     byte cksum0, cksum1;
     byte size = 0;
@@ -604,7 +565,6 @@ uint8_t write_analog_bin()
     // fixme: buf[0] = 2 * MAX_ANALOG_INPUTS;
     Serial.write( buf, 1 );
 
-#if 0 // fixme
     // channel data
     for ( int i = 0; i < MAX_ANALOG_INPUTS; i++ ) {
         uint16_t val = analog[i];
@@ -613,7 +573,6 @@ uint8_t write_analog_bin()
         packet[size++] = byte(lo);
         packet[size++] = byte(hi);
     }
-#endif // fixme
     
     // write packet
     Serial.write( packet, size );
@@ -626,15 +585,17 @@ uint8_t write_analog_bin()
     Serial.write( buf, 2 );
     
     return size + 6;
+#endif // fixme
 }
 
 void write_analog_ascii()
 {
+#if 0 // fixme
     /*
       static float amp_filt = 0.0;
       amp_filt = 0.999 * amp_filt + 0.001 * battery_amps;
     */
-#if 0 // fixme
+
     // output servo data
     Serial.print("Analog:");
     for ( int i = 0; i < MAX_ANALOG_INPUTS - 1; i++ ) {
@@ -642,13 +603,14 @@ void write_analog_ascii()
         Serial.print(" ");
     }
     Serial.println((float)analog[MAX_ANALOG_INPUTS-1] / 1000.0, 2);
-#endif // fixme
+
     /*
       Serial.printf("%.2f ", vcc_average);
       Serial.printf("%.2f ", (float)battery_voltage);
       Serial.printf("%.4f ", (float)amp_filt);
       Serial.printf("%.4f\n", (float)amps_sum);
     */
+#endif // fixme
 }
 
 /* output a binary representation of various status and config information */
@@ -692,11 +654,11 @@ uint8_t write_status_info_bin()
 
     // estimate sensor output byte rate
     unsigned long current_time = millis();
-    // fixme: unsigned long elapsed_millis = current_time - write_millis;
-    // fixme: unsigned long byte_rate = output_counter * 1000 / elapsed_millis;
-    // fixme: write_millis = current_time;
-    // fixme: output_counter = 0;
-    // fixme: *(uint16_t *)packet = (uint16_t)byte_rate; packet += 2;
+    unsigned long elapsed_millis = current_time - write_millis;
+    unsigned long byte_rate = output_counter * 1000 / elapsed_millis;
+    write_millis = current_time;
+    output_counter = 0;
+    *(uint16_t *)packet = (uint16_t)byte_rate; packet += 2;
     
     // write packet
     Serial.write( packet_buf, size );
