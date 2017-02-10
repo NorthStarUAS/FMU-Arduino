@@ -14,14 +14,13 @@
 #define ACK_PACKET_ID 20
 
 #define CONFIG_PACKET_ID 21
-//#define BAUD_PACKET_ID 22
-#define FLIGHT_COMMAND_PACKET_ID 23
-#define WRITE_EEPROM_PACKET_ID 28
+#define FLIGHT_COMMAND_PACKET_ID 22
+#define WRITE_EEPROM_PACKET_ID 23
 
 #define PILOT_PACKET_ID 50
 #define IMU_PACKET_ID 51
 #define GPS_PACKET_ID 52
-#define BARO_PACKET_ID 53
+#define AIRDATA_PACKET_ID 53
 #define ANALOG_PACKET_ID 54
 #define STATUS_INFO_PACKET_ID 55
 
@@ -52,18 +51,22 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
     int counter = 0;
     bool result = false;
 
-    if ( id == FLIGHT_COMMAND_PACKET_ID && message_size == SBUS_CHANNELS * 2 ) {
-        /* flight commands are 2 bytes, lo byte first, then hi byte.
-         * Integer values correspond to servo pulse lenght in us 1100
-         * is a normal minimum value, 1500 is center, 1900 is a normal
-         * maximum value although the min and max can be extended a
-         * bit. */
-        for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
-            byte lo = buf[counter++];
-            byte hi = buf[counter++];
-            // fixme: autopilot_pwm[i] = hi*256 + lo;
+    if ( id == FLIGHT_COMMAND_PACKET_ID && message_size == AP_CHANNELS * 2 ) {
+        /* flight commands are 2 byte ints, normalized, then scaled to +/- 16384 */
+        float ap_tmp[AP_CHANNELS];
+        for ( int i = 0; i < AP_CHANNELS; i++ ) {
+            int16_t val = *(int16_t *)buf; buf += 2;
+            ap_tmp[i] = (float)val / 16384.0;
+            //Serial.println(ap_tmp[i]);
         }
-        // fixme: pwm_pwm2norm( autopilot_pwm, autopilot_norm );
+        // autopilot_norm uses the same channel mapping as sbus_norm, so map ap_tmp values to their
+        // correct places in autopilot_norm
+        autopilot_norm[2] = ap_tmp[0];
+        autopilot_norm[3] = ap_tmp[1];
+        autopilot_norm[4] = ap_tmp[2];
+        autopilot_norm[5] = ap_tmp[3];
+        autopilot_norm[6] = ap_tmp[4];
+        autopilot_norm[7] = ap_tmp[5];
 
         if ( receiver_norm[0] > 0.0 ) {
             // autopilot mode active (determined elsewhere when each
@@ -73,18 +76,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             mixing_update( autopilot_norm );
             pwm_update();
         } else {
-            // fixme
-            // we are in manual mode
-            // update ch8 only from the autopilot.  We don't pass the
-            // auto/manual switch state through to a servo.  Instead
-            // we simply relay ch8 from the autopilot to the actuator
-            // which gives the autopilot an extra useful output
-            // channel.  This channel is always driven by the
-            // autopilot, no matter what the state, but we'll let the
-            // output to the APM_RC wait until it happens
-            // automatically with the next receiver frame.
-            // don't overwrite manual ch7 value if sas_ch7tune enabled
-            // fixme? mixing_update( autopilot_norm, false /* ch1-6 */, !config.sas_ch7tune /* ch7 */, true /* no ch8 */ );
+            // manual mode, do nothing with actuator commands from the autopilot
         }
         result = true;
     } else if ( id == CONFIG_PACKET_ID && message_size == sizeof(config) ) {
@@ -436,19 +428,14 @@ void write_gps_ascii() {
 }
 
 /* output a binary representation of the barometer data */
-uint8_t write_baro_bin()
+uint8_t write_airdata_bin()
 {
-#if 0 // fixme
     byte buf[3];
     byte cksum0, cksum1;
-    byte size = 12;
+    byte size = 8;
     byte packet_buf[256]; // hopefully never larger than this!
     byte *packet = packet_buf;
 
-    if ( !baro.healthy ) {
-        return 0;
-    }
-    
     // start of message sync bytes
     buf[0] = START_OF_MSG0; 
     buf[1] = START_OF_MSG1; 
@@ -456,53 +443,34 @@ uint8_t write_baro_bin()
     Serial.write( buf, 2 );
 
     // packet id (1 byte)
-    buf[0] = BARO_PACKET_ID; 
+    buf[0] = AIRDATA_PACKET_ID; 
     buf[1] = 0;
     Serial.write( buf, 1 );
 
     // packet length (1 byte)
     buf[0] = size;
     Serial.write( buf, 1 );
-    
-    // update the filters so climb rate works
-    baro.get_altitude();
-    
-    *(float *)packet = baro.get_pressure(); packet += 4;
-    *(float *)packet = baro.get_temperature(); packet += 4;
-    *(float *)packet = baro.get_climb_rate(); packet += 4;
+       
+    *(float *)packet = airdata_staticPress_pa; packet += 4;
+    *(float *)packet = airdata_diffPress_pa; packet += 4;
   
     // write packet
     Serial.write( packet_buf, size );
 
     // check sum (2 bytes)
-    ugear_cksum( BARO_PACKET_ID, size, packet_buf, size, &cksum0, &cksum1 );
+    ugear_cksum( AIRDATA_PACKET_ID, size, packet_buf, size, &cksum0, &cksum1 );
     buf[0] = cksum0; 
     buf[1] = cksum1; 
     buf[2] = 0;
     Serial.write( buf, 2 );
     
     return size + 6;
-#endif // fixme
 }
 
-void write_baro_ascii()
+void write_airdata_ascii()
 {
-#if 0 // fixme
-    if ( !baro.healthy ) {
-        return;
-    }
-    // output barometer data
-    Serial.print("Pressure:");
-    Serial.print(baro.get_pressure());
-    Serial.print(" Temperature:");
-    Serial.print(baro.get_temperature());
-    Serial.print(" Altitude:");
-    Serial.print(baro.get_altitude());
-    Serial.print(" climb=");
-    Serial.print(baro.get_climb_rate());
-    Serial.print(" samples="),
-        Serial.println(baro.get_pressure_samples());
-#endif // fixme
+    Serial.print("Static pres (pa): "); Serial.print(airdata_staticPress_pa);
+    Serial.print(" Diff press (pa): "); Serial.println(airdata_diffPress_pa);
 }
 
 /* output a binary representation of the analog input data */
@@ -582,7 +550,7 @@ uint8_t write_status_info_bin()
 {
     byte buf[3];
     byte cksum0, cksum1;
-    byte size = 12;
+    byte size = 14;
     byte packet_buf[256]; // hopefully never larger than this!
     byte *packet = packet_buf;
 
@@ -593,7 +561,7 @@ uint8_t write_status_info_bin()
         counter--;
         return 0;
     } else {
-        counter = MASTER_HZ * 5 - 1; // a message every 10 seconds (-1 so we aren't off by one frame) 
+        counter = MASTER_HZ * 1 - 1; // a message every 1 seconds (-1 so we aren't off by one frame) 
     }
 
     // start of message sync bytes
@@ -623,7 +591,8 @@ uint8_t write_status_info_bin()
     write_millis = current_time;
     output_counter = 0;
     *(uint16_t *)packet = (uint16_t)byte_rate; packet += 2;
-    
+    *(uint16_t *)packet = (uint16_t)(pwr_v*100); packet += 2;
+        
     // write packet
     Serial.write( packet_buf, size );
 
@@ -641,19 +610,13 @@ void write_status_info_ascii()
 {
     // This info is static so we don't need to send it at a high rate ... once every 10 seconds (?)
     // with an immediate message at the start.
-    static int counter = 0;
-    if ( counter > 0 ) {
-        counter--;
-        return;
-    } else {
-        counter = MASTER_HZ * 10 - 1; // a message every 10 seconds (-1 so we aren't off by one frame) 
-    }
     Serial.print("SN: ");
     Serial.println(read_serial_number());
     Serial.print("Firmware: ");
     Serial.println(FIRMWARE_REV);
     Serial.print("Main loop: ");
     Serial.println( MASTER_HZ);
-    Serial.print("Baud: ");
+    Serial.print("Baud: ");Serial.println(DEFAULT_BAUD);
+    Serial.print("Volt: "); Serial.println(pwr_v, 4);
 }
 

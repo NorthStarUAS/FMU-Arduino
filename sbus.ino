@@ -132,7 +132,7 @@ void sbus_parse() {
 }
 
 // setup the sbus (currently hard coded on Serial2)
-bool sbus_setup() {
+void sbus_setup() {
     Serial2.begin(100000,SERIAL_8E1_RXINV_TXINV); // newer teensies should use SERIAL_8E2_RXINV_TXINV
     Serial.println("SBUS on Serial2 (SERIAL_8E2)");
 }

@@ -19,20 +19,6 @@ void pwm_setup() {
     pwm_update();
 }
 
-// compute normalized command values from the raw pwm values
-void pwm_pwm2norm( uint16_t *pwm, float *norm ) {
-    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-        // convert to normalized form
-        if ( pwm_symmetrical[i] ) {
-            // i.e. aileron, rudder, elevator
-            norm[i] = (float)((int)pwm[i] - PWM_CENTER) / PWM_HALF_RANGE;
-        } else {
-            // i.e. throttle, flaps
-            norm[i] = (float)((int)pwm[i] - PWM_MIN) / PWM_RANGE;
-        }
-    }
-}
-
 // compute raw pwm values from normalized command values.  (handle
 // actuator reversing here.)
 void pwm_norm2pwm( float *norm, uint16_t *pwm ) {

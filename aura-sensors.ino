@@ -1,4 +1,5 @@
 #include <HardwareSerial.h>
+#include <ADC.h> 
 
 #include "UBLOX.h"
 #include "config.h"
@@ -21,6 +22,17 @@ UBLOX gps(&Serial3); // ublox m8n
 bool new_gps_data = false;
 nav_pvt gps_data;
 
+// Air data
+float airdata_staticPress_pa = 0.0;
+float airdata_diffPress_pa = 0.0;
+
+// analog ins and battery voltage
+ADC *adc = new ADC;
+const uint8_t voltPIN = A0;
+const float analogResolution = 65535.0f;
+const float voltScale = 11.0f/3.3f;
+float pwr_v = 0.0;
+    
 // COMS
 bool binary_output = false; // start with ascii output (then switch to binary if we get binary commands in
 unsigned long output_counter = 0;
@@ -67,7 +79,13 @@ void setup() {
 
     // initialize the gps receiver
     gps.begin(115200);
-  
+
+    // set up ADC0
+    adc->setAveraging(1);
+    adc->setResolution(16);
+    adc->setConversionSpeed(ADC_HIGH_SPEED_16BITS);
+    adc->setSamplingSpeed(ADC_HIGH_SPEED_16BITS);
+
     // initialize comms channel write stats timer
     write_millis = millis();
 }
@@ -77,7 +95,7 @@ void loop() {
     static elapsedMillis myTimer = 0;
     static elapsedMillis airdataTimer = 0;
     static elapsedMillis blinkTimer = 0;
-    static int blink_rate = 100;
+    static unsigned int blink_rate = 100;
     static bool blink_state = true;
     
     // When new IMU data is ready (new pulse from IMU), go out and grab the IMU data
@@ -87,12 +105,13 @@ void loop() {
         new_imu_data = false;
         sei();
         update_imu();
+        airdata_update();
 
         // output keyed off new IMU data
         if ( binary_output ) {
             output_counter += write_pilot_in_bin();
             output_counter += write_gps_bin();
-            //output_counter += write_baro_bin();
+            output_counter += write_airdata_bin();
             //output_counter += write_analog_bin();
             // do a little extra dance with the return value because write_status_info_bin()
             // can reset output_counter (but that gets ignored if we do the math in one step)
@@ -105,10 +124,10 @@ void loop() {
                 myTimer = 0;
                 // write_pilot_in_ascii();
                 // write_actuator_out_ascii();
-                write_gps_ascii();
-                // write_baro_ascii();
+                // write_gps_ascii();
+                // write_airdata_ascii();
                 // write_analog_ascii();
-                // write_status_info_ascii();
+                write_status_info_ascii();
                 // write_imu_ascii();
             }
         }
@@ -127,25 +146,26 @@ void loop() {
         // airdata_update();
     }
     
+    // battery voltage
+    // fixme: voltage isn't right, should read near 5.0, but is reading near 0.4v
+    uint16_t ain = adc->analogRead(voltPIN);
+    pwr_v = ((float)ain) / analogResolution * voltScale;
+
     // suck in any host commmands (would I want to check for host commands
     // at a higher rate? imu rate?)
     while ( read_commands() );
 
     // blinking
     if ( gyros_calibrated < 2 ) {
-        blink_rate = 100;
+        blink_rate = 50;
     } else if ( gps_data.fixType < 3 ) {
         blink_rate = 400;
     } else {
         blink_rate = 1000;
     }
-    if ( blink_state && blinkTimer >= blink_rate*0.7 ) {
+    if ( blinkTimer >= blink_rate ) {
         blinkTimer = 0;
-        blink_state = false;
-        digitalWrite(LED, LOW);
-    } else if ( !blink_state && blinkTimer >= blink_rate*0.3 ) {
-        blinkTimer = 0;
-        blink_state = true;
-        digitalWrite(LED, HIGH);
+        blink_state = !blink_state;
+        digitalWrite(LED, blink_state);
     }
 }

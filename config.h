@@ -14,7 +14,6 @@
 // baud rates vs. host baud rates.
 #define DEFAULT_BAUD 500000
 
-
 //////////////////////////////////////////////////////////////////////////
 // This is a section for RC / PWM constants to be shared around the sketch
 //////////////////////////////////////////////////////////////////////////
@@ -22,6 +21,7 @@
 // Maximum number of input or output channels supported
 #define SBUS_CHANNELS 16
 #define PWM_CHANNELS 5
+#define AP_CHANNELS 6
 
 // this is the hardware PWM generation rate note the default is 50hz
 // and this is the max we can drive analog servos digital servos

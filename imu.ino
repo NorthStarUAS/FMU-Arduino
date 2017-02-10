@@ -67,11 +67,11 @@ void dataAcquisition() {
     imu_sensors_shared[7] = hy;
     imu_sensors_shared[8] = hz;
     imu_sensors_shared[9] = t;
-    
     new_imu_data = true;
 
-    // test
-    airdata_update();
+    // it's ugly to fetch air data here, but both sensors live on the same i2c
+    // bus and we need to fetch from both inside the same ISR
+    airdata_fetch();
 }
 
 
