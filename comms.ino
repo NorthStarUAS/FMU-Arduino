@@ -16,10 +16,6 @@
 #define CONFIG_PACKET_ID 21
 //#define BAUD_PACKET_ID 22
 #define FLIGHT_COMMAND_PACKET_ID 23
-//#define ACT_GAIN_PACKET_ID 24
-//#define MIX_MODE_PACKET_ID 25
-//#define SAS_MODE_PACKET_ID 26
-//#define SERIAL_NUMBER_PACKET_ID 27
 #define WRITE_EEPROM_PACKET_ID 28
 
 #define PILOT_PACKET_ID 50
@@ -28,8 +24,6 @@
 #define BARO_PACKET_ID 53
 #define ANALOG_PACKET_ID 54
 #define STATUS_INFO_PACKET_ID 55
-
-
 
 void ugear_cksum( byte hdr1, byte hdr2, byte *buf, byte size,
                   byte *cksum0, byte *cksum1 )
@@ -93,35 +87,6 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             // fixme? mixing_update( autopilot_norm, false /* ch1-6 */, !config.sas_ch7tune /* ch7 */, true /* no ch8 */ );
         }
         result = true;
-
-#if 0
-        // disable baud changing until I have more time to work out
-        // the nuances seems like when the remote end closes and
-        // reopens at the new baud, this side may get reset and put
-        // back to 115,200 and the whole app starts over -- when
-        // connected via the usb port.
-    } else if ( id == BAUD_PACKET_ID && message_size == 4 ) {
-        //Serial.println("read Baud command");
-        /* of course changing baud could can break communication until
-           the requesting side changes it's own baud rate to match*/
-        uint32_t baud = *(uint32_t *)buf;
-        // Serial.printf("Changing baud to %ld.  See you on the other side!\n", baud);
-        /* sends "ack" at both old baud and new baud rates */
-        write_ack_bin( id );
-        Serial.flush();
-        delay(100);
-        Serial.end();
-    
-        Serial.begin(baud);
-        delay(500);
-    
-        write_ack_bin( id );
-        write_ack_bin( id );
-        write_ack_bin( id );
-    
-        result = true;
-#endif
-
     } else if ( id == CONFIG_PACKET_ID && message_size == sizeof(config) ) {
         // Serial.println("read configuration");
         config = *(config_t *)buf;
@@ -137,8 +102,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 }
 
 
-bool read_commands()
-{
+bool read_commands() {
     static byte state = 0; // 0 = looking for SOM0, 1 = looking for SOM1, 2 = looking for packet id & size, 3 = looking for packet data and checksum
     byte input;
     static byte buf[256];

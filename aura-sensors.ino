@@ -8,7 +8,6 @@ volatile bool new_imu_data = false;
 int gyros_calibrated = 0; // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished
 float imu_calib[10]; // the 'safe' and calibrated version of the imu sensors
 int16_t imu_packed[10]; // calibrated and packed version of the imu sensors
-
 unsigned long imu_micros = 0;
 
 // Controls and Actuators
@@ -18,8 +17,8 @@ float actuator_norm[SBUS_CHANNELS];
 uint16_t actuator_pwm[PWM_CHANNELS];
 
 // GPS
-bool new_gps_data = false;
 UBLOX gps(&Serial3); // ublox m8n
+bool new_gps_data = false;
 nav_pvt gps_data;
 
 // COMS
@@ -27,7 +26,6 @@ bool binary_output = false; // start with ascii output (then switch to binary if
 unsigned long output_counter = 0;
 unsigned long write_millis = 0;
 int LED = 13;
-
 
 void setup() {
     // put your setup code here, to run once:
