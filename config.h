@@ -23,6 +23,9 @@
 #define PWM_CHANNELS 5
 #define AP_CHANNELS 6
 
+#define SBUS_FRAMELOST (1 << 2)
+#define SBUS_FAILSAFE (1 << 3)
+
 // this is the hardware PWM generation rate note the default is 50hz
 // and this is the max we can drive analog servos digital servos
 // should be able to run at 200hz -- 250hz is getting up close to the

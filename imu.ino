@@ -108,14 +108,6 @@ void update_imu() {
 }
 
 
-void imu_print() {
-    for ( int i = 0; i < 6; i++ ) {
-        Serial.print(imu_calib[i],3); Serial.print(" ");
-    }
-    Serial.println(imu_calib[9],1);
-}
-
-
 // stay alive for up to 15 seconds looking for agreement between a 1
 // second low pass filter and a 0.1 second low pass filter.  If these
 // agree (close enough) for 4 consecutive seconds, then we calibrate
@@ -139,7 +131,7 @@ void calibrate_gyros() {
     gyro_calib[2] = gzs;
 
     if ( gyros_calibrated == 0 ) {
-        Serial.print("Calibrating gyros: ");
+        ttlPort->print("Calibrating gyros: ");
         gyros_calibrated = 1;
     }
     
@@ -159,9 +151,9 @@ void calibrate_gyros() {
     if ( output_timer > 1000 ) {
         output_timer = 0;
         if ( good_timer < 1000 ) {
-            Serial.print("X");
+            ttlPort->print("X");
         } else {
-            Serial.print("*");
+            ttlPort->print("*");
         }
     }
     if (good_timer > 4000) {
@@ -171,16 +163,16 @@ void calibrate_gyros() {
         gyro_calib[2] = gzs;
         gyros_calibrated = 2;
         update_imu(); // update imu_calib values before anything else get's a chance to read them
-        Serial.println(" :)");
-        Serial.print("Average gyros: ");
-        Serial.print(gyro_calib[0],4);
-        Serial.print(" ");
-        Serial.print(gyro_calib[1],4);
-        Serial.print(" ");
-        Serial.print(gyro_calib[2],4);
-        Serial.println();
+        ttlPort->println(" :)");
+        ttlPort->print("Average gyros: ");
+        ttlPort->print(gyro_calib[0],4);
+        ttlPort->print(" ");
+        ttlPort->print(gyro_calib[1],4);
+        ttlPort->print(" ");
+        ttlPort->print(gyro_calib[2],4);
+        ttlPort->println();
     } else if (total_timer > 15000) {
         gyros_calibrated = 2;
-        Serial.println(" :(");
+        ttlPort->println(" :(");
     }
 }

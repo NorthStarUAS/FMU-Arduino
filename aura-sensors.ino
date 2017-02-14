@@ -13,6 +13,7 @@ unsigned long imu_micros = 0;
 
 // Controls and Actuators
 float receiver_norm[SBUS_CHANNELS];
+uint8_t receiver_flags = 0x00;
 float autopilot_norm[SBUS_CHANNELS];
 float actuator_norm[SBUS_CHANNELS];
 uint16_t actuator_pwm[PWM_CHANNELS];
@@ -34,6 +35,7 @@ const float voltScale = 11.0f/3.3f;
 float pwr_v = 0.0;
     
 // COMS
+HardwareSerial *ttlPort = (HardwareSerial *)&Serial1;  // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in pika-1.1 hardware
 bool binary_output = false; // start with ascii output (then switch to binary if we get binary commands in
 unsigned long output_counter = 0;
 unsigned long write_millis = 0;
@@ -44,11 +46,20 @@ void setup() {
     
     pinMode(LED, OUTPUT);
     digitalWrite(LED, HIGH);
-  
-    Serial.begin(DEFAULT_BAUD);
+
+    ttlPort->begin(DEFAULT_BAUD);
+    if ( ttlPort != (HardwareSerial *)&Serial ) {
+        Serial.begin(DEFAULT_BAUD);
+        delay(600);
+        Serial.print("\nAura Sensors: Rev "); Serial.println(FIRMWARE_REV);
+        Serial.println("Main communication is on Serial1");
+    }
     delay(600); // needed delay before attempting to print anything
     
-    Serial.print("\nAura Sensors: Rev "); Serial.println(FIRMWARE_REV);
+    ttlPort->print("\nAura Sensors: Rev "); ttlPort->println(FIRMWARE_REV);
+    if ( ttlPort != (HardwareSerial *)&Serial ) {
+        ttlPort->print("\nAura Sensors: Rev "); ttlPort->println(FIRMWARE_REV);
+    }
     
     // The following code (when enabled) will force setting a specific device serial number.
     // set_serial_number(108);
@@ -59,12 +70,12 @@ void setup() {
         config_write_eeprom();
     }
 
-    // Serial.print("F_CPU: "); Serial.println(F_CPU);
-    // Serial.print("F_PLL: "); Serial.println(F_PLL);
-    // Serial.print("BAUD2DIV: "); Serial.println(BAUD2DIV(115200));
+    // ttlPort->print("F_CPU: "); ttlPort->println(F_CPU);
+    // ttlPort->print("F_PLL: "); ttlPort->println(F_PLL);
+    // ttlPort->print("BAUD2DIV: "); ttlPort->println(BAUD2DIV(115200));
     
-    Serial.print("Serial Number: ");
-    Serial.println(read_serial_number());
+    ttlPort->print("Serial Number: ");
+    ttlPort->println(read_serial_number());
     delay(100);
 
     // initialize the IMU
@@ -122,12 +133,12 @@ void loop() {
             // 10hz human debugging output, but only after gyros finish calibrating
             if ( myTimer >= 100 && gyros_calibrated == 2) {
                 myTimer = 0;
-                // write_pilot_in_ascii();
+                write_pilot_in_ascii();
                 // write_actuator_out_ascii();
                 // write_gps_ascii();
                 // write_airdata_ascii();
                 // write_analog_ascii();
-                write_status_info_ascii();
+                // write_status_info_ascii();
                 // write_imu_ascii();
             }
         }
