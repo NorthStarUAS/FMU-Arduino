@@ -52,7 +52,9 @@ void setup() {
         Serial.begin(DEFAULT_BAUD);
         delay(600);
         Serial.print("\nAura Sensors: Rev "); Serial.println(FIRMWARE_REV);
-        Serial.println("Main communication is on Serial1");
+        Serial.println("Up and running.");
+        Serial.println("Main communication is on Serial1.");
+        Serial.println("You are seeing this message on the usb interface.");
     }
     delay(600); // needed delay before attempting to print anything
     

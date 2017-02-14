@@ -98,6 +98,7 @@ bool read_commands() {
     static byte state = 0; // 0 = looking for SOM0, 1 = looking for SOM1, 2 = looking for packet id & size, 3 = looking for packet data and checksum
     byte input;
     static byte buf[256];
+    static int buf_counter = 0;
     static byte message_id = 0;
     static byte message_size = 0;
     byte cksum0 = 0, cksum1 = 0;
@@ -139,18 +140,19 @@ bool read_commands() {
             if ( message_size > 200 ) {
                 // ignore nonsensical sizes
                 state = 0;
-            } 
-            else {
+            }  else {
                 state = 3;
+                buf_counter = 0;
             }
         }
     }
     if ( state == 3 ) {
-        if ( ttlPort->available() >= message_size ) {
-            for ( int i = 0; i < message_size; i++ ) {
-                buf[i] = ttlPort->read();
-                // ttlPort->println(buf[i], DEC);
-            }
+        while ( ttlPort->available() >= 1 && buf_counter < message_size ) {
+            buf[buf_counter] = ttlPort->read();
+            buf_counter++;
+            // ttlPort->println(buf[i], DEC);
+        }
+        if ( buf_counter >= message_size ) {
             state = 4;
         }
     }
@@ -239,7 +241,7 @@ uint8_t write_pilot_in_bin()
     ttlPort->write( buf, 1 );
 
     // packet length (1 byte)
-    buf[0] = 2 * SBUS_CHANNELS;
+    buf[0] = size;
     ttlPort->write( buf, 1 );
 
     // receiver data
@@ -267,7 +269,7 @@ uint8_t write_pilot_in_bin()
 void write_pilot_in_ascii()
 {
     // pilot (receiver) input data
-    if ( receiver_flags && SBUS_FAILSAFE ) {
+    if ( receiver_flags & SBUS_FAILSAFE ) {
         ttlPort->print("FAILSAFE! ");
     }
     if ( receiver_norm[0] < 0 ) {
