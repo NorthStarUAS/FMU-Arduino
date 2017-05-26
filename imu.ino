@@ -48,8 +48,6 @@ void imu_setup() {
         delay(1000);
         return;
     }
-
-    Serial.println("after begin()");
     
     // set the DLPF and interrupts
     int setFiltStatus = IMU.setFilt(DLPF_BANDWIDTH_41HZ, MPU9250_SRD);
@@ -59,12 +57,8 @@ void imu_setup() {
         return;
     }
 
-    Serial.println("after setFilt()");
-
     pinMode(MPU_SYNC_PIN, INPUT);
     attachInterrupt(MPU_SYNC_PIN, dataAcquisition, RISING);
-
-    Serial.println("after attachInterrupt()");
 }
 
 

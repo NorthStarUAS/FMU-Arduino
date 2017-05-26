@@ -3,7 +3,7 @@
 
 
 // Firmware rev (needs to be updated here manually to match release number)
-#define FIRMWARE_REV 300
+#define FIRMWARE_REV 310
 
 // this is the master loop update rate.  For 115,200 baud
 // communication, 100hz is as fast as we can go without saturating our

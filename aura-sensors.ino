@@ -64,7 +64,7 @@ void setup() {
     }
     
     // The following code (when enabled) will force setting a specific device serial number.
-    // set_serial_number(108);
+    // set_serial_number(109);
     read_serial_number();
     
     if ( /* true || */ !config_read_eeprom() ) {
