@@ -78,6 +78,7 @@ void dataAcquisition() {
 // copy the dangerous 'volatile' shared version of imu data to the
 // safe global copy.
 void update_imu() {
+    Serial.println("imu update");
     cli();
     for ( int i = 0; i < 10; i++ ) {
         imu_uncalibrated[i] = imu_sensors_shared[i];

@@ -1,7 +1,7 @@
 #include <HardwareSerial.h>
 #include <ADC.h> 
 
-#include "UBLOX.h"
+#include "UBLOX-AuraUAS.h"
 #include "config.h"
 
 // IMU
@@ -19,7 +19,7 @@ float actuator_norm[SBUS_CHANNELS];
 uint16_t actuator_pwm[PWM_CHANNELS];
 
 // GPS
-UBLOX gps(&Serial3); // ublox m8n
+UBLOX_AuraUAS gps(&Serial3); // ublox m8n
 bool new_gps_data = false;
 nav_pvt gps_data;
 
@@ -35,7 +35,7 @@ const float voltScale = 11.0f/3.3f;
 float pwr_v = 0.0;
     
 // COMS
-HardwareSerial *ttlPort = (HardwareSerial *)&Serial1;  // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in pika-1.1 hardware
+HardwareSerial *ttlPort = (HardwareSerial *)&Serial;  // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in pika-1.1 hardware
 bool binary_output = false; // start with ascii output (then switch to binary if we get binary commands in
 unsigned long output_counter = 0;
 unsigned long write_millis = 0;
@@ -135,13 +135,13 @@ void loop() {
             // 10hz human debugging output, but only after gyros finish calibrating
             if ( myTimer >= 100 && gyros_calibrated == 2) {
                 myTimer = 0;
-                write_pilot_in_ascii();
+                // write_pilot_in_ascii();
                 // write_actuator_out_ascii();
                 // write_gps_ascii();
                 // write_airdata_ascii();
                 // write_analog_ascii();
                 // write_status_info_ascii();
-                // write_imu_ascii();
+                write_imu_ascii();
             }
         }
     }
@@ -172,7 +172,7 @@ void loop() {
     if ( gyros_calibrated < 2 ) {
         blink_rate = 50;
     } else if ( gps_data.fixType < 3 ) {
-        blink_rate = 400;
+        blink_rate = 300;
     } else {
         blink_rate = 1000;
     }
