@@ -86,6 +86,7 @@ void setup() {
 
     // initialize the SBUS receiver
     sbus_setup();
+    ttlPort->println("after sbus setup");
 
     // initialize PWM output
     pwm_setup();

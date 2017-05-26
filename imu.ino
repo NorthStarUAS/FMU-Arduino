@@ -1,14 +1,11 @@
 #include <MPU9250.h>
 
 /* MPU-9250 IMU */
-MPU9250 IMU(0x68, 0);
 
 // IMU full scale ranges, DLPF bandwidth, interrupt SRD, and interrupt pin
-const mpu9250_accel_range MPU_9250_ACCEL_RANGE = ACCEL_RANGE_4G;
-const mpu9250_gyro_range MPU_9250_GYRO_RANGE = GYRO_RANGE_500DPS;
-const mpu9250_dlpf_bandwidth MPU9250_BANDWIDTH = DLPF_BANDWIDTH_41HZ;
 const uint8_t MPU9250_SRD = 9;  // Data Output Rate = 1000 / (1 + SRD)
-const uint8_t SYNC_PIN = 2;
+const uint8_t MPU_CS_PIN = 24;  // SPI CS PIN
+const uint8_t MPU_SYNC_PIN = 27;
 
 const float _pi = 3.14159265358979323846;
 const float _g = 9.807;
@@ -22,6 +19,9 @@ const float accelScale = _g / _accel_lsb_per_dps;
 
 const float magScale = 0.01;
 const float tempScale = 0.01;
+
+// MPU9250 IMU(0x68, 0);  // i2c
+MPU9250 IMU(MPU_CS_PIN);  // spi
 
 // any code that reads imu_sensors_shared should protect those reads
 // with cli() / sei() calls because this array is modified by an ISR
@@ -40,13 +40,31 @@ float gyro_calib[3] = { 0.0, 0.0, 0.0 };
 
 // configure the IMU settings and setup the ISR to aquire the data
 void imu_setup() {
-    // initialize the IMU
-    if(IMU.begin(MPU_9250_ACCEL_RANGE,MPU_9250_GYRO_RANGE) < 0){}
+    // initialize the IMU, specify accelerometer and gyro ranges
+    int beginStatus = IMU.begin(ACCEL_RANGE_4G, GYRO_RANGE_500DPS);
+    if ( beginStatus < 0 ) {
+        Serial.println("IMU initialization unsuccessful");
+        Serial.println("Check IMU wiring or try cycling power");
+        delay(1000);
+        return;
+    }
+
+    Serial.println("after begin()");
     
     // set the DLPF and interrupts
-    if(IMU.setFilt(MPU9250_BANDWIDTH,MPU9250_SRD) < 0){}
-    pinMode(SYNC_PIN,INPUT);
-    attachInterrupt(SYNC_PIN, dataAcquisition, RISING);
+    int setFiltStatus = IMU.setFilt(DLPF_BANDWIDTH_41HZ, MPU9250_SRD);
+    if ( setFiltStatus < 0 ) {
+        Serial.println("Filter initialization unsuccessful");
+        delay(1000);
+        return;
+    }
+
+    Serial.println("after setFilt()");
+
+    pinMode(MPU_SYNC_PIN, INPUT);
+    attachInterrupt(MPU_SYNC_PIN, dataAcquisition, RISING);
+
+    Serial.println("after attachInterrupt()");
 }
 
 
@@ -78,7 +96,6 @@ void dataAcquisition() {
 // copy the dangerous 'volatile' shared version of imu data to the
 // safe global copy.
 void update_imu() {
-    Serial.println("imu update");
     cli();
     for ( int i = 0; i < 10; i++ ) {
         imu_uncalibrated[i] = imu_sensors_shared[i];

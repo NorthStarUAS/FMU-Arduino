@@ -346,7 +346,7 @@ uint8_t write_imu_bin()
 void write_imu_ascii()
 {
     // output imu data
-    ttlPort->print("IMU:");
+    ttlPort->print("IMU: ");
     for ( int i = 0; i < 10; i++ ) {
         ttlPort->print(imu_calib[i], 3);
         ttlPort->print(" ");

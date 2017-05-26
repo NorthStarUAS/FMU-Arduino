@@ -20,7 +20,7 @@
 
 // Maximum number of input or output channels supported
 #define SBUS_CHANNELS 16
-#define PWM_CHANNELS 5
+#define PWM_CHANNELS 8
 #define AP_CHANNELS 6
 
 #define SBUS_FRAMELOST (1 << 2)

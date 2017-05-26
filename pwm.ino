@@ -1,10 +1,10 @@
 
 const int servoFreq_hz = 50; // servo pwm update rate
-const int servoPins[5] = {3,4,5,6,23};
+const int servoPins[8] = {21, 22, 23, 2, 3, 4, 5, 6};
 
 // define if a channel is symmetrical or not (i.e. mapped to [0,1] for
 // throttle, flaps, spoilers; [-1,1] for aileron, elevator, rudder
-bool pwm_symmetrical[PWM_CHANNELS] = {0, 1, 1, 1, 0};
+bool pwm_symmetrical[PWM_CHANNELS] = {0, 1, 1, 1, 0, 0, 0, 0};
 
 void pwm_setup() {
     // fixme: honor config rates
