@@ -481,6 +481,10 @@ uint8_t write_airdata_bin()
 
 void write_airdata_ascii()
 {
+    ttlPort->print("BME: ");
+    ttlPort->print(bme_press); ttlPort->print(" (pa) ");
+    ttlPort->print(bme_temp); ttlPort->print(" (C) ");
+    ttlPort->print(bme_hum); ttlPort->print(" (%RH) ");
     ttlPort->print("Static pres (pa): "); ttlPort->print(airdata_staticPress_pa);
     ttlPort->print(" Diff press (pa): "); ttlPort->println(airdata_diffPress_pa);
 }

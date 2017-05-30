@@ -35,17 +35,13 @@ const float voltScale = 11.0f/3.3f;
 float pwr_v = 0.0;
     
 // COMS
-HardwareSerial *ttlPort = (HardwareSerial *)&Serial1;  // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in pika-1.1 hardware
+HardwareSerial *ttlPort = (HardwareSerial *)&Serial;  // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in pika-1.1 hardware
 bool binary_output = false; // start with ascii output (then switch to binary if we get binary commands in
 unsigned long output_counter = 0;
 unsigned long write_millis = 0;
-int LED = 13;
 
 void setup() {
     // put your setup code here, to run once:
-    
-    pinMode(LED, OUTPUT);
-    digitalWrite(LED, HIGH);
 
     ttlPort->begin(DEFAULT_BAUD);
     if ( ttlPort != (HardwareSerial *)&Serial ) {
@@ -73,10 +69,6 @@ void setup() {
         config_load_defaults();
         config_write_eeprom();
     }
-
-    // ttlPort->print("F_CPU: "); ttlPort->println(F_CPU);
-    // ttlPort->print("F_PLL: "); ttlPort->println(F_PLL);
-    // ttlPort->print("BAUD2DIV: "); ttlPort->println(BAUD2DIV(115200));
     
     ttlPort->print("Serial Number: ");
     ttlPort->println(read_serial_number());
@@ -96,6 +88,9 @@ void setup() {
     // initialize the gps receiver
     gps.begin(115200);
 
+    // initialize air data
+    airdata_setup();
+    
     // set up ADC0
     adc->setAveraging(1);
     adc->setResolution(16);
@@ -110,9 +105,6 @@ void loop() {
     // put your main code here, to run repeatedly:
     static elapsedMillis myTimer = 0;
     static elapsedMillis airdataTimer = 0;
-    static elapsedMillis blinkTimer = 0;
-    static unsigned int blink_rate = 100;
-    static bool blink_state = true;
     
     // When new IMU data is ready (new pulse from IMU), go out and grab the IMU data
     // and output fresh IMU message plus the most recent data from everything else.
@@ -121,8 +113,7 @@ void loop() {
         new_imu_data = false;
         sei();
         update_imu();
-        airdata_update();
-
+ 
         // output keyed off new IMU data
         if ( binary_output ) {
             output_counter += write_pilot_in_bin();
@@ -141,10 +132,10 @@ void loop() {
                 // write_pilot_in_ascii();
                 // write_actuator_out_ascii();
                 // write_gps_ascii();
-                // write_airdata_ascii();
+                write_airdata_ascii();
                 // write_analog_ascii();
                 // write_status_info_ascii();
-                write_imu_ascii();
+                // write_imu_ascii();
             }
         }
     }
@@ -155,13 +146,13 @@ void loop() {
         new_gps_data = true;
         gps_data = gps.get_data();
     }
-
+    
+    // roughly 100hz airdata polling
     if ( airdataTimer > 100 ) {
         airdataTimer = 0;
-        // roughly 100hz airdata polling
-        // airdata_update();
+        airdata_update();
     }
-    
+
     // battery voltage
     // fixme: voltage isn't right, should read near 5.0, but is reading near 0.4v
     uint16_t ain = adc->analogRead(voltPIN);
@@ -171,17 +162,4 @@ void loop() {
     // at a higher rate? imu rate?)
     while ( read_commands() );
 
-    // blinking
-    if ( gyros_calibrated < 2 ) {
-        blink_rate = 50;
-    } else if ( gps_data.fixType < 3 ) {
-        blink_rate = 300;
-    } else {
-        blink_rate = 1000;
-    }
-    if ( blinkTimer >= blink_rate ) {
-        blinkTimer = 0;
-        blink_state = !blink_state;
-        digitalWrite(LED, blink_state);
-    }
 }
