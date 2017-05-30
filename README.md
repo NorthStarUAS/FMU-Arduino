@@ -1,10 +1,10 @@
 # Caution: (still slightly) experimental
 
 This is a port (and overhaul) of my apm2-sensor system which ran on
-the old atmega2560 apm2 hardware.  The new system is teensy 3.2 based.
-It expects to be connected to an mpu9250 breakout board, ublox8 gps,
-and sbus receiver.  Supports an external airdata system via the i2c
-bus.
+the old atmega2560 apm2 hardware.  The new system is teensy 3.6 based.
+It expects to be connected to an mpu9250 imu, ublox8 gps, bme280
+pressure sensor, and sbus receiver.  Supports an external airdata
+system via the i2c bus.
 
 This result is a hobby grade autopilot hardware system that anyone
 could put together with basic hand soldering skills (i.e. you can solder
@@ -34,6 +34,9 @@ very capable autopilot system for very low cost.
 
 # Pending
 
+* BME280 support
+* Airdata support
+* Test new 8 channel pwm support.
 * finalize end-to-end testing.
 * flight test
 

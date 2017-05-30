@@ -14,8 +14,7 @@
 #define SAS_YAWAXIS 3
 #define SAS_CH7_TUNE 10
 
-// Mix mode commands, format is cmd(byte), gain 1(float), gain
-// 2(float)
+// Mix mode commands, format is cmd(byte), gain 1(float), gain 2(float)
 #define MIX_DEFAULTS 0
 #define MIX_AUTOCOORDINATE 1
 #define MIX_THROTTLE_TRIM 2

@@ -80,7 +80,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         }
         result = true;
     } else if ( id == CONFIG_PACKET_ID && message_size == sizeof(config) ) {
-        // ttlPort->println("read configuration");
+        // Serial.println("received configuration");
         config = *(config_t *)buf;
         pwm_setup();  // reset pwm rates in case they've been changed
         write_ack_bin( id, 0 );
@@ -89,6 +89,10 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         config_write_eeprom();
         write_ack_bin( id, 0 );
         result = true;
+    } else {
+        // Serial.print(message_size);
+        // Serial.print(" ");
+        // Serial.println(sizeof(config));
     }
     return result;
 }
@@ -110,7 +114,7 @@ bool read_commands() {
             // scan for start of message
             input = ttlPort->read();
             if ( input == START_OF_MSG0 ) {
-                // ttlPort->println("start of msg0");
+                // Serial.println("start of msg0");
                 state = 1;
                 break;
             }
@@ -120,7 +124,7 @@ bool read_commands() {
         if ( ttlPort->available() >= 1 ) {
             input = ttlPort->read();
             if ( input == START_OF_MSG1 ) {
-                // ttlPort->println("start of msg1");
+                // Serial.println("start of msg1");
                 state = 2;
             } 
             else if ( input == START_OF_MSG0 ) {
@@ -134,9 +138,9 @@ bool read_commands() {
     if ( state == 2 ) {
         if ( ttlPort->available() >= 2 ) {
             message_id = ttlPort->read();
-            // ttlPort->print("id="); ttlPort->println(message_id);
+            // Serial.print("id="); Serial.println(message_id);
             message_size = ttlPort->read();
-            // ttlPort->print("size="); ttlPort->println(message_size);
+            // Serial.print("size="); Serial.println(message_size);
             if ( message_size > 200 ) {
                 // ignore nonsensical sizes
                 state = 0;
@@ -163,14 +167,14 @@ bool read_commands() {
             byte new_cksum0, new_cksum1;
             ugear_cksum( message_id, message_size, buf, message_size, &new_cksum0, &new_cksum1 );
             if ( cksum0 == new_cksum0 && cksum1 == new_cksum1 ) {
-                // ttlPort->println("passed check sum!");
+                // Serial.println("passed check sum!");
                 // ttlPort->print("size="); ttlPort->println(message_size);
                 parse_message_bin( message_id, buf, message_size );
                 new_data = true;
                 binary_output = true;
                 state = 0;
             } else {
-                // ttlPort->println("failed check sum");
+                // Serial.println("failed check sum");
                 // check sum failure
                 state = 0;
             }

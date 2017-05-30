@@ -35,7 +35,7 @@ const float voltScale = 11.0f/3.3f;
 float pwr_v = 0.0;
     
 // COMS
-HardwareSerial *ttlPort = (HardwareSerial *)&Serial;  // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in pika-1.1 hardware
+HardwareSerial *ttlPort = (HardwareSerial *)&Serial1;  // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in pika-1.1 hardware
 bool binary_output = false; // start with ascii output (then switch to binary if we get binary commands in
 unsigned long output_counter = 0;
 unsigned long write_millis = 0;
@@ -53,7 +53,9 @@ void setup() {
         delay(600);
         Serial.print("\nAura Sensors: Rev "); Serial.println(FIRMWARE_REV);
         Serial.println("Up and running.");
-        Serial.println("Main communication is on Serial1.");
+        Serial.print("Main communication is on Serial1 @ ");
+        Serial.print(DEFAULT_BAUD);
+        Serial.println(" baud (N81) no flow control.");
         Serial.println("You are seeing this message on the usb interface.");
     }
     delay(600); // needed delay before attempting to print anything
