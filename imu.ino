@@ -174,22 +174,22 @@ void calibrate_gyros() {
     if ( dx > cutoff || dy > cutoff || dz > cutoff ) {
         good_timer = 0;
     }
-    if ( output_timer > 1000 ) {
+    if ( output_timer >= 1000 ) {
         output_timer = 0;
         if ( good_timer < 1000 ) {
-            Serial.print("X");
+            Serial.print("x");
         } else {
             Serial.print("*");
         }
     }
-    if (good_timer > 4000) {
+    if (good_timer > 4100) {
         // set gyro zero points from the 'slow' filter.
         gyro_calib[0] = gxs;
         gyro_calib[1] = gys;
         gyro_calib[2] = gzs;
         gyros_calibrated = 2;
         update_imu(); // update imu_calib values before anything else get's a chance to read them
-        Serial.println(" :)");
+        Serial.println(" good.");
         Serial.print("Average gyros: ");
         Serial.print(gyro_calib[0],4);
         Serial.print(" ");
@@ -199,6 +199,6 @@ void calibrate_gyros() {
         Serial.println();
     } else if (total_timer > 15000) {
         gyros_calibrated = 2;
-        Serial.println(" :(");
+        Serial.println(" failed.");
     }
 }
