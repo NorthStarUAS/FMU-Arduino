@@ -57,6 +57,8 @@ void imu_setup() {
         return;
     }
 
+    Serial.println("MPU-9250 ready.");
+    
     pinMode(MPU_SYNC_PIN, INPUT);
     attachInterrupt(MPU_SYNC_PIN, dataAcquisition, RISING);
 }
@@ -68,7 +70,9 @@ void dataAcquisition() {
     imu_micros_shared = micros();
     
     float ax, ay, az, gx, gy, gz, hx, hy, hz, t;
+    // double call because of command/respose pipelining
     IMU.getMotion10(&ax, &ay, &az, &gx, &gy, &gz, &hx, &hy, &hz, &t);
+    //IMU.getMotion10(&ax, &ay, &az, &gx, &gy, &gz, &hx, &hy, &hz, &t);
     imu_sensors_shared[0] = ax;
     imu_sensors_shared[1] = ay;
     imu_sensors_shared[2] = az;
@@ -80,6 +84,19 @@ void dataAcquisition() {
     imu_sensors_shared[8] = hz;
     imu_sensors_shared[9] = t;
     new_imu_data = true;
+    
+    // onboard air data query.
+    // this is not my favorite place to put this code, but because we share
+    // spi with the IMU we need to sequence these or they could step on each other.
+    if ( bme_status >= 0 ) {
+        // get the pressure (Pa), temperature (C),
+        // and humidity data (%RH) all at once
+        float pressure, temp, humidity;
+        bme.getData(&pressure, &temp, &humidity);
+        bme_press = pressure;
+        bme_temp = temp;
+        bme_hum = humidity;
+    }
 }
 
 
@@ -92,6 +109,7 @@ void update_imu() {
     }
     imu_micros = imu_micros_shared;
     sei();
+    
     for ( int i = 0; i < 10; i++ ) {
         imu_calib[i] = imu_uncalibrated[i];
     }
@@ -139,7 +157,7 @@ void calibrate_gyros() {
     gyro_calib[2] = gzs;
 
     if ( gyros_calibrated == 0 ) {
-        ttlPort->print("Calibrating gyros: ");
+        Serial.print("Calibrating gyros: ");
         gyros_calibrated = 1;
     }
     
@@ -159,9 +177,9 @@ void calibrate_gyros() {
     if ( output_timer > 1000 ) {
         output_timer = 0;
         if ( good_timer < 1000 ) {
-            ttlPort->print("X");
+            Serial.print("X");
         } else {
-            ttlPort->print("*");
+            Serial.print("*");
         }
     }
     if (good_timer > 4000) {
@@ -171,16 +189,16 @@ void calibrate_gyros() {
         gyro_calib[2] = gzs;
         gyros_calibrated = 2;
         update_imu(); // update imu_calib values before anything else get's a chance to read them
-        ttlPort->println(" :)");
-        ttlPort->print("Average gyros: ");
-        ttlPort->print(gyro_calib[0],4);
-        ttlPort->print(" ");
-        ttlPort->print(gyro_calib[1],4);
-        ttlPort->print(" ");
-        ttlPort->print(gyro_calib[2],4);
-        ttlPort->println();
+        Serial.println(" :)");
+        Serial.print("Average gyros: ");
+        Serial.print(gyro_calib[0],4);
+        Serial.print(" ");
+        Serial.print(gyro_calib[1],4);
+        Serial.print(" ");
+        Serial.print(gyro_calib[2],4);
+        Serial.println();
     } else if (total_timer > 15000) {
         gyros_calibrated = 2;
-        ttlPort->println(" :(");
+        Serial.println(" :(");
     }
 }

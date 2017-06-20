@@ -68,10 +68,10 @@ void sbus_parse() {
     // we don't need to return from these, these are just notifying us
     // of receiver state
     if ( sbus_data.failsafe_act ) {
-        // ttlPort->println("SBUS: failsafe activated!");
+        // Serial1.println("SBUS: failsafe activated!");
     }
     if ( sbus_data.frame_lost ) {
-        // ttlPort->println("SBUS: frame lost");
+        // Serial1.println("SBUS: frame lost");
     }
     sbus_ch_data[  0 ] = sbus_data.ch1;
     sbus_ch_data[  1 ] = sbus_data.ch2;
@@ -97,26 +97,26 @@ void sbus_parse() {
     sbus_flags |= sbus_data.failsafe_act << 3;
     
 #if 0    
-    ttlPort->print(" ");
-    ttlPort->print(sbus_ch_data[0]);
-    ttlPort->print(" ");
-    ttlPort->print(sbus_ch_data[1]);
-    ttlPort->print(" ");
-    ttlPort->print(sbus_ch_data[2]);
-    ttlPort->print(" ");
-    ttlPort->print(sbus_ch_data[3]);
+    Serial1.print(" ");
+    Serial1.print(sbus_ch_data[0]);
+    Serial1.print(" ");
+    Serial1.print(sbus_ch_data[1]);
+    Serial1.print(" ");
+    Serial1.print(sbus_ch_data[2]);
+    Serial1.print(" ");
+    Serial1.print(sbus_ch_data[3]);
     for ( int i = 0; i < SBUS_PAYLOAD_LEN; i++ ) {
-        ttlPort->print(" ");
-        ttlPort->print(sbus_data.buf[i], DEC);
+        Serial1.print(" ");
+        Serial1.print(sbus_data.buf[i], DEC);
     }
-    ttlPort->println();
+    Serial1.println();
 #endif
 
 #if 0    
     for ( int i = 0; i < SBUS_CH_MAX; i++ ) {
         if ( ch_data[i] < SBUS_MIN_VALUE || ch_data[i] > SBUS_MAX_VALUE ) {
-            ttlPort->print("Warning detected a problem with sbus packet data, skipping frame, ch = ");
-            ttlPort->println(i);
+            Serial1.print("Warning detected a problem with sbus packet data, skipping frame, ch = ");
+            Serial1.println(i);
             return;
         }
     }
@@ -141,7 +141,7 @@ void sbus_parse() {
 // setup the sbus (currently hard coded on Serial2)
 void sbus_setup() {
     Serial2.begin(100000,SERIAL_8E1_RXINV_TXINV); // newer teensies should use SERIAL_8E2_RXINV_TXINV
-    ttlPort->println("SBUS on Serial2 (SERIAL_8E2)");
+    Serial.println("SBUS on Serial2 (SERIAL_8E2)");
 }
 
 // read available bytes on the sbus uart and return true if any new
@@ -153,8 +153,8 @@ bool sbus_process() {
     byte input;
     bool new_data = false;
     
-    //ttlPort->print("state = ");
-    //ttlPort->println(state);
+    //Serial1.print("state = ");
+    //Serial1.println(state);
     if ( state == 0 ) {
         // scan for start of frame
         while ( Serial2.available() > 0 ) {
@@ -172,26 +172,26 @@ bool sbus_process() {
             new_data = true;
             for ( int i = 0; i < SBUS_PAYLOAD_LEN; i++ ) {
                 input = Serial2.read();
-                //ttlPort->print(" ");
-                //ttlPort->print(input, DEC);
+                //Serial1.print(" ");
+                //Serial1.print(input, DEC);
                 sbus_data.buf[i] = input;
             }
-            //ttlPort->println();
+            //Serial1.println();
             state = 2;
         }   
     }
     if  ( state == 2 ) {
-        //ttlPort->println("here in state = 2");
+        //Serial1.println("here in state = 2");
         // end of frame
         if ( Serial2.available() > 0 ) {
             new_data = true;
-            //ttlPort->println("bytes are available");
+            //Serial1.println("bytes are available");
             input = Serial2.read();
             if ( input == SBUS_FOOTER_VALUE ) {
                 sbus_parse();
                 state = 0; 
             } else {
-                //ttlPort->println("wrong sbus footer value, skipping ahead to next footer byte");
+                //Serial1.println("wrong sbus footer value, skipping ahead to next footer byte");
                 input = Serial2.read();
                 while ( Serial2.available() > 0 && input != SBUS_FOOTER_VALUE ) {
                     input = Serial2.read();

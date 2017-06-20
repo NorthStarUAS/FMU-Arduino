@@ -26,8 +26,8 @@ void pwm_norm2pwm( float *norm, uint16_t *pwm ) {
         // convert to pulse length (special case ch6 when in flaperon mode)
         if ( pwm_symmetrical[i] || (i == 5 && config.mix_flaperon) ) {
             // i.e. aileron, rudder, elevator
-            //ttlPort->println(i);
-            //ttlPort->println(config.act_rev[i]);
+            // Serial1.println(i);
+            // Serial1.println(config.act_rev[i]);
             pwm[i] = PWM_CENTER + (int)(PWM_HALF_RANGE * norm[i] * config.act_gain[i]);
         } else {
             // i.e. throttle, flaps

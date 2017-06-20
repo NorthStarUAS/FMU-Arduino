@@ -1,5 +1,5 @@
 #include <HardwareSerial.h>
-#include <ADC.h> 
+//#include <ADC.h> 
 
 #include "UBLOX-AuraUAS.h"
 #include "config.h"
@@ -28,41 +28,36 @@ float airdata_staticPress_pa = 0.0;
 float airdata_diffPress_pa = 0.0;
 
 // analog ins and battery voltage
-ADC *adc = new ADC;
-const uint8_t voltPIN = A0;
+//ADC *adc = new ADC;
+const uint8_t pwr_pin = 15;
+const uint8_t avionics_pin = A22;
 const float analogResolution = 65535.0f;
-const float voltScale = 11.0f/3.3f;
+const float pwr_scale = 11.0f;
+const float avionics_scale = 2.0f;
 float pwr_v = 0.0;
+float avionics_v = 0.0;
     
 // COMS
-HardwareSerial *ttlPort = (HardwareSerial *)&Serial;  // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in pika-1.1 hardware
-bool binary_output = false; // start with ascii output (then switch to binary if we get binary commands in
+//HardwareSerial *ttlPort = (HardwareSerial *)&Serial1;  // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in pika-1.1 hardware
+bool binary_output = true; // start with binary (or start with ascii output and switch to binary if we get binary commands in)
 unsigned long output_counter = 0;
 unsigned long write_millis = 0;
 
 void setup() {
     // put your setup code here, to run once:
 
-    ttlPort->begin(DEFAULT_BAUD);
-    if ( ttlPort != (HardwareSerial *)&Serial ) {
-        Serial.begin(DEFAULT_BAUD);
-        delay(600);
-        Serial.print("\nAura Sensors: Rev "); Serial.println(FIRMWARE_REV);
-        Serial.println("Up and running.");
-        Serial.print("Main communication is on Serial1 @ ");
-        Serial.print(DEFAULT_BAUD);
-        Serial.println(" baud (N81) no flow control.");
-        Serial.println("You are seeing this message on the usb interface.");
-    }
+    Serial.begin(DEFAULT_BAUD);
+    Serial1.begin(DEFAULT_BAUD);
     delay(600); // needed delay before attempting to print anything
-    
-    ttlPort->print("\nAura Sensors: Rev "); ttlPort->println(FIRMWARE_REV);
-    if ( ttlPort != (HardwareSerial *)&Serial ) {
-        ttlPort->print("\nAura Sensors: Rev "); ttlPort->println(FIRMWARE_REV);
-    }
+
+    Serial.print("\nAura Sensors: Rev "); Serial.println(FIRMWARE_REV);
+    Serial.println("You are seeing this message on the usb interface.");
+    Serial.print("Sensor/config communication is on Serial1 @ ");
+    Serial.print(DEFAULT_BAUD);
+    Serial.println(" baud (N81) no flow control.");
     
     // The following code (when enabled) will force setting a specific device serial number.
-    // set_serial_number(109);
+    // set_serial_number(111);
     read_serial_number();
     
     if ( /* true || */ !config_read_eeprom() ) {
@@ -70,8 +65,8 @@ void setup() {
         config_write_eeprom();
     }
     
-    ttlPort->print("Serial Number: ");
-    ttlPort->println(read_serial_number());
+    Serial.print("Serial Number: ");
+    Serial.println(read_serial_number());
     delay(100);
 
     // initialize the IMU
@@ -80,10 +75,10 @@ void setup() {
 
     // initialize the SBUS receiver
     sbus_setup();
-    ttlPort->println("after sbus setup");
 
     // initialize PWM output
     pwm_setup();
+    Serial.println("PWM ready.");
 
     // initialize the gps receiver
     gps.begin(115200);
@@ -92,13 +87,16 @@ void setup() {
     airdata_setup();
     
     // set up ADC0
-    adc->setAveraging(1);
-    adc->setResolution(16);
-    adc->setConversionSpeed(ADC_HIGH_SPEED_16BITS);
-    adc->setSamplingSpeed(ADC_HIGH_SPEED_16BITS);
+    analogReadResolution(16);
+    //adc->setAveraging(1);
+    //adc->setResolution(16);
+    //adc->setConversionSpeed(ADC_HIGH_SPEED_16BITS);
+    //adc->setSamplingSpeed(ADC_HIGH_SPEED_16BITS);
 
     // initialize comms channel write stats timer
     write_millis = millis();
+    
+    Serial.println("Ready and transmitting...");
 }
 
 void loop() {
@@ -132,10 +130,10 @@ void loop() {
                 // write_pilot_in_ascii();
                 // write_actuator_out_ascii();
                 // write_gps_ascii();
-                write_airdata_ascii();
+                // write_airdata_ascii();
                 // write_analog_ascii();
                 // write_status_info_ascii();
-                // write_imu_ascii();
+                write_imu_ascii();
             }
         }
     }
@@ -147,16 +145,18 @@ void loop() {
         gps_data = gps.get_data();
     }
     
-    // roughly 100hz airdata polling
+    // roughly 100hz airdata & ain polling
     if ( airdataTimer > 100 ) {
         airdataTimer = 0;
         airdata_update();
-    }
 
-    // battery voltage
-    // fixme: voltage isn't right, should read near 5.0, but is reading near 0.4v
-    uint16_t ain = adc->analogRead(voltPIN);
-    pwr_v = ((float)ain) / analogResolution * voltScale;
+        // battery voltage
+        uint16_t ain;
+        ain = analogRead(pwr_pin);
+        pwr_v = ((float)ain) * 3.3 / analogResolution * pwr_scale;
+        ain = analogRead(avionics_pin);
+        avionics_v = ((float)ain) * 3.3 / analogResolution * avionics_scale;
+    }
 
     // suck in any host commmands (would I want to check for host commands
     // at a higher rate? imu rate?)

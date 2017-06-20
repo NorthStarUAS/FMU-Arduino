@@ -57,7 +57,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         for ( int i = 0; i < AP_CHANNELS; i++ ) {
             int16_t val = *(int16_t *)buf; buf += 2;
             ap_tmp[i] = (float)val / 16384.0;
-            //ttlPort->println(ap_tmp[i]);
+            //Serial1.println(ap_tmp[i]);
         }
         // autopilot_norm uses the same channel mapping as sbus_norm, so map ap_tmp values to their
         // correct places in autopilot_norm
@@ -107,12 +107,12 @@ bool read_commands() {
     static byte message_size = 0;
     byte cksum0 = 0, cksum1 = 0;
     bool new_data = false;
-    // ttlPort->print("top: "); ttlPort->println(state);
+    // Serial1.print("top: "); Serial1.println(state);
 
     if ( state == 0 ) {
-        while ( ttlPort->available() >= 1 ) {
+        while ( Serial1.available() >= 1 ) {
             // scan for start of message
-            input = ttlPort->read();
+            input = Serial1.read();
             if ( input == START_OF_MSG0 ) {
                 // Serial.println("start of msg0");
                 state = 1;
@@ -121,8 +121,8 @@ bool read_commands() {
         }
     }
     if ( state == 1 ) {
-        if ( ttlPort->available() >= 1 ) {
-            input = ttlPort->read();
+        if ( Serial1.available() >= 1 ) {
+            input = Serial1.read();
             if ( input == START_OF_MSG1 ) {
                 // Serial.println("start of msg1");
                 state = 2;
@@ -136,10 +136,10 @@ bool read_commands() {
         }
     }
     if ( state == 2 ) {
-        if ( ttlPort->available() >= 2 ) {
-            message_id = ttlPort->read();
+        if ( Serial1.available() >= 2 ) {
+            message_id = Serial1.read();
             // Serial.print("id="); Serial.println(message_id);
-            message_size = ttlPort->read();
+            message_size = Serial1.read();
             // Serial.print("size="); Serial.println(message_size);
             if ( message_size > 200 ) {
                 // ignore nonsensical sizes
@@ -151,24 +151,24 @@ bool read_commands() {
         }
     }
     if ( state == 3 ) {
-        while ( ttlPort->available() >= 1 && buf_counter < message_size ) {
-            buf[buf_counter] = ttlPort->read();
+        while ( Serial1.available() >= 1 && buf_counter < message_size ) {
+            buf[buf_counter] = Serial1.read();
             buf_counter++;
-            // ttlPort->println(buf[i], DEC);
+            // Serial1.println(buf[i], DEC);
         }
         if ( buf_counter >= message_size ) {
             state = 4;
         }
     }
     if ( state == 4 ) {
-        if ( ttlPort->available() >= 2 ) {
-            cksum0 = ttlPort->read();
-            cksum1 = ttlPort->read();
+        if ( Serial1.available() >= 2 ) {
+            cksum0 = Serial1.read();
+            cksum1 = Serial1.read();
             byte new_cksum0, new_cksum1;
             ugear_cksum( message_id, message_size, buf, message_size, &new_cksum0, &new_cksum1 );
             if ( cksum0 == new_cksum0 && cksum1 == new_cksum1 ) {
                 // Serial.println("passed check sum!");
-                // ttlPort->print("size="); ttlPort->println(message_size);
+                // Serial1.print("size="); Serial1.println(message_size);
                 parse_message_bin( message_id, buf, message_size );
                 new_data = true;
                 binary_output = true;
@@ -197,30 +197,30 @@ void write_ack_bin( uint8_t command_id, uint8_t subcommand_id )
     buf[0] = START_OF_MSG0; 
     buf[1] = START_OF_MSG1; 
     buf[2] = 0;
-    ttlPort->write( buf, 2 );
+    Serial1.write( buf, 2 );
 
     // packet id (1 byte)
     buf[0] = ACK_PACKET_ID; 
     buf[1] = 0;
-    ttlPort->write( buf, 1 );
+    Serial1.write( buf, 1 );
 
     // packet length (2 bytes)
     buf[0] = 2;
-    ttlPort->write( buf, 1 );
+    Serial1.write( buf, 1 );
 
     // ack id
     packet[size++] = command_id;
     packet[size++] = subcommand_id;
     
     // write packet
-    ttlPort->write( packet, size );
+    Serial1.write( packet, size );
 
     // check sum (2 bytes)
     ugear_cksum( ACK_PACKET_ID, size, packet, size, &cksum0, &cksum1 );
     buf[0] = cksum0; 
     buf[1] = cksum1; 
     buf[2] = 0;
-    ttlPort->write( buf, 2 );
+    Serial1.write( buf, 2 );
 }
 
 
@@ -237,16 +237,16 @@ uint8_t write_pilot_in_bin()
     buf[0] = START_OF_MSG0; 
     buf[1] = START_OF_MSG1; 
     buf[2] = 0;
-    ttlPort->write( buf, 2 );
+    Serial1.write( buf, 2 );
 
     // packet id (1 byte)
     buf[0] = PILOT_PACKET_ID; 
     buf[1] = 0;
-    ttlPort->write( buf, 1 );
+    Serial1.write( buf, 1 );
 
     // packet length (1 byte)
     buf[0] = size;
-    ttlPort->write( buf, 1 );
+    Serial1.write( buf, 1 );
 
     // receiver data
     for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
@@ -258,14 +258,14 @@ uint8_t write_pilot_in_bin()
     *(uint8_t *)packet = receiver_flags; packet += 1;
     
     // write packet
-    ttlPort->write( packet_buf, size );
+    Serial1.write( packet_buf, size );
 
     // check sum (2 bytes)
     ugear_cksum( PILOT_PACKET_ID, size, packet_buf, size, &cksum0, &cksum1 );
     buf[0] = cksum0; 
     buf[1] = cksum1; 
     buf[2] = 0;
-    ttlPort->write( buf, 2 );
+    Serial1.write( buf, 2 );
     
     return size + 6;
 }
@@ -274,34 +274,34 @@ void write_pilot_in_ascii()
 {
     // pilot (receiver) input data
     if ( receiver_flags & SBUS_FAILSAFE ) {
-        ttlPort->print("FAILSAFE! ");
+        Serial1.print("FAILSAFE! ");
     }
     if ( receiver_norm[0] < 0 ) {
-        ttlPort->print("(Manual) ");
+        Serial1.print("(Manual) ");
     } else {
-        ttlPort->print("(Auto) ");
+        Serial1.print("(Auto) ");
     }
     if ( receiver_norm[1] < 0 ) {
-        ttlPort->print("(Throttle safety) ");
+        Serial1.print("(Throttle safety) ");
     } else {
-        ttlPort->print("(Throttle enable) ");
+        Serial1.print("(Throttle enable) ");
     }
     for ( int i = 0; i < 7; i++ ) {
-        ttlPort->print(receiver_norm[i], 3);
-        ttlPort->print(" ");
+        Serial1.print(receiver_norm[i], 3);
+        Serial1.print(" ");
     }
-    ttlPort->println();
+    Serial1.println();
 }
 
 void write_actuator_out_ascii()
 {
     // actuator output
-    ttlPort->print("RCOUT:");
+    Serial1.print("RCOUT:");
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-        ttlPort->print(actuator_pwm[i]);
-        ttlPort->print(" ");
+        Serial1.print(actuator_pwm[i]);
+        Serial1.print(" ");
     }
-    ttlPort->println();
+    Serial1.println();
 }
 
 /* output a binary representation of the IMU data (note: scaled to 16bit values) */
@@ -317,16 +317,16 @@ uint8_t write_imu_bin()
     buf[0] = START_OF_MSG0; 
     buf[1] = START_OF_MSG1; 
     buf[2] = 0;
-    ttlPort->write( buf, 2 );
+    Serial1.write( buf, 2 );
 
     // packet id (1 byte)
     buf[0] = IMU_PACKET_ID; 
     buf[1] = 0;
-    ttlPort->write( buf, 1 );
+    Serial1.write( buf, 1 );
 
     // packet length (1 byte)
     buf[0] = size;
-    ttlPort->write( buf, 1 );
+    Serial1.write( buf, 1 );
 
     *(uint32_t *)packet = imu_micros; packet += 4;
 
@@ -335,14 +335,14 @@ uint8_t write_imu_bin()
     }
     
     // write packet
-    ttlPort->write( packet_buf, size );
+    Serial1.write( packet_buf, size );
 
     // check sum (2 bytes)
     ugear_cksum( IMU_PACKET_ID, size, packet_buf, size, &cksum0, &cksum1 );
     buf[0] = cksum0; 
     buf[1] = cksum1; 
     buf[2] = 0;
-    ttlPort->write( buf, 2 );
+    Serial1.write( buf, 2 );
     
     return size + 6;
 }
@@ -350,12 +350,12 @@ uint8_t write_imu_bin()
 void write_imu_ascii()
 {
     // output imu data
-    ttlPort->print("IMU: ");
+    Serial1.print("IMU: ");
     for ( int i = 0; i < 10; i++ ) {
-        ttlPort->print(imu_calib[i], 3);
-        ttlPort->print(" ");
+        Serial1.print(imu_calib[i], 3);
+        Serial1.print(" ");
     }
-    ttlPort->println();
+    Serial1.println();
 }
 
 /* output a binary representation of the GPS data */
@@ -373,26 +373,26 @@ uint8_t write_gps_bin()
     buf[0] = START_OF_MSG0; 
     buf[1] = START_OF_MSG1; 
     buf[2] = 0;
-    ttlPort->write( buf, 2 );
+    Serial1.write( buf, 2 );
 
     // packet id (1 byte)
     buf[0] = GPS_PACKET_ID; 
     buf[1] = 0;
-    ttlPort->write( buf, 1 );
+    Serial1.write( buf, 1 );
 
     // packet length (1 byte)
     buf[0] = size;
-    ttlPort->write( buf, 1 );
+    Serial1.write( buf, 1 );
 
     // write packet
-    ttlPort->write( (byte *)&gps_data, size );
+    Serial1.write( (byte *)&gps_data, size );
 
     // check sum (2 bytes)
     ugear_cksum( GPS_PACKET_ID, size, (byte *)(&gps_data), size, &cksum0, &cksum1 );
     buf[0] = cksum0; 
     buf[1] = cksum1; 
     buf[2] = 0;
-    ttlPort->write( buf, 2 );
+    Serial1.write( buf, 2 );
   
     new_gps_data = false;
     
@@ -403,38 +403,38 @@ uint8_t write_gps_bin()
 #define T7 10000000
 void write_gps_ascii() {
     if ( new_gps_data ) {
-        ttlPort->print("GPS:");
-        ttlPort->print(" Lat:");
-        ttlPort->print((double)gps_data.lat / T7, DEC);
-        //ttlPort->print(gps_data.lat);
-        ttlPort->print(" Lon:");
-        ttlPort->print((double)gps_data.lon / T7, DEC);
-        //ttlPort->print(gps_data.lon);
-        ttlPort->print(" Alt:");
-        ttlPort->print((float)gps_data.hMSL / 1000.0);
-        ttlPort->print(" Vel:");
-        ttlPort->print(gps_data.velN / 1000.0);
-        ttlPort->print(", ");
-        ttlPort->print(gps_data.velE / 1000.0);
-        ttlPort->print(", ");
-        ttlPort->print(gps_data.velD / 1000.0);
-        ttlPort->print(" GSP:");
-        ttlPort->print(gps_data.gSpeed, DEC);
-        ttlPort->print(" COG:");
-        ttlPort->print(gps_data.heading, DEC);
-        ttlPort->print(" SAT:");
-        ttlPort->print(gps_data.numSV, DEC);
-        ttlPort->print(" FIX:");
-        ttlPort->print(gps_data.fixType, DEC);
-        ttlPort->print(" TIM:");
-        ttlPort->print(gps_data.hour); ttlPort->print(':');
-        ttlPort->print(gps_data.min); ttlPort->print(':');
-        ttlPort->print(gps_data.sec);
-        ttlPort->print(" DATE:");
-        ttlPort->print(gps_data.month); ttlPort->print('/');
-        ttlPort->print(gps_data.day); ttlPort->print('/');
-        ttlPort->print(gps_data.year);
-        ttlPort->println();
+        Serial1.print("GPS:");
+        Serial1.print(" Lat:");
+        Serial1.print((double)gps_data.lat / T7, DEC);
+        //Serial1.print(gps_data.lat);
+        Serial1.print(" Lon:");
+        Serial1.print((double)gps_data.lon / T7, DEC);
+        //Serial1.print(gps_data.lon);
+        Serial1.print(" Alt:");
+        Serial1.print((float)gps_data.hMSL / 1000.0);
+        Serial1.print(" Vel:");
+        Serial1.print(gps_data.velN / 1000.0);
+        Serial1.print(", ");
+        Serial1.print(gps_data.velE / 1000.0);
+        Serial1.print(", ");
+        Serial1.print(gps_data.velD / 1000.0);
+        Serial1.print(" GSP:");
+        Serial1.print(gps_data.gSpeed, DEC);
+        Serial1.print(" COG:");
+        Serial1.print(gps_data.heading, DEC);
+        Serial1.print(" SAT:");
+        Serial1.print(gps_data.numSV, DEC);
+        Serial1.print(" FIX:");
+        Serial1.print(gps_data.fixType, DEC);
+        Serial1.print(" TIM:");
+        Serial1.print(gps_data.hour); Serial1.print(':');
+        Serial1.print(gps_data.min); Serial1.print(':');
+        Serial1.print(gps_data.sec);
+        Serial1.print(" DATE:");
+        Serial1.print(gps_data.month); Serial1.print('/');
+        Serial1.print(gps_data.day); Serial1.print('/');
+        Serial1.print(gps_data.year);
+        Serial1.println();
         new_gps_data = false; // mark the data as read
     }
 }
@@ -444,7 +444,7 @@ uint8_t write_airdata_bin()
 {
     byte buf[3];
     byte cksum0, cksum1;
-    byte size = 8;
+    byte size = 20;
     byte packet_buf[256]; // hopefully never larger than this!
     byte *packet = packet_buf;
 
@@ -452,41 +452,44 @@ uint8_t write_airdata_bin()
     buf[0] = START_OF_MSG0; 
     buf[1] = START_OF_MSG1; 
     buf[2] = 0;
-    ttlPort->write( buf, 2 );
+    Serial1.write( buf, 2 );
 
     // packet id (1 byte)
     buf[0] = AIRDATA_PACKET_ID; 
     buf[1] = 0;
-    ttlPort->write( buf, 1 );
+    Serial1.write( buf, 1 );
 
     // packet length (1 byte)
     buf[0] = size;
-    ttlPort->write( buf, 1 );
-       
+    Serial1.write( buf, 1 );
+    
+    *(float *)packet = bme_press; packet += 4;
+    *(float *)packet = bme_temp; packet += 4;
+    *(float *)packet = bme_hum; packet += 4;
     *(float *)packet = airdata_staticPress_pa; packet += 4;
     *(float *)packet = airdata_diffPress_pa; packet += 4;
   
     // write packet
-    ttlPort->write( packet_buf, size );
+    Serial1.write( packet_buf, size );
 
     // check sum (2 bytes)
     ugear_cksum( AIRDATA_PACKET_ID, size, packet_buf, size, &cksum0, &cksum1 );
     buf[0] = cksum0; 
     buf[1] = cksum1; 
     buf[2] = 0;
-    ttlPort->write( buf, 2 );
+    Serial1.write( buf, 2 );
     
     return size + 6;
 }
 
 void write_airdata_ascii()
 {
-    ttlPort->print("BME: ");
-    ttlPort->print(bme_press); ttlPort->print(" (pa) ");
-    ttlPort->print(bme_temp); ttlPort->print(" (C) ");
-    ttlPort->print(bme_hum); ttlPort->print(" (%RH) ");
-    ttlPort->print("Static pres (pa): "); ttlPort->print(airdata_staticPress_pa);
-    ttlPort->print(" Diff press (pa): "); ttlPort->println(airdata_diffPress_pa);
+    Serial1.print("BME: ");
+    Serial1.print(bme_press); Serial1.print(" (pa) ");
+    Serial1.print(bme_temp); Serial1.print(" (C) ");
+    Serial1.print(bme_hum); Serial1.print(" (%RH) ");
+    Serial1.print("Static pres (pa): "); Serial1.print(airdata_staticPress_pa);
+    Serial1.print(" Diff press (pa): "); Serial1.println(airdata_diffPress_pa);
 }
 
 /* output a binary representation of the analog input data */
@@ -502,16 +505,16 @@ uint8_t write_analog_bin()
     buf[0] = START_OF_MSG0; 
     buf[1] = START_OF_MSG1; 
     buf[2] = 0;
-    ttlPort->write( buf, 2 );
+    Serial1.write( buf, 2 );
 
     // packet id (1 byte)
     buf[0] = ANALOG_PACKET_ID; 
     buf[1] = 0;
-    ttlPort->write( buf, 1 );
+    Serial1.write( buf, 1 );
 
     // packet length (1 byte)
     // fixme: buf[0] = 2 * MAX_ANALOG_INPUTS;
-    ttlPort->write( buf, 1 );
+    Serial1.write( buf, 1 );
 
     // channel data
     for ( int i = 0; i < MAX_ANALOG_INPUTS; i++ ) {
@@ -523,14 +526,14 @@ uint8_t write_analog_bin()
     }
     
     // write packet
-    ttlPort->write( packet, size );
+    Serial1.write( packet, size );
 
     // check sum (2 bytes)
     ugear_cksum( ANALOG_PACKET_ID, size, packet, size, &cksum0, &cksum1 );
     buf[0] = cksum0; 
     buf[1] = cksum1; 
     buf[2] = 0;
-    ttlPort->write( buf, 2 );
+    Serial1.write( buf, 2 );
     
     return size + 6;
 #endif // fixme
@@ -545,18 +548,18 @@ void write_analog_ascii()
     */
 
     // output servo data
-    ttlPort->print("Analog:");
+    Serial1.print("Analog:");
     for ( int i = 0; i < MAX_ANALOG_INPUTS - 1; i++ ) {
-        ttlPort->print((float)analog[i] / 64.0, 2);
-        ttlPort->print(" ");
+        Serial1.print((float)analog[i] / 64.0, 2);
+        Serial1.print(" ");
     }
-    ttlPort->println((float)analog[MAX_ANALOG_INPUTS-1] / 1000.0, 2);
+    Serial1.println((float)analog[MAX_ANALOG_INPUTS-1] / 1000.0, 2);
 
     /*
-      ttlPort->printf("%.2f ", vcc_average);
-      ttlPort->printf("%.2f ", (float)battery_voltage);
-      ttlPort->printf("%.4f ", (float)amp_filt);
-      ttlPort->printf("%.4f\n", (float)amps_sum);
+      Serial1.printf("%.2f ", vcc_average);
+      Serial1.printf("%.2f ", (float)battery_voltage);
+      Serial1.printf("%.4f ", (float)amp_filt);
+      Serial1.printf("%.4f\n", (float)amps_sum);
     */
 #endif // fixme
 }
@@ -584,16 +587,16 @@ uint8_t write_status_info_bin()
     buf[0] = START_OF_MSG0; 
     buf[1] = START_OF_MSG1; 
     buf[2] = 0;
-    ttlPort->write( buf, 2 );
+    Serial1.write( buf, 2 );
 
     // packet id (1 byte)
     buf[0] = STATUS_INFO_PACKET_ID; 
     buf[1] = 0;
-    ttlPort->write( buf, 1 );
+    Serial1.write( buf, 1 );
 
     // packet length (1 byte)
     buf[0] = size;
-    ttlPort->write( buf, 1 );
+    Serial1.write( buf, 1 );
 
     *(uint16_t *)packet = (uint16_t)apm2_serial_number; packet += 2;
     *(uint16_t *)packet = (uint16_t)FIRMWARE_REV; packet += 2;
@@ -610,14 +613,14 @@ uint8_t write_status_info_bin()
     *(uint16_t *)packet = (uint16_t)(pwr_v*100); packet += 2;
         
     // write packet
-    ttlPort->write( packet_buf, size );
+    Serial1.write( packet_buf, size );
 
     // check sum (2 bytes)
     ugear_cksum( STATUS_INFO_PACKET_ID, size, packet_buf, size, &cksum0, &cksum1 );
     buf[0] = cksum0; 
     buf[1] = cksum1; 
     buf[2] = 0;
-    ttlPort->write( buf, 2 );
+    Serial1.write( buf, 2 );
     
     return size + 6;
 }
@@ -626,13 +629,14 @@ void write_status_info_ascii()
 {
     // This info is static so we don't need to send it at a high rate ... once every 10 seconds (?)
     // with an immediate message at the start.
-    ttlPort->print("SN: ");
-    ttlPort->println(read_serial_number());
-    ttlPort->print("Firmware: ");
-    ttlPort->println(FIRMWARE_REV);
-    ttlPort->print("Main loop: ");
-    ttlPort->println( MASTER_HZ);
-    ttlPort->print("Baud: ");ttlPort->println(DEFAULT_BAUD);
-    ttlPort->print("Volt: "); ttlPort->println(pwr_v, 4);
+    Serial1.print("SN: ");
+    Serial1.println(read_serial_number());
+    Serial1.print("Firmware: ");
+    Serial1.println(FIRMWARE_REV);
+    Serial1.print("Main loop: ");
+    Serial1.println( MASTER_HZ);
+    Serial1.print("Baud: ");Serial1.println(DEFAULT_BAUD);
+    Serial1.print("Volt ext: "); Serial1.print(pwr_v, 2);
+    Serial1.print(" av: "); Serial1.println(avionics_v, 2);
 }
 
