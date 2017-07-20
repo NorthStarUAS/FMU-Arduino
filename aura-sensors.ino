@@ -38,8 +38,7 @@ float pwr_v = 0.0;
 float avionics_v = 0.0;
     
 // COMS
-//HardwareSerial *ttlPort = (HardwareSerial *)&Serial1;  // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in pika-1.1 hardware
-bool binary_output = true; // start with binary (or start with ascii output and switch to binary if we get binary commands in)
+// Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in pika-1.1 hardware
 unsigned long output_counter = 0;
 unsigned long write_millis = 0;
 
@@ -103,7 +102,7 @@ void loop() {
     // put your main code here, to run repeatedly:
     static elapsedMillis myTimer = 0;
     static elapsedMillis airdataTimer = 0;
-    
+        
     // When new IMU data is ready (new pulse from IMU), go out and grab the IMU data
     // and output fresh IMU message plus the most recent data from everything else.
     if ( new_imu_data ) {
@@ -113,28 +112,26 @@ void loop() {
         update_imu();
  
         // output keyed off new IMU data
-        if ( binary_output ) {
-            output_counter += write_pilot_in_bin();
-            output_counter += write_gps_bin();
-            output_counter += write_airdata_bin();
-            //output_counter += write_analog_bin();
-            // do a little extra dance with the return value because write_status_info_bin()
-            // can reset output_counter (but that gets ignored if we do the math in one step)
-            uint8_t result = write_status_info_bin();
-            output_counter += result;
-            output_counter += write_imu_bin(); // write IMU data last as an implicit 'end of data frame' marker.
-        } else {
-            // 10hz human debugging output, but only after gyros finish calibrating
-            if ( myTimer >= 100 && gyros_calibrated == 2) {
-                myTimer = 0;
-                // write_pilot_in_ascii();
-                // write_actuator_out_ascii();
-                // write_gps_ascii();
-                // write_airdata_ascii();
-                // write_analog_ascii();
-                // write_status_info_ascii();
-                write_imu_ascii();
-            }
+        output_counter += write_pilot_in_bin();
+        output_counter += write_gps_bin();
+        output_counter += write_airdata_bin();
+        // output_counter += write_analog_bin();
+        // do a little extra dance with the return value because write_status_info_bin()
+        // can reset output_counter (but that gets ignored if we do the math in one step)
+        uint8_t result = write_status_info_bin();
+        output_counter += result;
+        output_counter += write_imu_bin(); // write IMU data last as an implicit 'end of data frame' marker.
+
+        // 10hz human debugging output, but only after gyros finish calibrating
+        if ( myTimer >= 100 && gyros_calibrated == 2) {
+            myTimer = 0;
+            // write_pilot_in_ascii();
+            // write_actuator_out_ascii();
+            write_gps_ascii();
+            // write_airdata_ascii();
+            // write_analog_ascii();
+            // write_status_info_ascii();
+            write_imu_ascii();
         }
     }
 
