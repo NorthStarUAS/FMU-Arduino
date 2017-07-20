@@ -43,8 +43,9 @@ void imu_setup() {
     // initialize the IMU, specify accelerometer and gyro ranges
     int beginStatus = IMU.begin(ACCEL_RANGE_4G, GYRO_RANGE_500DPS);
     if ( beginStatus < 0 ) {
-        Serial.println("IMU initialization unsuccessful");
+        Serial.println("\nIMU initialization unsuccessful");
         Serial.println("Check IMU wiring or try cycling power");
+        Serial.println();
         delay(1000);
         return;
     }
