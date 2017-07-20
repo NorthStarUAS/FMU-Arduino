@@ -171,7 +171,6 @@ bool read_commands() {
                 // Serial1.print("size="); Serial1.println(message_size);
                 parse_message_bin( message_id, buf, message_size );
                 new_data = true;
-                binary_output = true;
                 state = 0;
             } else {
                 // Serial.println("failed check sum");
@@ -350,12 +349,12 @@ uint8_t write_imu_bin()
 void write_imu_ascii()
 {
     // output imu data
-    Serial1.print("IMU: ");
+    Serial.print("IMU: ");
     for ( int i = 0; i < 10; i++ ) {
-        Serial1.print(imu_calib[i], 3);
-        Serial1.print(" ");
+        Serial.print(imu_calib[i], 3);
+        Serial.print(" ");
     }
-    Serial1.println();
+    Serial.println();
 }
 
 /* output a binary representation of the GPS data */
@@ -403,38 +402,38 @@ uint8_t write_gps_bin()
 #define T7 10000000
 void write_gps_ascii() {
     if ( new_gps_data ) {
-        Serial1.print("GPS:");
-        Serial1.print(" Lat:");
-        Serial1.print((double)gps_data.lat / T7, DEC);
-        //Serial1.print(gps_data.lat);
-        Serial1.print(" Lon:");
-        Serial1.print((double)gps_data.lon / T7, DEC);
-        //Serial1.print(gps_data.lon);
-        Serial1.print(" Alt:");
-        Serial1.print((float)gps_data.hMSL / 1000.0);
-        Serial1.print(" Vel:");
-        Serial1.print(gps_data.velN / 1000.0);
-        Serial1.print(", ");
-        Serial1.print(gps_data.velE / 1000.0);
-        Serial1.print(", ");
-        Serial1.print(gps_data.velD / 1000.0);
-        Serial1.print(" GSP:");
-        Serial1.print(gps_data.gSpeed, DEC);
-        Serial1.print(" COG:");
-        Serial1.print(gps_data.heading, DEC);
-        Serial1.print(" SAT:");
-        Serial1.print(gps_data.numSV, DEC);
-        Serial1.print(" FIX:");
-        Serial1.print(gps_data.fixType, DEC);
-        Serial1.print(" TIM:");
-        Serial1.print(gps_data.hour); Serial1.print(':');
-        Serial1.print(gps_data.min); Serial1.print(':');
-        Serial1.print(gps_data.sec);
-        Serial1.print(" DATE:");
-        Serial1.print(gps_data.month); Serial1.print('/');
-        Serial1.print(gps_data.day); Serial1.print('/');
-        Serial1.print(gps_data.year);
-        Serial1.println();
+        Serial.print("GPS:");
+        Serial.print(" Lat:");
+        Serial.print((double)gps_data.lat / T7, DEC);
+        //Serial.print(gps_data.lat);
+        Serial.print(" Lon:");
+        Serial.print((double)gps_data.lon / T7, DEC);
+        //Serial.print(gps_data.lon);
+        Serial.print(" Alt:");
+        Serial.print((float)gps_data.hMSL / 1000.0);
+        Serial.print(" Vel:");
+        Serial.print(gps_data.velN / 1000.0);
+        Serial.print(", ");
+        Serial.print(gps_data.velE / 1000.0);
+        Serial.print(", ");
+        Serial.print(gps_data.velD / 1000.0);
+        Serial.print(" GSP:");
+        Serial.print(gps_data.gSpeed, DEC);
+        Serial.print(" COG:");
+        Serial.print(gps_data.heading, DEC);
+        Serial.print(" SAT:");
+        Serial.print(gps_data.numSV, DEC);
+        Serial.print(" FIX:");
+        Serial.print(gps_data.fixType, DEC);
+        Serial.print(" TIM:");
+        Serial.print(gps_data.hour); Serial.print(':');
+        Serial.print(gps_data.min); Serial.print(':');
+        Serial.print(gps_data.sec);
+        Serial.print(" DATE:");
+        Serial.print(gps_data.month); Serial.print('/');
+        Serial.print(gps_data.day); Serial.print('/');
+        Serial.print(gps_data.year);
+        Serial.println();
         new_gps_data = false; // mark the data as read
     }
 }
