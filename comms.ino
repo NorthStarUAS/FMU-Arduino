@@ -273,34 +273,34 @@ void write_pilot_in_ascii()
 {
     // pilot (receiver) input data
     if ( receiver_flags & SBUS_FAILSAFE ) {
-        Serial1.print("FAILSAFE! ");
+        Serial.print("FAILSAFE! ");
     }
     if ( receiver_norm[0] < 0 ) {
-        Serial1.print("(Manual) ");
+        Serial.print("(Manual) ");
     } else {
-        Serial1.print("(Auto) ");
+        Serial.print("(Auto) ");
     }
     if ( receiver_norm[1] < 0 ) {
-        Serial1.print("(Throttle safety) ");
+        Serial.print("(Throttle safety) ");
     } else {
-        Serial1.print("(Throttle enable) ");
+        Serial.print("(Throttle enable) ");
     }
     for ( int i = 0; i < 7; i++ ) {
-        Serial1.print(receiver_norm[i], 3);
-        Serial1.print(" ");
+        Serial.print(receiver_norm[i], 3);
+        Serial.print(" ");
     }
-    Serial1.println();
+    Serial.println();
 }
 
 void write_actuator_out_ascii()
 {
     // actuator output
-    Serial1.print("RCOUT:");
+    Serial.print("RCOUT:");
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-        Serial1.print(actuator_pwm[i]);
-        Serial1.print(" ");
+        Serial.print(actuator_pwm[i]);
+        Serial.print(" ");
     }
-    Serial1.println();
+    Serial.println();
 }
 
 /* output a binary representation of the IMU data (note: scaled to 16bit values) */
@@ -481,11 +481,11 @@ uint8_t write_airdata_bin()
 void write_airdata_ascii()
 {
     Serial.print("BME: ");
-    Serial.print(bme_press); Serial1.print(" (pa) ");
-    Serial.print(bme_temp); Serial1.print(" (C) ");
-    Serial.print(bme_hum); Serial1.print(" (%RH) ");
-    Serial.print("Static pres (pa): "); Serial1.print(airdata_staticPress_pa);
-    Serial.print(" Diff press (pa): "); Serial1.println(airdata_diffPress_pa);
+    Serial.print(bme_press); Serial.print(" (pa) ");
+    Serial.print(bme_temp); Serial.print(" (C) ");
+    Serial.print(bme_hum); Serial.print(" (%RH) ");
+    Serial.print("Static pres (pa): "); Serial.print(airdata_staticPress_pa);
+    Serial.print(" Diff press (pa): "); Serial.println(airdata_diffPress_pa);
 }
 
 /* output a binary representation of the analog input data */
@@ -625,14 +625,14 @@ void write_status_info_ascii()
 {
     // This info is static so we don't need to send it at a high rate ... once every 10 seconds (?)
     // with an immediate message at the start.
-    Serial1.print("SN: ");
-    Serial1.println(read_serial_number());
-    Serial1.print("Firmware: ");
-    Serial1.println(FIRMWARE_REV);
-    Serial1.print("Main loop: ");
-    Serial1.println( MASTER_HZ);
-    Serial1.print("Baud: ");Serial1.println(DEFAULT_BAUD);
-    Serial1.print("Volt ext: "); Serial1.print(pwr_v, 2);
-    Serial1.print(" av: "); Serial1.println(avionics_v, 2);
+    Serial.print("SN: ");
+    Serial.println(read_serial_number());
+    Serial.print("Firmware: ");
+    Serial.println(FIRMWARE_REV);
+    Serial.print("Main loop hz: ");
+    Serial.println( MASTER_HZ);
+    Serial.print("Baud: ");Serial.println(DEFAULT_BAUD);
+    Serial.print("Volt ext: "); Serial.print(pwr_v, 2);
+    Serial.print(" av: "); Serial.println(avionics_v, 2);
 }
 

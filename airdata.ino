@@ -9,8 +9,6 @@ volatile float bme_press, bme_temp, bme_hum;
 const uint8_t airDataAddr = 0x22;
 uint8_t airDataBuff[8]; 
 
-// FIXME!
-
 void airdata_setup() {
     bme_status = bme.begin();
     if ( bme_status < 0 ) {
@@ -23,20 +21,10 @@ void airdata_setup() {
 }
 
 void airdata_fetch() {
-    //if ( bme_status >= 0 ) {
+    if ( bme_status >= 0 ) {
         // get the pressure (Pa), temperature (C),
         // and humidity data (%RH) all at once
-        //bme.getData(&bme_press,&bme_temp,&bme_hum);
-    //}
-    
-    return; // fixme
-    
-    // gather air data
-    Wire.requestFrom(airDataAddr,sizeof(airDataBuff));
-    int i = 0;
-    while ( Wire.available() ) {
-        airDataBuff[i] = Wire.read();
-        i++;
+        bme.getData(&bme_press,&bme_temp,&bme_hum);
     }
 }
 

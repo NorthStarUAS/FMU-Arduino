@@ -87,10 +87,6 @@ void setup() {
     
     // set up ADC0
     analogReadResolution(16);
-    //adc->setAveraging(1);
-    //adc->setResolution(16);
-    //adc->setConversionSpeed(ADC_HIGH_SPEED_16BITS);
-    //adc->setSamplingSpeed(ADC_HIGH_SPEED_16BITS);
 
     // initialize comms channel write stats timer
     write_millis = millis();
