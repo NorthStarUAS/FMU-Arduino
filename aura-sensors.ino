@@ -56,7 +56,7 @@ void setup() {
     Serial.println(" baud (N81) no flow control.");
     
     // The following code (when enabled) will force setting a specific device serial number.
-    // set_serial_number(111);
+    // set_serial_number(112);
     read_serial_number();
     
     if ( /* true || */ !config_read_eeprom() ) {
@@ -82,7 +82,7 @@ void setup() {
     // initialize the gps receiver
     gps.begin(115200);
 
-    // initialize air data
+    // initialize air data (marmot v1.6+)
     airdata_setup();
     
     // set up ADC0
@@ -145,12 +145,16 @@ void loop() {
     // roughly 100hz airdata & ain polling
     if ( airdataTimer > 100 ) {
         airdataTimer = 0;
+        
+        // marmot v1.6+
         airdata_update();
 
         // battery voltage
         uint16_t ain;
         ain = analogRead(pwr_pin);
         pwr_v = ((float)ain) * 3.3 / analogResolution * pwr_scale;
+        
+        // marmot v1.6+
         ain = analogRead(avionics_pin);
         avionics_v = ((float)ain) * 3.3 / analogResolution * avionics_scale;
     }

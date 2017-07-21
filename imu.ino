@@ -20,7 +20,6 @@ const float accelScale = _g / _accel_lsb_per_dps;
 const float magScale = 0.01;
 const float tempScale = 0.01;
 
-// MPU9250 IMU(0x68, 0);  // i2c
 MPU9250 IMU(MPU_CS_PIN);  // spi
 
 // any code that reads imu_sensors_shared should protect those reads
@@ -86,9 +85,9 @@ void dataAcquisition() {
     imu_sensors_shared[9] = t;
     new_imu_data = true;
     
-    // onboard air data query.
-    // this is not my favorite place to put this code, but because we share
-    // spi with the IMU we need to sequence these or they could step on each other.
+    // onboard air data query: this is not my favorite place to put
+    // this code, but because we share spi with the IMU we need to
+    // sequence these or they could step on each other.
     if ( bme_status >= 0 ) {
         // get the pressure (Pa), temperature (C),
         // and humidity data (%RH) all at once

@@ -401,41 +401,38 @@ uint8_t write_gps_bin()
 #define T6 1000000
 #define T7 10000000
 void write_gps_ascii() {
-    if ( new_gps_data ) {
-        Serial.print("GPS:");
-        Serial.print(" Lat:");
-        Serial.print((double)gps_data.lat / T7, DEC);
-        //Serial.print(gps_data.lat);
-        Serial.print(" Lon:");
-        Serial.print((double)gps_data.lon / T7, DEC);
-        //Serial.print(gps_data.lon);
-        Serial.print(" Alt:");
-        Serial.print((float)gps_data.hMSL / 1000.0);
-        Serial.print(" Vel:");
-        Serial.print(gps_data.velN / 1000.0);
-        Serial.print(", ");
-        Serial.print(gps_data.velE / 1000.0);
-        Serial.print(", ");
-        Serial.print(gps_data.velD / 1000.0);
-        Serial.print(" GSP:");
-        Serial.print(gps_data.gSpeed, DEC);
-        Serial.print(" COG:");
-        Serial.print(gps_data.heading, DEC);
-        Serial.print(" SAT:");
-        Serial.print(gps_data.numSV, DEC);
-        Serial.print(" FIX:");
-        Serial.print(gps_data.fixType, DEC);
-        Serial.print(" TIM:");
-        Serial.print(gps_data.hour); Serial.print(':');
-        Serial.print(gps_data.min); Serial.print(':');
-        Serial.print(gps_data.sec);
-        Serial.print(" DATE:");
-        Serial.print(gps_data.month); Serial.print('/');
-        Serial.print(gps_data.day); Serial.print('/');
-        Serial.print(gps_data.year);
-        Serial.println();
-        new_gps_data = false; // mark the data as read
-    }
+    Serial.print("GPS:");
+    Serial.print(" Lat:");
+    Serial.print((double)gps_data.lat / T7, DEC);
+    //Serial.print(gps_data.lat);
+    Serial.print(" Lon:");
+    Serial.print((double)gps_data.lon / T7, DEC);
+    //Serial.print(gps_data.lon);
+    Serial.print(" Alt:");
+    Serial.print((float)gps_data.hMSL / 1000.0);
+    Serial.print(" Vel:");
+    Serial.print(gps_data.velN / 1000.0);
+    Serial.print(", ");
+    Serial.print(gps_data.velE / 1000.0);
+    Serial.print(", ");
+    Serial.print(gps_data.velD / 1000.0);
+    Serial.print(" GSP:");
+    Serial.print(gps_data.gSpeed, DEC);
+    Serial.print(" COG:");
+    Serial.print(gps_data.heading, DEC);
+    Serial.print(" SAT:");
+    Serial.print(gps_data.numSV, DEC);
+    Serial.print(" FIX:");
+    Serial.print(gps_data.fixType, DEC);
+    Serial.print(" TIM:");
+    Serial.print(gps_data.hour); Serial.print(':');
+    Serial.print(gps_data.min); Serial.print(':');
+    Serial.print(gps_data.sec);
+    Serial.print(" DATE:");
+    Serial.print(gps_data.month); Serial.print('/');
+    Serial.print(gps_data.day); Serial.print('/');
+    Serial.print(gps_data.year);
+    Serial.println();
 }
 
 /* output a binary representation of the barometer data */
@@ -483,12 +480,12 @@ uint8_t write_airdata_bin()
 
 void write_airdata_ascii()
 {
-    Serial1.print("BME: ");
-    Serial1.print(bme_press); Serial1.print(" (pa) ");
-    Serial1.print(bme_temp); Serial1.print(" (C) ");
-    Serial1.print(bme_hum); Serial1.print(" (%RH) ");
-    Serial1.print("Static pres (pa): "); Serial1.print(airdata_staticPress_pa);
-    Serial1.print(" Diff press (pa): "); Serial1.println(airdata_diffPress_pa);
+    Serial.print("BME: ");
+    Serial.print(bme_press); Serial1.print(" (pa) ");
+    Serial.print(bme_temp); Serial1.print(" (C) ");
+    Serial.print(bme_hum); Serial1.print(" (%RH) ");
+    Serial.print("Static pres (pa): "); Serial1.print(airdata_staticPress_pa);
+    Serial.print(" Diff press (pa): "); Serial1.println(airdata_diffPress_pa);
 }
 
 /* output a binary representation of the analog input data */
