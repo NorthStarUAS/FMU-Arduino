@@ -28,14 +28,10 @@ float airdata_staticPress_pa = 0.0;
 float airdata_diffPress_pa = 0.0;
 
 // analog ins and battery voltage
-//ADC *adc = new ADC;
-const uint8_t pwr_pin = 15;
-const uint8_t avionics_pin = A22;
+const uint8_t pwr_pin = A0;
 const float analogResolution = 65535.0f;
 const float pwr_scale = 11.0f;
-const float avionics_scale = 2.0f;
 float pwr_v = 0.0;
-float avionics_v = 0.0;
     
 // COMS
 // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in pika-1.1 hardware
@@ -82,9 +78,6 @@ void setup() {
     // initialize the gps receiver
     gps.begin(115200);
 
-    // initialize air data (marmot v1.6+)
-    airdata_setup();
-    
     // set up ADC0
     analogReadResolution(16);
 
@@ -106,6 +99,7 @@ void loop() {
         new_imu_data = false;
         sei();
         update_imu();
+        airdata_update();
  
         // output keyed off new IMU data
         output_counter += write_pilot_in_bin();
@@ -123,11 +117,11 @@ void loop() {
             myTimer = 0;
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
-            write_gps_ascii();
+            // write_gps_ascii();
             // write_airdata_ascii();
             // write_analog_ascii();
             // write_status_info_ascii();
-            write_imu_ascii();
+            // write_imu_ascii();
         }
     }
 
@@ -141,18 +135,11 @@ void loop() {
     // roughly 100hz airdata & ain polling
     if ( airdataTimer > 100 ) {
         airdataTimer = 0;
-        
-        // marmot v1.6+
-        airdata_update();
 
         // battery voltage
         uint16_t ain;
         ain = analogRead(pwr_pin);
         pwr_v = ((float)ain) * 3.3 / analogResolution * pwr_scale;
-        
-        // marmot v1.6+
-        ain = analogRead(avionics_pin);
-        avionics_v = ((float)ain) * 3.3 / analogResolution * avionics_scale;
     }
 
     // suck in any host commmands (would I want to check for host commands

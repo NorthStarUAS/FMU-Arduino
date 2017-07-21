@@ -459,9 +459,9 @@ uint8_t write_airdata_bin()
     buf[0] = size;
     Serial1.write( buf, 1 );
     
-    *(float *)packet = bme_press; packet += 4;
-    *(float *)packet = bme_temp; packet += 4;
-    *(float *)packet = bme_hum; packet += 4;
+    *(float *)packet = 0.0; packet += 4;
+    *(float *)packet = 0.0; packet += 4;
+    *(float *)packet = 0.0; packet += 4;
     *(float *)packet = airdata_staticPress_pa; packet += 4;
     *(float *)packet = airdata_diffPress_pa; packet += 4;
   
@@ -480,11 +480,8 @@ uint8_t write_airdata_bin()
 
 void write_airdata_ascii()
 {
-    Serial.print("BME: ");
-    Serial.print(bme_press); Serial.print(" (pa) ");
-    Serial.print(bme_temp); Serial.print(" (C) ");
-    Serial.print(bme_hum); Serial.print(" (%RH) ");
-    Serial.print("Static pres (pa): "); Serial.print(airdata_staticPress_pa);
+    Serial.print("BME: (n/a)");
+    Serial.print(" Static pres (pa): "); Serial.print(airdata_staticPress_pa);
     Serial.print(" Diff press (pa): "); Serial.println(airdata_diffPress_pa);
 }
 
