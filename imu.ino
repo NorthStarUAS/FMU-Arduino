@@ -5,7 +5,7 @@
 // IMU full scale ranges, DLPF bandwidth, interrupt SRD, and interrupt pin
 const uint8_t MPU9250_SRD = 9;  // Data Output Rate = 1000 / (1 + SRD)
 const uint8_t MPU_CS_PIN = 24;  // SPI CS PIN
-const uint8_t MPU_SYNC_PIN = 27;
+// /* fixme: depricated? */ const uint8_t MPU_SYNC_PIN = 27;
 
 const float _pi = 3.14159265358979323846;
 const float _g = 9.807;
@@ -20,7 +20,11 @@ const float accelScale = _g / _accel_lsb_per_dps;
 const float magScale = 0.01;
 const float tempScale = 0.01;
 
-MPU9250 IMU(MPU_CS_PIN);  // spi
+#if defined PIKA_V11 or defined AURA_V10
+ MPU9250 IMU(0x68, 0);     // i2c
+#elif defined MARMOT_V16
+ MPU9250 IMU(MPU_CS_PIN);  // spi
+#endif
 
 // any code that reads imu_sensors_shared should protect those reads
 // with cli() / sei() calls because this array is modified by an ISR
@@ -59,8 +63,9 @@ void imu_setup() {
 
     Serial.println("MPU-9250 ready.");
     
-    pinMode(MPU_SYNC_PIN, INPUT);
-    attachInterrupt(MPU_SYNC_PIN, dataAcquisition, RISING);
+    // fixme: deprecated
+    // pinMode(MPU_SYNC_PIN, INPUT);
+    // attachInterrupt(MPU_SYNC_PIN, dataAcquisition, RISING);
 }
 
 
@@ -88,15 +93,7 @@ void dataAcquisition() {
     // onboard air data query: this is not my favorite place to put
     // this code, but because we share spi with the IMU we need to
     // sequence these or they could step on each other.
-    if ( bme_status >= 0 ) {
-        // get the pressure (Pa), temperature (C),
-        // and humidity data (%RH) all at once
-        float pressure, temp, humidity;
-        bme.getData(&pressure, &temp, &humidity);
-        bme_press = pressure;
-        bme_temp = temp;
-        bme_hum = humidity;
-    }
+    airdata_fetch();
 }
 
 
