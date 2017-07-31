@@ -350,9 +350,9 @@ void write_imu_ascii()
 {
     // output imu data
     Serial.print("IMU: ");
+    Serial.print(imu_micros); Serial.print(" ");
     for ( int i = 0; i < 10; i++ ) {
-        Serial.print(imu_calib[i], 3);
-        Serial.print(" ");
+        Serial.print(imu_calib[i], 3); Serial.print(" ");
     }
     Serial.println();
 }
@@ -403,10 +403,10 @@ uint8_t write_gps_bin()
 void write_gps_ascii() {
     Serial.print("GPS:");
     Serial.print(" Lat:");
-    Serial.print((double)gps_data.lat / T7, DEC);
+    Serial.print((double)gps_data.lat / T7, 7);
     //Serial.print(gps_data.lat);
     Serial.print(" Lon:");
-    Serial.print((double)gps_data.lon / T7, DEC);
+    Serial.print((double)gps_data.lon / T7, 7);
     //Serial.print(gps_data.lon);
     Serial.print(" Alt:");
     Serial.print((float)gps_data.hMSL / 1000.0);
