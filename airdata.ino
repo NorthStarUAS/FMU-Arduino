@@ -1,8 +1,15 @@
 #include <i2c_t3.h> // I2C library
 
-#include "BME280.h" // onboard barometer (FCS v1.6)
-BME280 bme(26);
+#include "BME280.h" // onboard barometer (Marmot v1.6, Aura v1.0)
+
+#if defined AURA_V10 || defined PIKA_V11
+ BME280 bme(0x76, 0);
+#elif defined MARMOT_V16
+ BME280 bme(26);
+#endif
+
 volatile int bme_status = -1;
+volatile float shared_press, shared_temp, shared_hum;
 volatile float bme_press, bme_temp, bme_hum;
 
 /* air data */
@@ -16,7 +23,7 @@ void airdata_setup() {
         Serial.println("Check wiring or try cycling power");
         delay(1000);
     } else {
-        Serial.println("BME280 ready.");
+        Serial.println("BME280 driver ready.");
     }
 }
 
@@ -24,12 +31,20 @@ void airdata_fetch() {
     if ( bme_status >= 0 ) {
         // get the pressure (Pa), temperature (C),
         // and humidity data (%RH) all at once
-        bme.getData(&bme_press,&bme_temp,&bme_hum);
+        float press, temp, hum;
+        bme.getData(&press,&temp,&hum);
+        shared_press = press;
+        shared_temp = temp;
+        shared_hum = hum;
     }
 }
 
 void airdata_update() {
-    airdata_fetch();
+    cli();
+    bme_press = shared_press;
+    bme_temp = shared_temp;
+    bme_hum = shared_hum;
+    sei();
     
     return; // fixme
     
