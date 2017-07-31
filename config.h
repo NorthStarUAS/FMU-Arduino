@@ -1,9 +1,14 @@
 #ifndef _AURA_CONFIG_H_INCLUDED
 #define _AURA_CONFIG_H_INCLUDED
 
+// Specify one of the following hardware variants
+
+#define PIKA_V11
+// #define MARMOT_V16
+// #define AURA_V10
 
 // Firmware rev (needs to be updated here manually to match release number)
-#define FIRMWARE_REV 320
+#define FIRMWARE_REV 330
 
 // this is the master loop update rate.  For 115,200 baud
 // communication, 100hz is as fast as we can go without saturating our
