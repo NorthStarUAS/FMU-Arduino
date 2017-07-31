@@ -6,15 +6,15 @@
 #define CONFIG_OFFSET 2  /* starting point for writing big eeprom struct */
 
 /* global definitions */
-uint16_t apm2_serial_number;
+uint16_t serial_number;
 config_t config;
 
 uint16_t read_serial_number() {
     uint8_t lo = EEPROM.read(0);
     uint8_t hi = EEPROM.read(1);
     // Serial.printf(" raw serial number read %d %d\n", hi, lo);
-    apm2_serial_number = hi * 256 + lo;
-    return apm2_serial_number;
+    serial_number = hi * 256 + lo;
+    return serial_number;
 };
 
 static void EEPROM_update(uint16_t address, byte value) {
@@ -24,14 +24,14 @@ static void EEPROM_update(uint16_t address, byte value) {
     }
 }
 
-int set_serial_number(uint16_t serial_number) {
-    apm2_serial_number = serial_number;
+int set_serial_number(uint16_t value) {
+    serial_number = value;
     uint16_t hi = serial_number / 256;
     uint16_t lo = serial_number - (hi * 256);
     // Serial.printf(" set serial number raw: %d %d\n", hi, lo);
     EEPROM_update(0, byte(lo));
     EEPROM_update(1, byte(hi));
-    return apm2_serial_number;
+    return serial_number;
 };
 
 void config_load_defaults() {

@@ -108,6 +108,6 @@ typedef struct {
 
 extern config_t config;
 
-extern uint16_t apm2_serial_number;
+extern uint16_t serial_number;
 
 #endif /* _AURA_CONFIG_H_INCLUDED */

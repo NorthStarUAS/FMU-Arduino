@@ -594,7 +594,7 @@ uint8_t write_status_info_bin()
     buf[0] = size;
     Serial1.write( buf, 1 );
 
-    *(uint16_t *)packet = (uint16_t)apm2_serial_number; packet += 2;
+    *(uint16_t *)packet = (uint16_t)serial_number; packet += 2;
     *(uint16_t *)packet = (uint16_t)FIRMWARE_REV; packet += 2;
     *(uint16_t *)packet = (uint16_t)MASTER_HZ; packet += 2;
     *(uint32_t *)packet = (uint32_t)DEFAULT_BAUD; packet += 4;
