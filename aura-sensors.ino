@@ -1,5 +1,4 @@
 #include <HardwareSerial.h>
-//#include <ADC.h> 
 
 #include "UBLOX-AuraUAS.h"
 #include "config.h"
@@ -23,14 +22,18 @@ UBLOX_AuraUAS gps(&Serial3); // ublox m8n
 bool new_gps_data = false;
 nav_pvt gps_data;
 
-// Air data
+// Air Data
 float airdata_staticPress_pa = 0.0;
 float airdata_diffPress_pa = 0.0;
 
-// analog ins and battery voltage
-//ADC *adc = new ADC;
-const uint8_t pwr_pin = 15;
-const uint8_t avionics_pin = A22;
+// Analog In and Battery Voltage
+#if defined PIKA_V11 || defined AURA_V10
+ const uint8_t pwr_pin = A0;
+#elif defined MARMOT_V16
+ const uint8_t pwr_pin = 15;
+ const uint8_t avionics_pin = A22;
+#endif
+
 const float analogResolution = 65535.0f;
 const float pwr_scale = 11.0f;
 const float avionics_scale = 2.0f;
@@ -41,6 +44,14 @@ float avionics_v = 0.0;
 // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in pika-1.1 hardware
 unsigned long output_counter = 0;
 unsigned long write_millis = 0;
+#if defined PIKA_V11 || defined AURA_V10
+ int LED = 13;
+ elapsedMillis blinkTimer = 0;
+ unsigned int blink_rate = 100;
+ bool blink_state = true;
+#endif
+
+IntervalTimer myTimer;
 
 void setup() {
     // put your setup code here, to run once:
@@ -88,10 +99,18 @@ void setup() {
     // set up ADC0
     analogReadResolution(16);
 
+#if defined PIKA_V11 || defined AURA_V10
+    pinMode(LED, OUTPUT);
+    digitalWrite(LED, HIGH);
+#endif
+
+
     // initialize comms channel write stats timer
     write_millis = millis();
     
     Serial.println("Ready and transmitting...");
+
+    myTimer.begin(dataAcquisition, 10000);
 }
 
 void loop() {
@@ -123,7 +142,7 @@ void loop() {
             myTimer = 0;
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
-            write_gps_ascii();
+            // write_gps_ascii();
             // write_airdata_ascii();
             // write_analog_ascii();
             // write_status_info_ascii();
@@ -142,21 +161,38 @@ void loop() {
     if ( airdataTimer > 100 ) {
         airdataTimer = 0;
         
-        // marmot v1.6+
+        // marmot v1.6, aura v1.0
         airdata_update();
 
         // battery voltage
         uint16_t ain;
         ain = analogRead(pwr_pin);
         pwr_v = ((float)ain) * 3.3 / analogResolution * pwr_scale;
-        
-        // marmot v1.6+
-        ain = analogRead(avionics_pin);
-        avionics_v = ((float)ain) * 3.3 / analogResolution * avionics_scale;
+
+        #if defined MARMOT_V16
+         // marmot v1.6+
+         ain = analogRead(avionics_pin);
+         avionics_v = ((float)ain) * 3.3 / analogResolution * avionics_scale;
+        #endif
     }
 
     // suck in any host commmands (would I want to check for host commands
     // at a higher rate? imu rate?)
     while ( read_commands() );
-
+    
+    #if defined PIKA_V11 || defined AURA_V10
+     // blinking
+     if ( gyros_calibrated < 2 ) {
+         blink_rate = 50;
+     } else if ( gps_data.fixType < 3 ) {
+         blink_rate = 300;
+     } else {
+         blink_rate = 1000;
+     }
+     if ( blinkTimer >= blink_rate ) {
+         blinkTimer = 0;
+         blink_state = !blink_state;
+         digitalWrite(LED, blink_state);
+     }
+    #endif
 }
