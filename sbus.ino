@@ -142,6 +142,10 @@ void sbus_parse() {
 void sbus_setup() {
     Serial2.begin(100000,SERIAL_8E1_RXINV_TXINV); // newer teensies should use SERIAL_8E2_RXINV_TXINV
     Serial.println("SBUS on Serial2 (SERIAL_8E2)");
+
+    // seed receiver_norm to safe values (pending receipt of first valid sbus packet)
+    receiver_norm[0] = -1.0;        // manual mode
+    receiver_norm[1] = -1.0;        // throttle safety enabled
 }
 
 // read available bytes on the sbus uart and return true if any new
