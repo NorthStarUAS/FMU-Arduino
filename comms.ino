@@ -480,12 +480,12 @@ uint8_t write_airdata_bin()
 
 void write_airdata_ascii()
 {
-    Serial.print("BME: ");
+    Serial.print("Air: ");
     Serial.print(bme_press); Serial.print(" (pa) ");
     Serial.print(bme_temp); Serial.print(" (C) ");
     Serial.print(bme_hum); Serial.print(" (%RH) ");
-    Serial.print("Static pres (pa): "); Serial.print(airdata_staticPress_pa);
-    Serial.print(" Diff press (pa): "); Serial.println(airdata_diffPress_pa);
+    Serial.print("Ext Static (pa): "); Serial.print(airdata_staticPress_pa);
+    Serial.print(" Ext Diff (pa): "); Serial.println(airdata_diffPress_pa);
 }
 
 /* output a binary representation of the analog input data */
