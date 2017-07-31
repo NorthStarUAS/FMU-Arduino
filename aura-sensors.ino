@@ -110,7 +110,7 @@ void setup() {
     
     Serial.println("Ready and transmitting...");
 
-    myTimer.begin(dataAcquisition, 10000);
+    myTimer.begin(dataAcquisition, 1000000 / MASTER_HZ);
 }
 
 void loop() {
