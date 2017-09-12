@@ -80,7 +80,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         }
         result = true;
     } else if ( id == CONFIG_PACKET_ID && message_size == sizeof(config) ) {
-        // Serial.println("received configuration");
+        Serial.println("received new config");
         config = *(config_t *)buf;
         pwm_setup();  // reset pwm rates in case they've been changed
         write_ack_bin( id, 0 );
@@ -107,7 +107,7 @@ bool read_commands() {
     static byte message_size = 0;
     byte cksum0 = 0, cksum1 = 0;
     bool new_data = false;
-    // Serial1.print("top: "); Serial1.println(state);
+    // Serial.print("top: "); Serial.println(state);
 
     if ( state == 0 ) {
         while ( Serial1.available() >= 1 ) {
@@ -154,7 +154,7 @@ bool read_commands() {
         while ( Serial1.available() >= 1 && buf_counter < message_size ) {
             buf[buf_counter] = Serial1.read();
             buf_counter++;
-            // Serial1.println(buf[i], DEC);
+            // Serial.println(buf[i], DEC);
         }
         if ( buf_counter >= message_size ) {
             state = 4;
@@ -168,7 +168,7 @@ bool read_commands() {
             ugear_cksum( message_id, message_size, buf, message_size, &new_cksum0, &new_cksum1 );
             if ( cksum0 == new_cksum0 && cksum1 == new_cksum1 ) {
                 // Serial.println("passed check sum!");
-                // Serial1.print("size="); Serial1.println(message_size);
+                // Serial.print("size="); Serial.println(message_size);
                 parse_message_bin( message_id, buf, message_size );
                 new_data = true;
                 state = 0;

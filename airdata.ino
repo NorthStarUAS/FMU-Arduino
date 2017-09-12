@@ -1,10 +1,10 @@
 #include <i2c_t3.h> // I2C library
 
-#include "BME280.h" // onboard barometer (Marmot v1.6, Aura v1.0)
+#include "BME280.h" // onboard barometer (Marmot v1, Aura v1.0)
 
 #if defined AURA_V10
  BME280 bme(0x76, 0);
-#elif defined MARMOT_V16
+#elif defined MARMOT_V1
  BME280 bme(26);
 #endif
 
@@ -17,7 +17,7 @@ const uint8_t airDataAddr = 0x22;
 volatile uint8_t airDataBuff[8]; 
 
 void airdata_setup() {
-    #if defined AURA_V10 || defined MARMOT_V16
+    #if defined AURA_V10 || defined MARMOT_V1
      bme_status = bme.begin();
      if ( bme_status < 0 ) {
          Serial.println("BME280 initialization unsuccessful");
@@ -30,7 +30,7 @@ void airdata_setup() {
 }
 
 void airdata_fetch() {
-    #if defined AURA_V10 || defined MARMOT_V16
+    #if defined AURA_V10 || defined MARMOT_V1
      if ( bme_status >= 0 ) {
          // get the pressure (Pa), temperature (C),
          // and humidity data (%RH) all at once

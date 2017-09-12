@@ -22,7 +22,7 @@ const float tempScale = 0.01;
 
 #if defined PIKA_V11 or defined AURA_V10
  MPU9250 IMU(0x68, 0);     // i2c
-#elif defined MARMOT_V16
+#elif defined MARMOT_V1
  MPU9250 IMU(MPU_CS_PIN);  // spi
 #endif
 

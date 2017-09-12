@@ -29,7 +29,7 @@ float airdata_diffPress_pa = 0.0;
 // Analog In and Battery Voltage
 #if defined PIKA_V11 || defined AURA_V10
  const uint8_t pwr_pin = A0;
-#elif defined MARMOT_V16
+#elif defined MARMOT_V1
  const uint8_t pwr_pin = 15;
  const uint8_t avionics_pin = A22;
 #endif
@@ -41,7 +41,7 @@ float pwr_v = 0.0;
 float avionics_v = 0.0;
     
 // COMS
-// Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in pika-1.1 hardware
+// Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in pika-1.1 and marmot v1 hardware
 unsigned long output_counter = 0;
 unsigned long write_millis = 0;
 #if defined PIKA_V11 || defined AURA_V10
@@ -93,7 +93,7 @@ void setup() {
     // initialize the gps receiver
     gps.begin(115200);
 
-    // initialize air data (marmot v1.6+)
+    // initialize air data (marmot v1)
     airdata_setup();
     
     // set up ADC0
@@ -161,7 +161,7 @@ void loop() {
     if ( airdataTimer > 100 ) {
         airdataTimer = 0;
         
-        // marmot v1.6, aura v1.0
+        // marmot v1, aura v1.0
         airdata_update();
 
         // battery voltage
@@ -169,8 +169,8 @@ void loop() {
         ain = analogRead(pwr_pin);
         pwr_v = ((float)ain) * 3.3 / analogResolution * pwr_scale;
 
-        #if defined MARMOT_V16
-         // marmot v1.6+
+        #if defined MARMOT_V1
+         // marmot v1
          ain = analogRead(avionics_pin);
          avionics_v = ((float)ain) * 3.3 / analogResolution * avionics_scale;
         #endif
