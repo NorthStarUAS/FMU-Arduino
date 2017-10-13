@@ -210,16 +210,17 @@ void sas_update( float control_norm[SBUS_CHANNELS] ) {
         control_norm[3] -= tune * config.sas_rollgain * imu_calib[3];  // p
     }
     if ( config.sas_pitchaxis ) {
-        control_norm[4] -= tune * config.sas_pitchgain * imu_calib[4]; // q
+        control_norm[4] += tune * config.sas_pitchgain * imu_calib[4]; // q
     }
     if ( config.sas_yawaxis ) {
-        control_norm[5] -= tune * config.sas_yawgain * imu_calib[5];   // r
+        control_norm[5] += tune * config.sas_yawgain * imu_calib[5];   // r
     }
 }
 
 // compute the actuator (servo) values for each channel.  Handle all
 // the requested mixing modes here.
 void mixing_update( float control_norm[SBUS_CHANNELS] ) {
+    bool throttle_enabled = control_norm[1] > 0.0;
     aileron_cmd = control_norm[3];
     elevator_cmd = control_norm[4];
     throttle_cmd = control_norm[2];
@@ -239,7 +240,11 @@ void mixing_update( float control_norm[SBUS_CHANNELS] ) {
         elevator_cmd += config.mix_Gef * flap_cmd;
     }
 
-    actuator_norm[0] = throttle_cmd;
+    if ( throttle_enabled ) {
+        actuator_norm[0] = throttle_cmd;
+    } else {
+        actuator_norm[0] = 0.0;
+    }
     actuator_norm[1] = aileron_cmd;
     actuator_norm[2] = elevator_cmd;
     actuator_norm[3] = rudder_cmd;

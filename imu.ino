@@ -78,14 +78,14 @@ void dataAcquisition() {
     // double call because of command/respose pipelining
     IMU.getMotion10(&ax, &ay, &az, &gx, &gy, &gz, &hx, &hy, &hz, &t);
     //IMU.getMotion10(&ax, &ay, &az, &gx, &gy, &gz, &hx, &hy, &hz, &t);
-    imu_sensors_shared[0] = ax;
-    imu_sensors_shared[1] = ay;
+    imu_sensors_shared[0] = ay;
+    imu_sensors_shared[1] = -ax;
     imu_sensors_shared[2] = az;
-    imu_sensors_shared[3] = gx;
-    imu_sensors_shared[4] = gy;
+    imu_sensors_shared[3] = gy;
+    imu_sensors_shared[4] = -gx;
     imu_sensors_shared[5] = gz;
-    imu_sensors_shared[6] = hx;
-    imu_sensors_shared[7] = hy;
+    imu_sensors_shared[6] = hy;
+    imu_sensors_shared[7] = -hx;
     imu_sensors_shared[8] = hz;
     imu_sensors_shared[9] = t;
     new_imu_data = true;
