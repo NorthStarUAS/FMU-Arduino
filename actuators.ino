@@ -269,7 +269,7 @@ void mixing_update( float control_norm[SBUS_CHANNELS] ) {
         // actuator_norm[0] = config.mix_Gtt * throttle_cmd + config.mix_Gtr * rudder_cmd;
         // actuator_norm[5] = config.mix_Gtt * throttle_cmd - config.mix_Gtr * rudder_cmd;
     }
-    
+
     // compute pwm actuator output values from the normalized values
     pwm_norm2pwm( actuator_norm, actuator_pwm );
 }

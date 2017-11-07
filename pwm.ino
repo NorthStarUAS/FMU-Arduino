@@ -4,7 +4,7 @@ const int servoPins[8] = {21, 22, 23, 2, 3, 4, 5, 6};
 
 // define if a channel is symmetrical or not (i.e. mapped to [0,1] for
 // throttle, flaps, spoilers; [-1,1] for aileron, elevator, rudder
-bool pwm_symmetrical[PWM_CHANNELS] = {0, 1, 1, 1, 0, 0, 0, 0};
+bool pwm_symmetrical[PWM_CHANNELS] = {0, 1, 1, 1, 1, 0, 0, 0};
 
 void pwm_setup() {
     // fixme: honor config rates
@@ -24,7 +24,7 @@ void pwm_setup() {
 void pwm_norm2pwm( float *norm, uint16_t *pwm ) {
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         // convert to pulse length (special case ch6 when in flaperon mode)
-        if ( pwm_symmetrical[i] || (i == 5 && config.mix_flaperon) ) {
+        if ( pwm_symmetrical[i] || (i == 4 && config.mix_flaperon) ) {
             // i.e. aileron, rudder, elevator
             // Serial1.println(i);
             // Serial1.println(config.act_rev[i]);

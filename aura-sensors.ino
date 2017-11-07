@@ -142,11 +142,11 @@ void loop() {
             myTimer = 0;
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
-            // write_gps_ascii();
+            write_gps_ascii();
             // write_airdata_ascii();
             // write_analog_ascii();
             // write_status_info_ascii();
-            write_imu_ascii();
+            // write_imu_ascii();
         }
     }
 
