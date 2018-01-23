@@ -48,7 +48,6 @@ void ugear_cksum( byte hdr1, byte hdr2, byte *buf, byte size,
 
 bool parse_message_bin( byte id, byte *buf, byte message_size )
 {
-    int counter = 0;
     bool result = false;
 
     if ( id == FLIGHT_COMMAND_PACKET_ID && message_size == AP_CHANNELS * 2 ) {
@@ -565,7 +564,7 @@ uint8_t write_status_info_bin()
 {
     byte buf[3];
     byte cksum0, cksum1;
-    byte size = 14;
+    byte size = 16;
     byte packet_buf[256]; // hopefully never larger than this!
     byte *packet = packet_buf;
 
@@ -607,7 +606,8 @@ uint8_t write_status_info_bin()
     output_counter = 0;
     *(uint16_t *)packet = (uint16_t)byte_rate; packet += 2;
     *(uint16_t *)packet = (uint16_t)(pwr_v*100); packet += 2;
-        
+    *(uint16_t *)packet = (uint16_t)(avionics_v*100); packet += 2;
+ 
     // write packet
     Serial1.write( packet_buf, size );
 

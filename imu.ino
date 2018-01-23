@@ -23,28 +23,20 @@ const float tempScale = 0.01;
 #if defined PIKA_V11 or defined AURA_V10
  MPU9250 IMU(0x68, 0);     // i2c
 #elif defined MARMOT_V1
- MPU9250 IMU(MPU_CS_PIN);  // spi
+ MPU9250 IMU(SPI, MPU_CS_PIN);  // spi
 #endif
-
-// any code that reads imu_sensors_shared should protect those reads
-// with cli() / sei() calls because this array is modified by an ISR
-// that could be called at any time, even in the middle of a variable
-// read which could lead to corrupted values.
-
-// the volatile (shared) storage for the imu sensors
-volatile float imu_sensors_shared[10];
-volatile unsigned long imu_micros_shared = 0;
 
 // the 'safe' but raw version of the imu sensors
 float imu_uncalibrated[10];
 
 float gyro_calib[3] = { 0.0, 0.0, 0.0 };
 
-
 // configure the IMU settings and setup the ISR to aquire the data
 void imu_setup() {
     // initialize the IMU, specify accelerometer and gyro ranges
-    int beginStatus = IMU.begin(ACCEL_RANGE_4G, GYRO_RANGE_500DPS);
+    int beginStatus = IMU.begin();
+    IMU.setAccelRange(MPU9250::ACCEL_RANGE_4G);
+    IMU.setGyroRange(MPU9250::GYRO_RANGE_500DPS);
     if ( beginStatus < 0 ) {
         Serial.println("\nIMU initialization unsuccessful");
         Serial.println("Check IMU wiring or try cycling power");
@@ -54,12 +46,13 @@ void imu_setup() {
     }
     
     // set the DLPF and interrupts
-    int setFiltStatus = IMU.setFilt(DLPF_BANDWIDTH_41HZ, MPU9250_SRD);
+    int setFiltStatus = IMU.setDlpfBandwidth(MPU9250::DLPF_BANDWIDTH_41HZ);
     if ( setFiltStatus < 0 ) {
         Serial.println("Filter initialization unsuccessful");
         delay(1000);
         return;
     }
+    IMU.setSrd(MPU9250_SRD);
 
     Serial.println("MPU-9250 ready.");
     
@@ -69,44 +62,20 @@ void imu_setup() {
 }
 
 
-// ISR, system automatically disables interrupts when running
-void dataAcquisition() {
-    // imu data
-    imu_micros_shared = micros();
-    
-    float ax, ay, az, gx, gy, gz, hx, hy, hz, t;
-    // double call because of command/respose pipelining
-    IMU.getMotion10(&ax, &ay, &az, &gx, &gy, &gz, &hx, &hy, &hz, &t);
-    //IMU.getMotion10(&ax, &ay, &az, &gx, &gy, &gz, &hx, &hy, &hz, &t);
-    imu_sensors_shared[0] = ay;
-    imu_sensors_shared[1] = -ax;
-    imu_sensors_shared[2] = az;
-    imu_sensors_shared[3] = gy;
-    imu_sensors_shared[4] = -gx;
-    imu_sensors_shared[5] = gz;
-    imu_sensors_shared[6] = hy;
-    imu_sensors_shared[7] = -hx;
-    imu_sensors_shared[8] = hz;
-    imu_sensors_shared[9] = t;
-    new_imu_data = true;
-    
-    // onboard air data query: this is not my favorite place to put
-    // this code, but because we share spi with the IMU we need to
-    // sequence these or they could step on each other.
-    airdata_fetch();
-}
+// query the imu and update the structures
+void imu_update() {
+    imu_micros = micros();
+    imu_uncalibrated[0] = IMU.getAccelY_mss();
+    imu_uncalibrated[1] = -IMU.getAccelX_mss();
+    imu_uncalibrated[2] = IMU.getAccelZ_mss();
+    imu_uncalibrated[3] = IMU.getGyroY_rads();
+    imu_uncalibrated[4] = -IMU.getGyroX_rads();
+    imu_uncalibrated[5] = IMU.getGyroZ_rads();
+    imu_uncalibrated[6] = IMU.getMagY_uT();
+    imu_uncalibrated[7] = -IMU.getMagX_uT();
+    imu_uncalibrated[8] = IMU.getMagZ_uT();
+    imu_uncalibrated[9] = IMU.getTemperature_C();
 
-
-// copy the dangerous 'volatile' shared version of imu data to the
-// safe global copy.
-void update_imu() {
-    cli();
-    for ( int i = 0; i < 10; i++ ) {
-        imu_uncalibrated[i] = imu_sensors_shared[i];
-    }
-    imu_micros = imu_micros_shared;
-    sei();
-    
     for ( int i = 0; i < 10; i++ ) {
         imu_calib[i] = imu_uncalibrated[i];
     }
@@ -185,7 +154,7 @@ void calibrate_gyros() {
         gyro_calib[1] = gys;
         gyro_calib[2] = gzs;
         gyros_calibrated = 2;
-        update_imu(); // update imu_calib values before anything else get's a chance to read them
+        imu_update(); // update imu_calib values before anything else get's a chance to read them
         Serial.println(" good.");
         Serial.print("Average gyros: ");
         Serial.print(gyro_calib[0],4);

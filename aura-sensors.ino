@@ -4,7 +4,6 @@
 #include "config.h"
 
 // IMU
-volatile bool new_imu_data = false;
 int gyros_calibrated = 0; // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished
 float imu_calib[10]; // the 'safe' and calibrated version of the imu sensors
 int16_t imu_packed[10]; // calibrated and packed version of the imu sensors
@@ -51,6 +50,7 @@ unsigned long write_millis = 0;
  bool blink_state = true;
 #endif
 
+volatile int main_loop_signal = 0;
 IntervalTimer myTimer;
 
 void setup() {
@@ -104,27 +104,36 @@ void setup() {
     digitalWrite(LED, HIGH);
 #endif
 
-
     // initialize comms channel write stats timer
     write_millis = millis();
     
     Serial.println("Ready and transmitting...");
 
-    myTimer.begin(dataAcquisition, 1000000 / MASTER_HZ);
+    myTimer.begin(genSignal, 1000000 / MASTER_HZ);
+}
+
+void genSignal() {
+    main_loop_signal++;
 }
 
 void loop() {
     // put your main code here, to run repeatedly:
-    static elapsedMillis myTimer = 0;
+    static elapsedMillis debugTimer = 0;
     static elapsedMillis airdataTimer = 0;
         
     // When new IMU data is ready (new pulse from IMU), go out and grab the IMU data
     // and output fresh IMU message plus the most recent data from everything else.
-    if ( new_imu_data ) {
-        cli();
-        new_imu_data = false;
-        sei();
-        update_imu();
+    volatile bool do_data_aquisition = false;
+    cli();
+    if (main_loop_signal > 0) {
+        do_data_aquisition = true;
+        main_loop_signal--;
+    }
+    sei();
+    
+    if ( do_data_aquisition ) {
+        imu_update();
+        airdata_update();
  
         // output keyed off new IMU data
         output_counter += write_pilot_in_bin();
@@ -138,12 +147,12 @@ void loop() {
         output_counter += write_imu_bin(); // write IMU data last as an implicit 'end of data frame' marker.
 
         // 10hz human debugging output, but only after gyros finish calibrating
-        if ( myTimer >= 100 && gyros_calibrated == 2) {
-            myTimer = 0;
+        if ( debugTimer >= 100 && gyros_calibrated == 2) {
+            debugTimer = 0;
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
-            write_gps_ascii();
-            // write_airdata_ascii();
+            // write_gps_ascii();
+            write_airdata_ascii();
             // write_analog_ascii();
             // write_status_info_ascii();
             // write_imu_ascii();
@@ -158,7 +167,7 @@ void loop() {
     }
     
     // roughly 100hz airdata & ain polling
-    if ( airdataTimer > 100 ) {
+    if ( airdataTimer >= 100 ) {
         airdataTimer = 0;
         
         // marmot v1, aura v1.0
