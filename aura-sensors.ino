@@ -5,7 +5,7 @@
 
 // IMU
 int gyros_calibrated = 0; // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished
-float imu_calib[10]; // the 'safe' and calibrated version of the imu sensors
+float imu_calib[10]; // the calibrated version of the imu sensors
 int16_t imu_packed[10]; // calibrated and packed version of the imu sensors
 unsigned long imu_micros = 0;
 
@@ -132,8 +132,8 @@ void loop() {
     sei();
     
     if ( do_data_aquisition ) {
+        // top priority, used for timing sync downstream.
         imu_update();
-        airdata_update();
  
         // output keyed off new IMU data
         output_counter += write_pilot_in_bin();
@@ -157,21 +157,13 @@ void loop() {
             // write_status_info_ascii();
             // write_imu_ascii();
         }
-    }
 
-    while ( sbus_process() ); // keep processing while there is data in the uart buffer
-
-    if ( gps.read_ublox8() ) {
-        new_gps_data = true;
-        gps_data = gps.get_data();
-    }
-    
-    // roughly 100hz airdata & ain polling
-    if ( airdataTimer >= 100 ) {
-        airdataTimer = 0;
-        
-        // marmot v1, aura v1.0
         airdata_update();
+    
+        if ( gps.read_ublox8() ) {
+            new_gps_data = true;
+            gps_data = gps.get_data();
+        }
 
         // battery voltage
         uint16_t ain;
@@ -185,12 +177,13 @@ void loop() {
         #endif
     }
 
-    // suck in any host commmands (would I want to check for host commands
-    // at a higher rate? imu rate?)
+    while ( sbus_process() ); // keep processing while there is data in the uart buffer
+
+    // suck in any host commmands (flight control updates, etc.)
     while ( read_commands() );
-    
+
+    // blink the led on boards that support it
     #if defined PIKA_V11 || defined AURA_V10
-     // blinking
      if ( gyros_calibrated < 2 ) {
          blink_rate = 50;
      } else if ( gps_data.fixType < 3 ) {
