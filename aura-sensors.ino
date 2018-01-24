@@ -119,7 +119,6 @@ void genSignal() {
 void loop() {
     // put your main code here, to run repeatedly:
     static elapsedMillis debugTimer = 0;
-    static elapsedMillis airdataTimer = 0;
         
     // When new IMU data is ready (new pulse from IMU), go out and grab the IMU data
     // and output fresh IMU message plus the most recent data from everything else.
@@ -159,7 +158,7 @@ void loop() {
         }
 
         airdata_update();
-    
+
         if ( gps.read_ublox8() ) {
             new_gps_data = true;
             gps_data = gps.get_data();

@@ -11,9 +11,9 @@
 #if defined AURA_V10
  BME280 bme(0x76, 0);
 #elif defined MARMOT_V1
- BME280 bme(SPI, 26);
- AMS5915 dPress(Wire1,0x27,AMS5915::AMS5915_0020_D);
- AMS5915 sPress(Wire1,0x26,AMS5915::AMS5915_1200_B);
+ BME280 bme(26);
+ AMS5915 dPress(0x27, 1, AMS5915_0020_D);
+ AMS5915 sPress(0x26, 1, AMS5915_1200_B);
 #elif defined PIKA_V11
  const uint8_t airDataAddr = 0x22;
  volatile uint8_t airDataBuff[8]; 
@@ -46,19 +46,16 @@ void airdata_update() {
      if ( bme_status >= 0 ) {
          // get the pressure (Pa), temperature (C),
          // and humidity data (%RH) all at once
-         bme.readSensor();
-         bme_press = bme.getPressure_Pa();
-         bme_temp = bme.getTemperature_C();
-         bme_hum = bme.getHumidity_RH();
+         bme.getData(&bme_press,&bme_temp,&bme_hum);
      }
     #endif
 
     // external static/differential pressure sensor
     #if defined MARMOT_V1
-      sPress.readSensor();
-      dPress.readSensor();
-      airdata_staticPress_pa = sPress.getPressure_Pa();
-      airdata_diffPress_pa = dPress.getPressure_Pa();
+      float tmp;
+      sPress.getData(&airdata_staticPress_pa, &tmp);
+      delayMicroseconds(50); // need some time spacing here or i2c bus can hang
+      dPress.getData(&airdata_diffPress_pa, &tmp);
     #elif defined PIKA_V11
      // gather air data from external BFS board
      Wire.requestFrom(airDataAddr, sizeof(airDataBuff));

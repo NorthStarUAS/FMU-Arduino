@@ -23,20 +23,18 @@ const float tempScale = 0.01;
 #if defined PIKA_V11 or defined AURA_V10
  MPU9250 IMU(0x68, 0);     // i2c
 #elif defined MARMOT_V1
- MPU9250 IMU(SPI, MPU_CS_PIN);  // spi
+ MPU9250 IMU(MPU_CS_PIN);  // spi
 #endif
 
 // the 'safe' but raw version of the imu sensors
-float imu_uncalibrated[10];
+// float imu_uncalibrated[10];
 
 float gyro_calib[3] = { 0.0, 0.0, 0.0 };
 
 // configure the IMU settings and setup the ISR to aquire the data
 void imu_setup() {
     // initialize the IMU, specify accelerometer and gyro ranges
-    int beginStatus = IMU.begin();
-    IMU.setAccelRange(MPU9250::ACCEL_RANGE_4G);
-    IMU.setGyroRange(MPU9250::GYRO_RANGE_500DPS);
+    int beginStatus = IMU.begin(ACCEL_RANGE_4G, GYRO_RANGE_500DPS);
     if ( beginStatus < 0 ) {
         Serial.println("\nIMU initialization unsuccessful");
         Serial.println("Check IMU wiring or try cycling power");
@@ -44,18 +42,17 @@ void imu_setup() {
         delay(1000);
         return;
     }
-    
+
     // set the DLPF and interrupts
-    int setFiltStatus = IMU.setDlpfBandwidth(MPU9250::DLPF_BANDWIDTH_41HZ);
+    int setFiltStatus = IMU.setFilt(DLPF_BANDWIDTH_41HZ, MPU9250_SRD);
     if ( setFiltStatus < 0 ) {
         Serial.println("Filter initialization unsuccessful");
         delay(1000);
         return;
     }
-    IMU.setSrd(MPU9250_SRD);
 
     Serial.println("MPU-9250 ready.");
-    
+            
     // fixme: deprecated
     // pinMode(MPU_SYNC_PIN, INPUT);
     // attachInterrupt(MPU_SYNC_PIN, dataAcquisition, RISING);
@@ -65,22 +62,21 @@ void imu_setup() {
 // query the imu and update the structures
 void imu_update() {
     imu_micros = micros();
-    imu_uncalibrated[0] = IMU.getAccelY_mss();
-    imu_uncalibrated[1] = -IMU.getAccelX_mss();
-    imu_uncalibrated[2] = IMU.getAccelZ_mss();
-    imu_uncalibrated[3] = IMU.getGyroY_rads();
-    imu_uncalibrated[4] = -IMU.getGyroX_rads();
-    imu_uncalibrated[5] = IMU.getGyroZ_rads();
-    imu_uncalibrated[6] = IMU.getMagY_uT();
-    imu_uncalibrated[7] = -IMU.getMagX_uT();
-    imu_uncalibrated[8] = IMU.getMagZ_uT();
-    imu_uncalibrated[9] = IMU.getTemperature_C();
+    float ax, ay, az, gx, gy, gz, hx, hy, hz, t;
+    IMU.getMotion10(&ax, &ay, &az, &gx, &gy, &gz, &hx, &hy, &hz, &t);
+    imu_calib[0] = ay;
+    imu_calib[1] = -ax;
+    imu_calib[2] = az;
+    imu_calib[3] = gy;
+    imu_calib[4] = -gx;
+    imu_calib[5] = gz;
+    imu_calib[6] = hy;
+    imu_calib[7] = -hx;
+    imu_calib[8] = hz;
+    imu_calib[9] = t;
 
-    for ( int i = 0; i < 10; i++ ) {
-        imu_calib[i] = imu_uncalibrated[i];
-    }
     if ( gyros_calibrated < 2 ) {
-        calibrate_gyros();
+        calibrate_gyros(gy, -gx, gz);  // caution: axis remapping
     } else {
         for ( int i = 0; i < 3; i++ ) {
             imu_calib[i+3] -= gyro_calib[i];
@@ -105,35 +101,35 @@ void imu_update() {
 // agree (close enough) for 4 consecutive seconds, then we calibrate
 // with the 1 sec low pass filter value.  If time expires the
 // calibration fails and we run with raw gyro values.
-void calibrate_gyros() {
-    static float gxs = imu_uncalibrated[3];
-    static float gys = imu_uncalibrated[4];
-    static float gzs = imu_uncalibrated[5];
-    static float gxf = imu_uncalibrated[3];
-    static float gyf = imu_uncalibrated[4];
-    static float gzf = imu_uncalibrated[5];
+void calibrate_gyros(float gx, float gy, float gz) {
+    static float gxs = gx;
+    static float gys = gy;
+    static float gzs = gz;
+    static float gxf = gx;
+    static float gyf = gy;
+    static float gzf = gz;
     static const float cutoff = 0.005;
     static elapsedMillis total_timer = 0;
     static elapsedMillis good_timer = 0;
     static elapsedMillis output_timer = 0;
-
-    // zero the calibration
-    gyro_calib[0] = gxs;
-    gyro_calib[1] = gys;
-    gyro_calib[2] = gzs;
 
     if ( gyros_calibrated == 0 ) {
         Serial.print("Calibrating gyros: ");
         gyros_calibrated = 1;
     }
     
-    gxf = 0.9 * gxf + 0.1 * imu_uncalibrated[3];
-    gyf = 0.9 * gyf + 0.1 * imu_uncalibrated[4];
-    gzf = 0.9 * gzf + 0.1 * imu_uncalibrated[5];
-    gxs = 0.99 * gxs + 0.01 * imu_uncalibrated[3];
-    gys = 0.99 * gys + 0.01 * imu_uncalibrated[4];
-    gzs = 0.99 * gzs + 0.01 * imu_uncalibrated[5];
+    gxf = 0.9 * gxf + 0.1 * gx;
+    gyf = 0.9 * gyf + 0.1 * gy;
+    gzf = 0.9 * gzf + 0.1 * gz;
+    gxs = 0.99 * gxs + 0.01 * gx;
+    gys = 0.99 * gys + 0.01 * gy;
+    gzs = 0.99 * gzs + 0.01 * gz;
     
+    // use 'slow' filter value for calibration while calibrating
+    gyro_calib[0] = gxs;
+    gyro_calib[1] = gys;
+    gyro_calib[2] = gzs;
+
     float dx = fabs(gxs - gxf);
     float dy = fabs(gys - gyf);
     float dz = fabs(gzs - gzf);
