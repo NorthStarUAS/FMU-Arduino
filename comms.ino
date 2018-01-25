@@ -461,9 +461,9 @@ uint8_t write_airdata_bin()
     *(float *)packet = bme_press; packet += 4;
     *(float *)packet = bme_temp; packet += 4;
     *(float *)packet = bme_hum; packet += 4;
-    *(float *)packet = airdata_staticPress_pa; packet += 4;
     *(float *)packet = airdata_diffPress_pa; packet += 4;
-  
+    *(float *)packet = airdata_temp_C; packet += 4;
+      
     // write packet
     Serial1.write( packet_buf, size );
 
@@ -480,11 +480,11 @@ uint8_t write_airdata_bin()
 void write_airdata_ascii()
 {
     Serial.print("Air: ");
-    Serial.print(bme_press); Serial.print(" (pa) ");
-    Serial.print(bme_temp); Serial.print(" (C) ");
-    Serial.print(bme_hum); Serial.print(" (%RH) ");
-    Serial.print("Ext Static (pa): "); Serial.print(airdata_staticPress_pa);
-    Serial.print(" Ext Diff (pa): "); Serial.println(airdata_diffPress_pa);
+    Serial.print(bme_press, 4); Serial.print(" (pa) ");
+    Serial.print(bme_temp, 2); Serial.print(" (C) ");
+    Serial.print(bme_hum, 1); Serial.print(" (%RH) ");
+    Serial.print("Ext Diff (pa): "); Serial.print(airdata_diffPress_pa, 4);
+    Serial.print(" Ext Temp (C): "); Serial.println(airdata_temp_C, 2);
 }
 
 /* output a binary representation of the analog input data */

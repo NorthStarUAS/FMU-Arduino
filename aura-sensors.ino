@@ -1,6 +1,6 @@
 #include <HardwareSerial.h>
 
-#include "UBLOX-AuraUAS.h"
+#include "UBLOX8.h"
 #include "config.h"
 
 // IMU
@@ -17,13 +17,14 @@ float actuator_norm[SBUS_CHANNELS];
 uint16_t actuator_pwm[PWM_CHANNELS];
 
 // GPS
-UBLOX_AuraUAS gps(&Serial3); // ublox m8n
+UBLOX8 gps(&Serial3); // ublox m8n
 bool new_gps_data = false;
 nav_pvt gps_data;
 
 // Air Data
-float airdata_staticPress_pa = 0.0;
+//float airdata_staticPress_pa = 0.0;
 float airdata_diffPress_pa = 0.0;
+float airdata_temp_C = 0.0;
 
 // Analog In and Battery Voltage
 #if defined PIKA_V11 || defined AURA_V10
@@ -57,8 +58,9 @@ void setup() {
     // put your setup code here, to run once:
 
     Serial.begin(DEFAULT_BAUD);
+    while ( !Serial );  // wait for serial to come alive
+    
     Serial1.begin(DEFAULT_BAUD);
-    delay(600); // needed delay before attempting to print anything
 
     Serial.print("\nAura Sensors: Rev "); Serial.println(FIRMWARE_REV);
     Serial.println("You are seeing this message on the usb interface.");
@@ -66,7 +68,7 @@ void setup() {
     Serial.print(DEFAULT_BAUD);
     Serial.println(" baud (N81) no flow control.");
     
-    // The following code (when enabled) will force setting a specific device serial number.
+    // The myfollowing code (when enabled) will force setting a specific device serial number.
     // set_serial_number(112);
     read_serial_number();
     
