@@ -22,7 +22,7 @@ bool new_gps_data = false;
 nav_pvt gps_data;
 
 // Air Data
-//float airdata_staticPress_pa = 0.0;
+float airdata_staticPress_pa = 0.0;
 float airdata_diffPress_pa = 0.0;
 float airdata_temp_C = 0.0;
 
@@ -73,6 +73,7 @@ void setup() {
     read_serial_number();
     
     if ( /* true || */ !config_read_eeprom() ) {
+        Serial.println("Resetting eeprom to default values.");
         config_load_defaults();
         config_write_eeprom();
     }
@@ -120,17 +121,18 @@ void genSignal() {
 
 void loop() {
     // put your main code here, to run repeatedly:
+    static elapsedMillis airdataTimer = 0;
     static elapsedMillis debugTimer = 0;
-        
+       
     // When new IMU data is ready (new pulse from IMU), go out and grab the IMU data
     // and output fresh IMU message plus the most recent data from everything else.
     volatile bool do_data_aquisition = false;
-    cli();
+    noInterrupts();
     if (main_loop_signal > 0) {
         do_data_aquisition = true;
         main_loop_signal--;
     }
-    sei();
+    interrupts();
     
     if ( do_data_aquisition ) {
         // top priority, used for timing sync downstream.
@@ -159,7 +161,11 @@ void loop() {
             // write_imu_ascii();
         }
 
-        airdata_update();
+        if ( airdataTimer >= 10 ) {
+            // ensure airdata_update() can never be called faster than 100hz
+            airdataTimer = 0;
+            airdata_update();
+        }
 
         if ( gps.read_ublox8() ) {
             new_gps_data = true;
@@ -181,8 +187,10 @@ void loop() {
     while ( sbus_process() ); // keep processing while there is data in the uart buffer
 
     // suck in any host commmands (flight control updates, etc.)
+    // debug: while ( Serial1.available() ) Serial1.read();
     while ( read_commands() );
 
+            
     // blink the led on boards that support it
     #if defined PIKA_V11 || defined AURA_V10
      if ( gyros_calibrated < 2 ) {
