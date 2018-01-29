@@ -1,6 +1,6 @@
 
 const int servoFreq_hz = 50; // servo pwm update rate
-const int servoPins[8] = {21, 22, 23, 2, 3, 4, 5, 6};
+const uint8_t servoPins[PWM_CHANNELS] = {21, 22, 23, 2, 3, 4, 5, 6};
 
 // define if a channel is symmetrical or not (i.e. mapped to [0,1] for
 // throttle, flaps, spoilers; [-1,1] for aileron, elevator, rudder
@@ -10,8 +10,8 @@ void pwm_setup() {
     // fixme: honor config rates
     // setting up pwm outputs and rates
     analogWriteResolution(16);
-    for ( uint8_t i = 0; i < sizeof(servoPins)/sizeof(int); i++ ) {
-        analogWriteFrequency(servoPins[i],servoFreq_hz);
+    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
+        analogWriteFrequency(servoPins[i], servoFreq_hz);
     }
     
     // set default safe values for actuator outputs
@@ -51,7 +51,7 @@ void pwm_norm2pwm( float *norm, uint16_t *pwm ) {
 void pwm_update() {
     // sending servo pwm commands
     for ( uint8_t i = 0; i < PWM_CHANNELS; i++ ) {
-        analogWrite(servoPins[i],actuator_pwm[i] / ((1/((float) servoFreq_hz)) * 1000000.0f )*65535.0f);
+        analogWrite(servoPins[i], actuator_pwm[i] / ((1/((float) servoFreq_hz)) * 1000000.0f )*65535.0f);
     }
 }
 
