@@ -24,7 +24,8 @@
 #define ANALOG_PACKET_ID 54
 #define STATUS_INFO_PACKET_ID 55
 
-void ugear_cksum( byte hdr1, byte hdr2, byte *buf, byte size,
+
+void ugear_cksum( byte hdr1, byte hdr2, const byte *buf, byte size,
                   byte *cksum0, byte *cksum1 )
 {
     byte c0 = 0;
@@ -50,6 +51,8 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 {
     bool result = false;
 
+    // Serial.print("message id = "); Serial.print(id); Serial.print(" len = "); Serial.println(message_size);
+    
     if ( id == FLIGHT_COMMAND_PACKET_ID && message_size == AP_CHANNELS * 2 ) {
         /* flight commands are 2 byte ints, normalized, then scaled to +/- 16384 */
         float ap_tmp[AP_CHANNELS];
@@ -58,8 +61,9 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             ap_tmp[i] = (float)val / 16384.0;
             //Serial1.println(ap_tmp[i]);
         }
-        // autopilot_norm uses the same channel mapping as sbus_norm, so map ap_tmp values to their
-        // correct places in autopilot_norm
+        // autopilot_norm uses the same channel mapping as sbus_norm,
+        // so map ap_tmp values to their correct places in
+        // autopilot_norm
         autopilot_norm[2] = ap_tmp[0];
         autopilot_norm[3] = ap_tmp[1];
         autopilot_norm[4] = ap_tmp[2];
@@ -75,7 +79,8 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             mixing_update( autopilot_norm );
             pwm_update();
         } else {
-            // manual mode, do nothing with actuator commands from the autopilot
+            // manual mode, do nothing with actuator commands from the
+            // autopilot
         }
         result = true;
     } else if ( id == CONFIG_PACKET_ID && message_size == sizeof(config) ) {
@@ -85,22 +90,28 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         write_ack_bin( id, 0 );
         result = true;
     } else if ( id == WRITE_EEPROM_PACKET_ID && message_size == 0 ) {
+        Serial.println("received update eeprom command");
         config_write_eeprom();
         write_ack_bin( id, 0 );
         result = true;
     } else {
-        // Serial.print(message_size);
-        // Serial.print(" ");
-        // Serial.println(sizeof(config));
+        // Serial.print("unknown message id = "); Serial.print(id); Serial.print(" len = "); Serial.println(message_size);
     }
     return result;
 }
 
 
 bool read_commands() {
-    static byte state = 0; // 0 = looking for SOM0, 1 = looking for SOM1, 2 = looking for packet id & size, 3 = looking for packet data and checksum
+    #define MAX_CMD_BUFFER 256
+    static byte cmd_buffer[MAX_CMD_BUFFER];
+    
+    // 0 = looking for SOM0
+    // 1 = looking for SOM1
+    // 2 = looking for packet id & size
+    // 3 = looking for packet data
+    // 4 = looking for checksum
+    static byte state = 0;
     byte input;
-    static byte buf[256];
     static int buf_counter = 0;
     static byte message_id = 0;
     static byte message_size = 0;
@@ -151,9 +162,13 @@ bool read_commands() {
     }
     if ( state == 3 ) {
         while ( Serial1.available() >= 1 && buf_counter < message_size ) {
-            buf[buf_counter] = Serial1.read();
-            buf_counter++;
-            // Serial.println(buf[i], DEC);
+            if ( buf_counter < MAX_CMD_BUFFER ) {
+                cmd_buffer[buf_counter] = Serial1.read();
+                buf_counter++;
+                // Serial.println(buf[i], DEC);
+            } else {
+                state = 0;
+            }
         }
         if ( buf_counter >= message_size ) {
             state = 4;
@@ -164,15 +179,15 @@ bool read_commands() {
             cksum0 = Serial1.read();
             cksum1 = Serial1.read();
             byte new_cksum0, new_cksum1;
-            ugear_cksum( message_id, message_size, buf, message_size, &new_cksum0, &new_cksum1 );
+            ugear_cksum( message_id, message_size, cmd_buffer, message_size, &new_cksum0, &new_cksum1 );
             if ( cksum0 == new_cksum0 && cksum1 == new_cksum1 ) {
                 // Serial.println("passed check sum!");
                 // Serial.print("size="); Serial.println(message_size);
-                parse_message_bin( message_id, buf, message_size );
+                parse_message_bin( message_id, cmd_buffer, message_size );
                 new_data = true;
                 state = 0;
             } else {
-                // Serial.println("failed check sum");
+                Serial.print("failed check sum, id = "); Serial.print(message_id); Serial.print(" len = "); Serial.println(message_size);
                 // check sum failure
                 state = 0;
             }
@@ -186,65 +201,48 @@ bool read_commands() {
 /* output an acknowledgement of a message received */
 void write_ack_bin( uint8_t command_id, uint8_t subcommand_id )
 {
-    byte buf[3];
-    byte cksum0, cksum1;
-    byte size = 0;
-    byte packet[256]; // hopefully never larger than this!
+    byte size = 2;
 
     // start of message sync bytes
-    buf[0] = START_OF_MSG0; 
-    buf[1] = START_OF_MSG1; 
-    buf[2] = 0;
-    Serial1.write( buf, 2 );
+    Serial1.write(START_OF_MSG0);
+    Serial1.write(START_OF_MSG1);
 
     // packet id (1 byte)
-    buf[0] = ACK_PACKET_ID; 
-    buf[1] = 0;
-    Serial1.write( buf, 1 );
+    Serial1.write(ACK_PACKET_ID); 
 
-    // packet length (2 bytes)
-    buf[0] = 2;
-    Serial1.write( buf, 1 );
+    // packet length
+    Serial1.write(size);
 
     // ack id
-    packet[size++] = command_id;
-    packet[size++] = subcommand_id;
-    
-    // write packet
-    Serial1.write( packet, size );
+    byte packet[size];
+    packet[0] = command_id;
+    packet[1] = subcommand_id;
+    Serial1.write(packet, size);
 
     // check sum (2 bytes)
+    byte cksum0, cksum1;
     ugear_cksum( ACK_PACKET_ID, size, packet, size, &cksum0, &cksum1 );
-    buf[0] = cksum0; 
-    buf[1] = cksum1; 
-    buf[2] = 0;
-    Serial1.write( buf, 2 );
+    Serial1.write(cksum0);
+    Serial1.write(cksum1);
 }
 
 
 /* output a binary representation of the pilot (rc receiver) data */
 uint8_t write_pilot_in_bin()
 {
-    byte buf[3];
-    byte cksum0, cksum1;
     byte size = 2 * SBUS_CHANNELS + 1;
     byte packet_buf[256]; // hopefully never larger than this!
     byte *packet = packet_buf;
 
     // start of message sync bytes
-    buf[0] = START_OF_MSG0; 
-    buf[1] = START_OF_MSG1; 
-    buf[2] = 0;
-    Serial1.write( buf, 2 );
+    Serial1.write(START_OF_MSG0);
+    Serial1.write(START_OF_MSG1);
 
     // packet id (1 byte)
-    buf[0] = PILOT_PACKET_ID; 
-    buf[1] = 0;
-    Serial1.write( buf, 1 );
+    Serial1.write(PILOT_PACKET_ID);
 
     // packet length (1 byte)
-    buf[0] = size;
-    Serial1.write( buf, 1 );
+    Serial1.write(size);
 
     // receiver data
     for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
@@ -259,11 +257,10 @@ uint8_t write_pilot_in_bin()
     Serial1.write( packet_buf, size );
 
     // check sum (2 bytes)
+    byte cksum0, cksum1;
     ugear_cksum( PILOT_PACKET_ID, size, packet_buf, size, &cksum0, &cksum1 );
-    buf[0] = cksum0; 
-    buf[1] = cksum1; 
-    buf[2] = 0;
-    Serial1.write( buf, 2 );
+    Serial1.write(cksum0);
+    Serial1.write(cksum1);
     
     return size + 6;
 }
@@ -305,26 +302,19 @@ void write_actuator_out_ascii()
 /* output a binary representation of the IMU data (note: scaled to 16bit values) */
 uint8_t write_imu_bin()
 {
-    byte buf[3];
-    byte cksum0, cksum1;
     byte size = 4 /* for timestamp */ + 2 * 10 /* 10 imu values */;
     byte packet_buf[256]; // hopefully never larger than this!
     byte *packet = packet_buf;
     
     // start of message sync bytes
-    buf[0] = START_OF_MSG0; 
-    buf[1] = START_OF_MSG1; 
-    buf[2] = 0;
-    Serial1.write( buf, 2 );
+    Serial1.write(START_OF_MSG0);
+    Serial1.write(START_OF_MSG1);
 
     // packet id (1 byte)
-    buf[0] = IMU_PACKET_ID; 
-    buf[1] = 0;
-    Serial1.write( buf, 1 );
+    Serial1.write(IMU_PACKET_ID);
 
     // packet length (1 byte)
-    buf[0] = size;
-    Serial1.write( buf, 1 );
+    Serial1.write(size);
 
     *(uint32_t *)packet = imu_micros; packet += 4;
 
@@ -336,11 +326,10 @@ uint8_t write_imu_bin()
     Serial1.write( packet_buf, size );
 
     // check sum (2 bytes)
+    byte cksum0, cksum1;
     ugear_cksum( IMU_PACKET_ID, size, packet_buf, size, &cksum0, &cksum1 );
-    buf[0] = cksum0; 
-    buf[1] = cksum1; 
-    buf[2] = 0;
-    Serial1.write( buf, 2 );
+    Serial1.write(cksum0);
+    Serial1.write(cksum1);
     
     return size + 6;
 }
@@ -359,8 +348,6 @@ void write_imu_ascii()
 /* output a binary representation of the GPS data */
 uint8_t write_gps_bin()
 {
-    byte buf[3];
-    byte cksum0, cksum1;
     byte size = sizeof(gps_data);
 
     if ( !new_gps_data ) {
@@ -368,29 +355,23 @@ uint8_t write_gps_bin()
     }
     
     // start of message sync bytes
-    buf[0] = START_OF_MSG0; 
-    buf[1] = START_OF_MSG1; 
-    buf[2] = 0;
-    Serial1.write( buf, 2 );
+    Serial1.write(START_OF_MSG0);
+    Serial1.write(START_OF_MSG1);
 
     // packet id (1 byte)
-    buf[0] = GPS_PACKET_ID; 
-    buf[1] = 0;
-    Serial1.write( buf, 1 );
+    Serial1.write(GPS_PACKET_ID);
 
     // packet length (1 byte)
-    buf[0] = size;
-    Serial1.write( buf, 1 );
+    Serial1.write(size);
 
     // write packet
     Serial1.write( (byte *)&gps_data, size );
 
     // check sum (2 bytes)
+    byte cksum0, cksum1;
     ugear_cksum( GPS_PACKET_ID, size, (byte *)(&gps_data), size, &cksum0, &cksum1 );
-    buf[0] = cksum0; 
-    buf[1] = cksum1; 
-    buf[2] = 0;
-    Serial1.write( buf, 2 );
+    Serial1.write(cksum0);
+    Serial1.write(cksum1);
   
     new_gps_data = false;
     
@@ -437,26 +418,19 @@ void write_gps_ascii() {
 /* output a binary representation of the barometer data */
 uint8_t write_airdata_bin()
 {
-    byte buf[3];
-    byte cksum0, cksum1;
     byte size = 20;
     byte packet_buf[256]; // hopefully never larger than this!
     byte *packet = packet_buf;
 
     // start of message sync bytes
-    buf[0] = START_OF_MSG0; 
-    buf[1] = START_OF_MSG1; 
-    buf[2] = 0;
-    Serial1.write( buf, 2 );
+    Serial1.write(START_OF_MSG0);
+    Serial1.write(START_OF_MSG1);
 
     // packet id (1 byte)
-    buf[0] = AIRDATA_PACKET_ID; 
-    buf[1] = 0;
-    Serial1.write( buf, 1 );
+    Serial1.write(AIRDATA_PACKET_ID);
 
     // packet length (1 byte)
-    buf[0] = size;
-    Serial1.write( buf, 1 );
+    Serial1.write(size);
     
     *(float *)packet = bme_press; packet += 4;
     *(float *)packet = bme_temp; packet += 4;
@@ -468,108 +442,37 @@ uint8_t write_airdata_bin()
     Serial1.write( packet_buf, size );
 
     // check sum (2 bytes)
+    byte cksum0, cksum1;
     ugear_cksum( AIRDATA_PACKET_ID, size, packet_buf, size, &cksum0, &cksum1 );
-    buf[0] = cksum0; 
-    buf[1] = cksum1; 
-    buf[2] = 0;
-    Serial1.write( buf, 2 );
+    Serial1.write(cksum0);
+    Serial1.write(cksum1);
     
     return size + 6;
 }
 
 void write_airdata_ascii()
 {
-    Serial.print("Air: ");
-    Serial.print(bme_press, 4); Serial.print(" (pa) ");
+    Serial.print("BME: ");
+    Serial.print(bme_press, 2); Serial.print(" (st pa) ");
     Serial.print(bme_temp, 2); Serial.print(" (C) ");
     Serial.print(bme_hum, 1); Serial.print(" (%RH) ");
-    Serial.print("Ext Diff (pa): "); Serial.print(airdata_diffPress_pa, 4);
-    Serial.print(" Ext Temp (C): "); Serial.println(airdata_temp_C, 2);
-}
-
-/* output a binary representation of the analog input data */
-uint8_t write_analog_bin()
-{
-#if 0 // fixme
-    byte buf[3];
-    byte cksum0, cksum1;
-    byte size = 0;
-    byte packet[256]; // hopefully never larger than this!
-
-    // start of message sync bytes
-    buf[0] = START_OF_MSG0; 
-    buf[1] = START_OF_MSG1; 
-    buf[2] = 0;
-    Serial1.write( buf, 2 );
-
-    // packet id (1 byte)
-    buf[0] = ANALOG_PACKET_ID; 
-    buf[1] = 0;
-    Serial1.write( buf, 1 );
-
-    // packet length (1 byte)
-    // fixme: buf[0] = 2 * MAX_ANALOG_INPUTS;
-    Serial1.write( buf, 1 );
-
-    // channel data
-    for ( int i = 0; i < MAX_ANALOG_INPUTS; i++ ) {
-        uint16_t val = analog[i];
-        int hi = val / 256;
-        int lo = val - (hi * 256);
-        packet[size++] = byte(lo);
-        packet[size++] = byte(hi);
-    }
-    
-    // write packet
-    Serial1.write( packet, size );
-
-    // check sum (2 bytes)
-    ugear_cksum( ANALOG_PACKET_ID, size, packet, size, &cksum0, &cksum1 );
-    buf[0] = cksum0; 
-    buf[1] = cksum1; 
-    buf[2] = 0;
-    Serial1.write( buf, 2 );
-    
-    return size + 6;
-#endif // fixme
-}
-
-void write_analog_ascii()
-{
-#if 0 // fixme
-    /*
-      static float amp_filt = 0.0;
-      amp_filt = 0.999 * amp_filt + 0.001 * battery_amps;
-    */
-
-    // output servo data
-    Serial1.print("Analog:");
-    for ( int i = 0; i < MAX_ANALOG_INPUTS - 1; i++ ) {
-        Serial1.print((float)analog[i] / 64.0, 2);
-        Serial1.print(" ");
-    }
-    Serial1.println((float)analog[MAX_ANALOG_INPUTS-1] / 1000.0, 2);
-
-    /*
-      Serial1.printf("%.2f ", vcc_average);
-      Serial1.printf("%.2f ", (float)battery_voltage);
-      Serial1.printf("%.4f ", (float)amp_filt);
-      Serial1.printf("%.4f\n", (float)amps_sum);
-    */
-#endif // fixme
+    Serial.print("AMS: ");
+    Serial.print(airdata_staticPress_pa, 4); Serial.print(" (st pa) ");
+    Serial.print(airdata_diffPress_pa, 4); Serial.print(" (diff pa) ");
+    Serial.print(airdata_temp_C, 2); Serial.print(" (C) ");
+    Serial.print(airdata_error_count); Serial.print(" (errors) ");
+    Serial.println();
 }
 
 /* output a binary representation of various status and config information */
 uint8_t write_status_info_bin()
 {
-    byte buf[3];
-    byte cksum0, cksum1;
     byte size = 16;
     byte packet_buf[256]; // hopefully never larger than this!
     byte *packet = packet_buf;
 
-    // This info is static so we don't need to send it at a high rate ... once every 10 seconds (?)
-    // with an immediate message at the start.
+    // This info is static or slow changing so we don't need to send
+    // it at a high rate.
     static int counter = 0;
     if ( counter > 0 ) {
         counter--;
@@ -579,19 +482,14 @@ uint8_t write_status_info_bin()
     }
 
     // start of message sync bytes
-    buf[0] = START_OF_MSG0; 
-    buf[1] = START_OF_MSG1; 
-    buf[2] = 0;
-    Serial1.write( buf, 2 );
+    Serial1.write(START_OF_MSG0); 
+    Serial1.write(START_OF_MSG1);
 
     // packet id (1 byte)
-    buf[0] = STATUS_INFO_PACKET_ID; 
-    buf[1] = 0;
-    Serial1.write( buf, 1 );
+    Serial1.write(STATUS_INFO_PACKET_ID);
 
     // packet length (1 byte)
-    buf[0] = size;
-    Serial1.write( buf, 1 );
+    Serial1.write(size);
 
     *(uint16_t *)packet = (uint16_t)serial_number; packet += 2;
     *(uint16_t *)packet = (uint16_t)FIRMWARE_REV; packet += 2;
@@ -612,11 +510,10 @@ uint8_t write_status_info_bin()
     Serial1.write( packet_buf, size );
 
     // check sum (2 bytes)
+    byte cksum0, cksum1;
     ugear_cksum( STATUS_INFO_PACKET_ID, size, packet_buf, size, &cksum0, &cksum1 );
-    buf[0] = cksum0; 
-    buf[1] = cksum1; 
-    buf[2] = 0;
-    Serial1.write( buf, 2 );
+    Serial1.write(cksum0);
+    Serial1.write(cksum1);
     
     return size + 6;
 }
