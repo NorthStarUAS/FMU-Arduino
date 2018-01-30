@@ -1,4 +1,4 @@
-#include <MPU9250.h>
+#include "MPU9250/MPU9250.h"
 
 /* MPU-9250 IMU */
 

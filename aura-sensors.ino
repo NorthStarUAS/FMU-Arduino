@@ -1,6 +1,6 @@
 #include <HardwareSerial.h>
 
-#include "UBLOX8.h"
+#include "UBLOX8/UBLOX8.h"
 #include "config.h"
 
 // IMU

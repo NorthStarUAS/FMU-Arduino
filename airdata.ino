@@ -1,11 +1,11 @@
 #if defined PIKA_V11
 # include "Wire.h"
 #elif defined MARMOT_V1
-# include "AMS5915.h"  // Marmot v1
+# include "AMS5915/AMS5915.h"  // Marmot v1
 #endif
 
 #if defined AURA_V10 || defined MARMOT_V1
-# include "BME280.h"   // onboard barometer
+# include "BME280/BME280.h"   // onboard barometer
 #endif
 
 #if defined AURA_V10
