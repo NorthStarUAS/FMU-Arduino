@@ -22,6 +22,7 @@ bool new_gps_data = false;
 nav_pvt gps_data;
 
 // Air Data
+int airdata_error_count = 0;
 float airdata_staticPress_pa = 0.0;
 float airdata_diffPress_pa = 0.0;
 float airdata_temp_C = 0.0;
@@ -189,7 +190,6 @@ void loop() {
     // suck in any host commmands (flight control updates, etc.)
     // debug: while ( Serial1.available() ) Serial1.read();
     while ( read_commands() );
-
             
     // blink the led on boards that support it
     #if defined PIKA_V11 || defined AURA_V10
