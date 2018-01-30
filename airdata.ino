@@ -60,10 +60,12 @@ void airdata_update() {
      result = sPress.getData(&airdata_staticPress_pa, &tmp);
      if ( !result ) {
          Serial.println("Error while reading sPress sensor.");
+         airdata_error_count++;
      }
      result = dPress.getData(&airdata_diffPress_pa, &airdata_temp_C);
      if ( !result ) {
          Serial.println("Error while reading dPress sensor.");
+         airdata_error_count++;
      }
     #elif defined PIKA_V11
      // gather air data from external BFS board
