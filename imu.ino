@@ -52,10 +52,6 @@ void imu_setup() {
     }
 
     Serial.println("MPU-9250 ready.");
-            
-    // fixme: deprecated
-    // pinMode(MPU_SYNC_PIN, INPUT);
-    // attachInterrupt(MPU_SYNC_PIN, dataAcquisition, RISING);
 }
 
 
