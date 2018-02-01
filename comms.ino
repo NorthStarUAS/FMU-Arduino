@@ -378,15 +378,13 @@ uint8_t write_gps_bin()
     return size + 6;
 }
 
-#define T6 1000000
-#define T7 10000000
 void write_gps_ascii() {
     Serial.print("GPS:");
     Serial.print(" Lat:");
-    Serial.print((double)gps_data.lat / T7, 7);
+    Serial.print((double)gps_data.lat / 10000000.0, 7);
     //Serial.print(gps_data.lat);
     Serial.print(" Lon:");
-    Serial.print((double)gps_data.lon / T7, 7);
+    Serial.print((double)gps_data.lon / 10000000.0, 7);
     //Serial.print(gps_data.lon);
     Serial.print(" Alt:");
     Serial.print((float)gps_data.hMSL / 1000.0);
