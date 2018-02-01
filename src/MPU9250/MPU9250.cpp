@@ -48,12 +48,12 @@ MPU9250::MPU9250(uint8_t csPin){
 }
 
 /* MPU9250 object, input the SPI CS Pin and SPI bus */
-MPU9250::MPU9250(uint8_t csPin, SPIClass *Spi){
+/* MPU9250::MPU9250(uint8_t csPin, SPIClass *Spi){
     _csPin = csPin; // SPI CS Pin
     _spi = Spi;
     _useSPI = true; // set to use SPI instead of I2C
     _useSPIHS = false; // defaul to low speed SPI transactions until data reads start to occur
-}
+    } */
 
 void MPU9250::configure(uint8_t address, TwoWire *bus){
     _address = address; // I2C address

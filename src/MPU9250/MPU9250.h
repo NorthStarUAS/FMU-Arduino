@@ -59,7 +59,7 @@ class MPU9250{
         MPU9250();
         MPU9250(uint8_t address, TwoWire *bus);
         MPU9250(uint8_t csPin);
-        MPU9250(uint8_t csPin, SPIClass *Spi);
+        // MPU9250(uint8_t csPin, SPIClass *Spi);
 
         void configure(uint8_t address, TwoWire *bus);
         void configure(uint8_t csPin);

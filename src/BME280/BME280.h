@@ -70,7 +70,7 @@ class BME280{
     BME280();
     BME280(uint8_t address, TwoWire *bus);
     BME280(uint8_t csPin);
-    BME280(uint8_t csPin, SPIClass *Spi);
+    // BME280(uint8_t csPin, SPIClass *Spi);
     void configure(uint8_t address, TwoWire *bus);
     void configure(uint8_t csPin);
     void configure(uint8_t csPin, SPIClass *Spi);
@@ -88,7 +88,8 @@ class BME280{
     TwoWire *_bus;
     const uint32_t _i2cRate = 400000; // 400 kHz
     bool _userDefI2C;
-
+    int _model;
+    
     // spi
     SPIClass *_spi;
     uint8_t _csPin;

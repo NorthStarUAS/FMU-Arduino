@@ -1,4 +1,4 @@
-#include "MPU9250/MPU9250.h"
+#include "src/MPU9250/MPU9250.h"
 
 /* MPU-9250 IMU */
 
@@ -21,7 +21,7 @@ const float magScale = 0.01;
 const float tempScale = 0.01;
 
 #if defined PIKA_V11 or defined AURA_V10
- MPU9250 IMU(0x68, 0);     // i2c
+ MPU9250 IMU(0x68, &Wire);     // i2c
 #elif defined MARMOT_V1
  MPU9250 IMU(MPU_CS_PIN);  // spi
 #endif

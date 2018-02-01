@@ -4,8 +4,8 @@
 // Specify one of the following hardware variants
 
 // #define PIKA_V11
-#define MARMOT_V1
-// #define AURA_V10
+// #define MARMOT_V1
+#define AURA_V10
 
 // Firmware rev (needs to be updated here manually to match release number)
 #define FIRMWARE_REV 330

@@ -1,6 +1,6 @@
 #include <HardwareSerial.h>
 
-#include "UBLOX8/UBLOX8.h"
+#include "src/UBLOX8/UBLOX8.h"
 #include "config.h"
 
 // IMU
@@ -159,7 +159,7 @@ void loop() {
             write_airdata_ascii();
             // write_analog_ascii();
             // write_status_info_ascii();
-            // write_imu_ascii();
+            write_imu_ascii();
         }
 
         if ( airdataTimer >= 10 ) {

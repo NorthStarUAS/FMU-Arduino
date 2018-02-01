@@ -5,11 +5,11 @@
 #endif
 
 #if defined AURA_V10 || defined MARMOT_V1
-# include "BME280/BME280.h"   // onboard barometer
+# include "src/BME280/BME280.h"   // onboard barometer
 #endif
 
 #if defined AURA_V10
- BME280 bme(0x76, 0);
+ BME280 bme(0x76, &Wire);
 #elif defined MARMOT_V1
  BME280 bme(26);
 #endif

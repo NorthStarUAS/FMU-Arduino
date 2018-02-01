@@ -45,11 +45,11 @@ BME280::BME280(uint8_t csPin) {
   _useSPI = true; // set to use SPI instead of I2C             
 }
 
-BME280::BME280(uint8_t csPin, SPIClass *Spi) {
+/*BME280::BME280(uint8_t csPin, SPIClass *Spi) {
   _csPin = csPin; // SPI CS Pin
   _spi = Spi;
   _useSPI = true; // set to use SPI instead of I2C          
-}
+  }*/
 
 void BME280::configure(uint8_t address, TwoWire *bus){
   _address = address; // I2C address
@@ -106,10 +106,18 @@ int BME280::begin() {
 
   // check the who am i register
   readRegisters(WHO_AM_I_REG,1,data);
-  if(data[0]!=0x60) {
+  if ( data[0] != 0x60 && data[0] != 0x58 ) {
     return -1;
   }
 
+  if ( data[0] == 0x60 ) {
+      Serial.println("Detected a BME280 pressure sensor");
+      _model = 0; // BME280
+  } else if ( data[0] == 0x58 ) {
+      Serial.println("Detected a BMP180 pressure sensor");
+      _model = 1; // BMP180
+  }
+  
   // check that BME280 is not copying calibration data
   readRegisters(STATUS_REG,1,data);
   while((data[0] & 0x01)!=0) {
@@ -136,7 +144,7 @@ int BME280::configureBME280() {
       return -1;
   }
   // humidity sensor configuration
-  if( !writeRegister(CTRL_HUM_REG,_Hsampling) ){
+  if( _model == 0 && !writeRegister(CTRL_HUM_REG,_Hsampling) ){
       return -1;
   }
   // standby time, iirc, and spi 3 wire configuration
@@ -183,18 +191,20 @@ void BME280::readCalibration() {
   readRegisters(DIG_P9_REG,2,data);
   _dig_P9 = (int16_t) data[1] << 8 | data[0]; 
 
-  readRegisters(DIG_H1_REG,1,data);
-  _dig_H1 = data[0];
-  readRegisters(DIG_H2_REG,2,data);
-  _dig_H2 = (int16_t) data[1] << 8 | data[0]; 
-  readRegisters(DIG_H3_REG,1,data);
-  _dig_H3 = data[0];
-  readRegisters(DIG_H4_REG,2,data);
-  _dig_H4 = (int16_t) data[0] << 4 | (data[1]&(0x0F));
-  readRegisters(DIG_H5_REG,2,data);
-  _dig_H5 = (int16_t) data[1] << 4 | data[0] >> 4;
-  readRegisters(DIG_H6_REG,1,data);
-  _dig_H6 = (int8_t) data[0];
+  if ( _model == 0 ) {
+      readRegisters(DIG_H1_REG,1,data);
+      _dig_H1 = data[0];
+      readRegisters(DIG_H2_REG,2,data);
+      _dig_H2 = (int16_t) data[1] << 8 | data[0]; 
+      readRegisters(DIG_H3_REG,1,data);
+      _dig_H3 = data[0];
+      readRegisters(DIG_H4_REG,2,data);
+      _dig_H4 = (int16_t) data[0] << 4 | (data[1]&(0x0F));
+      readRegisters(DIG_H5_REG,2,data);
+      _dig_H5 = (int16_t) data[1] << 4 | data[0] >> 4;
+      readRegisters(DIG_H6_REG,1,data);
+      _dig_H6 = (int8_t) data[0];
+  }
 }
 
 /* sets the pressure, temperature, and humidity oversampling */
