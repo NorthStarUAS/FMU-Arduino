@@ -20,10 +20,10 @@ const float accelScale = _g / _accel_lsb_per_dps;
 const float magScale = 0.01;
 const float tempScale = 0.01;
 
-#if defined PIKA_V11 or defined AURA_V10
- MPU9250 IMU(0x68, &Wire);     // i2c
+#if defined AURA_V2
+ MPU9250 IMU(0x68, &Wire);      // i2c
 #elif defined MARMOT_V1
- MPU9250 IMU(MPU_CS_PIN);  // spi
+ MPU9250 IMU(MPU_CS_PIN);       // spi
 #endif
 
 // the 'safe' but raw version of the imu sensors

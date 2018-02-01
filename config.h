@@ -2,10 +2,10 @@
 #define _AURA_CONFIG_H_INCLUDED
 
 // Specify one of the following hardware variants
-
-// #define PIKA_V11
 // #define MARMOT_V1
-#define AURA_V10
+#define AURA_V2
+
+// #define OLD_BFS_AIRDATA // leaving this code for now in case ...
 
 // Firmware rev (needs to be updated here manually to match release number)
 #define FIRMWARE_REV 330

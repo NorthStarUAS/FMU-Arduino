@@ -1,32 +1,36 @@
-#if defined PIKA_V11
-# include "Wire.h"
-#elif defined MARMOT_V1
+#if defined MARMOT_V1
 # include "AMS5915/AMS5915.h"  // Marmot v1
 #endif
 
-#if defined AURA_V10 || defined MARMOT_V1
+#if defined AURA_V2 || defined MARMOT_V1
 # include "src/BME280/BME280.h"   // onboard barometer
 #endif
 
-#if defined AURA_V10
+#if defined OLD_BFS_AIRDATA
+# include "Wire.h"
+#endif
+
+#if defined AURA_V2
  BME280 bme(0x76, &Wire);
 #elif defined MARMOT_V1
  BME280 bme(26);
 #endif
 
+#if defined OLD_BFS_AIRDATA
+ const uint8_t airDataAddr = 0x22;
+ volatile uint8_t airDataBuff[8]; 
+#endif
+
 #if defined MARMOT_V1
  AMS5915 dPress(0x27, &Wire1, AMS5915_0020_D);
  AMS5915 sPress(0x26, &Wire1, AMS5915_1200_B);
-#elif defined PIKA_V11
- const uint8_t airDataAddr = 0x22;
- volatile uint8_t airDataBuff[8]; 
 #endif
 
 int bme_status = -1;
 float bme_press, bme_temp, bme_hum;
 
 void airdata_setup() {
-    #if defined AURA_V10 || defined MARMOT_V1
+    #if defined AURA_V2 || defined MARMOT_V1
      bme_status = bme.begin();
      if ( bme_status < 0 ) {
          Serial.println("BME280 initialization unsuccessful");
@@ -45,7 +49,7 @@ void airdata_setup() {
 
 void airdata_update() {
     // onboard static pressure sensor
-    #if defined AURA_V10 || defined MARMOT_V1
+    #if defined AURA_V2 || defined MARMOT_V1
      if ( bme_status >= 0 ) {
          // get the pressure (Pa), temperature (C),
          // and humidity data (%RH) all at once
@@ -67,7 +71,9 @@ void airdata_update() {
          Serial.println("Error while reading dPress sensor.");
          airdata_error_count++;
      }
-    #elif defined PIKA_V11
+    #endif
+     
+    #if defined OLD_BFS_AIRDATA
      // gather air data from external BFS board
      Wire.requestFrom(airDataAddr, sizeof(airDataBuff));
      int i = 0;

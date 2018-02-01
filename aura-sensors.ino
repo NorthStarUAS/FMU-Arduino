@@ -28,7 +28,7 @@ float airdata_diffPress_pa = 0.0;
 float airdata_temp_C = 0.0;
 
 // Analog In and Battery Voltage
-#if defined PIKA_V11 || defined AURA_V10
+#if defined AURA_V2
  const uint8_t pwr_pin = A0;
 #elif defined MARMOT_V1
  const uint8_t pwr_pin = 15;
@@ -42,10 +42,11 @@ float pwr_v = 0.0;
 float avionics_v = 0.0;
     
 // COMS
-// Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in pika-1.1 and marmot v1 hardware
+// Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in
+// aura-v2 and marmot-v1 hardware
 unsigned long output_counter = 0;
 unsigned long write_millis = 0;
-#if defined PIKA_V11 || defined AURA_V10
+#if defined AURA_V2
  int LED = 13;
  elapsedMillis blinkTimer = 0;
  unsigned int blink_rate = 100;
@@ -103,7 +104,7 @@ void setup() {
     // set up ADC0
     analogReadResolution(16);
 
-#if defined PIKA_V11 || defined AURA_V10
+#if defined AURA_V2
     pinMode(LED, OUTPUT);
     digitalWrite(LED, HIGH);
 #endif
@@ -192,7 +193,7 @@ void loop() {
     while ( read_commands() );
             
     // blink the led on boards that support it
-    #if defined PIKA_V11 || defined AURA_V10
+    #if defined AURA_V2
      if ( gyros_calibrated < 2 ) {
          blink_rate = 50;
      } else if ( gps_data.fixType < 3 ) {
