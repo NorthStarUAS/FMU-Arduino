@@ -29,6 +29,7 @@ float airdata_temp_C = 0.0;
 
 // Analog In and Battery Voltage
 #if defined AURA_V2
+ const uint8_t avionics_pin = A1;
  const uint8_t pwr_pin = A0;
 #elif defined MARMOT_V1
  const uint8_t pwr_pin = 15;
@@ -60,7 +61,7 @@ void setup() {
     // put your setup code here, to run once:
 
     Serial.begin(DEFAULT_BAUD);
-    while ( !Serial );  // wait for serial to come alive
+    delay(1000);  // hopefully long enough for serial to come alive
     
     Serial1.begin(DEFAULT_BAUD);
 
@@ -155,12 +156,12 @@ void loop() {
         if ( debugTimer >= 100 && gyros_calibrated == 2) {
             debugTimer = 0;
             // write_pilot_in_ascii();
-            // write_actuator_out_ascii();
+            write_actuator_out_ascii();
             // write_gps_ascii();
-            write_airdata_ascii();
+            // write_airdata_ascii();
             // write_analog_ascii();
             // write_status_info_ascii();
-            write_imu_ascii();
+            // write_imu_ascii();
         }
 
         if ( airdataTimer >= 10 ) {
@@ -179,11 +180,8 @@ void loop() {
         ain = analogRead(pwr_pin);
         pwr_v = ((float)ain) * 3.3 / analogResolution * pwr_scale;
 
-        #if defined MARMOT_V1
-         // marmot v1
-         ain = analogRead(avionics_pin);
-         avionics_v = ((float)ain) * 3.3 / analogResolution * avionics_scale;
-        #endif
+        ain = analogRead(avionics_pin);
+        avionics_v = ((float)ain) * 3.3 / analogResolution * avionics_scale;
     }
 
     while ( sbus_process() ); // keep processing while there is data in the uart buffer
@@ -197,9 +195,9 @@ void loop() {
      if ( gyros_calibrated < 2 ) {
          blink_rate = 50;
      } else if ( gps_data.fixType < 3 ) {
-         blink_rate = 300;
+         blink_rate = 200;
      } else {
-         blink_rate = 1000;
+         blink_rate = 800;
      }
      if ( blinkTimer >= blink_rate ) {
          blinkTimer = 0;
