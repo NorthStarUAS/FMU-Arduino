@@ -1,6 +1,10 @@
 
 const int servoFreq_hz = 50; // servo pwm update rate
-const uint8_t servoPins[PWM_CHANNELS] = {21, 22, 23, 2, 3, 4, 5, 6};
+#if defined AURA_V2
+const uint8_t servoPins[PWM_CHANNELS] = {6, 5, 4, 3, 30, 29, 28, 27};
+#elif defined MARMOT_V1
+ const uint8_t servoPins[PWM_CHANNELS] = {21, 22, 23, 2, 3, 4, 5, 6};
+#endif
 
 // define if a channel is symmetrical or not (i.e. mapped to [0,1] for
 // throttle, flaps, spoilers; [-1,1] for aileron, elevator, rudder
