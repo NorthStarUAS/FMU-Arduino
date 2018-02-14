@@ -167,11 +167,9 @@ void loop() {
 
         // uncomment this next line to test drive individual servo channels
         // (for debugging or validation.)
-        test_pwm_channel = -1;
-        static elapsedMillis pwmUpdateTimer = 0;
-        if ( test_pwm_channel > 0 && pwmUpdateTimer >= (1000 / servoFreq_hz) ) {
+        test_pwm_channel = 7;
+        if ( test_pwm_channel > 0 ) {
             pwm_update();
-            pwmUpdateTimer -= 1000 / servoFreq_hz;
         }
         
         if ( airdataTimer >= 10 ) {
