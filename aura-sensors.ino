@@ -15,6 +15,7 @@ uint8_t receiver_flags = 0x00;
 float autopilot_norm[SBUS_CHANNELS];
 float actuator_norm[SBUS_CHANNELS];
 uint16_t actuator_pwm[PWM_CHANNELS];
+uint8_t test_pwm_channel = -1;
 
 // GPS
 UBLOX8 gps(&Serial3); // ublox m8n
@@ -164,6 +165,15 @@ void loop() {
             // write_imu_ascii();
         }
 
+        // uncomment this next line to test drive individual servo channels
+        // (for debugging or validation.)
+        test_pwm_channel = -1;
+        static elapsedMillis pwmUpdateTimer = 0;
+        if ( test_pwm_channel > 0 && pwmUpdateTimer >= (1000 / servoFreq_hz) ) {
+            pwm_update();
+            pwmUpdateTimer -= 1000 / servoFreq_hz;
+        }
+        
         if ( airdataTimer >= 10 ) {
             // ensure airdata_update() can never be called faster than 100hz
             airdataTimer = 0;
@@ -189,7 +199,7 @@ void loop() {
     // suck in any host commmands (flight control updates, etc.)
     // debug: while ( Serial1.available() ) Serial1.read();
     while ( read_commands() );
-            
+
     // blink the led on boards that support it
     #if defined AURA_V2
      if ( gyros_calibrated < 2 ) {

@@ -39,7 +39,7 @@
 // position changes slightly faster for a slightly more responsive
 // system (emphasis on slightly) TODO: make this configurable via an
 // external command.
-#define DEFAULT_PWM_HZ 50
+const int servoFreq_hz = 50; // servo pwm update rate
 
 // For a Futaba T6EX 2.4Ghz FASST system:
 //   Assuming all controls are at default center trim, no range scaling or endpoint adjustments:

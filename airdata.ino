@@ -1,7 +1,7 @@
 #include "src/BME280/BME280.h"   // onboard barometer
 
 #if defined MARMOT_V1
-# include "AMS5915/AMS5915.h"  // Marmot v1
+# include "src/AMS5915/AMS5915.h"  // Marmot v1
 #endif
 
 #if defined OLD_BFS_AIRDATA

@@ -1,5 +1,3 @@
-
-const int servoFreq_hz = 50; // servo pwm update rate
 #if defined AURA_V2
 const uint8_t servoPins[PWM_CHANNELS] = {6, 5, 4, 3, 23, 22, 21, 20};
 #elif defined MARMOT_V1
@@ -53,9 +51,18 @@ void pwm_norm2pwm( float *norm, uint16_t *pwm ) {
 
 // write the raw actuator values to the RC system
 void pwm_update() {
+    // hook for testing servos
+    if ( test_pwm_channel >= 0 && test_pwm_channel < PWM_CHANNELS ) {
+        actuator_pwm[test_pwm_channel] = gen_pwm_test_value();
+    }
+
     // sending servo pwm commands
     for ( uint8_t i = 0; i < PWM_CHANNELS; i++ ) {
         analogWrite(servoPins[i], actuator_pwm[i] / ((1/((float) servoFreq_hz)) * 1000000.0f )*65535.0f);
     }
 }
 
+// test drive a servo channel (sine wave)
+uint16_t gen_pwm_test_value() {
+    return sin((float)millis() / 500.0) * PWM_HALF_RANGE + PWM_CENTER;
+}
