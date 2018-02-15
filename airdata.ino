@@ -1,7 +1,9 @@
 #include "src/BME280/BME280.h"   // onboard barometer
 
-#if defined MARMOT_V1
-# include "src/AMS5915/AMS5915.h"  // Marmot v1
+#if defined AURA_V2
+# include "src/MS4525DO/MS4525DO.h"
+#elif defined MARMOT_V1
+# include "src/AMS5915/AMS5915.h"
 #endif
 
 #if defined OLD_BFS_AIRDATA
@@ -19,7 +21,9 @@
  volatile uint8_t airDataBuff[8]; 
 #endif
 
-#if defined MARMOT_V1
+#if defined AURA_V2
+ MS4525DO dPress(0x28, &Wire);
+#elif defined MARMOT_V1
  AMS5915 dPress(0x27, &Wire1, AMS5915_0020_D);
  AMS5915 sPress(0x26, &Wire1, AMS5915_1200_B);
 #endif
@@ -37,10 +41,10 @@ void airdata_setup() {
         Serial.println("BME280 driver ready.");
     }
     
-   #if defined MARMOT_V1
     dPress.begin();
-    sPress.begin();
-   #endif
+    #if defined MARMOT_V1
+     sPress.begin();
+    #endif
 }
 
 void airdata_update() {
@@ -51,32 +55,35 @@ void airdata_update() {
         bme.getData(&bme_press,&bme_temp,&bme_hum);
     }
 
-    // external static/differential pressure sensor
-   #if defined MARMOT_V1
     bool result;
-    float tmp;
-    result = sPress.getData(&airdata_staticPress_pa, &tmp);
-    if ( !result ) {
-        Serial.println("Error while reading sPress sensor.");
-        airdata_error_count++;
-    }
+    
+    // external differential pressure sensor
     result = dPress.getData(&airdata_diffPress_pa, &airdata_temp_C);
     if ( !result ) {
         Serial.println("Error while reading dPress sensor.");
         airdata_error_count++;
     }
-   #endif
+    #if defined MARMOT_V1
+     // external differential pressure sensor
+     result;
+     float tmp;
+     result = sPress.getData(&airdata_staticPress_pa, &tmp);
+     if ( !result ) {
+         Serial.println("Error while reading sPress sensor.");
+         airdata_error_count++;
+     }
+    #endif
      
-   #if defined OLD_BFS_AIRDATA
-    // gather air data from external BFS board
-    Wire.requestFrom(airDataAddr, sizeof(airDataBuff));
-    int i = 0;
-    while ( Wire.available() ) {
-        airDataBuff[i] = Wire.read();
-        i++;
-    }
-    uint8_t *p = airDataBuff;
-    airdata_staticPress_pa = *(float *)p; p += 4;
-    airdata_diffPress_pa = *(float *)p;
-   #endif
+    #if defined OLD_BFS_AIRDATA
+     // gather air data from external BFS board
+     Wire.requestFrom(airDataAddr, sizeof(airDataBuff));
+     int i = 0;
+     while ( Wire.available() ) {
+         airDataBuff[i] = Wire.read();
+         i++;
+     }
+     uint8_t *p = airDataBuff;
+     airdata_staticPress_pa = *(float *)p; p += 4;
+     airdata_diffPress_pa = *(float *)p;
+    #endif
 }

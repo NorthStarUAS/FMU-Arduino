@@ -22,13 +22,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-// Teensy 3.0 || Teensy 3.1/3.2 || Teensy 3.5 || Teensy 3.6 || Teensy LC 
-#if defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK64FX512__) || \
-	defined(__MK66FX1M0__) || defined(__MKL26Z64__)
-
 #include "Arduino.h"
 #include "MS4525DO.h"
-//#include <i2c_t3.h>  // I2C library
 
 /* Default constructor */
 MS4525DO::MS4525DO(){
@@ -54,7 +49,7 @@ void MS4525DO::begin(){
 }
 
 /* reads pressure and temperature and returns values in counts */
-void MS4525DO::read(float* pressure, float* temperature) {
+bool MS4525DO::getData(float* pressure, float* temperature) {
     uint8_t b[4]; // buffer
     const uint8_t numBytes = 4;
 
@@ -71,6 +66,7 @@ void MS4525DO::read(float* pressure, float* temperature) {
 
     if ( counter < numBytes ) {
         Serial.println("Error, fewer than expected bytes available on i2c read");
+        return false;
     } else {
         uint8_t status = (b[0] & 0xC0) >> 6;
         b[0] = b[0] & 0x3f;
@@ -100,18 +96,19 @@ void MS4525DO::read(float* pressure, float* temperature) {
 	  port on the pitot and top port is used as the dynamic port
 	 */
 	float diff_press_PSI = -((dp_raw - 0.1f * 16383) * (P_max - P_min) / (0.8f * 16383) + P_min);
-	float diff_press_pa_raw = diff_press_PSI * PSI_to_Pa;
+	*pressure = diff_press_PSI * PSI_to_Pa; // pa
 
         const float T_factor = 200.0 / 2047.0;
-        float TR = (float)T_dat * T_factor - 50.0;
-    
-        Serial.print(status); Serial.print("\t");
-        Serial.print(dp_raw); Serial.print("\t");
-        Serial.print(diff_press_pa_raw,2); Serial.print("\t");
-        Serial.print(T_dat); Serial.print("\t");
-        Serial.print(TR,1); Serial.print("\t");
-        Serial.println();
-    }
-}
+        *temperature = (float)T_dat * T_factor - 50.0; // C
 
-#endif
+        #if defined DEBUG_ME
+         Serial.print(status); Serial.print("\t");
+         Serial.print(dp_raw); Serial.print("\t");
+         Serial.print(*pressure,2); Serial.print("\t");
+         Serial.print(T_dat); Serial.print("\t");
+         Serial.print(*temperature,1); Serial.print("\t");
+         Serial.println();
+        #endif
+    }
+    return true;
+}
