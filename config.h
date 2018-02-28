@@ -10,10 +10,12 @@
 // #define HAVE_AURA_BMP280
 #define HAVE_MARMOT_BME280
 
-// #define OLD_BFS_AIRDATA // leaving this code for now in case ...
+// Specify which external pressure sensor is installed
+// #define HAVE_MS4525DO
+#define HAVE_BFS_SWIFT
 
 // Firmware rev (needs to be updated here manually to match release number)
-#define FIRMWARE_REV 330
+#define FIRMWARE_REV 331
 
 // this is the master loop update rate.  For 115,200 baud
 // communication, 100hz is as fast as we can go without saturating our

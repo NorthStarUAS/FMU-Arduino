@@ -55,9 +55,6 @@ unsigned long write_millis = 0;
  bool blink_state = true;
 #endif
 
-volatile int main_loop_signal = 0;
-IntervalTimer myTimer;
-
 void setup() {
     // put your setup code here, to run once:
 
@@ -115,30 +112,19 @@ void setup() {
     write_millis = millis();
     
     Serial.println("Ready and transmitting...");
-
-    myTimer.begin(genSignal, 1000000 / MASTER_HZ);
-}
-
-void genSignal() {
-    main_loop_signal++;
 }
 
 void loop() {
     // put your main code here, to run repeatedly:
+    static elapsedMillis mainTimer = 0;
     static elapsedMillis airdataTimer = 0;
     static elapsedMillis debugTimer = 0;
        
     // When new IMU data is ready (new pulse from IMU), go out and grab the IMU data
     // and output fresh IMU message plus the most recent data from everything else.
-    volatile bool do_data_aquisition = false;
-    noInterrupts();
-    if (main_loop_signal > 0) {
-        do_data_aquisition = true;
-        main_loop_signal--;
-    }
-    interrupts();
-    
-    if ( do_data_aquisition ) {
+    if ( mainTimer >= 10 ) {
+        mainTimer -= 10;
+        
         // top priority, used for timing sync downstream.
         imu_update();
  
@@ -178,11 +164,6 @@ void loop() {
             airdata_update();
         }
 
-        if ( gps.read_ublox8() ) {
-            new_gps_data = true;
-            gps_data = gps.get_data();
-        }
-
         // battery voltage
         uint16_t ain;
         ain = analogRead(pwr_pin);
@@ -192,7 +173,14 @@ void loop() {
         avionics_v = ((float)ain) * 3.3 / analogResolution * avionics_scale;
     }
 
-    while ( sbus_process() ); // keep processing while there is data in the uart buffer
+    // suck in any available gps bytes
+    if ( gps.read_ublox8() ) {
+        new_gps_data = true;
+        gps_data = gps.get_data();
+    }
+
+    // keep processing while there is data in the uart buffer
+    while ( sbus_process() );
 
     // suck in any host commmands (flight control updates, etc.)
     // debug: while ( Serial1.available() ) Serial1.read();
