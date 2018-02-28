@@ -64,7 +64,9 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         // autopilot_norm uses the same channel mapping as sbus_norm,
         // so map ap_tmp values to their correct places in
         // autopilot_norm
-        autopilot_norm[2] = ap_tmp[0];
+        autopilot_norm[0] = receiver_norm[0]; // auto/manual swith
+        autopilot_norm[1] = receiver_norm[1]; // throttle enable
+        autopilot_norm[2] = ap_tmp[0];        // throttle
         autopilot_norm[3] = ap_tmp[1];
         autopilot_norm[4] = ap_tmp[2];
         autopilot_norm[5] = ap_tmp[3];

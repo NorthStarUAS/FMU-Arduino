@@ -2,13 +2,13 @@
 #define _AURA_CONFIG_H_INCLUDED
 
 // Specify one of the following board variants
-#define AURA_V2
-// #define MARMOT_V1
+// #define AURA_V2
+#define MARMOT_V1
 
 // Specify which onboard pressure sensor is installed
-#define HAVE_ONBOARD_BARO AURA_BMP180
-// #define HAVE_ONBOARD_BARO AURA_BMP280
-// #define HAVE_ONBOARD_BARO MARMOT_BME280
+// #define HAVE_AURA_BMP180
+// #define HAVE_AURA_BMP280
+#define HAVE_MARMOT_BME280
 
 // #define OLD_BFS_AIRDATA // leaving this code for now in case ...
 

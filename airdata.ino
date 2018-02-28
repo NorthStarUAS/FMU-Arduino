@@ -1,3 +1,4 @@
+#include "config.h"
 
 #if defined AURA_V2
 # include "src/MS4525DO/MS4525DO.h"
@@ -9,13 +10,13 @@
 # include "Wire.h"
 #endif
 
-#if HAVE_ONBOARD_BARO == AURA_BMP180
+#if defined HAVE_AURA_BMP180
  #include "src/Adafruit_BMP085/Adafruit_BMP085.h"
  Adafruit_BMP085 barometer;
-#elif HAVE_ONBOARD_BARO == AURA_BMP280
+#elif defined HAVE_AURA_BMP280
  #include "src/BME280/BME280.h"
  BME280 barometer(0x76, &Wire);
-#elif HAVE_ONBOARD_BARO == MARMOT_BME280
+#elif defined HAVE_MARMOT_BME280
  #include "src/BME280/BME280.h"
  BME280 barometer(26);
 #endif
@@ -39,7 +40,6 @@ bool dpress_found = false;
 bool spress_found = false;
 
 void airdata_setup() {
-    #if defined HAVE_ONBOARD_BARO
      baro_status = barometer.begin();
      if ( baro_status < 0 ) {
          Serial.println("Onboard barometer initialization unsuccessful");
@@ -48,7 +48,6 @@ void airdata_setup() {
      } else {
          Serial.println("Onboard barometer driver ready.");
      }
-    #endif
     
     dPress.begin();
     #if defined MARMOT_V1
@@ -58,12 +57,13 @@ void airdata_setup() {
 
 void airdata_update() {
     // onboard static pressure sensor
-   #if HAVE_ONBOARD_BARO == AURA_BMP180
+   #if defined HAVE_AURA_BMP180
     if ( baro_status ) {
         baro_press = barometer.readPressure();
         baro_temp = barometer.readTemperature();
     }
-   #elif HAVE_ONBOARD_BARO == AURA_BMP280 || HAVE_ONBOARD_BARO == MARMOT_BME280
+    // #elif (HAVE_ONBOARD_BARO == AURA_BMP280) || (HAVE_ONBOARD_BARO == MARMOT_BME280)
+   #elif defined HAVE_AURA_BMP280 || defined HAVE_MARMOT_BME280
     if ( baro_status >= 0 ) {
         // get the pressure (Pa), temperature (C),
         // and humidity data (%RH) all at once
@@ -85,7 +85,6 @@ void airdata_update() {
     }
     #if defined MARMOT_V1
      // external differential pressure sensor
-     result;
      float tmp;
      result = sPress.getData(&airdata_staticPress_pa, &tmp);
      if ( !result ) {

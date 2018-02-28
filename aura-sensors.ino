@@ -167,8 +167,8 @@ void loop() {
 
         // uncomment this next line to test drive individual servo channels
         // (for debugging or validation.)
-        test_pwm_channel = -1;
-        if ( test_pwm_channel > 0 ) {
+        test_pwm_channel = -1;  // zero is throttle so be careful!
+        if ( test_pwm_channel >= 0 ) {
             pwm_update();
         }
         
