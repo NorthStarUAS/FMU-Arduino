@@ -47,13 +47,6 @@ float avionics_v = 0.0;
 // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in
 // aura-v2 and marmot-v1 hardware
 unsigned long output_counter = 0;
-unsigned long write_millis = 0;
-#if defined AURA_V2
- int LED = 13;
- elapsedMillis blinkTimer = 0;
- unsigned int blink_rate = 100;
- bool blink_state = true;
-#endif
 
 void setup() {
     // put your setup code here, to run once:
@@ -108,22 +101,18 @@ void setup() {
     digitalWrite(LED, HIGH);
 #endif
 
-    // initialize comms channel write stats timer
-    write_millis = millis();
-    
     Serial.println("Ready and transmitting...");
 }
 
 void loop() {
     // put your main code here, to run repeatedly:
     static elapsedMillis mainTimer = 0;
-    static elapsedMillis airdataTimer = 0;
     static elapsedMillis debugTimer = 0;
        
     // When new IMU data is ready (new pulse from IMU), go out and grab the IMU data
     // and output fresh IMU message plus the most recent data from everything else.
-    if ( mainTimer >= 10 ) {
-        mainTimer -= 10;
+    if ( mainTimer >= DT_MILLIS ) {
+        mainTimer -= DT_MILLIS;
         
         // top priority, used for timing sync downstream.
         imu_update();
@@ -157,12 +146,9 @@ void loop() {
         if ( test_pwm_channel >= 0 ) {
             pwm_update();
         }
-        
-        if ( airdataTimer >= 10 ) {
-            // ensure airdata_update() can never be called faster than 100hz
-            airdataTimer = 0;
-            airdata_update();
-        }
+
+        // poll the pressure sensors
+        airdata_update();
 
         // battery voltage
         uint16_t ain;
@@ -187,7 +173,12 @@ void loop() {
     while ( read_commands() );
 
     // blink the led on boards that support it
-    #if defined AURA_V2
+   #if defined AURA_V2
+    const int LED = 13;
+    static elapsedMillis blinkTimer = 0;
+    static unsigned int blink_rate = 100;
+    static bool blink_state = true;
+
      if ( gyros_calibrated < 2 ) {
          blink_rate = 50;
      } else if ( gps_data.fixType < 3 ) {

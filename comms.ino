@@ -467,6 +467,8 @@ void write_airdata_ascii()
 /* output a binary representation of various status and config information */
 uint8_t write_status_info_bin()
 {
+    static uint32_t write_millis = millis();
+
     byte size = 16;
     byte packet_buf[256]; // hopefully never larger than this!
     byte *packet = packet_buf;

@@ -21,6 +21,7 @@
 // communication, 100hz is as fast as we can go without saturating our
 // uart link to the host.
 #define MASTER_HZ 100
+#define DT_MILLIS (1000 / MASTER_HZ)
 
 // Please read the important notes in the source tree about Teensy
 // baud rates vs. host baud rates.
