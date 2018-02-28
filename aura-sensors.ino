@@ -73,7 +73,7 @@ void setup() {
     Serial.println(" baud (N81) no flow control.");
     
     // The myfollowing code (when enabled) will force setting a specific device serial number.
-    // set_serial_number(112);
+    // set_serial_number(121);
     read_serial_number();
     
     if ( /* true || */ !config_read_eeprom() ) {

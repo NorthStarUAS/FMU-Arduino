@@ -1,4 +1,3 @@
-#include "src/BME280/BME280.h"   // onboard barometer
 
 #if defined AURA_V2
 # include "src/MS4525DO/MS4525DO.h"
@@ -10,10 +9,15 @@
 # include "Wire.h"
 #endif
 
-#if defined AURA_V2
- BME280 bme(0x76, &Wire);
-#elif defined MARMOT_V1
- BME280 bme(26);
+#if HAVE_ONBOARD_BARO == AURA_BMP180
+ #include "src/Adafruit_BMP085/Adafruit_BMP085.h"
+ Adafruit_BMP085 barometer;
+#elif HAVE_ONBOARD_BARO == AURA_BMP280
+ #include "src/BME280/BME280.h"
+ BME280 barometer(0x76, &Wire);
+#elif HAVE_ONBOARD_BARO == MARMOT_BME280
+ #include "src/BME280/BME280.h"
+ BME280 barometer(26);
 #endif
 
 #if defined OLD_BFS_AIRDATA
@@ -28,18 +32,23 @@
  AMS5915 sPress(0x26, &Wire1, AMS5915_1200_B);
 #endif
 
-int bme_status = -1;
-float bme_press, bme_temp, bme_hum;
+int baro_status = -1;
+float baro_press, baro_temp, baro_hum;
+
+bool dpress_found = false;
+bool spress_found = false;
 
 void airdata_setup() {
-    bme_status = bme.begin();
-    if ( bme_status < 0 ) {
-        Serial.println("BME280 initialization unsuccessful");
-        Serial.println("Check wiring or try cycling power");
-        delay(1000);
-    } else {
-        Serial.println("BME280 driver ready.");
-    }
+    #if defined HAVE_ONBOARD_BARO
+     baro_status = barometer.begin();
+     if ( baro_status < 0 ) {
+         Serial.println("Onboard barometer initialization unsuccessful");
+         Serial.println("Check wiring or try cycling power");
+         delay(1000);
+     } else {
+         Serial.println("Onboard barometer driver ready.");
+     }
+    #endif
     
     dPress.begin();
     #if defined MARMOT_V1
@@ -49,19 +58,30 @@ void airdata_setup() {
 
 void airdata_update() {
     // onboard static pressure sensor
-    if ( bme_status >= 0 ) {
+   #if HAVE_ONBOARD_BARO == AURA_BMP180
+    if ( baro_status ) {
+        baro_press = barometer.readPressure();
+        baro_temp = barometer.readTemperature();
+    }
+   #elif HAVE_ONBOARD_BARO == AURA_BMP280 || HAVE_ONBOARD_BARO == MARMOT_BME280
+    if ( baro_status >= 0 ) {
         // get the pressure (Pa), temperature (C),
         // and humidity data (%RH) all at once
-        bme.getData(&bme_press,&bme_temp,&bme_hum);
+        barometer.getData(&baro_press, &baro_temp, &baro_hum);
     }
+   #endif
 
     bool result;
     
     // external differential pressure sensor
     result = dPress.getData(&airdata_diffPress_pa, &airdata_temp_C);
     if ( !result ) {
-        Serial.println("Error while reading dPress sensor.");
-        airdata_error_count++;
+        if ( dpress_found ) {
+            Serial.println("Error while reading dPress sensor.");
+            airdata_error_count++;
+        }
+    } else {
+        dpress_found = true;
     }
     #if defined MARMOT_V1
      // external differential pressure sensor
@@ -69,8 +89,12 @@ void airdata_update() {
      float tmp;
      result = sPress.getData(&airdata_staticPress_pa, &tmp);
      if ( !result ) {
-         Serial.println("Error while reading sPress sensor.");
-         airdata_error_count++;
+         if ( spress_found ) {
+             Serial.println("Error while reading sPress sensor.");
+             airdata_error_count++;
+         }
+     } else {
+         spress_found = true;
      }
     #endif
      

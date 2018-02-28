@@ -430,9 +430,9 @@ uint8_t write_airdata_bin()
     // packet length (1 byte)
     Serial1.write(size);
     
-    *(float *)packet = bme_press; packet += 4;
-    *(float *)packet = bme_temp; packet += 4;
-    *(float *)packet = bme_hum; packet += 4;
+    *(float *)packet = baro_press; packet += 4;
+    *(float *)packet = baro_temp; packet += 4;
+    *(float *)packet = baro_hum; packet += 4;
     *(float *)packet = airdata_diffPress_pa; packet += 4;
     *(float *)packet = airdata_temp_C; packet += 4;
       
@@ -450,10 +450,10 @@ uint8_t write_airdata_bin()
 
 void write_airdata_ascii()
 {
-    Serial.print("BME: ");
-    Serial.print(bme_press, 2); Serial.print(" (st pa) ");
-    Serial.print(bme_temp, 2); Serial.print(" (C) ");
-    Serial.print(bme_hum, 1); Serial.print(" (%RH) ");
+    Serial.print("Barometer: ");
+    Serial.print(baro_press, 2); Serial.print(" (st pa) ");
+    Serial.print(baro_temp, 2); Serial.print(" (C) ");
+    Serial.print(baro_hum, 1); Serial.print(" (%RH) ");
     Serial.print("AMS: ");
     Serial.print(airdata_staticPress_pa, 4); Serial.print(" (st pa) ");
     Serial.print(airdata_diffPress_pa, 4); Serial.print(" (diff pa) ");

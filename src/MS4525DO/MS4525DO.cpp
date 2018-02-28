@@ -65,7 +65,7 @@ bool MS4525DO::getData(float* pressure, float* temperature) {
     // _bus->endTransmission();
 
     if ( counter < numBytes ) {
-        Serial.println("Error, fewer than expected bytes available on i2c read");
+        // Serial.println("Error, fewer than expected bytes available on i2c read");
         return false;
     } else {
         uint8_t status = (b[0] & 0xC0) >> 6;
