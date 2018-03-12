@@ -37,6 +37,11 @@ float airdata_temp_C = 0.0;
  const uint8_t avionics_pin = A22;
 #endif
 
+#if defined HAVE_ATTOPILOT
+ const uint8_t atto_volts_pin = A2;
+ const uint8_t atto_amps_pin = A3;
+#endif
+
 const float analogResolution = 65535.0f;
 const float pwr_scale = 11.0f;
 const float avionics_scale = 2.0f;
@@ -63,7 +68,7 @@ void setup() {
     Serial.println(" baud (N81) no flow control.");
     
     // The myfollowing code (when enabled) will force setting a specific device serial number.
-    // set_serial_number(121);
+    // set_serial_number(120);
     read_serial_number();
     
     if ( /* true || */ !config_read_eeprom() ) {
@@ -134,10 +139,9 @@ void loop() {
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
             // write_gps_ascii();
-            write_airdata_ascii();
-            // write_analog_ascii();
+            // write_airdata_ascii();
             // write_status_info_ascii();
-            // write_imu_ascii();
+            write_imu_ascii();
         }
 
         // uncomment this next line to test drive individual servo channels
@@ -157,6 +161,13 @@ void loop() {
 
         ain = analogRead(avionics_pin);
         avionics_v = ((float)ain) * 3.3 / analogResolution * avionics_scale;
+
+       #if defined HAVE_ATTOPILOT
+        // attopilot
+        ain = analogRead(atto_volts_pin);
+        // Serial.print("atto volts: ");
+        // Serial.println( ((float)ain) * 3.3 / analogResolution );
+       #endif
     }
 
     // suck in any available gps bytes
@@ -174,7 +185,6 @@ void loop() {
 
     // blink the led on boards that support it
    #if defined AURA_V2
-    const int LED = 13;
     static elapsedMillis blinkTimer = 0;
     static unsigned int blink_rate = 100;
     static bool blink_state = true;

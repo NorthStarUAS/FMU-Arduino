@@ -14,8 +14,11 @@
 // #define HAVE_MS4525DO
 #define HAVE_BFS_SWIFT
 
+// Specify Attopilot if supported
+// #define HAVE_ATTOPILOT
+
 // Firmware rev (needs to be updated here manually to match release number)
-#define FIRMWARE_REV 331
+#define FIRMWARE_REV 332
 
 // this is the master loop update rate.  For 115,200 baud
 // communication, 100hz is as fast as we can go without saturating our
@@ -26,6 +29,16 @@
 // Please read the important notes in the source tree about Teensy
 // baud rates vs. host baud rates.
 #define DEFAULT_BAUD 500000
+
+
+//////////////////////////////////////////////////////////////////////////
+// This is a section for derived values
+//////////////////////////////////////////////////////////////////////////
+
+#if defined AURA_V2
+const int LED = 13;
+#endif
+
 
 //////////////////////////////////////////////////////////////////////////
 // This is a section for RC / PWM constants to be shared around the sketch
@@ -69,6 +82,9 @@ const int servoFreq_hz = 50; // servo pwm update rate
 #pragma pack(push, 1)           // set alignment to 1 byte boundary
 typedef struct {
     int version;
+
+    /* IMU orientation matrix */
+    float imu_orient[9];
     
     /* hz for pwm output signal, 50hz default for analog servos, maximum rate is servo dependent:
        digital servos can usually do 200-250hz
@@ -104,13 +120,13 @@ typedef struct {
     bool sas_rollaxis;
     bool sas_pitchaxis;
     bool sas_yawaxis;
-    bool sas_ch7tune;
+    bool sas_tune;
 
     /* sas gains */
     float sas_rollgain;
     float sas_pitchgain;
     float sas_yawgain;
-    float sas_ch7gain;
+    float sas_max_gain;
 } config_t;
 #pragma pack(pop)
 

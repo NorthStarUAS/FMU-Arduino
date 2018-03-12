@@ -13,6 +13,7 @@ void pwm_setup() {
     // setting up pwm outputs and rates
     analogWriteResolution(16);
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
+        analogWrite(servoPins[i], 0); // zero signal to avoid surprises
         analogWriteFrequency(servoPins[i], servoFreq_hz);
     }
     

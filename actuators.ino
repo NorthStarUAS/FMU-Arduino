@@ -12,7 +12,7 @@
 #define SAS_ROLLAXIS 1
 #define SAS_PITCHAXIS 2
 #define SAS_YAWAXIS 3
-#define SAS_CH7_TUNE 10
+#define SAS_TUNE 10
 
 // Mix mode commands, format is cmd(byte), gain 1(float), gain 2(float)
 #define MIX_DEFAULTS 0
@@ -57,12 +57,12 @@ void sas_defaults() {
     config.sas_rollaxis = false;
     config.sas_pitchaxis = false;
     config.sas_yawaxis = false;
-    config.sas_ch7tune = false;
+    config.sas_tune = false;
 
     config.sas_rollgain = 0.0;
     config.sas_pitchgain = 0.0;
     config.sas_yawgain = 0.0;
-    config.sas_ch7gain = 2.0;
+    config.sas_max_gain = 2.0;
 };
 
 
@@ -131,8 +131,8 @@ bool sas_command_parse(byte *buf) {
     } else if ( buf[0] == SAS_YAWAXIS ) {
         config.sas_yawaxis = enable;
         config.sas_yawgain = gain;
-    } else if ( buf[0] == SAS_CH7_TUNE ) {
-        config.sas_ch7tune = enable;
+    } else if ( buf[0] == SAS_TUNE ) {
+        config.sas_tune = enable;
     } else {
         return false;
     }
@@ -198,14 +198,25 @@ void sas_update( float control_norm[SBUS_CHANNELS] ) {
     // value assignment)
 
     float tune = 1.0;
-    if ( config.sas_ch7tune ) {
-        // fixme: tune = config.sas_ch7gain * receiver_norm[6];
+    if ( config.sas_tune ) {
+        tune = config.sas_max_gain * receiver_norm[7];
         if ( tune < 0.0 ) {
             tune = 0.0;
         } else if ( tune > 2.0 ) {
             tune = 2.0;
         }
     }
+   #if defined AURA_V2
+    if ( config.sas_rollaxis ) {
+        control_norm[3] += tune * config.sas_rollgain * imu_calib[3];  // p
+    }
+    if ( config.sas_pitchaxis ) {
+        control_norm[4] -= tune * config.sas_pitchgain * imu_calib[4]; // q
+    }
+    if ( config.sas_yawaxis ) {
+        control_norm[5] += tune * config.sas_yawgain * imu_calib[5];   // r
+    }
+   #elif defined MARMOT_V1
     if ( config.sas_rollaxis ) {
         control_norm[3] -= tune * config.sas_rollgain * imu_calib[3];  // p
     }
@@ -215,6 +226,7 @@ void sas_update( float control_norm[SBUS_CHANNELS] ) {
     if ( config.sas_yawaxis ) {
         control_norm[5] += tune * config.sas_yawgain * imu_calib[5];   // r
     }
+   #endif
 }
 
 // compute the actuator (servo) values for each channel.  Handle all

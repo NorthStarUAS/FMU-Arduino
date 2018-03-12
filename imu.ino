@@ -31,6 +31,16 @@ const float tempScale = 0.01;
 
 float gyro_calib[3] = { 0.0, 0.0, 0.0 };
 
+// set imu orientation to identity
+static void imu_orientation_defaults() {
+    float ident[] = { 1.0, 0.0, 0.0,
+                      0.0, 1.0, 0.0,
+                      0.0, 0.0, 1.0};
+    for ( int i = 0; i < 9; i++ ) {
+        config.imu_orient[i] = ident[i];
+    }
+}
+
 // configure the IMU settings and setup the ISR to aquire the data
 void imu_setup() {
     // initialize the IMU, specify accelerometer and gyro ranges
@@ -52,23 +62,33 @@ void imu_setup() {
     }
 
     Serial.println("MPU-9250 ready.");
+    for ( int i = 0; i < 9; i++ ) {
+        Serial.print(config.imu_orient[i], 2);
+        Serial.print(" ");
+        if ( i == 2 or i == 5 or i == 8 ) {
+            Serial.println();
+        }
+    }
 }
 
+void imu_rotate(float v0, float v1, float v2,
+                float *r0, float *r1, float *r2)
+{
+    *r0 = v0*config.imu_orient[0] + v1*config.imu_orient[1] + v2*config.imu_orient[2];
+    *r1 = v0*config.imu_orient[3] + v1*config.imu_orient[4] + v2*config.imu_orient[5];
+    *r2 = v0*config.imu_orient[6] + v1*config.imu_orient[7] + v2*config.imu_orient[8];
+}
 
 // query the imu and update the structures
 void imu_update() {
     imu_micros = micros();
     float ax, ay, az, gx, gy, gz, hx, hy, hz, t;
     IMU.getMotion10(&ax, &ay, &az, &gx, &gy, &gz, &hx, &hy, &hz, &t);
-    imu_calib[0] = ay;
-    imu_calib[1] = -ax;
-    imu_calib[2] = az;
-    imu_calib[3] = gy;
-    imu_calib[4] = -gx;
-    imu_calib[5] = gz;
-    imu_calib[6] = hy;
-    imu_calib[7] = -hx;
-    imu_calib[8] = hz;
+
+    // translate into aircraft body frame
+    imu_rotate(ax, ay, az, &imu_calib[0], &imu_calib[1], &imu_calib[2]);
+    imu_rotate(gx, gy, gz, &imu_calib[3], &imu_calib[4], &imu_calib[5]);
+    imu_rotate(hx, hy, hz, &imu_calib[6], &imu_calib[7], &imu_calib[8]);
     imu_calib[9] = t;
 
     if ( gyros_calibrated < 2 ) {
