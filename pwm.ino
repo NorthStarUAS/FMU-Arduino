@@ -1,7 +1,9 @@
-#if defined AURA_V2
+#if defined HAVE_PWM_AURA
 const uint8_t servoPins[PWM_CHANNELS] = {6, 5, 4, 3, 23, 22, 21, 20};
-#elif defined MARMOT_V1
+#elif defined HAVE_PWM_MARMOT
  const uint8_t servoPins[PWM_CHANNELS] = {21, 22, 23, 2, 3, 4, 5, 6};
+#else
+ #error "No PWM servo pin layout defined!"
 #endif
 
 // define if a channel is symmetrical or not (i.e. mapped to [0,1] for

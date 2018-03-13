@@ -1,34 +1,68 @@
 #ifndef _AURA_CONFIG_H_INCLUDED
 #define _AURA_CONFIG_H_INCLUDED
 
-// Specify one of the following board variants
-#define AURA_V2
-// #define MARMOT_V1
+//////////////////////////////////////////////////////////////////////////
+// Hardware configuration section
+//////////////////////////////////////////////////////////////////////////
+
+// Specify one of the following board/build variants
+// #define AURA_V2
+#define MARMOT_V1
+
+// automatic configuration
+#if defined AURA_V2
+ #define HAVE_IMU_I2C
+ #define HAVE_AURA_BMP280
+ #define HAVE_MS4525DO
+ #define HAVE_ATTOPILOT
+ #define HAVE_PWM_AURA
+ const uint8_t avionics_pin = A1;
+ const uint8_t pwr_pin = A0;
+ #define HAVE_AURA_LED
+#elif defined MARMOT_V1
+ #define HAVE_IMU_SPI
+ #define HAVE_MARMOT_BME280
+ #define HAVE_BFS_SWIFT
+ #define HAVE_PWM_MARMOT
+ const uint8_t avionics_pin = A22;
+ const uint8_t pwr_pin = 15;
+#endif
+
+// Configuration flags available:
+
+// Specify IMU interface
+// #define HAVE_IMU_I2C
+// #define HAVE_IMU_SPI
 
 // Specify which onboard pressure sensor is installed
 // #define HAVE_AURA_BMP180
-#define HAVE_AURA_BMP280
+// #define HAVE_AURA_BMP280
 // #define HAVE_MARMOT_BME280
 
 // Specify which external pressure sensor is installed
-#define HAVE_MS4525DO
+// #define HAVE_MS4525DO
 // #define HAVE_BFS_SWIFT
 
 // Specify Attopilot if supported
-#define HAVE_ATTOPILOT
+// #define HAVE_ATTOPILOT
+
+// Specify PWM pin layout
+// #define HAVE_PWM_AURA
+// #define HAVE_PWM_MARMOT
+
+// Do we have an LED we wish to blink
+// #define HAVE_AURA_LED
 
 // Firmware rev (needs to be updated here manually to match release number)
-#define FIRMWARE_REV 332
+const int FIRMWARE_REV = 332;
 
-// this is the master loop update rate.  For 115,200 baud
-// communication, 100hz is as fast as we can go without saturating our
-// uart link to the host.
-#define MASTER_HZ 100
-#define DT_MILLIS (1000 / MASTER_HZ)
+// this is the master loop update rate.
+const int MASTER_HZ = 100;
+const int DT_MILLIS = (1000 / MASTER_HZ);
 
 // Please read the important notes in the source tree about Teensy
 // baud rates vs. host baud rates.
-#define DEFAULT_BAUD 500000
+const int DEFAULT_BAUD = 500000;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -45,21 +79,22 @@ const int LED = 13;
 //////////////////////////////////////////////////////////////////////////
 
 // Maximum number of input or output channels supported
-#define SBUS_CHANNELS 16
-#define PWM_CHANNELS 8
-#define AP_CHANNELS 6
+const int SBUS_CHANNELS = 16;
+const int PWM_CHANNELS = 8;
+const int AP_CHANNELS = 6;
 
-#define SBUS_FRAMELOST (1 << 2)
-#define SBUS_FAILSAFE (1 << 3)
+const uint8_t SBUS_FRAMELOST = (1 << 2);
+const uint8_t SBUS_FAILSAFE = (1 << 3);
 
-// this is the hardware PWM generation rate note the default is 50hz
-// and this is the max we can drive analog servos digital servos
-// should be able to run at 200hz -- 250hz is getting up close to the
+// This is the hardware PWM generation rate note the default is 50hz
+// and this is the max we can drive analog servos.  Digital servos
+// should be able to run at 200hz.  250hz is getting up close to the
 // theoretical maximum of a 100% duty cycle.  Advantage for running
 // this at 200+hz with digital servos is we should catch commanded
 // position changes slightly faster for a slightly more responsive
-// system (emphasis on slightly) TODO: make this configurable via an
-// external command.
+// system (emphasis on slightly).  In practice, changing this to
+// something higher than 50 hz has little practical effect and can
+// often cause problems with ESC's that expect 50hz pwm signals.
 const int servoFreq_hz = 50; // servo pwm update rate
 
 // For a Futaba T6EX 2.4Ghz FASST system:

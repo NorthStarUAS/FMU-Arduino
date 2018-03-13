@@ -28,15 +28,6 @@ float airdata_staticPress_pa = 0.0;
 float airdata_diffPress_pa = 0.0;
 float airdata_temp_C = 0.0;
 
-// Analog In and Battery Voltage
-#if defined AURA_V2
- const uint8_t avionics_pin = A1;
- const uint8_t pwr_pin = A0;
-#elif defined MARMOT_V1
- const uint8_t pwr_pin = 15;
- const uint8_t avionics_pin = A22;
-#endif
-
 #if defined HAVE_ATTOPILOT
  const uint8_t atto_volts_pin = A2;
  const uint8_t atto_amps_pin = A3;
@@ -101,7 +92,7 @@ void setup() {
     // set up ADC0
     analogReadResolution(16);
 
-#if defined AURA_V2
+#if defined HAVE_AURA_LED
     pinMode(LED, OUTPUT);
     digitalWrite(LED, HIGH);
 #endif
@@ -184,7 +175,7 @@ void loop() {
     while ( read_commands() );
 
     // blink the led on boards that support it
-   #if defined AURA_V2
+   #if defined HAVE_AURA_LED
     static elapsedMillis blinkTimer = 0;
     static unsigned int blink_rate = 100;
     static bool blink_state = true;
