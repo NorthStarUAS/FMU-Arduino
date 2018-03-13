@@ -2,20 +2,20 @@
 #define _AURA_CONFIG_H_INCLUDED
 
 // Specify one of the following board variants
-// #define AURA_V2
-#define MARMOT_V1
+#define AURA_V2
+// #define MARMOT_V1
 
 // Specify which onboard pressure sensor is installed
 // #define HAVE_AURA_BMP180
-// #define HAVE_AURA_BMP280
-#define HAVE_MARMOT_BME280
+#define HAVE_AURA_BMP280
+// #define HAVE_MARMOT_BME280
 
 // Specify which external pressure sensor is installed
-// #define HAVE_MS4525DO
-#define HAVE_BFS_SWIFT
+#define HAVE_MS4525DO
+// #define HAVE_BFS_SWIFT
 
 // Specify Attopilot if supported
-// #define HAVE_ATTOPILOT
+#define HAVE_ATTOPILOT
 
 // Firmware rev (needs to be updated here manually to match release number)
 #define FIRMWARE_REV 332

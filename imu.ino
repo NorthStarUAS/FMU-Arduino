@@ -85,19 +85,20 @@ void imu_update() {
     float ax, ay, az, gx, gy, gz, hx, hy, hz, t;
     IMU.getMotion10(&ax, &ay, &az, &gx, &gy, &gz, &hx, &hy, &hz, &t);
 
+    if ( gyros_calibrated < 2 ) {
+        calibrate_gyros(gx, gy, gz);  // caution: axis remapping
+    } else {
+        gx -= gyro_calib[0];
+        gy -= gyro_calib[1];
+        gz -= gyro_calib[2];
+    }
+
     // translate into aircraft body frame
     imu_rotate(ax, ay, az, &imu_calib[0], &imu_calib[1], &imu_calib[2]);
     imu_rotate(gx, gy, gz, &imu_calib[3], &imu_calib[4], &imu_calib[5]);
     imu_rotate(hx, hy, hz, &imu_calib[6], &imu_calib[7], &imu_calib[8]);
     imu_calib[9] = t;
 
-    if ( gyros_calibrated < 2 ) {
-        calibrate_gyros(gy, -gx, gz);  // caution: axis remapping
-    } else {
-        for ( int i = 0; i < 3; i++ ) {
-            imu_calib[i+3] -= gyro_calib[i];
-        }
-    }
     // packed imu structure
     for ( int i = 0; i < 3; i++ ) {
         imu_packed[i] = imu_calib[i] / accelScale;

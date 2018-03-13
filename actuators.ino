@@ -206,17 +206,7 @@ void sas_update( float control_norm[SBUS_CHANNELS] ) {
             tune = 2.0;
         }
     }
-   #if defined AURA_V2
-    if ( config.sas_rollaxis ) {
-        control_norm[3] += tune * config.sas_rollgain * imu_calib[3];  // p
-    }
-    if ( config.sas_pitchaxis ) {
-        control_norm[4] -= tune * config.sas_pitchgain * imu_calib[4]; // q
-    }
-    if ( config.sas_yawaxis ) {
-        control_norm[5] += tune * config.sas_yawgain * imu_calib[5];   // r
-    }
-   #elif defined MARMOT_V1
+
     if ( config.sas_rollaxis ) {
         control_norm[3] -= tune * config.sas_rollgain * imu_calib[3];  // p
     }
@@ -226,7 +216,6 @@ void sas_update( float control_norm[SBUS_CHANNELS] ) {
     if ( config.sas_yawaxis ) {
         control_norm[5] += tune * config.sas_yawgain * imu_calib[5];   // r
     }
-   #endif
 }
 
 // compute the actuator (servo) values for each channel.  Handle all
