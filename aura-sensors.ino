@@ -59,7 +59,7 @@ void setup() {
     Serial.println(" baud (N81) no flow control.");
     
     // The myfollowing code (when enabled) will force setting a specific device serial number.
-    // set_serial_number(120);
+    // set_serial_number(122);
     read_serial_number();
     
     if ( /* true || */ !config_read_eeprom() ) {
@@ -93,8 +93,8 @@ void setup() {
     analogReadResolution(16);
 
 #if defined HAVE_AURA_LED
-    pinMode(LED, OUTPUT);
-    digitalWrite(LED, HIGH);
+    pinMode(led_pin, OUTPUT);
+    digitalWrite(led_pin, HIGH);
 #endif
 
     Serial.println("Ready and transmitting...");
@@ -112,7 +112,7 @@ void loop() {
         
         // top priority, used for timing sync downstream.
         imu_update();
- 
+
         // output keyed off new IMU data
         output_counter += write_pilot_in_bin();
         output_counter += write_gps_bin();
@@ -190,7 +190,7 @@ void loop() {
      if ( blinkTimer >= blink_rate ) {
          blinkTimer = 0;
          blink_state = !blink_state;
-         digitalWrite(LED, blink_state);
+         digitalWrite(led_pin, blink_state);
      }
     #endif
 }

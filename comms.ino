@@ -119,7 +119,7 @@ bool read_commands() {
     static byte message_size = 0;
     byte cksum0 = 0, cksum1 = 0;
     bool new_data = false;
-    // Serial.print("top: "); Serial.println(state);
+    // Serial.print("start read_commands(): "); Serial.println(state);
 
     if ( state == 0 ) {
         while ( Serial1.available() >= 1 ) {

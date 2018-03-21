@@ -29,6 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 MS4525DO::MS4525DO(){
   _address = 0x28; // I2C address
   _bus = NULL; // I2C bus
+  _ready = false;
 }
 
 /* MS4525DO object, input the I2C address and enumerated chip name (i.e. MS4525DO_1200_B) */
@@ -38,18 +39,29 @@ MS4525DO::MS4525DO(uint8_t address, TwoWire *bus){
 }
 
 /* starts the I2C communication and sets the pressure and temperature ranges using getTransducer */
-void MS4525DO::begin(){
+bool MS4525DO::begin(){
     // starting the I2C bus
     _bus->begin();
     _bus->setClock(_i2cRate);
 
     _bus->beginTransmission(_address);
-    _bus->endTransmission();
+    int result = _bus->endTransmission();
     delay(100);
+    if ( result > 0 ) {
+        Serial.print("MS4525DO init error: "); Serial.println(result);
+        return false;
+    } else {
+        _ready = true;
+        return true;
+    }
 }
 
 /* reads pressure and temperature and returns values in counts */
 bool MS4525DO::getData(float* pressure, float* temperature) {
+    if ( ! _ready ) {
+        return false;
+    }
+    
     uint8_t b[4]; // buffer
     const uint8_t numBytes = 4;
 

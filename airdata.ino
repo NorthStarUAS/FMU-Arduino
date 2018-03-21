@@ -1,9 +1,6 @@
 #include "config.h"
 
-#if defined HAVE_AURA_BMP180
- #include "src/Adafruit_BMP085/Adafruit_BMP085.h"
- Adafruit_BMP085 barometer;
-#elif defined HAVE_AURA_BMP280
+#if defined HAVE_AURA_BMP280
  #include "src/BME280/BME280.h"
  BME280 barometer(0x76, &Wire);
 #elif defined HAVE_MARMOT_BME280
@@ -31,7 +28,7 @@ bool dpress_found = false;
 bool spress_found = false;
 
 void airdata_setup() {
-   #if defined HAVE_AURA_BMP180 || defined HAVE_AURA_BMP280 || defined HAVE_MARMOT_BME280
+   #if defined HAVE_AURA_BMP280 || defined HAVE_MARMOT_BME280
     baro_status = barometer.begin();
     if ( baro_status < 0 ) {
         Serial.println("Onboard barometer initialization unsuccessful");
@@ -52,13 +49,7 @@ void airdata_setup() {
 
 void airdata_update() {
     // onboard static pressure sensor
-   #if defined HAVE_AURA_BMP180
-    if ( baro_status ) {
-        baro_press = barometer.readPressure();
-        baro_temp = barometer.readTemperature();
-    }
-    // #elif (HAVE_ONBOARD_BARO == AURA_BMP280) || (HAVE_ONBOARD_BARO == MARMOT_BME280)
-   #elif defined HAVE_AURA_BMP280 || defined HAVE_MARMOT_BME280
+   #if defined HAVE_AURA_BMP280 || defined HAVE_MARMOT_BME280
     if ( baro_status >= 0 ) {
         // get the pressure (Pa), temperature (C),
         // and humidity data (%RH) all at once

@@ -22,11 +22,13 @@ Adafruit_BMP085::Adafruit_BMP085() {
 
 
 boolean Adafruit_BMP085::begin(uint8_t mode) {
-  if (mode > BMP085_ULTRAHIGHRES) 
-    mode = BMP085_ULTRAHIGHRES;
-  oversampling = mode;
+    if (mode > BMP085_ULTRAHIGHRES) {
+        mode = BMP085_ULTRAHIGHRES;
+    }
+    oversampling = mode;
 
   Wire.begin();
+  Wire.setClock(400000);
 
   if (read8(0xD0) != 0x55) return false;
 
