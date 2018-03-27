@@ -224,31 +224,15 @@ int write_packet(uint8_t packet_id, uint8_t *payload, int size) {
 }
 
 /* output an acknowledgement of a message received */
-void write_ack_bin( uint8_t command_id, uint8_t subcommand_id )
+int write_ack_bin( uint8_t command_id, uint8_t subcommand_id )
 {
-    byte size = 2;
+    ack_packet_t payload;
+    byte size = sizeof(payload);
 
-    // start of message sync bytes
-    Serial1.write(START_OF_MSG0);
-    Serial1.write(START_OF_MSG1);
+    payload.command_id = command_id;
+    payload.subcommand_id = subcommand_id;
 
-    // packet id (1 byte)
-    Serial1.write(ACK_PACKET_ID); 
-
-    // packet length
-    Serial1.write(size);
-
-    // ack id
-    byte packet[size];
-    packet[0] = command_id;
-    packet[1] = subcommand_id;
-    Serial1.write(packet, size);
-
-    // check sum (2 bytes)
-    byte cksum0, cksum1;
-    ugear_cksum( ACK_PACKET_ID, size, packet, size, &cksum0, &cksum1 );
-    Serial1.write(cksum0);
-    Serial1.write(cksum1);
+    return write_packet( ACK_PACKET_ID, (uint8_t *)&payload, size);
 }
 
 
