@@ -428,11 +428,12 @@ uint8_t write_airdata_bin()
     // packet length (1 byte)
     Serial1.write(size);
     
-    packet.baro_press = baro_press;
-    packet.baro_temp = baro_temp;
+    packet.baro_press_pa = baro_press;
+    packet.baro_temp_C = baro_temp;
     packet.baro_hum = baro_hum;
-    packet.airdata_diffPress_pa = airdata_diffPress_pa;
-    packet.airdata_temp_C = airdata_temp_C;
+    packet.ext_diff_press_pa = airdata_diffPress_pa;
+    packet.ext_static_press_pa = airdata_staticPress_pa;
+    packet.ext_temp_C = airdata_temp_C;
       
     // write packet
     Serial1.write( (uint8_t *)&packet, size );
