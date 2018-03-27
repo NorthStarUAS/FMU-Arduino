@@ -36,8 +36,10 @@ float airdata_temp_C = 0.0;
 const float analogResolution = 65535.0f;
 const float pwr_scale = 11.0f;
 const float avionics_scale = 2.0f;
-float pwr_v = 0.0;
+float pwr1_v = 0.0;
+float pwr2_v = 0.0;
 float avionics_v = 0.0;
+float pwr_a = 0.0;
     
 // COMS
 // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in
@@ -117,7 +119,7 @@ void loop() {
         output_counter += write_pilot_in_bin();
         output_counter += write_gps_bin();
         output_counter += write_airdata_bin();
-        // output_counter += write_analog_bin();
+        output_counter += write_power_bin();
         // do a little extra dance with the return value because write_status_info_bin()
         // can reset output_counter (but that gets ignored if we do the math in one step)
         uint8_t result = write_status_info_bin();
@@ -148,7 +150,7 @@ void loop() {
         // battery voltage
         uint16_t ain;
         ain = analogRead(pwr_pin);
-        pwr_v = ((float)ain) * 3.3 / analogResolution * pwr_scale;
+        pwr1_v = ((float)ain) * 3.3 / analogResolution * pwr_scale;
 
         ain = analogRead(avionics_pin);
         avionics_v = ((float)ain) * 3.3 / analogResolution * avionics_scale;

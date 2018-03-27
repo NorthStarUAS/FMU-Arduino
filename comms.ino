@@ -21,7 +21,7 @@
 #define IMU_PACKET_ID 51
 #define GPS_PACKET_ID 52
 #define AIRDATA_PACKET_ID 53
-#define ANALOG_PACKET_ID 54
+#define POWER_PACKET_ID 54
 #define STATUS_INFO_PACKET_ID 55
 
 
@@ -232,9 +232,8 @@ void write_ack_bin( uint8_t command_id, uint8_t subcommand_id )
 /* output a binary representation of the pilot (rc receiver) data */
 uint8_t write_pilot_in_bin()
 {
-    byte size = 2 * SBUS_CHANNELS + 1;
-    byte packet_buf[256]; // hopefully never larger than this!
-    byte *packet = packet_buf;
+    pilot_packet_t packet;
+    byte size = sizeof(packet);
 
     // start of message sync bytes
     Serial1.write(START_OF_MSG0);
@@ -248,19 +247,18 @@ uint8_t write_pilot_in_bin()
 
     // receiver data
     for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
-        int16_t val = receiver_norm[i] * 16384.0;
-        *(int16_t *)packet = val; packet += 2;
+        packet.channel[i] = receiver_norm[i] * 16384.0;
     }
 
     // flags
-    *(uint8_t *)packet = receiver_flags; packet += 1;
+    packet.flags = receiver_flags;
     
     // write packet
-    Serial1.write( packet_buf, size );
+    Serial1.write( (uint8_t *)&packet, size );
 
     // check sum (2 bytes)
     byte cksum0, cksum1;
-    ugear_cksum( PILOT_PACKET_ID, size, packet_buf, size, &cksum0, &cksum1 );
+    ugear_cksum( PILOT_PACKET_ID, size, (uint8_t *)&packet, size, &cksum0, &cksum1 );
     Serial1.write(cksum0);
     Serial1.write(cksum1);
     
@@ -304,9 +302,8 @@ void write_actuator_out_ascii()
 /* output a binary representation of the IMU data (note: scaled to 16bit values) */
 uint8_t write_imu_bin()
 {
-    byte size = 4 /* for timestamp */ + 2 * 10 /* 10 imu values */;
-    byte packet_buf[256]; // hopefully never larger than this!
-    byte *packet = packet_buf;
+    imu_packet_t packet;
+    byte size = sizeof(packet);
     
     // start of message sync bytes
     Serial1.write(START_OF_MSG0);
@@ -318,18 +315,18 @@ uint8_t write_imu_bin()
     // packet length (1 byte)
     Serial1.write(size);
 
-    *(uint32_t *)packet = imu_micros; packet += 4;
+    packet.micros = imu_micros;
 
     for ( int i = 0; i < 10; i++ ) {
-        *(int16_t *)packet = imu_packed[i]; packet += 2;
+        packet.channel[i] = imu_packed[i];
     }
     
     // write packet
-    Serial1.write( packet_buf, size );
+    Serial1.write( (uint8_t *)&packet, size );
 
     // check sum (2 bytes)
     byte cksum0, cksum1;
-    ugear_cksum( IMU_PACKET_ID, size, packet_buf, size, &cksum0, &cksum1 );
+    ugear_cksum( IMU_PACKET_ID, size, (uint8_t *)&packet, size, &cksum0, &cksum1 );
     Serial1.write(cksum0);
     Serial1.write(cksum1);
     
@@ -367,11 +364,11 @@ uint8_t write_gps_bin()
     Serial1.write(size);
 
     // write packet
-    Serial1.write( (byte *)&gps_data, size );
+    Serial1.write( (uint8_t *)&gps_data, size );
 
     // check sum (2 bytes)
     byte cksum0, cksum1;
-    ugear_cksum( GPS_PACKET_ID, size, (byte *)(&gps_data), size, &cksum0, &cksum1 );
+    ugear_cksum( GPS_PACKET_ID, size, (uint8_t *)(&gps_data), size, &cksum0, &cksum1 );
     Serial1.write(cksum0);
     Serial1.write(cksum1);
   
@@ -418,9 +415,8 @@ void write_gps_ascii() {
 /* output a binary representation of the barometer data */
 uint8_t write_airdata_bin()
 {
-    byte size = 20;
-    byte packet_buf[256]; // hopefully never larger than this!
-    byte *packet = packet_buf;
+    airdata_packet_t packet;
+    byte size = sizeof(packet);
 
     // start of message sync bytes
     Serial1.write(START_OF_MSG0);
@@ -432,18 +428,18 @@ uint8_t write_airdata_bin()
     // packet length (1 byte)
     Serial1.write(size);
     
-    *(float *)packet = baro_press; packet += 4;
-    *(float *)packet = baro_temp; packet += 4;
-    *(float *)packet = baro_hum; packet += 4;
-    *(float *)packet = airdata_diffPress_pa; packet += 4;
-    *(float *)packet = airdata_temp_C; packet += 4;
+    packet.baro_press = baro_press;
+    packet.baro_temp = baro_temp;
+    packet.baro_hum = baro_hum;
+    packet.airdata_diffPress_pa = airdata_diffPress_pa;
+    packet.airdata_temp_C = airdata_temp_C;
       
     // write packet
-    Serial1.write( packet_buf, size );
+    Serial1.write( (uint8_t *)&packet, size );
 
     // check sum (2 bytes)
     byte cksum0, cksum1;
-    ugear_cksum( AIRDATA_PACKET_ID, size, packet_buf, size, &cksum0, &cksum1 );
+    ugear_cksum( AIRDATA_PACKET_ID, size, (uint8_t *)&packet, size, &cksum0, &cksum1 );
     Serial1.write(cksum0);
     Serial1.write(cksum1);
     
@@ -464,14 +460,61 @@ void write_airdata_ascii()
     Serial.println();
 }
 
+/* output a binary representation of various volt/amp sensors */
+uint8_t write_power_bin()
+{
+    power_packet_t packet;
+    byte size = sizeof(packet);
+
+    // start of message sync bytes
+    Serial1.write(START_OF_MSG0); 
+    Serial1.write(START_OF_MSG1);
+
+    // packet id (1 byte)
+    Serial1.write(POWER_PACKET_ID);
+
+    // packet length (1 byte)
+    Serial1.write(size);
+
+    packet.int_main_v = (uint16_t)(pwr1_v*100);
+    packet.avionics_v = (uint16_t)(avionics_v*100);
+    packet.ext_main_v = (uint16_t)(pwr2_v*100);
+    packet.ext_main_amp = (uint16_t)(pwr_a*100);
+ 
+    // write packet
+    Serial1.write( (uint8_t *)&packet, size );
+
+    // check sum (2 bytes)
+    byte cksum0, cksum1;
+    ugear_cksum( POWER_PACKET_ID, size, (uint8_t *)&packet, size, &cksum0, &cksum1 );
+    Serial1.write(cksum0);
+    Serial1.write(cksum1);
+    
+    return size + 6;
+}
+
+void write_power_ascii()
+{
+    // This info is static so we don't need to send it at a high rate ... once every 10 seconds (?)
+    // with an immediate message at the start.
+    Serial.print("SN: ");
+    Serial.println(read_serial_number());
+    Serial.print("Firmware: ");
+    Serial.println(FIRMWARE_REV);
+    Serial.print("Main loop hz: ");
+    Serial.println( MASTER_HZ);
+    Serial.print("Baud: ");Serial.println(DEFAULT_BAUD);
+    Serial.print("Main v: "); Serial.print(pwr1_v, 2);
+    Serial.print(" av: "); Serial.println(avionics_v, 2);
+}
+
 /* output a binary representation of various status and config information */
 uint8_t write_status_info_bin()
 {
     static uint32_t write_millis = millis();
 
-    byte size = 16;
-    byte packet_buf[256]; // hopefully never larger than this!
-    byte *packet = packet_buf;
+    status_packet_t packet;
+    byte size = sizeof(packet);
 
     // This info is static or slow changing so we don't need to send
     // it at a high rate.
@@ -493,10 +536,10 @@ uint8_t write_status_info_bin()
     // packet length (1 byte)
     Serial1.write(size);
 
-    *(uint16_t *)packet = (uint16_t)serial_number; packet += 2;
-    *(uint16_t *)packet = (uint16_t)FIRMWARE_REV; packet += 2;
-    *(uint16_t *)packet = (uint16_t)MASTER_HZ; packet += 2;
-    *(uint32_t *)packet = (uint32_t)DEFAULT_BAUD; packet += 4;
+    packet.serial_number = (uint16_t)serial_number;
+    packet.firmware_rev = (uint16_t)FIRMWARE_REV;
+    packet.master_hz = (uint16_t)MASTER_HZ;
+    packet.baud = (uint32_t)DEFAULT_BAUD;
 
     // estimate sensor output byte rate
     unsigned long current_time = millis();
@@ -504,16 +547,14 @@ uint8_t write_status_info_bin()
     unsigned long byte_rate = output_counter * 1000 / elapsed_millis;
     write_millis = current_time;
     output_counter = 0;
-    *(uint16_t *)packet = (uint16_t)byte_rate; packet += 2;
-    *(uint16_t *)packet = (uint16_t)(pwr_v*100); packet += 2;
-    *(uint16_t *)packet = (uint16_t)(avionics_v*100); packet += 2;
+    packet.byte_rate = (uint16_t)byte_rate;
  
     // write packet
-    Serial1.write( packet_buf, size );
+    Serial1.write( (uint8_t *)&packet, size );
 
     // check sum (2 bytes)
     byte cksum0, cksum1;
-    ugear_cksum( STATUS_INFO_PACKET_ID, size, packet_buf, size, &cksum0, &cksum1 );
+    ugear_cksum( STATUS_INFO_PACKET_ID, size, (uint8_t *)&packet, size, &cksum0, &cksum1 );
     Serial1.write(cksum0);
     Serial1.write(cksum1);
     
@@ -531,7 +572,4 @@ void write_status_info_ascii()
     Serial.print("Main loop hz: ");
     Serial.println( MASTER_HZ);
     Serial.print("Baud: ");Serial.println(DEFAULT_BAUD);
-    Serial.print("Volt ext: "); Serial.print(pwr_v, 2);
-    Serial.print(" av: "); Serial.println(avionics_v, 2);
 }
-
