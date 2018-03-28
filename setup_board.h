@@ -1,9 +1,7 @@
-#ifndef _AURA_CONFIG_H_INCLUDED
-#define _AURA_CONFIG_H_INCLUDED
+#ifndef AURA_SETUP_H_INCLUDED
+#define AURA_SETUP_H_INCLUDED
 
 #include <Arduino.h>
-
-#include "structs.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -84,8 +82,6 @@ const int DEFAULT_BAUD = 500000;
 const int AP_CHANNELS = 6;
 
 
-extern config_t config;
-
 extern uint16_t serial_number;
 
-#endif /* _AURA_CONFIG_H_INCLUDED */
+#endif // AURA_SETUP_H_INCLUDED

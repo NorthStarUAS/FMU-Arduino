@@ -6,23 +6,8 @@
  * Following that is a two byte check sum.  The check sum includes the packet id and size as well as the data.
  */
 
-#include "config.h"
-
-#define START_OF_MSG0 147
-#define START_OF_MSG1 224
-
-#define ACK_PACKET_ID 20
-
-#define CONFIG_PACKET_ID 21
-#define FLIGHT_COMMAND_PACKET_ID 22
-#define WRITE_EEPROM_PACKET_ID 23
-
-#define PILOT_PACKET_ID 50
-#define IMU_PACKET_ID 51
-#define GPS_PACKET_ID 52
-#define AIRDATA_PACKET_ID 53
-#define POWER_PACKET_ID 54
-#define STATUS_INFO_PACKET_ID 55
+#include "setup_msg.h"
+#include "structs.h"
 
 
 void ugear_cksum( byte hdr1, byte hdr2, const byte *buf, byte size,

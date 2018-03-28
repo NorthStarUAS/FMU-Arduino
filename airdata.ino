@@ -1,4 +1,4 @@
-#include "config.h"
+// module to query air data sensors
 
 #if defined HAVE_AURA_BMP280
  #include "src/BME280/BME280.h"

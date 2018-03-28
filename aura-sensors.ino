@@ -1,7 +1,12 @@
 #include <HardwareSerial.h>
 
 #include "src/UBLOX8/UBLOX8.h"
-#include "config.h"
+
+#include "setup_board.h"
+#include "structs.h"
+
+// Eeprom Configuration
+config_t config;
 
 // IMU
 int gyros_calibrated = 0; // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished

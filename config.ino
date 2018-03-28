@@ -1,13 +1,10 @@
 #include <EEPROM.h>
 
-#include "config.h"
-
 #define CONFIG_VERSION 1
-#define CONFIG_OFFSET 2  /* starting point for writing big eeprom struct */
+const int CONFIG_OFFSET = 2;  // starting point for writing big eeprom struct
 
-/* global definitions */
+// global definitions
 uint16_t serial_number;
-config_t config;
 
 uint16_t read_serial_number() {
     uint8_t lo = EEPROM.read(0);

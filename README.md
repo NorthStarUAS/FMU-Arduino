@@ -1,4 +1,4 @@
-# Caution: (still slightly) experimental
+# Aura Sensors
 
 This is arduino code written for the teensy (arm) line of embedded
 processor boards.  It turns the teensy into a sensor
@@ -9,8 +9,8 @@ functions.  It supports the mpu9250 imu, ublox8 gps, bme280/bmp180
 pressure sensor, sbus receiver, and attopilot volt/amp sensor.
 Supports an external airdata system via the i2c bus.
 
-This result is a research grade autopilot system that anyone can
-assemble with basic soldering skills.
+This is one component of a research grade autopilot system that anyone
+can assemble with basic soldering skills.
 
 When paired with a beaglebone, or raspberry pi caliber computer
 running the Aura core software, the result is a very high quality and
