@@ -1,6 +1,5 @@
 #include <EEPROM.h>
 
-#define CONFIG_VERSION 1
 const int CONFIG_OFFSET = 2;  // starting point for writing big eeprom struct
 
 // global definitions
@@ -26,7 +25,6 @@ int set_serial_number(uint16_t value) {
 
 void config_load_defaults() {
     Serial.println("Setting default config ...");
-    config.version = CONFIG_VERSION;
     imu_orientation_defaults();
     pwm_rate_defaults();
     act_gain_defaults();

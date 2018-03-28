@@ -65,11 +65,13 @@ void setup() {
     Serial.print(DEFAULT_BAUD);
     Serial.println(" baud (N81) no flow control.");
     
-    // The myfollowing code (when enabled) will force setting a specific device serial number.
+    // The following code (when enabled) will force setting a specific
+    // device serial number when the device boots:
     // set_serial_number(122);
+    
     read_serial_number();
     
-    if ( /* true || */ !config_read_eeprom() ) {
+    if ( !config_read_eeprom() ) {
         Serial.println("Resetting eeprom to default values.");
         config_load_defaults();
         config_write_eeprom();

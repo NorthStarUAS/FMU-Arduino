@@ -9,8 +9,6 @@
 
 // master config (for messages and saving in eeprom)
 typedef struct {
-    int version;
-
     float imu_orient[9];        // IMU orientation matrix
     
     // pwm output signal hz, 50hz default for analog servos, maximum
