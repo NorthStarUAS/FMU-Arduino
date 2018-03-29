@@ -1,13 +1,13 @@
 # Aura Sensors
 
-This is arduino code written for the teensy (arm) line of embedded
-processor boards.  It turns the teensy into a sensor
-collector/aggregater, communications hub, and servo controller.  It is
-not a full fledged autopilot itself, but designed to pair with a linux
-board (pi, gumstix, beaglebone, etc) for all the higher level AP
-functions.  It supports the mpu9250 imu, ublox8 gps, bme280/bmp180
-pressure sensor, sbus receiver, and attopilot volt/amp sensor.
-Supports an external airdata system via the i2c bus.
+This is a teensy 3.x (teensyduino) sketch.  Aura Sensors turns an
+inexpensive teensy board into a sensor collector/aggregater,
+communications hub, and servo controller.  It is not a full fledged
+autopilot itself, but designed to pair with a host linux board
+(raspberry pi, gumstix, beaglebone, etc) for all the higher level AP
+functions.  It supports the mpu9250 imu, ublox8 gps, bme280/bmp280
+pressure sensors, sbus receiver, and attopilot volt/amp sensor.
+Supports an external airdata systems via the i2c bus.
 
 This is one component of a research grade autopilot system that anyone
 can assemble with basic soldering skills.
