@@ -24,7 +24,7 @@ bool UBLOX8::read_ublox8() {
     static int length_lo = 0, length_hi = 0, payload_length = 0;
     static int counter = 0;
     static uint8_t cksum_A = 0, cksum_B = 0, cksum_lo = 0, cksum_hi = 0;
-    int len;
+    // int len;
     uint8_t input;
     static uint8_t payload[500];
 
@@ -145,10 +145,9 @@ bool UBLOX8::read_ublox8() {
 
 
 bool UBLOX8::parse_msg( uint8_t msg_class, uint8_t msg_id,
-                       uint16_t payload_length, uint8_t *payload )
+                        uint16_t payload_length, uint8_t *payload )
 {
     bool new_data = false;
-    static bool set_system_time = false;
 
     if ( msg_class == 0x01 && msg_id == 0x02 ) {
 	// NAV-POSLLH: Please refer to the ublox6 driver (here or in the
@@ -159,34 +158,39 @@ bool UBLOX8::parse_msg( uint8_t msg_class, uint8_t msg_id,
 	// pos/vel to lla pos/ned vel.
     } else if ( msg_class == 0x01 && msg_id == 0x07 ) {
 	// NAV-PVT
-	uint8_t *p = payload;
-	data.iTOW = *((uint32_t *)p+0);
-	data.year = *((uint16_t *)(p+4));
-	data.month = p[6];
-	data.day = p[7];
-	data.hour = p[8];
-	data.min = p[9];
-	data.sec = p[10];
-	data.valid = p[11];
-	data.tAcc = *((uint32_t *)(p+12));
-	data.nano = *((int32_t *)(p+16));
-	data.fixType = p[20];
-	data.flags = p[21];
-	data.numSV = p[23];
-	data.lon = *((int32_t *)(p+24));
-	data.lat = *((int32_t *)(p+28));
-	data.height = *((int32_t *)(p+32));
-	data.hMSL = *((int32_t *)(p+36));
-	data.hAcc = *((uint32_t *)(p+40));
-	data.vAcc = *((uint32_t *)(p+44));
-	data.velN = *((int32_t *)(p+48));
-	data.velE = *((int32_t *)(p+52));
-	data.velD = *((int32_t *)(p+56));
-	data.gSpeed = *((uint32_t *)(p+60));
-	data.heading = *((int32_t *)(p+64));
-	data.sAcc = *((uint32_t *)(p+68));
-	data.headingAcc = *((uint32_t *)(p+72));
-	data.pDOP = *((uint16_t *)(p+76));
+        if ( payload_length == sizeof(ublox8_nav_pvt_t) ) {
+            memcpy( &data, payload, payload_length );
+        } else {
+            Serial.println("payload size mismatch, copying field by field");
+            uint8_t *p = payload;
+            data.iTOW = *((uint32_t *)p+0);
+            data.year = *((uint16_t *)(p+4));
+            data.month = p[6];
+            data.day = p[7];
+            data.hour = p[8];
+            data.min = p[9];
+            data.sec = p[10];
+            data.valid = p[11];
+            data.tAcc = *((uint32_t *)(p+12));
+            data.nano = *((int32_t *)(p+16));
+            data.fixType = p[20];
+            data.flags = p[21];
+            data.numSV = p[23];
+            data.lon = *((int32_t *)(p+24));
+            data.lat = *((int32_t *)(p+28));
+            data.height = *((int32_t *)(p+32));
+            data.hMSL = *((int32_t *)(p+36));
+            data.hAcc = *((uint32_t *)(p+40));
+            data.vAcc = *((uint32_t *)(p+44));
+            data.velN = *((int32_t *)(p+48));
+            data.velE = *((int32_t *)(p+52));
+            data.velD = *((int32_t *)(p+56));
+            data.gSpeed = *((uint32_t *)(p+60));
+            data.heading = *((int32_t *)(p+64));
+            data.sAcc = *((uint32_t *)(p+68));
+            data.headingAcc = *((uint32_t *)(p+72));
+            data.pDOP = *((uint16_t *)(p+76));
+        }
         new_data = true;
         //Serial.print("fixType: ");
         //Serial.println(data.fixType);
@@ -222,4 +226,12 @@ bool UBLOX8::parse_msg( uint8_t msg_class, uint8_t msg_id,
     }
 
     return new_data;
+}
+
+void UBLOX8::update_data(void *dest, int n) {
+    if ( n == sizeof(ublox8_nav_pvt_t) ) {
+        memcpy( dest, &data, n );
+    } else {
+        Serial.println("update_data() wrong size.");
+    }
 }

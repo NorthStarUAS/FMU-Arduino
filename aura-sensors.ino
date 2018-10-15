@@ -25,7 +25,7 @@ uint8_t test_pwm_channel = -1;
 // GPS
 UBLOX8 gps(&Serial3); // ublox m8n
 bool new_gps_data = false;
-nav_pvt gps_data;
+aura_nav_pvt_t gps_data;
 
 // Air Data
 int airdata_error_count = 0;
@@ -138,7 +138,7 @@ void loop() {
             debugTimer = 0;
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
-            // write_gps_ascii();
+            write_gps_ascii();
             // write_airdata_ascii();
             // write_status_info_ascii();
             write_imu_ascii();
@@ -173,7 +173,8 @@ void loop() {
     // suck in any available gps bytes
     if ( gps.read_ublox8() ) {
         new_gps_data = true;
-        gps_data = gps.get_data();
+        // gps_data = gps.get_data();
+        gps.update_data(&gps_data, sizeof(gps_data));
     }
 
     // keep processing while there is data in the uart buffer

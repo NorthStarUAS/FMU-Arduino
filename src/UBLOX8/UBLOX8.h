@@ -9,7 +9,7 @@
 #include "Arduino.h"				
 
 #pragma pack(push, 1)           // set alignment to 1 byte boundary
-struct nav_pvt {
+struct ublox8_nav_pvt_t {
     uint32_t iTOW;
     int16_t year;
     uint8_t month;
@@ -22,6 +22,7 @@ struct nav_pvt {
     int32_t nano;
     uint8_t fixType;
     uint8_t flags;
+    uint8_t flags2;
     uint8_t numSV;
     int32_t lon;
     int32_t lat;
@@ -37,6 +38,10 @@ struct nav_pvt {
     uint32_t sAcc;
     uint32_t headingAcc;
     uint16_t pDOP;
+    uint8_t reserved[6];
+    int32_t headVeh;
+    int16_t magDec;
+    uint16_t magAcc;
 };
 # pragma pack(pop)              // restore original alignment
 
@@ -45,7 +50,7 @@ class UBLOX8 {
 private:
 
     HardwareSerial* _port;
-    nav_pvt data;
+    ublox8_nav_pvt_t data;
     
     bool parse_msg( uint8_t msg_class, uint8_t msg_id,
                     uint16_t payload_length, uint8_t *payload );
@@ -55,8 +60,8 @@ public:
     UBLOX8(HardwareSerial* port);
     void begin(int baud);
     bool read_ublox8();
-    nav_pvt get_data() const { return data; }
-
+    ublox8_nav_pvt_t get_data() const { return data; }
+    void update_data(void *dest, int n);
 };
 
 #endif // UBLOX8_H

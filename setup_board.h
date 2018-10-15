@@ -63,7 +63,7 @@
 // #define HAVE_AURA_LED
 
 // Firmware rev (needs to be updated here manually to match release number)
-const int FIRMWARE_REV = 333;
+const int FIRMWARE_REV = 334;
 
 // this is the master loop update rate.
 const int MASTER_HZ = 100;
