@@ -23,8 +23,6 @@
  #define HAVE_PWM_AURA
  const uint8_t avionics_pin = A1;
  const uint8_t pwr_pin = A0;
- #define HAVE_AURA_LED
- const int led_pin = 13;
 #elif defined MARMOT_V1
  #if ! defined PIN_A22
  # error "Make sure you have selected the Teensy-3.6 board"
@@ -37,10 +35,6 @@
 #endif
 
 // Configuration flags available:
-
-// Specify IMU interface
-// #define HAVE_IMU_I2C
-// #define HAVE_IMU_SPI
 
 // Specify which onboard pressure sensor is installed
 // #define HAVE_AURA_BMP280
@@ -56,9 +50,6 @@
 // Specify PWM pin layout
 // #define HAVE_PWM_AURA
 // #define HAVE_PWM_MARMOT
-
-// Do we have an LED we wish to blink
-// #define HAVE_AURA_LED
 
 // Firmware rev (needs to be updated here manually to match release number)
 const int FIRMWARE_REV = 334;

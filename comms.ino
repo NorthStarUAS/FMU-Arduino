@@ -81,6 +81,11 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         pwm_setup();  // reset pwm rates in case they've been changed
         write_ack_bin( id, 0 );
         result = true;
+    } else if ( id == CONFIG_LED_PACKET_ID && message_size == sizeof(config_led_t) ) {
+        Serial.println("received new led config");
+        config.led = *(config_led_t *)buf;
+        write_ack_bin( id, 0 );
+        result = true;
     } else if ( id == WRITE_EEPROM_PACKET_ID && message_size == 0 ) {
         Serial.println("received update eeprom command");
         config_write_eeprom();

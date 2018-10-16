@@ -101,10 +101,8 @@ void setup() {
     // set up ADC0
     analogReadResolution(16);
 
-#if defined HAVE_AURA_LED
-    pinMode(led_pin, OUTPUT);
-    digitalWrite(led_pin, HIGH);
-#endif
+    // led for status blinking if defined
+    led_setup();
 
     Serial.println("Ready and transmitting...");
 }
@@ -138,10 +136,10 @@ void loop() {
             debugTimer = 0;
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
-            write_gps_ascii();
+            // write_gps_ascii();
             // write_airdata_ascii();
             // write_status_info_ascii();
-            write_imu_ascii();
+            // write_imu_ascii();
         }
 
         // uncomment this next line to test drive individual servo channels
@@ -185,22 +183,5 @@ void loop() {
     while ( read_commands() );
 
     // blink the led on boards that support it
-   #if defined HAVE_AURA_LED
-    static elapsedMillis blinkTimer = 0;
-    static unsigned int blink_rate = 100;
-    static bool blink_state = true;
-
-     if ( gyros_calibrated < 2 ) {
-         blink_rate = 50;
-     } else if ( gps_data.fixType < 3 ) {
-         blink_rate = 200;
-     } else {
-         blink_rate = 800;
-     }
-     if ( blinkTimer >= blink_rate ) {
-         blinkTimer = 0;
-         blink_state = !blink_state;
-         digitalWrite(led_pin, blink_state);
-     }
-    #endif
+    led_update();
 }

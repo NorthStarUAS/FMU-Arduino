@@ -23,6 +23,10 @@ int set_serial_number(uint16_t value) {
     return serial_number;
 };
 
+void led_defaults() {
+     config.led.pin = 0;
+}
+
 void config_load_defaults() {
     Serial.println("Setting default config ...");
     imu_setup_defaults();
@@ -30,6 +34,7 @@ void config_load_defaults() {
     act_gain_defaults();
     mixing_defaults();
     sas_defaults();
+    led_defaults();
 }
 
 int config_read_eeprom() {
