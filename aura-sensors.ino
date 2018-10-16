@@ -41,6 +41,8 @@ float airdata_temp_C = 0.0;
 const float analogResolution = 65535.0f;
 const float pwr_scale = 11.0f;
 const float avionics_scale = 2.0f;
+uint8_t avionics_pin;
+uint8_t power_pin;
 float pwr1_v = 0.0;
 float pwr2_v = 0.0;
 float avionics_v = 0.0;
@@ -100,6 +102,17 @@ void setup() {
     // set up ADC0
     analogReadResolution(16);
 
+    // power sensing
+    if ( config.master.board == 0 ) {
+        avionics_pin = A22;
+        power_pin = 15;
+    } else if ( config.master.board == 1 ) {
+        avionics_pin = A1;
+        power_pin = A0;
+    } else {
+        Serial.println("Master board configuration not defined correctly.");
+    }
+    
     // led for status blinking if defined
     led_setup();
 
@@ -153,7 +166,7 @@ void loop() {
 
         // battery voltage
         uint16_t ain;
-        ain = analogRead(pwr_pin);
+        ain = analogRead(power_pin);
         pwr1_v = ((float)ain) * 3.3 / analogResolution * pwr_scale;
 
         ain = analogRead(avionics_pin);

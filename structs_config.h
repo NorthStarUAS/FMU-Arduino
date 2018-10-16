@@ -60,8 +60,6 @@ typedef struct {
 
 // Power Configuration
 typedef struct {
-    uint8_t avionics_pin;
-    uint8_t power_pin;
     bool have_attopilot;
 } config_power_t;
 

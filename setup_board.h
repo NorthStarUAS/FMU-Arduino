@@ -20,16 +20,12 @@
  #define HAVE_AURA_BMP280
  #define HAVE_MS4525DO
  #define HAVE_ATTOPILOT
- const uint8_t avionics_pin = A1;
- const uint8_t pwr_pin = A0;
 #elif defined MARMOT_V1
  #if ! defined PIN_A22
  # error "Make sure you have selected the Teensy-3.6 board"
  #endif
  #define HAVE_MARMOT_BME280
  #define HAVE_BFS_SWIFT
- const uint8_t avionics_pin = A22;
- const uint8_t pwr_pin = 15;
 #endif
 
 // Configuration flags available:
