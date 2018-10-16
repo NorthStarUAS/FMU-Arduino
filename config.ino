@@ -25,7 +25,7 @@ int set_serial_number(uint16_t value) {
 
 void config_load_defaults() {
     Serial.println("Setting default config ...");
-    imu_orientation_defaults();
+    imu_setup_defaults();
     pwm_rate_defaults();
     act_gain_defaults();
     mixing_defaults();

@@ -17,7 +17,6 @@
  #if defined PIN_A22
  # error "Make sure you have selected the Teensy-3.2 board"
  #endif
- #define HAVE_IMU_I2C
  #define HAVE_AURA_BMP280
  #define HAVE_MS4525DO
  #define HAVE_ATTOPILOT
@@ -30,7 +29,6 @@
  #if ! defined PIN_A22
  # error "Make sure you have selected the Teensy-3.6 board"
  #endif
- #define HAVE_IMU_SPI
  #define HAVE_MARMOT_BME280
  #define HAVE_BFS_SWIFT
  #define HAVE_PWM_MARMOT

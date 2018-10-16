@@ -70,9 +70,14 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             // autopilot
         }
         result = true;
-    } else if ( id == CONFIG_PACKET_ID && message_size == sizeof(config) ) {
-        Serial.println("received new config");
-        config = *(config_t *)buf;
+    } else if ( id == CONFIG_IMU_PACKET_ID && message_size == sizeof(config_imu_t) ) {
+        Serial.println("received imu config");
+        config.imu = *(config_imu_t *)buf;
+        write_ack_bin( id, 0 );
+        result = true;
+    } else if ( id == CONFIG_ACTUATORS_PACKET_ID && message_size == sizeof(config_act_t) ) {
+        Serial.println("received new actuator config");
+        config.actuators = *(config_act_t *)buf;
         pwm_setup();  // reset pwm rates in case they've been changed
         write_ack_bin( id, 0 );
         result = true;
@@ -217,7 +222,7 @@ int write_ack_bin( uint8_t command_id, uint8_t subcommand_id )
     payload.command_id = command_id;
     payload.subcommand_id = subcommand_id;
 
-    return write_packet( ACK_PACKET_ID, (uint8_t *)&payload, size);
+    return write_packet( CONFIG_ACK_PACKET_ID, (uint8_t *)&payload, size);
 }
 
 

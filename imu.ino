@@ -1,11 +1,7 @@
 #include "src/MPU9250/MPU9250.h"
 
-/* MPU-9250 IMU */
-
 // IMU full scale ranges, DLPF bandwidth, interrupt SRD, and interrupt pin
 const uint8_t MPU9250_SRD = 9;  // Data Output Rate = 1000 / (1 + SRD)
-const uint8_t MPU_CS_PIN = 24;  // SPI CS PIN
-// /* fixme: depricated? */ const uint8_t MPU_SYNC_PIN = 27;
 
 const float _pi = 3.14159265358979323846;
 const float _g = 9.807;
@@ -20,31 +16,39 @@ const float accelScale = _g / _accel_lsb_per_dps;
 const float magScale = 0.01;
 const float tempScale = 0.01;
 
-#if defined HAVE_IMU_I2C
- MPU9250 IMU(0x68, &Wire);      // i2c
-#elif defined HAVE_IMU_SPI
- MPU9250 IMU(MPU_CS_PIN);       // spi
-#else
- #error "No IMU interface specified!"
-#endif
-
-// the 'safe' but raw version of the imu sensors
-// float imu_uncalibrated[10];
+MPU9250 IMU;
 
 float gyro_calib[3] = { 0.0, 0.0, 0.0 };
 
-// set imu orientation to identity
-static void imu_orientation_defaults() {
+// Setup imu defaults:
+// Marmot v1 has mpu9250 on SPI CS line 24
+// Aura v2 has mpu9250 on I2C Addr 0x68
+static void imu_setup_defaults() {
+    config.imu.interface = 0;       // SPI
+    config.imu.pin_or_address = 24; // CS pin
     float ident[] = { 1.0, 0.0, 0.0,
                       0.0, 1.0, 0.0,
                       0.0, 0.0, 1.0};
     for ( int i = 0; i < 9; i++ ) {
-        config.imu_orient[i] = ident[i];
+        config.imu.orientation[i] = ident[i];
     }
 }
 
 // configure the IMU settings and setup the ISR to aquire the data
 void imu_setup() {
+    if ( config.imu.interface == 0 ) {
+        // SPI
+        Serial.print("MPU9250 @ SPI pin: ");
+        Serial.println(config.imu.pin_or_address);
+        IMU.configure(config.imu.pin_or_address);
+    } else if ( config.imu.interface == 1 ) {
+        Serial.print("MPU9250 @ I2C Addr: ");
+        Serial.println(config.imu.pin_or_address);
+        IMU.configure(config.imu.pin_or_address, &Wire);
+    } else {
+        Serial.println("Error: problem with MPU9250 (IMU) configuration");
+    }
+    
     // initialize the IMU, specify accelerometer and gyro ranges
     int beginStatus = IMU.begin(ACCEL_RANGE_4G, GYRO_RANGE_500DPS);
     if ( beginStatus < 0 ) {
@@ -65,7 +69,7 @@ void imu_setup() {
 
     Serial.println("MPU-9250 ready.");
     for ( int i = 0; i < 9; i++ ) {
-        Serial.print(config.imu_orient[i], 2);
+        Serial.print(config.imu.orientation[i], 2);
         Serial.print(" ");
         if ( i == 2 or i == 5 or i == 8 ) {
             Serial.println();
@@ -76,9 +80,9 @@ void imu_setup() {
 void imu_rotate(float v0, float v1, float v2,
                 float *r0, float *r1, float *r2)
 {
-    *r0 = v0*config.imu_orient[0] + v1*config.imu_orient[1] + v2*config.imu_orient[2];
-    *r1 = v0*config.imu_orient[3] + v1*config.imu_orient[4] + v2*config.imu_orient[5];
-    *r2 = v0*config.imu_orient[6] + v1*config.imu_orient[7] + v2*config.imu_orient[8];
+    *r0 = v0*config.imu.orientation[0] + v1*config.imu.orientation[1] + v2*config.imu.orientation[2];
+    *r1 = v0*config.imu.orientation[3] + v1*config.imu.orientation[4] + v2*config.imu.orientation[5];
+    *r2 = v0*config.imu.orientation[6] + v1*config.imu.orientation[7] + v2*config.imu.orientation[8];
 }
 
 // query the imu and update the structures

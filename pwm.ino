@@ -29,17 +29,17 @@ void pwm_setup() {
 void pwm_norm2pwm( float *norm, uint16_t *pwm ) {
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         // convert to pulse length (special case ch6 when in flaperon mode)
-        if ( pwm_symmetrical[i] || (i == 4 && config.mix_flaperon) ) {
+        if ( pwm_symmetrical[i] || (i == 4 && config.actuators.mix_flaperon) ) {
             // i.e. aileron, rudder, elevator
             // Serial1.println(i);
-            // Serial1.println(config.act_rev[i]);
-            pwm[i] = PWM_CENTER + (int)(PWM_HALF_RANGE * norm[i] * config.act_gain[i]);
+            // Serial1.println(config.actuators.act_rev[i]);
+            pwm[i] = PWM_CENTER + (int)(PWM_HALF_RANGE * norm[i] * config.actuators.act_gain[i]);
         } else {
             // i.e. throttle, flaps
-            if ( config.act_gain[i] > 0.0 ) {
-                pwm[i] = PWM_MIN + (int)(PWM_RANGE * norm[i] * config.act_gain[i]);
+            if ( config.actuators.act_gain[i] > 0.0 ) {
+                pwm[i] = PWM_MIN + (int)(PWM_RANGE * norm[i] * config.actuators.act_gain[i]);
             } else {
-                pwm[i] = PWM_MAX + (int)(PWM_RANGE * norm[i] * config.act_gain[i]);
+                pwm[i] = PWM_MAX + (int)(PWM_RANGE * norm[i] * config.actuators.act_gain[i]);
             }
         }
         if ( pwm[i] < PWM_MIN ) {
