@@ -90,7 +90,6 @@ void setup() {
 
     // initialize PWM output
     pwm_setup();
-    Serial.println("PWM ready.");
 
     // initialize the gps receiver
     gps.begin(115200);

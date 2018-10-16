@@ -1,18 +1,27 @@
-#if defined HAVE_PWM_AURA
-const uint8_t servoPins[PWM_CHANNELS] = {6, 5, 4, 3, 23, 22, 21, 20};
-#elif defined HAVE_PWM_MARMOT
- const uint8_t servoPins[PWM_CHANNELS] = {21, 22, 23, 2, 3, 4, 5, 6};
-#else
- #error "No PWM servo pin layout defined!"
-#endif
+const uint8_t marmot1_pins[PWM_CHANNELS] = {21, 22, 23, 2, 3, 4, 5, 6};
+const uint8_t aura2_pins[PWM_CHANNELS] = {6, 5, 4, 3, 23, 22, 21, 20};
+static uint8_t servoPins[PWM_CHANNELS];
 
 // define if a channel is symmetrical or not (i.e. mapped to [0,1] for
 // throttle, flaps, spoilers; [-1,1] for aileron, elevator, rudder
 bool pwm_symmetrical[PWM_CHANNELS] = {0, 1, 1, 1, 1, 0, 0, 0};
 
 void pwm_setup() {
-    // fixme: honor config rates
-    // setting up pwm outputs and rates
+    Serial.print("PWM: ");
+    if ( config.actuators.pwm_pin_layout == 0 ) {
+        Serial.print("Marmot v1 pin mapping.");
+        for ( int i = 0; i < PWM_CHANNELS; i++ ) {
+            servoPins[i] = marmot1_pins[i];
+        }
+    } else if ( config.actuators.pwm_pin_layout == 1 ) {
+        Serial.print("Aura v2 pin mapping.");
+        for ( int i = 0; i < PWM_CHANNELS; i++ ) {
+            servoPins[i] = aura2_pins[i];
+        }
+    } else {
+        Serial.println("No valid PWM pin mapping defined");
+    }
+
     analogWriteResolution(16);
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         analogWrite(servoPins[i], 0); // zero signal to avoid surprises
@@ -22,6 +31,7 @@ void pwm_setup() {
     // set default safe values for actuator outputs
     actuator_set_defaults();
     pwm_update();
+    Serial.println();
 }
 
 // compute raw pwm values from normalized command values.  (handle

@@ -38,7 +38,8 @@ float ch7_cmd = 0.0;
 float ch8_cmd = 0.0;
 
 // reset pwm output rates to safe startup defaults
-void pwm_rate_defaults() {
+void pwm_defaults() {
+    config.actuators.pwm_pin_layout = 0; // Marmot v1
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
          config.actuators.pwm_hz[i] = 50;    
     }
