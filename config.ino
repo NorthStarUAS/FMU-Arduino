@@ -23,12 +23,17 @@ int set_serial_number(uint16_t value) {
     return serial_number;
 };
 
+void master_defaults() {
+    config.master.board = 0;
+}
+
 void led_defaults() {
      config.led.pin = 0;
 }
 
 void config_load_defaults() {
     Serial.println("Setting default config ...");
+    master_defaults();
     imu_setup_defaults();
     pwm_defaults();
     act_gain_defaults();

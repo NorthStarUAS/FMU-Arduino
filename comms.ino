@@ -70,6 +70,11 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             // autopilot
         }
         result = true;
+    } else if ( id == CONFIG_MASTER_PACKET_ID && message_size == sizeof(config_master_t) ) {
+        Serial.println("received master config");
+        config.master = *(config_master_t *)buf;
+        write_ack_bin( id, 0 );
+        result = true;
     } else if ( id == CONFIG_IMU_PACKET_ID && message_size == sizeof(config_imu_t) ) {
         Serial.println("received imu config");
         config.imu = *(config_imu_t *)buf;
@@ -78,7 +83,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
     } else if ( id == CONFIG_ACTUATORS_PACKET_ID && message_size == sizeof(config_act_t) ) {
         Serial.println("received new actuator config");
         config.actuators = *(config_act_t *)buf;
-        pwm_setup();  // reset pwm rates in case they've been changed
+        pwm_setup();  // update pwm config in case it has been changed.
         write_ack_bin( id, 0 );
         result = true;
     } else if ( id == CONFIG_LED_PACKET_ID && message_size == sizeof(config_led_t) ) {

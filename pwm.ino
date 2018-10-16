@@ -8,12 +8,12 @@ bool pwm_symmetrical[PWM_CHANNELS] = {0, 1, 1, 1, 1, 0, 0, 0};
 
 void pwm_setup() {
     Serial.print("PWM: ");
-    if ( config.actuators.pwm_pin_layout == 0 ) {
+    if ( config.master.board == 0 ) {
         Serial.print("Marmot v1 pin mapping.");
         for ( int i = 0; i < PWM_CHANNELS; i++ ) {
             servoPins[i] = marmot1_pins[i];
         }
-    } else if ( config.actuators.pwm_pin_layout == 1 ) {
+    } else if ( config.master.board == 1 ) {
         Serial.print("Aura v2 pin mapping.");
         for ( int i = 0; i < PWM_CHANNELS; i++ ) {
             servoPins[i] = aura2_pins[i];

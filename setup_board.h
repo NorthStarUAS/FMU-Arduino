@@ -20,7 +20,6 @@
  #define HAVE_AURA_BMP280
  #define HAVE_MS4525DO
  #define HAVE_ATTOPILOT
- #define HAVE_PWM_AURA
  const uint8_t avionics_pin = A1;
  const uint8_t pwr_pin = A0;
 #elif defined MARMOT_V1
@@ -29,7 +28,6 @@
  #endif
  #define HAVE_MARMOT_BME280
  #define HAVE_BFS_SWIFT
- #define HAVE_PWM_MARMOT
  const uint8_t avionics_pin = A22;
  const uint8_t pwr_pin = 15;
 #endif
@@ -46,10 +44,6 @@
 
 // Specify Attopilot if supported
 // #define HAVE_ATTOPILOT
-
-// Specify PWM pin layout
-// #define HAVE_PWM_AURA
-// #define HAVE_PWM_MARMOT
 
 // Firmware rev (needs to be updated here manually to match release number)
 const int FIRMWARE_REV = 334;
