@@ -27,6 +27,10 @@ void master_defaults() {
     config.master.board = 0;
 }
 
+void power_defaults() {
+     config.power.have_attopilot = false;
+}
+
 void led_defaults() {
      config.led.pin = 0;
 }
@@ -39,6 +43,7 @@ void config_load_defaults() {
     act_gain_defaults();
     mixing_defaults();
     sas_defaults();
+    power_defaults();
     led_defaults();
 }
 

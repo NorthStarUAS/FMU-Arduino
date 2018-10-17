@@ -86,6 +86,11 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         pwm_setup();  // update pwm config in case it has been changed.
         write_ack_bin( id, 0 );
         result = true;
+    } else if ( id == CONFIG_POWER_PACKET_ID && message_size == sizeof(config_power_t) ) {
+        Serial.println("received new power config");
+        config.power = *(config_power_t *)buf;
+        write_ack_bin( id, 0 );
+        result = true;
     } else if ( id == CONFIG_LED_PACKET_ID && message_size == sizeof(config_led_t) ) {
         Serial.println("received new led config");
         config.led = *(config_led_t *)buf;

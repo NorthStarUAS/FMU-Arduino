@@ -33,16 +33,14 @@ float airdata_staticPress_pa = 0.0;
 float airdata_diffPress_pa = 0.0;
 float airdata_temp_C = 0.0;
 
-#if defined HAVE_ATTOPILOT
- const uint8_t atto_volts_pin = A2;
- const uint8_t atto_amps_pin = A3;
-#endif
-
+// Power
 const float analogResolution = 65535.0f;
 const float pwr_scale = 11.0f;
 const float avionics_scale = 2.0f;
 uint8_t avionics_pin;
-uint8_t power_pin;
+uint8_t source_volt_pin;
+uint8_t atto_volts_pin = A2;
+uint8_t atto_amps_pin = A3;
 float pwr1_v = 0.0;
 float pwr2_v = 0.0;
 float avionics_v = 0.0;
@@ -104,11 +102,18 @@ void setup() {
 
     // power sensing
     if ( config.master.board == 0 ) {
+        // Marmon v1
         avionics_pin = A22;
-        power_pin = 15;
+        source_volt_pin = 15;
     } else if ( config.master.board == 1 ) {
+        // Aura v2
         avionics_pin = A1;
-        power_pin = A0;
+        source_volt_pin = A0;
+        if ( config.power.have_attopilot ) {
+            Serial.println("Attopilot enabled.");
+            atto_volts_pin = A2;
+            atto_amps_pin = A3;
+        }
     } else {
         Serial.println("Master board configuration not defined correctly.");
     }
@@ -166,18 +171,17 @@ void loop() {
 
         // battery voltage
         uint16_t ain;
-        ain = analogRead(power_pin);
+        ain = analogRead(source_volt_pin);
         pwr1_v = ((float)ain) * 3.3 / analogResolution * pwr_scale;
 
         ain = analogRead(avionics_pin);
         avionics_v = ((float)ain) * 3.3 / analogResolution * avionics_scale;
 
-       #if defined HAVE_ATTOPILOT
-        // attopilot
-        ain = analogRead(atto_volts_pin);
-        // Serial.print("atto volts: ");
-        // Serial.println( ((float)ain) * 3.3 / analogResolution );
-       #endif
+        if ( config.power.have_attopilot ) {
+            ain = analogRead(atto_volts_pin);
+            // Serial.print("atto volts: ");
+            // Serial.println( ((float)ain) * 3.3 / analogResolution );
+        }
     }
 
     // suck in any available gps bytes

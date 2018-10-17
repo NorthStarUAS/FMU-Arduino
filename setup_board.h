@@ -19,7 +19,6 @@
  #endif
  #define HAVE_AURA_BMP280
  #define HAVE_MS4525DO
- #define HAVE_ATTOPILOT
 #elif defined MARMOT_V1
  #if ! defined PIN_A22
  # error "Make sure you have selected the Teensy-3.6 board"
@@ -37,9 +36,6 @@
 // Specify which external pressure sensor is installed
 // #define HAVE_MS4525DO
 // #define HAVE_BFS_SWIFT
-
-// Specify Attopilot if supported
-// #define HAVE_ATTOPILOT
 
 // Firmware rev (needs to be updated here manually to match release number)
 const int FIRMWARE_REV = 334;
