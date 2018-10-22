@@ -35,6 +35,7 @@ class MS4525DO {
   public:
     MS4525DO();
     MS4525DO(uint8_t address, TwoWire *bus);
+    void configure(uint8_t address, TwoWire *bus);
     bool begin();
     bool getData(float *pressure, float *temperature);
     

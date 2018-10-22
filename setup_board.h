@@ -8,34 +8,14 @@
 // Hardware configuration section
 //////////////////////////////////////////////////////////////////////////
 
-// Specify one of the following board/build variants
-// #define AURA_V2
-#define MARMOT_V1
-
 // automatic configuration
-#if defined AURA_V2
- #if defined PIN_A22
- # error "Make sure you have selected the Teensy-3.2 board"
- #endif
- #define HAVE_AURA_BMP280
- #define HAVE_MS4525DO
-#elif defined MARMOT_V1
- #if ! defined PIN_A22
- # error "Make sure you have selected the Teensy-3.6 board"
- #endif
- #define HAVE_MARMOT_BME280
- #define HAVE_BFS_SWIFT
+#if defined(__MK20DX256__)
+ #define HAVE_TEENSY32
+ #define AURA_V2
+#elif defined(__MK66FX1M0__)
+ #define HAVE_TEENSY36
+ #define MARMOT_V1
 #endif
-
-// Configuration flags available:
-
-// Specify which onboard pressure sensor is installed
-// #define HAVE_AURA_BMP280
-// #define HAVE_MARMOT_BME280
-
-// Specify which external pressure sensor is installed
-// #define HAVE_MS4525DO
-// #define HAVE_BFS_SWIFT
 
 // Firmware rev (needs to be updated here manually to match release number)
 const int FIRMWARE_REV = 334;

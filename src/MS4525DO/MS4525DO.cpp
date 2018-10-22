@@ -38,6 +38,12 @@ MS4525DO::MS4525DO(uint8_t address, TwoWire *bus){
     _bus = bus; // I2C bus
 }
 
+/* configure bus and i2c address */
+void MS4525DO::configure(uint8_t address, TwoWire *bus){
+    _address = address; // I2C address
+    _bus = bus; // I2C bus
+}
+
 /* starts the I2C communication and sets the pressure and temperature ranges using getTransducer */
 bool MS4525DO::begin(){
     // starting the I2C bus

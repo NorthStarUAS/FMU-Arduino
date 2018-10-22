@@ -1,35 +1,36 @@
 // module to query air data sensors
 
-#if defined HAVE_AURA_BMP280
- #include "src/BME280/BME280.h"
- BME280 barometer(0x76, &Wire);
-#elif defined HAVE_MARMOT_BME280
- #include "src/BME280/BME280.h"
- BME280 barometer(26);
-#endif
+#include "src/BME280/BME280.h"
+BME280 barometer;
 
-#if defined HAVE_MS4525DO
-# include "src/MS4525DO/MS4525DO.h"
-#elif defined HAVE_BFS_SWIFT
-# include "src/AMS5915/AMS5915.h"
-#endif
+#include "src/AMS5915/AMS5915.h"
+AMS5915 ams_barometer;
+AMS5915 ams_pitot;
 
-#if defined HAVE_MS4525DO
- MS4525DO dPress(0x28, &Wire);
-#elif defined HAVE_BFS_SWIFT
- AMS5915 dPress(0x27, &Wire1, AMS5915_0020_D);
- AMS5915 sPress(0x26, &Wire1, AMS5915_1200_B);
-#endif
+#include "src/MS4525DO/MS4525DO.h"
+MS4525DO ms45_pitot;
 
 int baro_status = -1;
 float baro_press, baro_temp, baro_hum;
 
-bool dpress_found = false;
-bool spress_found = false;
+bool pitot_found = false;
+bool ams_baro_found = false;
 
 void airdata_setup() {
-   #if defined HAVE_AURA_BMP280 || defined HAVE_MARMOT_BME280
-    baro_status = barometer.begin();
+    if ( config.airdata.barometer == 0 ) {
+        // BME280/SPI
+        barometer.configure(26);
+        baro_status = barometer.begin();
+    } else if (config.airdata.barometer == 1 ) {
+        // BMP280/I2C
+        barometer.configure(0x76, &Wire);
+        baro_status = barometer.begin();
+    } else if (config.airdata.barometer == 2 ) {
+        // BFS Swift
+        ams_barometer.configure(0x26, &Wire1, AMS5915_1200_B);
+        ams_barometer.begin();
+        baro_status = 0;
+    }
     if ( baro_status < 0 ) {
         Serial.println("Onboard barometer initialization unsuccessful");
         Serial.println("Check wiring or try cycling power");
@@ -37,51 +38,52 @@ void airdata_setup() {
     } else {
         Serial.println("Onboard barometer driver ready.");
     }
-   #endif
 
-   #if defined HAVE_MS4525DO
-    dPress.begin();
-   #elif defined HAVE_BFS_SWIFT
-    dPress.begin();
-    sPress.begin();
-   #endif
+    if ( config.airdata.pitot == 0 ) {
+        ms45_pitot.configure(0x28, &Wire);
+        ms45_pitot.begin();
+    } else if ( config.airdata.pitot == 1 ) {
+        Serial.println("FIXME: NO MS5525 DRIVER YET!");
+    } else if ( config.airdata.pitot == 2 ) {
+        ams_pitot.configure(0x27, &Wire1, AMS5915_0020_D);
+        ams_pitot.begin();
+    }
 }
 
 void airdata_update() {
-    // onboard static pressure sensor
-   #if defined HAVE_AURA_BMP280 || defined HAVE_MARMOT_BME280
-    if ( baro_status >= 0 ) {
-        // get the pressure (Pa), temperature (C),
-        // and humidity data (%RH) all at once
-        barometer.getData(&baro_press, &baro_temp, &baro_hum);
-    }
-   #endif
-
     bool result;
     
-   #if defined HAVE_MS4525DO || defined HAVE_BFS_SWIFT
-    // external differential pressure sensor
-    result = dPress.getData(&airdata_diffPress_pa, &airdata_temp_C);
+    // read barometer (static pressure sensor)
+    if ( baro_status >= 0 ) {
+        if ( config.airdata.barometer == 1 || config.airdata.barometer == 2 ) {
+            barometer.getData(&baro_press, &baro_temp, &baro_hum);
+        } else if ( config.airdata.barometer == 2 ) {
+            if ( ams_barometer.getData(&baro_press, &baro_temp) ) {
+                ams_baro_found = true;
+            } else {
+                if ( ams_baro_found ) {
+                    Serial.println("Error while reading sPress sensor.");
+                    airdata_error_count++;
+                }
+            }
+        }
+    }
+
+    if ( config.airdata.pitot == 0 ) {
+        result = ms45_pitot.getData(&airdata_diffPress_pa, &airdata_temp_C);
+    } else if ( config.airdata.pitot == 1 ) {
+        // FIXME!!!!
+    } else if ( config.airdata.pitot == 2 ) {
+        result = ams_pitot.getData(&airdata_diffPress_pa, &airdata_temp_C);
+    } else {
+        result = false;
+    }
     if ( !result ) {
-        if ( dpress_found ) {
-            Serial.println("Error while reading dPress sensor.");
+        if ( pitot_found ) {
+            Serial.println("Error while reading pitot sensor.");
             airdata_error_count++;
         }
     } else {
-        dpress_found = true;
+        pitot_found = true;
     }
-   #endif
-   #if defined HAVE_BFS_SWIFT
-    // external differential pressure sensor
-    float tmp;
-    result = sPress.getData(&airdata_staticPress_pa, &tmp);
-    if ( !result ) {
-        if ( spress_found ) {
-            Serial.println("Error while reading sPress sensor.");
-            airdata_error_count++;
-        }
-    } else {
-        spress_found = true;
-    }
-   #endif
 }

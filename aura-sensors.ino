@@ -51,6 +51,16 @@ float pwr_a = 0.0;
 // aura-v2 and marmot-v1 hardware
 unsigned long output_counter = 0;
 
+// force/hard-code a specific board config if desired
+void force_config() {
+    // for Aura v2
+    config.master.board = 1;    // aura v2
+    config.imu.interface = 1;   // i2c
+    config.imu.pin_or_address = 0x68;
+    config.airdata.barometer = 1;
+    config.led.pin = 13;
+}
+
 void setup() {
     // put your setup code here, to run once:
 
@@ -81,6 +91,9 @@ void setup() {
     Serial.println(read_serial_number());
     delay(100);
 
+    // force/hard-code a specific board config if desired
+    force_config();
+    
     // initialize the IMU
     imu_setup();
     delay(100);
@@ -102,8 +115,10 @@ void setup() {
 
     // power sensing
     if ( config.master.board == 0 ) {
-        // Marmon v1
+        // Marmot v1
+        #ifdef HAVE_TEENSY36    // A22 doesn't exist for teensy3.2
         avionics_pin = A22;
+        #endif
         source_volt_pin = 15;
     } else if ( config.master.board == 1 ) {
         // Aura v2

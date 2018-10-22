@@ -42,8 +42,8 @@ void imu_setup() {
         Serial.println(config.imu.pin_or_address);
         IMU.configure(config.imu.pin_or_address);
     } else if ( config.imu.interface == 1 ) {
-        Serial.print("MPU9250 @ I2C Addr: ");
-        Serial.println(config.imu.pin_or_address);
+        Serial.print("MPU9250 @ I2C Addr: 0x");
+        Serial.println(config.imu.pin_or_address, HEX);
         IMU.configure(config.imu.pin_or_address, &Wire);
     } else {
         Serial.println("Error: problem with MPU9250 (IMU) configuration");
