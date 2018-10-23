@@ -57,7 +57,8 @@ void force_config() {
     config.master.board = 1;    // aura v2
     config.imu.interface = 1;   // i2c
     config.imu.pin_or_address = 0x68;
-    config.airdata.barometer = 1;
+    config.airdata.barometer = 2;
+    config.airdata.pitot = 1;
     config.led.pin = 13;
 }
 

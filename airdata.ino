@@ -10,6 +10,9 @@ AMS5915 ams_pitot;
 #include "src/MS4525DO/MS4525DO.h"
 MS4525DO ms45_pitot;
 
+#include "src/MS5525DO/MS5525DO.h"
+MS5525DO ms55_pitot;
+
 int baro_status = -1;
 float baro_press, baro_temp, baro_hum;
 
@@ -19,14 +22,17 @@ bool ams_baro_found = false;
 void airdata_setup() {
     if ( config.airdata.barometer == 0 ) {
         // BME280/SPI
+        Serial.println("BME280 on SPI:26");
         barometer.configure(26);
         baro_status = barometer.begin();
     } else if (config.airdata.barometer == 1 ) {
         // BMP280/I2C
+        Serial.println("BMP280 on I2C:0x76");
         barometer.configure(0x76, &Wire);
         baro_status = barometer.begin();
     } else if (config.airdata.barometer == 2 ) {
         // BFS Swift
+        Serial.println("Swift barometer on SPI:0x26");
         ams_barometer.configure(0x26, &Wire1, AMS5915_1200_B);
         ams_barometer.begin();
         baro_status = 0;
@@ -43,7 +49,8 @@ void airdata_setup() {
         ms45_pitot.configure(0x28, &Wire);
         ms45_pitot.begin();
     } else if ( config.airdata.pitot == 1 ) {
-        Serial.println("FIXME: NO MS5525 DRIVER YET!");
+        ms55_pitot.configure(0x76, &Wire);
+        ms55_pitot.begin();
     } else if ( config.airdata.pitot == 2 ) {
         ams_pitot.configure(0x27, &Wire1, AMS5915_0020_D);
         ams_pitot.begin();
@@ -72,7 +79,7 @@ void airdata_update() {
     if ( config.airdata.pitot == 0 ) {
         result = ms45_pitot.getData(&airdata_diffPress_pa, &airdata_temp_C);
     } else if ( config.airdata.pitot == 1 ) {
-        // FIXME!!!!
+        result = ms55_pitot.getData(&airdata_diffPress_pa, &airdata_temp_C);
     } else if ( config.airdata.pitot == 2 ) {
         result = ams_pitot.getData(&airdata_diffPress_pa, &airdata_temp_C);
     } else {
