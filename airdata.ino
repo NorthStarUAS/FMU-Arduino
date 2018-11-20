@@ -32,8 +32,9 @@ void airdata_setup() {
         baro_status = barometer.begin();
     } else if (config.airdata.barometer == 2 ) {
         // BFS Swift
-        Serial.println("Swift barometer on SPI:0x26");
-        ams_barometer.configure(0x26, &Wire1, AMS5915_1200_B);
+        Serial.print("Swift barometer on I2C: 0x");
+        Serial.println(config.airdata.swift_baro_addr, HEX);
+        ams_barometer.configure(config.airdata.swift_baro_addr, &Wire1, AMS5915_1200_B);
         ams_barometer.begin();
         baro_status = 0;
     }
@@ -52,17 +53,19 @@ void airdata_setup() {
         ms55_pitot.configure(0x76, &Wire);
         ms55_pitot.begin();
     } else if ( config.airdata.pitot == 2 ) {
-        ams_pitot.configure(0x27, &Wire1, AMS5915_0020_D);
+        Serial.print("Swift pitot on I2C: 0x");
+        Serial.println(config.airdata.swift_pitot_addr, HEX);
+        ams_pitot.configure(config.airdata.swift_pitot_addr, &Wire1, AMS5915_0020_D);
         ams_pitot.begin();
     }
 }
 
 void airdata_update() {
     bool result;
-    
+
     // read barometer (static pressure sensor)
     if ( baro_status >= 0 ) {
-        if ( config.airdata.barometer == 1 || config.airdata.barometer == 2 ) {
+        if ( config.airdata.barometer == 0 || config.airdata.barometer == 1 ) {
             barometer.getData(&baro_press, &baro_temp, &baro_hum);
         } else if ( config.airdata.barometer == 2 ) {
             if ( ams_barometer.getData(&baro_press, &baro_temp) ) {

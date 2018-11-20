@@ -90,7 +90,6 @@ void imu_update() {
     imu_micros = micros();
     float ax, ay, az, gx, gy, gz, hx, hy, hz, t;
     IMU.getMotion10(&ax, &ay, &az, &gx, &gy, &gz, &hx, &hy, &hz, &t);
-
     if ( gyros_calibrated < 2 ) {
         calibrate_gyros(gx, gy, gz);  // caution: axis remapping
     } else {

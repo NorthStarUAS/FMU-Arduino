@@ -29,7 +29,6 @@ aura_nav_pvt_t gps_data;
 
 // Air Data
 int airdata_error_count = 0;
-float airdata_staticPress_pa = 0.0;
 float airdata_diffPress_pa = 0.0;
 float airdata_temp_C = 0.0;
 
@@ -53,13 +52,14 @@ unsigned long output_counter = 0;
 
 // force/hard-code a specific board config if desired
 void force_config() {
-    // for Aura v2
-    config.master.board = 1;    // aura v2
-    config.imu.interface = 1;   // i2c
-    config.imu.pin_or_address = 0x68;
-    config.airdata.barometer = 2;
-    config.airdata.pitot = 1;
-    config.led.pin = 13;
+    config.master.board = 0;    // 0 = marmot v1, 1 = aura v2
+    config.imu.interface = 0;   // spi
+    config.imu.pin_or_address = 24; // marmot imu spi cs line
+    config.airdata.barometer = 2; // 2 = swift
+    config.airdata.pitot = 2;     // 2 = swift, 0x25
+    config.airdata.swift_baro_addr = 0x24; // Idun = 0x24
+    config.airdata.swift_pitot_addr = 0x25; // Idun = 0x24
+    config.led.pin = 0;
 }
 
 void setup() {
@@ -152,7 +152,7 @@ void loop() {
         
         // top priority, used for timing sync downstream.
         imu_update();
-
+        
         // output keyed off new IMU data
         output_counter += write_pilot_in_bin();
         output_counter += write_gps_bin();
@@ -170,7 +170,7 @@ void loop() {
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
             // write_gps_ascii();
-            // write_airdata_ascii();
+            write_airdata_ascii();
             // write_status_info_ascii();
             // write_imu_ascii();
         }

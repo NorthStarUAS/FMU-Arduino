@@ -377,7 +377,7 @@ int write_airdata_bin()
     payload.baro_temp_C = baro_temp;
     payload.baro_hum = baro_hum;
     payload.ext_diff_press_pa = airdata_diffPress_pa;
-    payload.ext_static_press_pa = airdata_staticPress_pa;
+    payload.ext_static_press_pa = 0.0; // fixme!
     payload.ext_temp_C = airdata_temp_C;
       
     return write_packet( AIRDATA_PACKET_ID, (uint8_t *)&payload, size );
@@ -389,8 +389,7 @@ void write_airdata_ascii()
     Serial.print(baro_press, 2); Serial.print(" (st pa) ");
     Serial.print(baro_temp, 2); Serial.print(" (C) ");
     Serial.print(baro_hum, 1); Serial.print(" (%RH) ");
-    Serial.print("AMS: ");
-    Serial.print(airdata_staticPress_pa, 4); Serial.print(" (st pa) ");
+    Serial.print("Pitot: ");
     Serial.print(airdata_diffPress_pa, 4); Serial.print(" (diff pa) ");
     Serial.print(airdata_temp_C, 2); Serial.print(" (C) ");
     Serial.print(airdata_error_count); Serial.print(" (errors) ");

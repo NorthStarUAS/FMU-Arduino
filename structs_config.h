@@ -62,6 +62,8 @@ typedef struct {
 typedef struct {
     uint8_t barometer;          // 0 = BME280/SPI, 1 = BMP280/I2C, 2 = BFS Swift
     uint8_t pitot;              // 0 = MS4525, 1 = MS5525, 2 = BFS Swift
+    uint8_t swift_baro_addr;
+    uint8_t swift_pitot_addr;
 } config_airdata_t;
 
 // Power Configuration
