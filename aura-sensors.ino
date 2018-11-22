@@ -51,7 +51,7 @@ float pwr_a = 0.0;
 unsigned long output_counter = 0;
 
 // force/hard-code a specific board config if desired
-void force_config() {
+void force_config_talon_marmot() {
     config.master.board = 0;    // 0 = marmot v1, 1 = aura v2
     config.imu.interface = 0;   // spi
     config.imu.pin_or_address = 24; // marmot imu spi cs line
@@ -60,6 +60,25 @@ void force_config() {
     config.airdata.swift_baro_addr = 0x24; // Idun = 0x24
     config.airdata.swift_pitot_addr = 0x25; // Idun = 0x24
     config.led.pin = 0;
+    config.actuators.act_gain[0] = 1.0;
+    config.actuators.act_gain[1] = 1.0;
+    config.actuators.act_gain[2] = -1.0;
+    config.actuators.act_gain[3] = 1.0;
+    config.actuators.act_gain[4] = -1.0;
+    config.actuators.mix_vtail = true;
+    config.actuators.mix_Gve = 1.0;
+    config.actuators.mix_Gvr = 1.0;
+    config.actuators.mix_flaperon = true;
+    config.actuators.mix_Gfa = 1.0;
+    config.actuators.mix_Gff = 1.0;
+    config.actuators.mix_autocoord = true;
+    config.actuators.mix_Gac = 0.25;
+    config.actuators.sas_rollaxis = true;
+    config.actuators.sas_pitchaxis = true;
+    config.actuators.sas_yawaxis = true;
+    config.actuators.sas_rollgain = 0.2;
+    config.actuators.sas_pitchgain = 0.2;
+    config.actuators.sas_yawgain = 0.2;
 }
 
 void setup() {
@@ -93,7 +112,7 @@ void setup() {
     delay(100);
 
     // force/hard-code a specific board config if desired
-    force_config();
+    // force_config_talon_marmot();
     
     // initialize the IMU
     imu_setup();
@@ -167,10 +186,10 @@ void loop() {
         // 10hz human debugging output, but only after gyros finish calibrating
         if ( debugTimer >= 100 && gyros_calibrated == 2) {
             debugTimer = 0;
-            // write_pilot_in_ascii();
-            // write_actuator_out_ascii();
+            //write_pilot_in_ascii();
+            write_actuator_out_ascii();
             // write_gps_ascii();
-            write_airdata_ascii();
+            // write_airdata_ascii();
             // write_status_info_ascii();
             // write_imu_ascii();
         }
