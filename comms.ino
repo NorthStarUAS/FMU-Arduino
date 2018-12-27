@@ -73,27 +73,38 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
     } else if ( id == CONFIG_MASTER_PACKET_ID && message_size == sizeof(config_master_t) ) {
         Serial.println("received master config");
         config.master = *(config_master_t *)buf;
+        config_write_eeprom();
         write_ack_bin( id, 0 );
         result = true;
     } else if ( id == CONFIG_IMU_PACKET_ID && message_size == sizeof(config_imu_t) ) {
         Serial.println("received imu config");
         config.imu = *(config_imu_t *)buf;
+        config_write_eeprom();
         write_ack_bin( id, 0 );
         result = true;
     } else if ( id == CONFIG_ACTUATORS_PACKET_ID && message_size == sizeof(config_act_t) ) {
         Serial.println("received new actuator config");
         config.actuators = *(config_act_t *)buf;
         pwm_setup();  // update pwm config in case it has been changed.
+        config_write_eeprom();
+        write_ack_bin( id, 0 );
+        result = true;
+    } else if ( id == CONFIG_AIRDATA_PACKET_ID && message_size == sizeof(config_airdata_t) ) {
+        Serial.println("received new airdata config");
+        config.airdata = *(config_airdata_t *)buf;
+        config_write_eeprom();
         write_ack_bin( id, 0 );
         result = true;
     } else if ( id == CONFIG_POWER_PACKET_ID && message_size == sizeof(config_power_t) ) {
         Serial.println("received new power config");
         config.power = *(config_power_t *)buf;
+        config_write_eeprom();
         write_ack_bin( id, 0 );
         result = true;
     } else if ( id == CONFIG_LED_PACKET_ID && message_size == sizeof(config_led_t) ) {
         Serial.println("received new led config");
         config.led = *(config_led_t *)buf;
+        config_write_eeprom();
         write_ack_bin( id, 0 );
         result = true;
     } else if ( id == WRITE_EEPROM_PACKET_ID && message_size == 0 ) {
