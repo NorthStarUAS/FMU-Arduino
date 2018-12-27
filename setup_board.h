@@ -16,7 +16,7 @@
 #endif
 
 // Firmware rev (needs to be updated here manually to match release number)
-const int FIRMWARE_REV = 334;
+const int FIRMWARE_REV = 335;
 
 // this is the master loop update rate.
 const int MASTER_HZ = 100;

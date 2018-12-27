@@ -38,7 +38,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 
     // Serial.print("message id = "); Serial.print(id); Serial.print(" len = "); Serial.println(message_size);
     
-    if ( id == FLIGHT_COMMAND_PACKET_ID && message_size == AP_CHANNELS * 2 ) {
+    if ( id == COMMAND_INCEPTORS_PACKET_ID && message_size == AP_CHANNELS * 2 ) {
         /* flight commands are 2 byte ints, normalized, then scaled to +/- 16384 */
         float ap_tmp[AP_CHANNELS];
         for ( int i = 0; i < AP_CHANNELS; i++ ) {
@@ -107,7 +107,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         config_write_eeprom();
         write_ack_bin( id, 0 );
         result = true;
-    } else if ( id == WRITE_EEPROM_PACKET_ID && message_size == 0 ) {
+    } else if ( id == CONFIG_WRITE_EEPROM_PACKET_ID && message_size == 0 ) {
         Serial.println("received update eeprom command");
         config_write_eeprom();
         write_ack_bin( id, 0 );
