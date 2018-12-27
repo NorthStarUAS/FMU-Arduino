@@ -38,7 +38,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 
     // Serial.print("message id = "); Serial.print(id); Serial.print(" len = "); Serial.println(message_size);
     
-    if ( id == COMMAND_INCEPTORS_PACKET_ID && message_size == AP_CHANNELS * 2 ) {
+    if ( id == COMMAND_INCEPTORS && message_size == AP_CHANNELS * 2 ) {
         /* flight commands are 2 byte ints, normalized, then scaled to +/- 16384 */
         float ap_tmp[AP_CHANNELS];
         for ( int i = 0; i < AP_CHANNELS; i++ ) {
@@ -49,7 +49,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         // autopilot_norm uses the same channel mapping as sbus_norm,
         // so map ap_tmp values to their correct places in
         // autopilot_norm
-        autopilot_norm[0] = receiver_norm[0]; // auto/manual swith
+        autopilot_norm[0] = receiver_norm[0]; // auto/manual switch
         autopilot_norm[1] = receiver_norm[1]; // throttle enable
         autopilot_norm[2] = ap_tmp[0];        // throttle
         autopilot_norm[3] = ap_tmp[1];
@@ -107,9 +107,9 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         config_write_eeprom();
         write_ack_bin( id, 0 );
         result = true;
-    } else if ( id == CONFIG_WRITE_EEPROM_PACKET_ID && message_size == 0 ) {
-        Serial.println("received update eeprom command");
-        config_write_eeprom();
+    } else if ( id == COMMAND_ZERO_GYROS && message_size == 0 ) {
+        Serial.println("received zero gyros command");
+        gyros_calibrated = 0;   // start state
         write_ack_bin( id, 0 );
         result = true;
     } else {
