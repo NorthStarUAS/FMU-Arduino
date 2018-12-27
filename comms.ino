@@ -6,8 +6,8 @@
  * Following that is a two byte check sum.  The check sum includes the packet id and size as well as the data.
  */
 
-#include "setup_msg.h"
-#include "structs.h"
+#include "message_ids.h"
+#include "messages.h"
 
 
 void ugear_cksum( byte hdr1, byte hdr2, const byte *buf, byte size,

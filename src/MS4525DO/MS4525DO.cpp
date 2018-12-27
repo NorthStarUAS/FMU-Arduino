@@ -97,6 +97,7 @@ bool MS4525DO::getData(float* pressure, float* temperature) {
         const float T_factor = 200.0 / 2047.0;
         *temperature = (float)T_dat * T_factor - 50.0; // C
 
+        // #define DEBUG_ME
         #if defined DEBUG_ME
          Serial.print(status); Serial.print("\t");
          Serial.print(dp_raw); Serial.print("\t");

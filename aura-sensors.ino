@@ -3,7 +3,9 @@
 #include "src/UBLOX8/UBLOX8.h"
 
 #include "setup_board.h"
-#include "structs.h"
+#include "setup_sbus.h"
+#include "setup_pwm.h"
+#include "messages.h"
 
 // Eeprom Configuration
 config_t config;

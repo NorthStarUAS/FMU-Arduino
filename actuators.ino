@@ -1,5 +1,6 @@
 // Module to handle actuator input/output and mixing.
 
+#include "setup_pwm.h"
 
 // Actuator gain (reversing) commands, format is cmd(byte) ch(byte)
 // gain(float)

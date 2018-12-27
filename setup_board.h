@@ -1,12 +1,10 @@
-#ifndef AURA_SETUP_H_INCLUDED
-#define AURA_SETUP_H_INCLUDED
-
-#include <Arduino.h>
-
+#pragma once
 
 //////////////////////////////////////////////////////////////////////////
 // Hardware configuration section
 //////////////////////////////////////////////////////////////////////////
+
+#include <Arduino.h>
 
 // automatic configuration
 #if defined(__MK20DX256__)
@@ -36,7 +34,5 @@ const int DEFAULT_BAUD = 500000;
 // Maximum number of input or output channels supported
 const int AP_CHANNELS = 6;
 
-
 extern uint16_t serial_number;
 
-#endif // AURA_SETUP_H_INCLUDED
