@@ -114,8 +114,8 @@ int BME280::begin() {
       Serial.println("Detected a BME280 pressure sensor");
       _model = 0; // BME280
   } else if ( data[0] == 0x58 ) {
-      Serial.println("Detected a BMP180 pressure sensor");
-      _model = 1; // BMP180
+      Serial.println("Detected a BMP280 pressure sensor");
+      _model = 1; // BMP280
   }
   
   // check that BME280 is not copying calibration data
