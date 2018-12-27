@@ -250,7 +250,7 @@ void mixing_update( float control_norm[SBUS_CHANNELS] ) {
     actuator_norm[3] = rudder_cmd;
     actuator_norm[4] = flap_cmd;
     actuator_norm[5] = gear_cmd;
- 
+
     // elevon and flaperon mixing are mutually exclusive
     if ( config.actuators.mix_elevon ) {
         actuator_norm[1] = config.actuators.mix_Gea * aileron_cmd + config.actuators.mix_Gee * elevator_cmd;
