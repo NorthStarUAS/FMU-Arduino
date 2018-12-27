@@ -19,6 +19,13 @@ float baro_press, baro_temp, baro_hum;
 bool pitot_found = false;
 bool ams_baro_found = false;
 
+void airdata_defaults() {
+    config.airdata.barometer = 0;
+    config.airdata.pitot = 0;
+    config.airdata.swift_baro_addr = 0;
+    config.airdata.swift_pitot_addr = 0;
+}
+
 void airdata_setup() {
     if ( config.airdata.barometer == 0 ) {
         // BME280/SPI
