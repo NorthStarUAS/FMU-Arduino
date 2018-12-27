@@ -121,22 +121,31 @@ void imu_update() {
 // stay alive for up to 15 seconds looking for agreement between a 1
 // second low pass filter and a 0.1 second low pass filter.  If these
 // agree (close enough) for 4 consecutive seconds, then we calibrate
-// with the 1 sec low pass filter value.  If time expires the
+// with the 1 sec low pass filter value.  If time expires, the
 // calibration fails and we run with raw gyro values.
 void calibrate_gyros(float gx, float gy, float gz) {
-    static float gxs = gx;
-    static float gys = gy;
-    static float gzs = gz;
-    static float gxf = gx;
-    static float gyf = gy;
-    static float gzf = gz;
     static const float cutoff = 0.005;
+    static float gxs = 0.0;
+    static float gys = 0.0;
+    static float gzs = 0.0;
+    static float gxf = 0.0;
+    static float gyf = 0.0;
+    static float gzf = 0.0;
     static elapsedMillis total_timer = 0;
     static elapsedMillis good_timer = 0;
     static elapsedMillis output_timer = 0;
 
     if ( gyros_calibrated == 0 ) {
-        Serial.print("Calibrating gyros: ");
+        Serial.print("Initialize gyro calibration: ");
+        gxs = gx;
+        gys = gy;
+        gzs = gz;
+        gxf = gx;
+        gyf = gy;
+        gzf = gz;
+        total_timer = 0;
+        good_timer = 0;
+        output_timer = 0;
         gyros_calibrated = 1;
     }
     
@@ -166,14 +175,14 @@ void calibrate_gyros(float gx, float gy, float gz) {
             Serial.print("*");
         }
     }
-    if (good_timer > 4100) {
+    if ( good_timer > 4100 || total_timer > 15000 ) {
+        Serial.println();
         // set gyro zero points from the 'slow' filter.
         gyro_calib[0] = gxs;
         gyro_calib[1] = gys;
         gyro_calib[2] = gzs;
         gyros_calibrated = 2;
         imu_update(); // update imu_calib values before anything else get's a chance to read them
-        Serial.println(" good.");
         Serial.print("Average gyros: ");
         Serial.print(gyro_calib[0],4);
         Serial.print(" ");
@@ -181,8 +190,10 @@ void calibrate_gyros(float gx, float gy, float gz) {
         Serial.print(" ");
         Serial.print(gyro_calib[2],4);
         Serial.println();
-    } else if (total_timer > 15000) {
-        gyros_calibrated = 2;
-        Serial.println(" failed.");
+        if ( total_timer > 15000 ) {
+            Serial.println("Result: too much motion failed.");
+        } else {
+            Serial.println("Result: success.");
+        }
     }
 }
