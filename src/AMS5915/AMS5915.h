@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #define AMS5915_h
 
 #include "Arduino.h"
-#include "Wire.h"
+#include "i2c_t3.h"
 
 enum ams5915_transducer
 {
@@ -57,13 +57,13 @@ enum ams5915_transducer
 class AMS5915 {
  public:
     AMS5915();
-    AMS5915(uint8_t address, TwoWire *bus, ams5915_transducer type);
-    void configure(uint8_t address, TwoWire *bus, ams5915_transducer type);
+    AMS5915(uint8_t address, i2c_t3 *bus, ams5915_transducer type);
+    void configure(uint8_t address, i2c_t3 *bus, ams5915_transducer type);
     void begin();
     bool getData(float* pressure, float* temperature);
  private:
     uint8_t _address;
-    TwoWire *_bus;
+    i2c_t3 *_bus;
     ams5915_transducer _type;
     float _pMin;
     float _pMax;
@@ -71,7 +71,7 @@ class AMS5915 {
     float _tMax;
 
     // i2c bus frequency
-    const uint32_t _i2cRate = 400000;
+    const uint32_t _i2cRate = 100000;
 
     // conversion millibar to PA
     const float _mBar2Pa = 100.0f; 
@@ -122,6 +122,8 @@ class AMS5915 {
     const float AMS5915_1200_B_P_MIN = 700.0f;
     const float AMS5915_1200_B_P_MAX = 1200.0f;
 
+    const uint32_t I2cTimeout_us = 200;
+    
     void getTransducer();
     bool readBytes(uint16_t* pressureCounts, uint16_t* temperatureCounts);
 };

@@ -37,13 +37,13 @@ AMS5915::AMS5915(){
 }
 
 /* AMS5915 object, input the I2C address and enumerated chip name (i.e. AMS5915_1200_B) */
-AMS5915::AMS5915(uint8_t address, TwoWire *bus, ams5915_transducer type){
+AMS5915::AMS5915(uint8_t address, i2c_t3 *bus, ams5915_transducer type){
     _address = address; // I2C address
     _bus = bus; // I2C bus
     _type = type; // transducer type
 }
 
-void AMS5915::configure(uint8_t address, TwoWire *bus, ams5915_transducer type){
+void AMS5915::configure(uint8_t address, i2c_t3 *bus, ams5915_transducer type){
     _address = address; // I2C address
     _bus = bus; // I2C bus
     _type = type; // transducer type
@@ -54,10 +54,11 @@ void AMS5915::begin(){
     // starting the I2C bus
     _bus->begin();
     _bus->setClock(_i2cRate);
+    _bus->setDefaultTimeout(200000);
     
     _bus->beginTransmission(_address);
     _bus->endTransmission();
-    delay(100);
+    delay(250);
 
     // setting the min and max pressure and temperature based on the chip
     getTransducer();
@@ -65,29 +66,25 @@ void AMS5915::begin(){
 
 /* reads pressure and temperature and returns values in counts */
 bool AMS5915::readBytes(uint16_t* pressureCounts, uint16_t* temperatureCounts){
-    uint8_t b[4]; // buffer
     const uint8_t numBytes = 4;
-    bool result = true;
+    uint8_t b[numBytes]; // buffer
+    bool result = false;
 
-    // 4 bytes from address
-    _bus->requestFrom(_address, numBytes); 
-  
-    // put the data in buffer
-    int counter = 0;
-    while ( _bus->available() && counter < numBytes ) {
-        b[counter] = _bus->read();
-        counter++;
-    }
-
-    if (counter != numBytes) {
+    // request 4 bytes from address
+    _bus->requestFrom(_address, numBytes);
+    if ( ! _bus->getError() ) {
+        // put the data in buffer
+        b[0] = _bus->read();
+        b[1] = _bus->read();
+        b[2] = _bus->read();
+        b[3] = _bus->read();
+        result = true;
+        // assemble into a uint16_t
+        *pressureCounts = (((uint16_t) (b[0]&0x3F)) <<8) + (((uint16_t) b[1]));
+        *temperatureCounts = (((uint16_t) (b[2])) <<3) + (((uint16_t) b[3]&0xE0)>>5);
+    } else {
         // problem with bytes available
-        result = false;
     }
-
-    // assemble into a uint16_t
-    *pressureCounts = (((uint16_t) (b[0]&0x3F)) <<8) + (((uint16_t) b[1]));
-    *temperatureCounts = (((uint16_t) (b[2])) <<3) + (((uint16_t) b[3]&0xE0)>>5);
-
     return result;
 }
 

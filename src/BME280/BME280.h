@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #define BME280_h
 
 #include "Arduino.h"
-#include "Wire.h"  // I2C library
+#include "i2c_t3.h"  // I2C library
 #include "SPI.h"     // SPI library
 
 enum bme280_sampling
@@ -68,10 +68,10 @@ enum bme280_mode
 class BME280{
   public:
     BME280();
-    BME280(uint8_t address, TwoWire *bus);
+    BME280(uint8_t address, i2c_t3 *bus);
     BME280(uint8_t csPin);
     // BME280(uint8_t csPin, SPIClass *Spi);
-    void configure(uint8_t address, TwoWire *bus);
+    void configure(uint8_t address, i2c_t3 *bus);
     void configure(uint8_t csPin);
     void configure(uint8_t csPin, SPIClass *Spi);
     int begin();
@@ -85,7 +85,7 @@ class BME280{
   private:
     // i2c
     uint8_t _address;
-    TwoWire *_bus;
+    i2c_t3 *_bus;
     const uint32_t _i2cRate = 400000; // 400 kHz
     bool _userDefI2C;
     int _model;

@@ -29,20 +29,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define MS4525DO_H
 
 #include <Arduino.h>
-#include <Wire.h>
+#include <i2c_t3.h>
 
 class MS4525DO {
   public:
     MS4525DO();
-    MS4525DO(uint8_t address, TwoWire *bus);
-    void configure(uint8_t address, TwoWire *bus);
+    MS4525DO(uint8_t address, i2c_t3 *bus);
+    void configure(uint8_t address, i2c_t3 *bus);
     bool begin();
     bool getData(float *pressure, float *temperature);
     
   private:
     bool _ready;
     uint8_t _address;
-    TwoWire *_bus;
+    i2c_t3 *_bus;
 
     // i2c bus frequency
     const uint32_t _i2cRate = 100000;

@@ -220,7 +220,7 @@ void loop() {
         if ( debugTimer >= 100 && gyros_calibrated == 2) {
             debugTimer = 0;
             // write_pilot_in_ascii();
-            write_actuator_out_ascii();
+            // write_actuator_out_ascii();
             // write_gps_ascii();
             // write_airdata_ascii();
             // write_status_info_ascii();
