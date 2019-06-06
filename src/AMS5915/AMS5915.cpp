@@ -79,14 +79,15 @@ bool AMS5915::readBytes(uint16_t* pressureCounts, uint16_t* temperatureCounts){
         counter++;
     }
 
-    if (counter != numBytes) {
+    if (counter == numBytes) {
+        result = true;
+        // assemble into a uint16_t
+        *pressureCounts = (((uint16_t) (b[0]&0x3F)) <<8) + (((uint16_t) b[1]));
+        *temperatureCounts = (((uint16_t) (b[2])) <<3) + (((uint16_t) b[3]&0xE0)>>5);
+    } else {
         // problem with bytes available
         result = false;
     }
-
-    // assemble into a uint16_t
-    *pressureCounts = (((uint16_t) (b[0]&0x3F)) <<8) + (((uint16_t) b[1]));
-    *temperatureCounts = (((uint16_t) (b[2])) <<3) + (((uint16_t) b[3]&0xE0)>>5);
 
     return result;
 }
