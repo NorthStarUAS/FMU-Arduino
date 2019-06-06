@@ -32,7 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 BME280::BME280(){}
 
 /* BME280 object, input the I2C address and I2C bus */
-BME280::BME280(uint8_t address, i2c_t3 *bus){
+BME280::BME280(uint8_t address, TwoWire *bus){
   _address = address; // I2C address
   _bus = bus; // I2C bus
   _userDefI2C = false; // automatic I2C setup
@@ -51,7 +51,7 @@ BME280::BME280(uint8_t csPin) {
   _useSPI = true; // set to use SPI instead of I2C          
   }*/
 
-void BME280::configure(uint8_t address, i2c_t3 *bus){
+void BME280::configure(uint8_t address, TwoWire *bus){
   _address = address; // I2C address
   _bus = bus; // I2C bus
   _userDefI2C = false; // automatic I2C setup

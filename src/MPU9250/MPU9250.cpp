@@ -32,7 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 MPU9250::MPU9250(){}
 
 /* MPU9250 object, input the I2C address and I2C bus */
-MPU9250::MPU9250(uint8_t address, i2c_t3 *bus){
+MPU9250::MPU9250(uint8_t address, TwoWire *bus){
     _address = address; // I2C address
     _bus = bus; // I2C bus
     _userDefI2C = false; // automatic I2C setup
@@ -55,7 +55,7 @@ MPU9250::MPU9250(uint8_t csPin){
     _useSPIHS = false; // defaul to low speed SPI transactions until data reads start to occur
     } */
 
-void MPU9250::configure(uint8_t address, i2c_t3 *bus){
+void MPU9250::configure(uint8_t address, TwoWire *bus){
     _address = address; // I2C address
     _bus = bus; // I2C bus
     _userDefI2C = false; // automatic I2C setup

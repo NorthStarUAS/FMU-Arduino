@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #define MPU9250_h
 
 #include "Arduino.h"
-#include "i2c_t3.h"               // I2C library
+#include "Wire.h"               // I2C library
 #include "SPI.h"                // SPI library
 
 enum mpu9250_gyro_range
@@ -57,11 +57,11 @@ enum mpu9250_dlpf_bandwidth
 class MPU9250{
     public:
         MPU9250();
-        MPU9250(uint8_t address, i2c_t3 *bus);
+        MPU9250(uint8_t address, TwoWire *bus);
         MPU9250(uint8_t csPin);
         // MPU9250(uint8_t csPin, SPIClass *Spi);
 
-        void configure(uint8_t address, i2c_t3 *bus);
+        void configure(uint8_t address, TwoWire *bus);
         void configure(uint8_t csPin);
         void configure(uint8_t csPin, SPIClass *Spi);        
 
@@ -87,7 +87,7 @@ class MPU9250{
         void getMotion10Counts(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, int16_t* hx, int16_t* hy, int16_t* hz, int16_t* t);
     private:
         uint8_t _address;
-        i2c_t3 *_bus;
+        TwoWire *_bus;
         bool _userDefI2C;
         uint8_t _csPin;
         SPIClass *_spi;

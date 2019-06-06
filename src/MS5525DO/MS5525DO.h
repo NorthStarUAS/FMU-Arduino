@@ -28,13 +28,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #pragma once
 
 #include <Arduino.h>
-#include <i2c_t3.h>
+#include <Wire.h>
 
 class MS5525DO {
   public:
     MS5525DO();
-    MS5525DO(uint8_t address, i2c_t3 *bus);
-    void configure(uint8_t address, i2c_t3 *bus);
+    MS5525DO(uint8_t address, TwoWire *bus);
+    void configure(uint8_t address, TwoWire *bus);
     bool begin();
     bool send_command(uint8_t command);
     bool getData(float *pressure, float *temperature);
@@ -42,7 +42,7 @@ class MS5525DO {
   private:
     bool _ready;
     uint8_t _address;
-    i2c_t3 *_bus;
+    TwoWire *_bus;
 
     // Qx Coefficients Matrix by Pressure Range
     //  5525DSO-pp001DS (Pmin = -1, Pmax = 1)

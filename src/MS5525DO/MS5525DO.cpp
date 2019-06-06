@@ -18,14 +18,14 @@ MS5525DO::MS5525DO(){
 }
 
 /* MS5525DO object, input the I2C address and enumerated chip name (i.e. MS5525DO_1200_B) */
-MS5525DO::MS5525DO(uint8_t address, i2c_t3 *bus){
+MS5525DO::MS5525DO(uint8_t address, TwoWire *bus){
     _address = address; // I2C address
     _bus = bus; // I2C bus
     state = 0;
 }
 
 /* configure bus and i2c address */
-void MS5525DO::configure(uint8_t address, i2c_t3 *bus){
+void MS5525DO::configure(uint8_t address, TwoWire *bus){
     _address = address; // I2C address
     _bus = bus; // I2C bus
     state = 0;
