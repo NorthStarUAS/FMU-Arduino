@@ -79,7 +79,7 @@ void airdata_update() {
                 ams_baro_found = true;
             } else {
                 if ( ams_baro_found ) {
-                    Serial.println("Error while reading sPress sensor.");
+                    // Serial.println("Error while reading sPress sensor.");
                     airdata_error_count++;
                 }
             }
@@ -97,7 +97,7 @@ void airdata_update() {
     }
     if ( !result ) {
         if ( pitot_found ) {
-            Serial.println("Error while reading pitot sensor.");
+            // Serial.println("Error while reading pitot sensor.");
             airdata_error_count++;
         }
     } else {

@@ -390,6 +390,7 @@ int write_airdata_bin()
     payload.ext_diff_press_pa = airdata_diffPress_pa;
     payload.ext_static_press_pa = 0.0; // fixme!
     payload.ext_temp_C = airdata_temp_C;
+    payload.error_count = airdata_error_count;
       
     return write_packet( AIRDATA_PACKET_ID, (uint8_t *)&payload, size );
 }
