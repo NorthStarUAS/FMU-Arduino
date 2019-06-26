@@ -41,53 +41,53 @@ float ch8_cmd = 0.0;
 // reset pwm output rates to safe startup defaults
 void pwm_defaults() {
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-         config.actuators.pwm_hz[i] = 50;    
+         config_actuators.pwm_hz[i] = 50;    
     }
 }
 
 // reset actuator gains (reversing) to startup defaults
 void act_gain_defaults() {
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-        config.actuators.act_gain[i] = 1.0;
+        config_actuators.act_gain[i] = 1.0;
     }
 }
 
 // reset sas parameters to startup defaults
 void sas_defaults() {
-    config.actuators.sas_rollaxis = false;
-    config.actuators.sas_pitchaxis = false;
-    config.actuators.sas_yawaxis = false;
-    config.actuators.sas_tune = false;
+    config_actuators.sas_rollaxis = false;
+    config_actuators.sas_pitchaxis = false;
+    config_actuators.sas_yawaxis = false;
+    config_actuators.sas_tune = false;
 
-    config.actuators.sas_rollgain = 0.0;
-    config.actuators.sas_pitchgain = 0.0;
-    config.actuators.sas_yawgain = 0.0;
-    config.actuators.sas_max_gain = 2.0;
+    config_actuators.sas_rollgain = 0.0;
+    config_actuators.sas_pitchgain = 0.0;
+    config_actuators.sas_yawgain = 0.0;
+    config_actuators.sas_max_gain = 2.0;
 };
 
 
 // reset mixing parameters to startup defaults
 void mixing_defaults() {
-    config.actuators.mix_autocoord = false;
-    config.actuators.mix_throttle_trim = false;
-    config.actuators.mix_flap_trim = false;
-    config.actuators.mix_elevon = false;
-    config.actuators.mix_flaperon = false;
-    config.actuators.mix_vtail = false;
-    config.actuators.mix_diff_thrust = false;
+    config_actuators.mix_autocoord = false;
+    config_actuators.mix_throttle_trim = false;
+    config_actuators.mix_flap_trim = false;
+    config_actuators.mix_elevon = false;
+    config_actuators.mix_flaperon = false;
+    config_actuators.mix_vtail = false;
+    config_actuators.mix_diff_thrust = false;
 
-    config.actuators.mix_Gac = 0.5;       // aileron gain for autocoordination
-    config.actuators.mix_Get = -0.1;      // elevator trim w/ throttle gain
-    config.actuators.mix_Gef = 0.1;       // elevator trim w/ flap gain
+    config_actuators.mix_Gac = 0.5;       // aileron gain for autocoordination
+    config_actuators.mix_Get = -0.1;      // elevator trim w/ throttle gain
+    config_actuators.mix_Gef = 0.1;       // elevator trim w/ flap gain
 
-    config.actuators.mix_Gea = 1.0;       // aileron gain for elevons
-    config.actuators.mix_Gee = 1.0;       // elevator gain for elevons
-    config.actuators.mix_Gfa = 1.0;       // aileron gain for flaperons
-    config.actuators.mix_Gff = 1.0;       // flaps gain for flaperons
-    config.actuators.mix_Gve = 1.0;       // elevator gain for vtail
-    config.actuators.mix_Gvr = 1.0;       // rudder gain for vtail
-    config.actuators.mix_Gtt = 1.0;       // throttle gain for diff thrust
-    config.actuators.mix_Gtr = 0.1;       // rudder gain for diff thrust
+    config_actuators.mix_Gea = 1.0;       // aileron gain for elevons
+    config_actuators.mix_Gee = 1.0;       // elevator gain for elevons
+    config_actuators.mix_Gfa = 1.0;       // aileron gain for flaperons
+    config_actuators.mix_Gff = 1.0;       // flaps gain for flaperons
+    config_actuators.mix_Gve = 1.0;       // elevator gain for vtail
+    config_actuators.mix_Gvr = 1.0;       // rudder gain for vtail
+    config_actuators.mix_Gtt = 1.0;       // throttle gain for diff thrust
+    config_actuators.mix_Gtr = 0.1;       // rudder gain for diff thrust
 };
 
 bool act_gain_command_parse(byte *buf) {
@@ -104,7 +104,7 @@ bool act_gain_command_parse(byte *buf) {
         return false;
     }
 
-    config.actuators.act_gain[ch] = gain;
+    config_actuators.act_gain[ch] = gain;
     
     return true;
 }
@@ -123,16 +123,16 @@ bool sas_command_parse(byte *buf) {
     if ( buf[0] == SAS_DEFAULTS ) {
         sas_defaults();
     } else if ( buf[0] == SAS_ROLLAXIS ) {
-        config.actuators.sas_rollaxis = enable;
-        config.actuators.sas_rollgain = gain;
+        config_actuators.sas_rollaxis = enable;
+        config_actuators.sas_rollgain = gain;
     } else if ( buf[0] == SAS_PITCHAXIS ) {
-        config.actuators.sas_pitchaxis = enable;
-        config.actuators.sas_pitchgain = gain;
+        config_actuators.sas_pitchaxis = enable;
+        config_actuators.sas_pitchgain = gain;
     } else if ( buf[0] == SAS_YAWAXIS ) {
-        config.actuators.sas_yawaxis = enable;
-        config.actuators.sas_yawgain = gain;
+        config_actuators.sas_yawaxis = enable;
+        config_actuators.sas_yawgain = gain;
     } else if ( buf[0] == SAS_TUNE ) {
-        config.actuators.sas_tune = enable;
+        config_actuators.sas_tune = enable;
     } else {
         return false;
     }
@@ -159,30 +159,30 @@ bool mixing_command_parse(byte *buf) {
     if ( buf[0] == MIX_DEFAULTS ) {
         mixing_defaults();
     } else if ( buf[0] == MIX_AUTOCOORDINATE ) {
-        config.actuators.mix_autocoord = enable;
-        config.actuators.mix_Gac = g1;
+        config_actuators.mix_autocoord = enable;
+        config_actuators.mix_Gac = g1;
     } else if ( buf[0] == MIX_THROTTLE_TRIM ) {
-        config.actuators.mix_throttle_trim = enable;
-        config.actuators.mix_Get = g1;
+        config_actuators.mix_throttle_trim = enable;
+        config_actuators.mix_Get = g1;
     } else if ( buf[0] == MIX_FLAP_TRIM ) {
-        config.actuators.mix_flap_trim = enable;
-        config.actuators.mix_Gef = g1;
+        config_actuators.mix_flap_trim = enable;
+        config_actuators.mix_Gef = g1;
     } else if ( buf[0] == MIX_ELEVONS ) {
-        config.actuators.mix_elevon = enable;
-        config.actuators.mix_Gea = g1;
-        config.actuators.mix_Gee = g2;
+        config_actuators.mix_elevon = enable;
+        config_actuators.mix_Gea = g1;
+        config_actuators.mix_Gee = g2;
     } else if ( buf[0] == MIX_FLAPERONS ) {
-        config.actuators.mix_flaperon = enable;
-        config.actuators.mix_Gfa = g1;
-        config.actuators.mix_Gff = g2;
+        config_actuators.mix_flaperon = enable;
+        config_actuators.mix_Gfa = g1;
+        config_actuators.mix_Gff = g2;
     } else if ( buf[0] == MIX_VTAIL ) {
-        config.actuators.mix_vtail = enable;
-        config.actuators.mix_Gve = g1;
-        config.actuators.mix_Gvr = g2;
+        config_actuators.mix_vtail = enable;
+        config_actuators.mix_Gve = g1;
+        config_actuators.mix_Gvr = g2;
     } else if ( buf[0] == MIX_DIFF_THRUST ) {
-        config.actuators.mix_diff_thrust = enable;
-        config.actuators.mix_Gtt = g1;
-        config.actuators.mix_Gtr = g2;
+        config_actuators.mix_diff_thrust = enable;
+        config_actuators.mix_Gtt = g1;
+        config_actuators.mix_Gtr = g2;
     } else {
         return false;
     }
@@ -198,8 +198,8 @@ void sas_update( float control_norm[SBUS_CHANNELS] ) {
     // value assignment)
 
     float tune = 1.0;
-    if ( config.actuators.sas_tune ) {
-        tune = config.actuators.sas_max_gain * receiver_norm[7];
+    if ( config_actuators.sas_tune ) {
+        tune = config_actuators.sas_max_gain * receiver_norm[7];
         if ( tune < 0.0 ) {
             tune = 0.0;
         } else if ( tune > 2.0 ) {
@@ -207,14 +207,14 @@ void sas_update( float control_norm[SBUS_CHANNELS] ) {
         }
     }
 
-    if ( config.actuators.sas_rollaxis ) {
-        control_norm[3] -= tune * config.actuators.sas_rollgain * imu_calib[3];  // p
+    if ( config_actuators.sas_rollaxis ) {
+        control_norm[3] -= tune * config_actuators.sas_rollgain * imu_calib[3];  // p
     }
-    if ( config.actuators.sas_pitchaxis ) {
-        control_norm[4] += tune * config.actuators.sas_pitchgain * imu_calib[4]; // q
+    if ( config_actuators.sas_pitchaxis ) {
+        control_norm[4] += tune * config_actuators.sas_pitchgain * imu_calib[4]; // q
     }
-    if ( config.actuators.sas_yawaxis ) {
-        control_norm[5] += tune * config.actuators.sas_yawgain * imu_calib[5];   // r
+    if ( config_actuators.sas_yawaxis ) {
+        control_norm[5] += tune * config_actuators.sas_yawgain * imu_calib[5];   // r
     }
 }
 
@@ -231,14 +231,14 @@ void mixing_update( float control_norm[SBUS_CHANNELS] ) {
         
     // mixing modes that work at the 'command' level (before actuator
     // value assignment)
-    if ( config.actuators.mix_autocoord ) {
-        rudder_cmd += config.actuators.mix_Gac * aileron_cmd;
+    if ( config_actuators.mix_autocoord ) {
+        rudder_cmd += config_actuators.mix_Gac * aileron_cmd;
     }
-    if ( config.actuators.mix_throttle_trim ) {
-        elevator_cmd += config.actuators.mix_Get * throttle_cmd;
+    if ( config_actuators.mix_throttle_trim ) {
+        elevator_cmd += config_actuators.mix_Get * throttle_cmd;
     }
-    if ( config.actuators.mix_flap_trim ) {
-        elevator_cmd += config.actuators.mix_Gef * flap_cmd;
+    if ( config_actuators.mix_flap_trim ) {
+        elevator_cmd += config_actuators.mix_Gef * flap_cmd;
     }
 
     if ( throttle_enabled ) {
@@ -253,22 +253,22 @@ void mixing_update( float control_norm[SBUS_CHANNELS] ) {
     actuator_norm[5] = gear_cmd;
 
     // elevon and flaperon mixing are mutually exclusive
-    if ( config.actuators.mix_elevon ) {
-        actuator_norm[1] = config.actuators.mix_Gea * aileron_cmd + config.actuators.mix_Gee * elevator_cmd;
-        actuator_norm[2] = config.actuators.mix_Gea * aileron_cmd - config.actuators.mix_Gee * elevator_cmd;
-    } else if ( config.actuators.mix_flaperon ) {
-        actuator_norm[1] = config.actuators.mix_Gfa * aileron_cmd + config.actuators.mix_Gff * flap_cmd;
-        actuator_norm[4] = -config.actuators.mix_Gfa * aileron_cmd + config.actuators.mix_Gff * flap_cmd;
+    if ( config_actuators.mix_elevon ) {
+        actuator_norm[1] = config_actuators.mix_Gea * aileron_cmd + config_actuators.mix_Gee * elevator_cmd;
+        actuator_norm[2] = config_actuators.mix_Gea * aileron_cmd - config_actuators.mix_Gee * elevator_cmd;
+    } else if ( config_actuators.mix_flaperon ) {
+        actuator_norm[1] = config_actuators.mix_Gfa * aileron_cmd + config_actuators.mix_Gff * flap_cmd;
+        actuator_norm[4] = -config_actuators.mix_Gfa * aileron_cmd + config_actuators.mix_Gff * flap_cmd;
     }
     // vtail mixing can't work with elevon mixing
-    if ( config.actuators.mix_vtail && !config.actuators.mix_elevon) {
-        actuator_norm[2] = config.actuators.mix_Gve * elevator_cmd + config.actuators.mix_Gvr * rudder_cmd;
-        actuator_norm[3] = config.actuators.mix_Gve * elevator_cmd - config.actuators.mix_Gvr * rudder_cmd;
+    if ( config_actuators.mix_vtail && !config_actuators.mix_elevon) {
+        actuator_norm[2] = config_actuators.mix_Gve * elevator_cmd + config_actuators.mix_Gvr * rudder_cmd;
+        actuator_norm[3] = config_actuators.mix_Gve * elevator_cmd - config_actuators.mix_Gvr * rudder_cmd;
     }
-    if ( config.actuators.mix_diff_thrust ) {
+    if ( config_actuators.mix_diff_thrust ) {
         // fixme: never tested in the wild (need to think through channel assignments)
-        // actuator_norm[0] = config.actuators.mix_Gtt * throttle_cmd + config.actuators.mix_Gtr * rudder_cmd;
-        // actuator_norm[5] = config.actuators.mix_Gtt * throttle_cmd - config.actuators.mix_Gtr * rudder_cmd;
+        // actuator_norm[0] = config_actuators.mix_Gtt * throttle_cmd + config_actuators.mix_Gtr * rudder_cmd;
+        // actuator_norm[5] = config_actuators.mix_Gtt * throttle_cmd - config_actuators.mix_Gtr * rudder_cmd;
     }
 
     // compute pwm actuator output values from the normalized values

@@ -24,15 +24,15 @@ int set_serial_number(uint16_t value) {
 };
 
 void master_defaults() {
-    config.master.board = 0;
+    config_master.board = 0;
 }
 
 void power_defaults() {
-     config.power.have_attopilot = false;
+     config_power.have_attopilot = false;
 }
 
 void led_defaults() {
-     config.led.pin = 0;
+     config_led.pin = 0;
 }
 
 void config_load_defaults() {
@@ -47,23 +47,41 @@ void config_load_defaults() {
     led_defaults();
 }
 
+int extract_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
+    for ( int i = 0; i < len; i++ ) {
+        buf[i] = config_buf[pos + i];
+    }
+    return len;
+}
+
 int config_read_eeprom() {
-    noInterrupts();
-    int size = sizeof(config);
+    uint8_t config_buf[config_size];
     int status = 0;
-    if ( size + CONFIG_OFFSET <= E2END - 2 /* checksum */ + 1 ) {
+    if ( config_size + CONFIG_OFFSET <= E2END - 2 /* checksum */ + 1 ) {
         Serial.print("Loading EEPROM, bytes: ");
-        Serial.println(size);
-        EEPROM.get(CONFIG_OFFSET, config);
-        byte read_cksum0 = EEPROM.read(CONFIG_OFFSET + size);
-        byte read_cksum1 = EEPROM.read(CONFIG_OFFSET + size+1);
+        Serial.println(config_size);
+        noInterrupts();
+        for ( int i = 0; i < config_size; i++ ) {
+            config_buf[i] = EEPROM.read(CONFIG_OFFSET + i);
+        }
+        byte read_cksum0 = EEPROM.read(CONFIG_OFFSET + config_size);
+        byte read_cksum1 = EEPROM.read(CONFIG_OFFSET + config_size+1);
+        interrupts()
         byte calc_cksum0 = 0;
         byte calc_cksum1 = 0;
-        ugear_cksum( START_OF_MSG0 /* arbitrary magic # */, START_OF_MSG1 /* arbitrary magic # */, (byte *)&config, size, &calc_cksum0, &calc_cksum1 );
+        ugear_cksum( START_OF_MSG0 /* arbitrary magic # */, START_OF_MSG1 /* arbitrary magic # */, (byte *)&config_buf, config_size, &calc_cksum0, &calc_cksum1 );
         if ( read_cksum0 != calc_cksum0 || read_cksum1 != calc_cksum1 ) {
             Serial.println("Check sum error!");
         } else {
             status = 1;
+            // assemble packed config buffer
+            int pos = 0;
+            pos += extract_config_buf( config_buf, pos, (uint8_t *)&config_master, config_master.len );
+            pos += extract_config_buf( config_buf, pos, (uint8_t *)&config_imu, config_imu.len );
+            pos += extract_config_buf( config_buf, pos, (uint8_t *)&config_actuators, config_actuators.len );
+            pos += extract_config_buf( config_buf, pos, (uint8_t *)&config_airdata, config_airdata.len );
+            pos += extract_config_buf( config_buf, pos, (uint8_t *)&config_power, config_power.len );
+            pos += extract_config_buf( config_buf, pos, (uint8_t *)&config_led, config_led.len );    
         }
     } else {
         Serial.println("ERROR: config structure too large for EEPROM hardware!");
@@ -71,22 +89,40 @@ int config_read_eeprom() {
     return status;
 }
 
+int build_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
+    for ( int i = 0; i < len; i++ ) {
+        config_buf[pos + i] = buf[i];
+    }
+    return len;
+}
+
 int config_write_eeprom() {
+    // assemble packed config buffer
+    uint8_t config_buf[config_size];
+    int pos = 0;
+    pos += build_config_buf( config_buf, pos, (uint8_t *)&config_master, config_master.len );
+    pos += build_config_buf( config_buf, pos, (uint8_t *)&config_imu, config_imu.len );
+    pos += build_config_buf( config_buf, pos, (uint8_t *)&config_actuators, config_actuators.len );
+    pos += build_config_buf( config_buf, pos, (uint8_t *)&config_airdata, config_airdata.len );
+    pos += build_config_buf( config_buf, pos, (uint8_t *)&config_power, config_power.len );
+    pos += build_config_buf( config_buf, pos, (uint8_t *)&config_led, config_led.len );
+    
     Serial.println("Write EEPROM (any changed bytes) ...");
-    noInterrupts();
-    int size = sizeof(config);
     int status = 0;
-    if ( size + CONFIG_OFFSET <= E2END - 2 /* checksum */ + 1 ) {
-        EEPROM.put(CONFIG_OFFSET, config);
+    if ( config_size + CONFIG_OFFSET <= E2END - 2 /* checksum */ + 1 ) {
         byte calc_cksum0 = 0;
         byte calc_cksum1 = 0;
-        ugear_cksum( START_OF_MSG0 /* arbitrary magic # */, START_OF_MSG1 /* arbitrary magic # */, (byte *)&config, size, &calc_cksum0, &calc_cksum1 );
-        EEPROM.update(CONFIG_OFFSET + size, calc_cksum0);
-        EEPROM.update(CONFIG_OFFSET + size+1, calc_cksum1);
+        ugear_cksum( START_OF_MSG0 /* arbitrary magic # */, START_OF_MSG1 /* arbitrary magic # */, (byte *)&config_buf, config_size, &calc_cksum0, &calc_cksum1 );
+        noInterrupts();
+        for ( int i = 0; i < config_size; i++ ) {
+            EEPROM.update(CONFIG_OFFSET + i, config_buf[i]);
+        }
+        EEPROM.update(CONFIG_OFFSET + config_size, calc_cksum0);
+        EEPROM.update(CONFIG_OFFSET + config_size+1, calc_cksum1);
+        interrupts();
         status = 1;
     } else {
         Serial.println("ERROR: config structure too large for EEPROM hardware!");
     }
-    interrupts();
     return status;
 }

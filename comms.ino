@@ -6,8 +6,13 @@
  * Following that is a two byte check sum.  The check sum includes the packet id and size as well as the data.
  */
 
-#include "message_ids.h"
-#include "messages.h"
+//#include "message_ids.h"
+//#include "messages.h"
+#include "aura3_messages.h"
+
+// FIXME
+const uint8_t START_OF_MSG0 = 147;
+const uint8_t START_OF_MSG1 = 224;
 
 
 void ugear_cksum( byte hdr1, byte hdr2, const byte *buf, byte size,
@@ -38,76 +43,85 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 
     // Serial.print("message id = "); Serial.print(id); Serial.print(" len = "); Serial.println(message_size);
     
-    if ( id == COMMAND_INCEPTORS && message_size == AP_CHANNELS * 2 ) {
-        /* flight commands are 2 byte ints, normalized, then scaled to +/- 16384 */
-        float ap_tmp[AP_CHANNELS];
-        for ( int i = 0; i < AP_CHANNELS; i++ ) {
-            int16_t val = *(int16_t *)buf; buf += 2;
-            ap_tmp[i] = (float)val / 16384.0;
-            //Serial1.println(ap_tmp[i]);
-        }
-        // autopilot_norm uses the same channel mapping as sbus_norm,
-        // so map ap_tmp values to their correct places in
-        // autopilot_norm
-        autopilot_norm[0] = receiver_norm[0]; // auto/manual switch
-        autopilot_norm[1] = receiver_norm[1]; // throttle enable
-        autopilot_norm[2] = ap_tmp[0];        // throttle
-        autopilot_norm[3] = ap_tmp[1];
-        autopilot_norm[4] = ap_tmp[2];
-        autopilot_norm[5] = ap_tmp[3];
-        autopilot_norm[6] = ap_tmp[4];
-        autopilot_norm[7] = ap_tmp[5];
+    if ( id == message_command_inceptors_id && message_size == AP_CHANNELS * 2 ) {
+        static message_command_inceptors_t inceptors;
+        if ( message_size == inceptors.len ) {
+            inceptors.unpack(buf);
+            // autopilot_norm uses the same channel mapping as sbus_norm,
+            // so map ap_tmp values to their correct places in
+            // autopilot_norm
+            autopilot_norm[0] = receiver_norm[0]; // auto/manual switch
+            autopilot_norm[1] = receiver_norm[1]; // throttle enable
+            autopilot_norm[2] = inceptors.channel[0];        // throttle
+            autopilot_norm[3] = inceptors.channel[1];
+            autopilot_norm[4] = inceptors.channel[2];
+            autopilot_norm[5] = inceptors.channel[3];
+            autopilot_norm[6] = inceptors.channel[4];
+            autopilot_norm[7] = inceptors.channel[5];
 
-        if ( receiver_norm[0] > 0.0 ) {
-            // autopilot mode active (determined elsewhere when each
-            // new receiver frame is ready) mix the inputs and write
-            // the actuator outputs now
-            sas_update( autopilot_norm );
-            mixing_update( autopilot_norm );
-            pwm_update();
-        } else {
-            // manual mode, do nothing with actuator commands from the
-            // autopilot
+            if ( receiver_norm[0] > 0.0 ) {
+                // autopilot mode active (determined elsewhere when each
+                // new receiver frame is ready) mix the inputs and write
+                // the actuator outputs now
+                sas_update( autopilot_norm );
+                mixing_update( autopilot_norm );
+                pwm_update();
+            } else {
+                // manual mode, do nothing with actuator commands from the
+                // autopilot
+            }
+            result = true;
         }
-        result = true;
-    } else if ( id == CONFIG_MASTER_PACKET_ID && message_size == sizeof(config_master_t) ) {
-        Serial.println("received master config");
-        config.master = *(config_master_t *)buf;
-        config_write_eeprom();
-        write_ack_bin( id, 0 );
-        result = true;
-    } else if ( id == CONFIG_IMU_PACKET_ID && message_size == sizeof(config_imu_t) ) {
-        Serial.println("received imu config");
-        config.imu = *(config_imu_t *)buf;
-        config_write_eeprom();
-        write_ack_bin( id, 0 );
-        result = true;
-    } else if ( id == CONFIG_ACTUATORS_PACKET_ID && message_size == sizeof(config_act_t) ) {
-        Serial.println("received new actuator config");
-        config.actuators = *(config_act_t *)buf;
-        pwm_setup();  // update pwm config in case it has been changed.
-        config_write_eeprom();
-        write_ack_bin( id, 0 );
-        result = true;
-    } else if ( id == CONFIG_AIRDATA_PACKET_ID && message_size == sizeof(config_airdata_t) ) {
-        Serial.println("received new airdata config");
-        config.airdata = *(config_airdata_t *)buf;
-        config_write_eeprom();
-        write_ack_bin( id, 0 );
-        result = true;
-    } else if ( id == CONFIG_POWER_PACKET_ID && message_size == sizeof(config_power_t) ) {
-        Serial.println("received new power config");
-        config.power = *(config_power_t *)buf;
-        config_write_eeprom();
-        write_ack_bin( id, 0 );
-        result = true;
-    } else if ( id == CONFIG_LED_PACKET_ID && message_size == sizeof(config_led_t) ) {
-        Serial.println("received new led config");
-        config.led = *(config_led_t *)buf;
-        config_write_eeprom();
-        write_ack_bin( id, 0 );
-        result = true;
-    } else if ( id == COMMAND_ZERO_GYROS && message_size == 0 ) {
+    } else if ( id == message_config_master_id ) {
+        if ( message_size == config_master.len ) {
+            Serial.println("received master config");
+            config_master.unpack(buf);
+            config_write_eeprom();
+            write_ack_bin( id, 0 );
+            result = true;
+        }
+    } else if ( id == message_config_imu_id ) {
+        if ( message_size == config_imu.len ) {
+            Serial.println("received imu config");
+            config_imu.unpack(buf);
+            config_write_eeprom();
+            write_ack_bin( id, 0 );
+            result = true;
+        }
+    } else if ( id == message_config_actuators_id ) {
+        if ( message_size == config_actuators.len ) {
+            Serial.println("received new actuator config");
+            config_actuators.unpack(buf);
+            pwm_setup();  // update pwm config in case it has been changed.
+            config_write_eeprom();
+            write_ack_bin( id, 0 );
+            result = true;
+        }
+    } else if ( id == message_config_airdata_id ) {
+        if ( message_size == config_airdata.len ) {
+            Serial.println("received new airdata config");
+            config_airdata.unpack(buf);
+            config_write_eeprom();
+            write_ack_bin( id, 0 );
+            result = true;
+        }
+    } else if ( id == message_config_power_id ) {
+        if ( message_size == config_power.len ) {
+            Serial.println("received new power config");
+            config_power.unpack(buf);
+            config_write_eeprom();
+            write_ack_bin( id, 0 );
+            result = true;
+        }
+    } else if ( id == message_config_led_id ) {
+        if ( message_size == config_led.len ) {
+            Serial.println("received new led config");
+            config_led.unpack(buf);
+            config_write_eeprom();
+            write_ack_bin( id, 0 );
+            result = true;
+        }
+    } else if ( id == message_command_zero_gyros_id && message_size == 0 ) {
         Serial.println("received zero gyros command");
         gyros_calibrated = 0;   // start state
         write_ack_bin( id, 0 );
@@ -242,31 +256,27 @@ int write_packet(uint8_t packet_id, uint8_t *payload, int size) {
 /* output an acknowledgement of a message received */
 int write_ack_bin( uint8_t command_id, uint8_t subcommand_id )
 {
-    ack_packet_t payload;
-    byte size = sizeof(payload);
-
-    payload.command_id = command_id;
-    payload.subcommand_id = subcommand_id;
-
-    return write_packet( CONFIG_ACK_PACKET_ID, (uint8_t *)&payload, size);
+    static message_command_ack_t ack;
+    ack.command_id = command_id;
+    ack.subcommand_id = subcommand_id;
+    return write_packet( ack.id, ack.pack(), ack.len);
 }
 
 
 /* output a binary representation of the pilot (rc receiver) data */
 int write_pilot_in_bin()
 {
-    pilot_packet_t payload;
-    byte size = sizeof(payload);
+    static message_pilot_t pilot;
 
     // receiver data
     for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
-        payload.channel[i] = receiver_norm[i] * 16384.0;
+        pilot.channel[i] = receiver_norm[i];
     }
 
     // flags
-    payload.flags = receiver_flags;
+    pilot.flags = receiver_flags;
 
-    return write_packet( PILOT_PACKET_ID, (uint8_t *)&payload, size);
+    return write_packet( pilot.id, pilot.pack(), pilot.len);
 }
 
 void write_pilot_in_ascii()
@@ -306,16 +316,12 @@ void write_actuator_out_ascii()
 /* output a binary representation of the IMU data (note: scaled to 16bit values) */
 int write_imu_bin()
 {
-    imu_packet_t payload;
-    byte size = sizeof(payload);
-    
-    payload.micros = imu_micros;
-
+    static message_imu_raw_t imu;
+    imu.micros = imu_micros;
     for ( int i = 0; i < 10; i++ ) {
-        payload.channel[i] = imu_packed[i];
+        imu.channel[i] = imu_packed[i];
     }
-    
-    return write_packet( IMU_PACKET_ID, (uint8_t *)&payload, size );
+    return write_packet( imu.id, imu.pack(), imu.len );
 }
 
 void write_imu_ascii()
@@ -339,8 +345,8 @@ int write_gps_bin()
     } else {
         new_gps_data = false;
     }
-    
-    return write_packet( GPS_PACKET_ID, (uint8_t *)&gps_data, size );
+
+    return write_packet( message_aura_nav_pvt_id, (uint8_t *)&gps_data, size );
 }
 
 void write_gps_ascii() {
@@ -381,18 +387,15 @@ void write_gps_ascii() {
 /* output a binary representation of the barometer data */
 int write_airdata_bin()
 {
-    airdata_packet_t payload;
-    byte size = sizeof(payload);
-
-    payload.baro_press_pa = baro_press;
-    payload.baro_temp_C = baro_temp;
-    payload.baro_hum = baro_hum;
-    payload.ext_diff_press_pa = airdata_diffPress_pa;
-    payload.ext_static_press_pa = 0.0; // fixme!
-    payload.ext_temp_C = airdata_temp_C;
-    payload.error_count = airdata_error_count;
-      
-    return write_packet( AIRDATA_PACKET_ID, (uint8_t *)&payload, size );
+    static message_airdata_t airdata;
+    airdata.baro_press_pa = baro_press;
+    airdata.baro_temp_C = baro_temp;
+    airdata.baro_hum = baro_hum;
+    airdata.ext_diff_press_pa = airdata_diffPress_pa;
+    airdata.ext_static_press_pa = 0.0; // fixme!
+    airdata.ext_temp_C = airdata_temp_C;
+    airdata.error_count = airdata_error_count;
+    return write_packet( airdata.id, airdata.pack(), airdata.len );
 }
 
 void write_airdata_ascii()
@@ -411,15 +414,12 @@ void write_airdata_ascii()
 /* output a binary representation of various volt/amp sensors */
 int write_power_bin()
 {
-    power_packet_t payload;
-    byte size = sizeof(payload);
-
-    payload.int_main_v = (uint16_t)(pwr1_v*100);
-    payload.avionics_v = (uint16_t)(avionics_v*100);
-    payload.ext_main_v = (uint16_t)(pwr2_v*100);
-    payload.ext_main_amp = (uint16_t)(pwr_a*100);
- 
-    return write_packet( POWER_PACKET_ID, (uint8_t *)&payload, size );
+    static message_power_t power;
+    power.int_main_v = pwr1_v;
+    power.avionics_v = avionics_v;
+    power.ext_main_v = pwr2_v;
+    power.ext_main_amp = pwr_a;
+    return write_packet( power.id, power.pack(), power.len );
 }
 
 void write_power_ascii()
@@ -441,9 +441,7 @@ void write_power_ascii()
 int write_status_info_bin()
 {
     static uint32_t write_millis = millis();
-
-    status_packet_t payload;
-    byte size = sizeof(payload);
+    static message_status_t status;
 
     // This info is static or slow changing so we don't need to send
     // it at a high rate.
@@ -455,10 +453,10 @@ int write_status_info_bin()
         counter = MASTER_HZ * 1 - 1; // a message every 1 seconds (-1 so we aren't off by one frame) 
     }
 
-    payload.serial_number = (uint16_t)serial_number;
-    payload.firmware_rev = (uint16_t)FIRMWARE_REV;
-    payload.master_hz = (uint16_t)MASTER_HZ;
-    payload.baud = (uint32_t)DEFAULT_BAUD;
+    status.serial_number = serial_number;
+    status.firmware_rev = FIRMWARE_REV;
+    status.master_hz = MASTER_HZ;
+    status.baud = DEFAULT_BAUD;
 
     // estimate sensor output byte rate
     unsigned long current_time = millis();
@@ -466,9 +464,9 @@ int write_status_info_bin()
     unsigned long byte_rate = output_counter * 1000 / elapsed_millis;
     write_millis = current_time;
     output_counter = 0;
-    payload.byte_rate = (uint16_t)byte_rate;
+    status.byte_rate = byte_rate;
  
-    return write_packet( STATUS_INFO_PACKET_ID, (uint8_t *)&payload, size );
+    return write_packet( status.id, status.pack(), status.len );
 }
 
 void write_status_info_ascii()

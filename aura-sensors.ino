@@ -5,10 +5,18 @@
 #include "setup_board.h"
 #include "setup_sbus.h"
 #include "setup_pwm.h"
-#include "messages.h"
+//#include "messages.h"
+#include "aura3_messages.h"
 
-// Eeprom Configuration
-config_t config;
+// master config (for messages and saving in eeprom)
+message_config_master_t config_master;
+message_config_imu_t config_imu;
+message_config_actuators_t config_actuators;
+message_config_airdata_t config_airdata;
+message_config_power_t config_power;
+message_config_led_t config_led;
+static int config_size = config_master.len + config_imu.len + config_actuators.len +
+    config_airdata.len + config_power.len + config_led.len;
 
 // IMU
 int gyros_calibrated = 0; // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished
@@ -27,7 +35,7 @@ uint8_t test_pwm_channel = -1;
 // GPS
 UBLOX8 gps(&Serial3); // ublox m8n
 bool new_gps_data = false;
-aura_nav_pvt_t gps_data;
+ublox8_nav_pvt_t gps_data;
 
 // Air Data
 int airdata_error_count = 0;
@@ -54,63 +62,63 @@ unsigned long output_counter = 0;
 
 // force/hard-code a specific board config if desired
 void force_config_aura_v2() {
-    config.master.board = 1;    // 0 = marmot v1, 1 = aura v2
-    config.imu.interface = 1;   // i2c
-    config.imu.pin_or_address = 0x68; // mpu9250 i2c addr
-    config.airdata.barometer = 1; // 1 = bmp280/i2c
-    config.airdata.pitot = 0;     // 0 MS4525
-    config.led.pin = 13;
-    config.power.have_attopilot = true;
-    config.actuators.act_gain[0] = 1.0;
-    config.actuators.act_gain[1] = 1.0;
-    config.actuators.act_gain[2] = -1.0;
-    config.actuators.act_gain[3] = 1.0;
-    config.actuators.act_gain[4] = -1.0;
-    config.actuators.mix_vtail = true;
-    config.actuators.mix_Gve = 1.0;
-    config.actuators.mix_Gvr = 1.0;
-    config.actuators.mix_flaperon = true;
-    config.actuators.mix_Gfa = 1.0;
-    config.actuators.mix_Gff = 1.0;
-    config.actuators.mix_autocoord = true;
-    config.actuators.mix_Gac = 0.25;
-    config.actuators.sas_rollaxis = true;
-    config.actuators.sas_pitchaxis = true;
-    config.actuators.sas_yawaxis = true;
-    config.actuators.sas_rollgain = 0.2;
-    config.actuators.sas_pitchgain = 0.2;
-    config.actuators.sas_yawgain = 0.2;
+    config_master.board = 1;    // 0 = marmot v1, 1 = aura v2
+    config_imu.interface = 1;   // i2c
+    config_imu.pin_or_address = 0x68; // mpu9250 i2c addr
+    config_airdata.barometer = 1; // 1 = bmp280/i2c
+    config_airdata.pitot = 0;     // 0 MS4525
+    config_led.pin = 13;
+    config_power.have_attopilot = true;
+    config_actuators.act_gain[0] = 1.0;
+    config_actuators.act_gain[1] = 1.0;
+    config_actuators.act_gain[2] = -1.0;
+    config_actuators.act_gain[3] = 1.0;
+    config_actuators.act_gain[4] = -1.0;
+    config_actuators.mix_vtail = true;
+    config_actuators.mix_Gve = 1.0;
+    config_actuators.mix_Gvr = 1.0;
+    config_actuators.mix_flaperon = true;
+    config_actuators.mix_Gfa = 1.0;
+    config_actuators.mix_Gff = 1.0;
+    config_actuators.mix_autocoord = true;
+    config_actuators.mix_Gac = 0.25;
+    config_actuators.sas_rollaxis = true;
+    config_actuators.sas_pitchaxis = true;
+    config_actuators.sas_yawaxis = true;
+    config_actuators.sas_rollgain = 0.2;
+    config_actuators.sas_pitchgain = 0.2;
+    config_actuators.sas_yawgain = 0.2;
 }
 
 // force/hard-code a specific board config if desired
 void force_config_talon_marmot() {
-    config.master.board = 0;    // 0 = marmot v1, 1 = aura v2
-    config.imu.interface = 0;   // spi
-    config.imu.pin_or_address = 24; // marmot imu spi cs line
-    config.airdata.barometer = 2; // 2 = swift
-    config.airdata.pitot = 2;     // 2 = swift, 0x25
-    config.airdata.swift_baro_addr = 0x24; // Idun = 0x24
-    config.airdata.swift_pitot_addr = 0x25; // Idun = 0x24
-    config.led.pin = 0;
-    config.actuators.act_gain[0] = 1.0;
-    config.actuators.act_gain[1] = 1.0;
-    config.actuators.act_gain[2] = -1.0;
-    config.actuators.act_gain[3] = 1.0;
-    config.actuators.act_gain[4] = -1.0;
-    config.actuators.mix_vtail = true;
-    config.actuators.mix_Gve = 1.0;
-    config.actuators.mix_Gvr = 1.0;
-    config.actuators.mix_flaperon = true;
-    config.actuators.mix_Gfa = 1.0;
-    config.actuators.mix_Gff = 1.0;
-    config.actuators.mix_autocoord = true;
-    config.actuators.mix_Gac = 0.25;
-    config.actuators.sas_rollaxis = true;
-    config.actuators.sas_pitchaxis = true;
-    config.actuators.sas_yawaxis = true;
-    config.actuators.sas_rollgain = 0.2;
-    config.actuators.sas_pitchgain = 0.2;
-    config.actuators.sas_yawgain = 0.2;
+    config_master.board = 0;    // 0 = marmot v1, 1 = aura v2
+    config_imu.interface = 0;   // spi
+    config_imu.pin_or_address = 24; // marmot imu spi cs line
+    config_airdata.barometer = 2; // 2 = swift
+    config_airdata.pitot = 2;     // 2 = swift, 0x25
+    config_airdata.swift_baro_addr = 0x24; // Idun = 0x24
+    config_airdata.swift_pitot_addr = 0x25; // Idun = 0x24
+    config_led.pin = 0;
+    config_actuators.act_gain[0] = 1.0;
+    config_actuators.act_gain[1] = 1.0;
+    config_actuators.act_gain[2] = -1.0;
+    config_actuators.act_gain[3] = 1.0;
+    config_actuators.act_gain[4] = -1.0;
+    config_actuators.mix_vtail = true;
+    config_actuators.mix_Gve = 1.0;
+    config_actuators.mix_Gvr = 1.0;
+    config_actuators.mix_flaperon = true;
+    config_actuators.mix_Gfa = 1.0;
+    config_actuators.mix_Gff = 1.0;
+    config_actuators.mix_autocoord = true;
+    config_actuators.mix_Gac = 0.25;
+    config_actuators.sas_rollaxis = true;
+    config_actuators.sas_pitchaxis = true;
+    config_actuators.sas_yawaxis = true;
+    config_actuators.sas_rollgain = 0.2;
+    config_actuators.sas_pitchgain = 0.2;
+    config_actuators.sas_yawgain = 0.2;
 }
 
 void setup() {
@@ -137,6 +145,8 @@ void setup() {
         Serial.println("Resetting eeprom to default values.");
         config_load_defaults();
         config_write_eeprom();
+    } else {
+        Serial.println("Successfully loaded eeprom config.");
     }
     
     Serial.print("Serial Number: ");
@@ -167,17 +177,17 @@ void setup() {
     analogReadResolution(16);
 
     // power sensing
-    if ( config.master.board == 0 ) {
+    if ( config_master.board == 0 ) {
         // Marmot v1
         #ifdef HAVE_TEENSY36    // A22 doesn't exist for teensy3.2
         avionics_pin = A22;
         #endif
         source_volt_pin = 15;
-    } else if ( config.master.board == 1 ) {
+    } else if ( config_master.board == 1 ) {
         // Aura v2
         avionics_pin = A1;
         source_volt_pin = A0;
-        if ( config.power.have_attopilot ) {
+        if ( config_power.have_attopilot ) {
             Serial.println("Attopilot enabled.");
             atto_volts_pin = A2;
             atto_amps_pin = A3;
@@ -221,7 +231,7 @@ void loop() {
             debugTimer = 0;
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
-            // write_gps_ascii();
+            write_gps_ascii();
             // write_airdata_ascii();
             // write_status_info_ascii();
             // write_imu_ascii();
@@ -245,7 +255,7 @@ void loop() {
         ain = analogRead(avionics_pin);
         avionics_v = ((float)ain) * 3.3 / analogResolution * avionics_scale;
 
-        if ( config.power.have_attopilot ) {
+        if ( config_power.have_attopilot ) {
             ain = analogRead(atto_volts_pin);
             // Serial.print("atto volts: ");
             // Serial.println( ((float)ain) * 3.3 / analogResolution );

@@ -10,12 +10,12 @@ bool pwm_symmetrical[PWM_CHANNELS] = {0, 1, 1, 1, 1, 0, 0, 0};
 
 void pwm_setup() {
     Serial.print("PWM: ");
-    if ( config.master.board == 0 ) {
+    if ( config_master.board == 0 ) {
         Serial.print("Marmot v1 pin mapping.");
         for ( int i = 0; i < PWM_CHANNELS; i++ ) {
             servoPins[i] = marmot1_pins[i];
         }
-    } else if ( config.master.board == 1 ) {
+    } else if ( config_master.board == 1 ) {
         Serial.print("Aura v2 pin mapping.");
         for ( int i = 0; i < PWM_CHANNELS; i++ ) {
             servoPins[i] = aura2_pins[i];
@@ -41,17 +41,17 @@ void pwm_setup() {
 void pwm_norm2pwm( float *norm, uint16_t *pwm ) {
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         // convert to pulse length (special case ch6 when in flaperon mode)
-        if ( pwm_symmetrical[i] || (i == 4 && config.actuators.mix_flaperon) ) {
+        if ( pwm_symmetrical[i] || (i == 4 && config_actuators.mix_flaperon) ) {
             // i.e. aileron, rudder, elevator
             // Serial1.println(i);
-            // Serial1.println(config.actuators.act_rev[i]);
-            pwm[i] = PWM_CENTER + (int)(PWM_HALF_RANGE * norm[i] * config.actuators.act_gain[i]);
+            // Serial1.println(config_actuators.act_rev[i]);
+            pwm[i] = PWM_CENTER + (int)(PWM_HALF_RANGE * norm[i] * config_actuators.act_gain[i]);
         } else {
             // i.e. throttle, flaps
-            if ( config.actuators.act_gain[i] > 0.0 ) {
-                pwm[i] = PWM_MIN + (int)(PWM_RANGE * norm[i] * config.actuators.act_gain[i]);
+            if ( config_actuators.act_gain[i] > 0.0 ) {
+                pwm[i] = PWM_MIN + (int)(PWM_RANGE * norm[i] * config_actuators.act_gain[i]);
             } else {
-                pwm[i] = PWM_MAX + (int)(PWM_RANGE * norm[i] * config.actuators.act_gain[i]);
+                pwm[i] = PWM_MAX + (int)(PWM_RANGE * norm[i] * config_actuators.act_gain[i]);
             }
         }
         if ( pwm[i] < PWM_MIN ) {

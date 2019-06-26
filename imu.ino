@@ -24,27 +24,27 @@ float gyro_calib[3] = { 0.0, 0.0, 0.0 };
 // Marmot v1 has mpu9250 on SPI CS line 24
 // Aura v2 has mpu9250 on I2C Addr 0x68
 static void imu_setup_defaults() {
-    config.imu.interface = 0;       // SPI
-    config.imu.pin_or_address = 24; // CS pin
+    config_imu.interface = 0;       // SPI
+    config_imu.pin_or_address = 24; // CS pin
     float ident[] = { 1.0, 0.0, 0.0,
                       0.0, 1.0, 0.0,
                       0.0, 0.0, 1.0};
     for ( int i = 0; i < 9; i++ ) {
-        config.imu.orientation[i] = ident[i];
+        config_imu.orientation[i] = ident[i];
     }
 }
 
 // configure the IMU settings and setup the ISR to aquire the data
 void imu_setup() {
-    if ( config.imu.interface == 0 ) {
+    if ( config_imu.interface == 0 ) {
         // SPI
         Serial.print("MPU9250 @ SPI pin: ");
-        Serial.println(config.imu.pin_or_address);
-        IMU.configure(config.imu.pin_or_address);
-    } else if ( config.imu.interface == 1 ) {
+        Serial.println(config_imu.pin_or_address);
+        IMU.configure(config_imu.pin_or_address);
+    } else if ( config_imu.interface == 1 ) {
         Serial.print("MPU9250 @ I2C Addr: 0x");
-        Serial.println(config.imu.pin_or_address, HEX);
-        IMU.configure(config.imu.pin_or_address, &Wire);
+        Serial.println(config_imu.pin_or_address, HEX);
+        IMU.configure(config_imu.pin_or_address, &Wire);
     } else {
         Serial.println("Error: problem with MPU9250 (IMU) configuration");
     }
@@ -69,7 +69,7 @@ void imu_setup() {
 
     Serial.println("MPU-9250 ready.");
     for ( int i = 0; i < 9; i++ ) {
-        Serial.print(config.imu.orientation[i], 2);
+        Serial.print(config_imu.orientation[i], 2);
         Serial.print(" ");
         if ( i == 2 or i == 5 or i == 8 ) {
             Serial.println();
@@ -80,9 +80,9 @@ void imu_setup() {
 void imu_rotate(float v0, float v1, float v2,
                 float *r0, float *r1, float *r2)
 {
-    *r0 = v0*config.imu.orientation[0] + v1*config.imu.orientation[1] + v2*config.imu.orientation[2];
-    *r1 = v0*config.imu.orientation[3] + v1*config.imu.orientation[4] + v2*config.imu.orientation[5];
-    *r2 = v0*config.imu.orientation[6] + v1*config.imu.orientation[7] + v2*config.imu.orientation[8];
+    *r0 = v0*config_imu.orientation[0] + v1*config_imu.orientation[1] + v2*config_imu.orientation[2];
+    *r1 = v0*config_imu.orientation[3] + v1*config_imu.orientation[4] + v2*config_imu.orientation[5];
+    *r2 = v0*config_imu.orientation[6] + v1*config_imu.orientation[7] + v2*config_imu.orientation[8];
 }
 
 // query the imu and update the structures

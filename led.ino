@@ -1,15 +1,15 @@
 void led_setup() {
-    if ( config.led.pin > 0 ) {
-        pinMode(config.led.pin, OUTPUT);
-        digitalWrite(config.led.pin, HIGH);
-        Serial.print("LED on pin: "); Serial.println(config.led.pin);
+    if ( config_led.pin > 0 ) {
+        pinMode(config_led.pin, OUTPUT);
+        digitalWrite(config_led.pin, HIGH);
+        Serial.print("LED on pin: "); Serial.println(config_led.pin);
     } else {
         Serial.println("No LED defined.");
     }
 }
 
 void led_update() {
-    if ( config.led.pin > 0 ) {
+    if ( config_led.pin > 0 ) {
         static elapsedMillis blinkTimer = 0;
         static unsigned int blink_rate = 100;
         static bool blink_state = true;
@@ -24,7 +24,7 @@ void led_update() {
         if ( blinkTimer >= blink_rate ) {
             blinkTimer = 0;
             blink_state = !blink_state;
-            digitalWrite(config.led.pin, blink_state);
+            digitalWrite(config_led.pin, blink_state);
         }
     }
 }
