@@ -6,35 +6,8 @@
  * Following that is a two byte check sum.  The check sum includes the packet id and size as well as the data.
  */
 
-//#include "message_ids.h"
-//#include "messages.h"
+#include "src/serial_link/serial_link.h"
 #include "aura3_messages.h"
-
-// FIXME
-const uint8_t START_OF_MSG0 = 147;
-const uint8_t START_OF_MSG1 = 224;
-
-
-void ugear_cksum( byte hdr1, byte hdr2, const byte *buf, byte size,
-                  byte *cksum0, byte *cksum1 )
-{
-    byte c0 = 0;
-    byte c1 = 0;
-
-    c0 += hdr1;
-    c1 += c0;
-
-    c0 += hdr2;
-    c1 += c0;
-
-    for ( byte i = 0; i < size; i++ ) {
-        c0 += (byte)buf[i];
-        c1 += c0;
-    }
-
-    *cksum0 = c0;
-    *cksum1 = c1;
-}
 
 
 bool parse_message_bin( byte id, byte *buf, byte message_size )
@@ -133,133 +106,13 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 }
 
 
-bool read_commands() {
-    #define MAX_CMD_BUFFER 256
-    static byte cmd_buffer[MAX_CMD_BUFFER];
-    
-    // 0 = looking for SOM0
-    // 1 = looking for SOM1
-    // 2 = looking for packet id & size
-    // 3 = looking for packet data
-    // 4 = looking for checksum
-    static byte state = 0;
-    byte input;
-    static int buf_counter = 0;
-    static byte message_id = 0;
-    static byte message_size = 0;
-    byte cksum0 = 0, cksum1 = 0;
-    bool new_data = false;
-    // Serial.print("start read_commands(): "); Serial.println(state);
-
-    if ( state == 0 ) {
-        while ( Serial1.available() >= 1 ) {
-            // scan for start of message
-            input = Serial1.read();
-            if ( input == START_OF_MSG0 ) {
-                // Serial.println("start of msg0");
-                state = 1;
-                break;
-            }
-        }
-    }
-    if ( state == 1 ) {
-        if ( Serial1.available() >= 1 ) {
-            input = Serial1.read();
-            if ( input == START_OF_MSG1 ) {
-                // Serial.println("start of msg1");
-                state = 2;
-            } 
-            else if ( input == START_OF_MSG0 ) {
-                // no change
-            } else {
-                // oops
-                state = 0;
-            }
-        }
-    }
-    if ( state == 2 ) {
-        if ( Serial1.available() >= 2 ) {
-            message_id = Serial1.read();
-            // Serial.print("id="); Serial.println(message_id);
-            message_size = Serial1.read();
-            // Serial.print("size="); Serial.println(message_size);
-            if ( message_size > 200 ) {
-                // ignore nonsensical sizes
-                state = 0;
-            }  else {
-                state = 3;
-                buf_counter = 0;
-            }
-        }
-    }
-    if ( state == 3 ) {
-        while ( Serial1.available() >= 1 && buf_counter < message_size ) {
-            if ( buf_counter < MAX_CMD_BUFFER ) {
-                cmd_buffer[buf_counter] = Serial1.read();
-                buf_counter++;
-                // Serial.println(buf[i], DEC);
-            } else {
-                state = 0;
-            }
-        }
-        if ( buf_counter >= message_size ) {
-            state = 4;
-        }
-    }
-    if ( state == 4 ) {
-        if ( Serial1.available() >= 2 ) {
-            cksum0 = Serial1.read();
-            cksum1 = Serial1.read();
-            byte new_cksum0, new_cksum1;
-            ugear_cksum( message_id, message_size, cmd_buffer, message_size, &new_cksum0, &new_cksum1 );
-            if ( cksum0 == new_cksum0 && cksum1 == new_cksum1 ) {
-                // Serial.println("passed check sum!");
-                // Serial.print("size="); Serial.println(message_size);
-                parse_message_bin( message_id, cmd_buffer, message_size );
-                new_data = true;
-                state = 0;
-            } else {
-                Serial.print("failed check sum, id = "); Serial.print(message_id); Serial.print(" len = "); Serial.println(message_size);
-                // check sum failure
-                state = 0;
-            }
-        }
-    }
-
-    return new_data;
-}
-
-
-int write_packet(uint8_t packet_id, uint8_t *payload, int size) {
-    // start of message sync bytes
-    Serial1.write(START_OF_MSG0);
-    Serial1.write(START_OF_MSG1);
-
-    // packet id (1 byte)
-    Serial1.write(packet_id);
-
-    // packet length (1 byte)
-    Serial1.write(size);
-
-    // write payload
-    Serial1.write( payload, size );
-
-    // check sum (2 bytes)
-    byte cksum0, cksum1;
-    ugear_cksum( packet_id, size, payload, size, &cksum0, &cksum1 );
-    Serial1.write(cksum0);
-    Serial1.write(cksum1);
-    
-    return size + 6;
-}
-
 /* output an acknowledgement of a message received */
 int write_ack_bin( uint8_t command_id, uint8_t subcommand_id )
 {
     static message_command_ack_t ack;
     ack.command_id = command_id;
     ack.subcommand_id = subcommand_id;
-    return write_packet( ack.id, ack.pack(), ack.len);
+    return serial.write_packet( ack.id, ack.pack(), ack.len);
 }
 
 
@@ -276,7 +129,7 @@ int write_pilot_in_bin()
     // flags
     pilot.flags = receiver_flags;
 
-    return write_packet( pilot.id, pilot.pack(), pilot.len);
+    return serial.write_packet( pilot.id, pilot.pack(), pilot.len);
 }
 
 void write_pilot_in_ascii()
@@ -321,7 +174,7 @@ int write_imu_bin()
     for ( int i = 0; i < 10; i++ ) {
         imu.channel[i] = imu_packed[i];
     }
-    return write_packet( imu.id, imu.pack(), imu.len );
+    return serial.write_packet( imu.id, imu.pack(), imu.len );
 }
 
 void write_imu_ascii()
@@ -346,7 +199,7 @@ int write_gps_bin()
         new_gps_data = false;
     }
 
-    return write_packet( message_aura_nav_pvt_id, (uint8_t *)&gps_data, size );
+    return serial.write_packet( message_aura_nav_pvt_id, (uint8_t *)&gps_data, size );
 }
 
 void write_gps_ascii() {
@@ -395,7 +248,7 @@ int write_airdata_bin()
     airdata.ext_static_press_pa = 0.0; // fixme!
     airdata.ext_temp_C = airdata_temp_C;
     airdata.error_count = airdata_error_count;
-    return write_packet( airdata.id, airdata.pack(), airdata.len );
+    return serial.write_packet( airdata.id, airdata.pack(), airdata.len );
 }
 
 void write_airdata_ascii()
@@ -419,7 +272,7 @@ int write_power_bin()
     power.avionics_v = avionics_v;
     power.ext_main_v = pwr2_v;
     power.ext_main_amp = pwr_a;
-    return write_packet( power.id, power.pack(), power.len );
+    return serial.write_packet( power.id, power.pack(), power.len );
 }
 
 void write_power_ascii()
@@ -466,7 +319,7 @@ int write_status_info_bin()
     output_counter = 0;
     status.byte_rate = byte_rate;
  
-    return write_packet( status.id, status.pack(), status.len );
+    return serial.write_packet( status.id, status.pack(), status.len );
 }
 
 void write_status_info_ascii()

@@ -1,6 +1,10 @@
 #include <EEPROM.h>
 
-const int CONFIG_OFFSET = 2;  // starting point for writing big eeprom struct
+// starting point for writing big eeprom struct
+static const int CONFIG_OFFSET = 2;
+
+static const uint8_t START_OF_CFG0 = 147;
+static const uint8_t START_OF_CFG1 = 224;
 
 // global definitions
 uint16_t serial_number;
@@ -69,7 +73,7 @@ int config_read_eeprom() {
         interrupts()
         byte calc_cksum0 = 0;
         byte calc_cksum1 = 0;
-        ugear_cksum( START_OF_MSG0 /* arbitrary magic # */, START_OF_MSG1 /* arbitrary magic # */, (byte *)&config_buf, config_size, &calc_cksum0, &calc_cksum1 );
+        serial.checksum( START_OF_CFG0 /* arbitrary magic # */, START_OF_CFG1 /* arbitrary magic # */, (byte *)&config_buf, config_size, &calc_cksum0, &calc_cksum1 );
         if ( read_cksum0 != calc_cksum0 || read_cksum1 != calc_cksum1 ) {
             Serial.println("Check sum error!");
         } else {
@@ -112,7 +116,7 @@ int config_write_eeprom() {
     if ( config_size + CONFIG_OFFSET <= E2END - 2 /* checksum */ + 1 ) {
         byte calc_cksum0 = 0;
         byte calc_cksum1 = 0;
-        ugear_cksum( START_OF_MSG0 /* arbitrary magic # */, START_OF_MSG1 /* arbitrary magic # */, (byte *)&config_buf, config_size, &calc_cksum0, &calc_cksum1 );
+        serial.checksum( START_OF_CFG0 /* arbitrary magic # */, START_OF_CFG1 /* arbitrary magic # */, (byte *)&config_buf, config_size, &calc_cksum0, &calc_cksum1 );
         noInterrupts();
         for ( int i = 0; i < config_size; i++ ) {
             EEPROM.update(CONFIG_OFFSET + i, config_buf[i]);

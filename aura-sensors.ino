@@ -1,11 +1,11 @@
 #include <HardwareSerial.h>
 
 #include "src/UBLOX8/UBLOX8.h"
+#include "src/serial_link/serial_link.h"
 
 #include "setup_board.h"
 #include "setup_sbus.h"
 #include "setup_pwm.h"
-//#include "messages.h"
 #include "aura3_messages.h"
 
 // master config (for messages and saving in eeprom)
@@ -59,6 +59,7 @@ float pwr_a = 0.0;
 // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in
 // aura-v2 and marmot-v1 hardware
 unsigned long output_counter = 0;
+SerialLink serial;
 
 // force/hard-code a specific board config if desired
 void force_config_aura_v2() {
@@ -126,8 +127,8 @@ void setup() {
 
     Serial.begin(DEFAULT_BAUD);
     delay(1000);  // hopefully long enough for serial to come alive
-    
-    Serial1.begin(DEFAULT_BAUD);
+
+    serial.open(DEFAULT_BAUD, &Serial1);
 
     Serial.print("\nAura Sensors: Rev "); Serial.println(FIRMWARE_REV);
     Serial.println("You are seeing this message on the usb interface.");
@@ -231,7 +232,7 @@ void loop() {
             debugTimer = 0;
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
-            write_gps_ascii();
+            // write_gps_ascii();
             // write_airdata_ascii();
             // write_status_info_ascii();
             // write_imu_ascii();
@@ -274,7 +275,9 @@ void loop() {
 
     // suck in any host commmands (flight control updates, etc.)
     // debug: while ( Serial1.available() ) Serial1.read();
-    while ( read_commands() );
+    while ( serial.update() ) {
+        parse_message_bin( serial.pkt_id, serial.payload, serial.pkt_len );
+    }
 
     // blink the led on boards that support it
     led_update();
