@@ -191,9 +191,9 @@ void calibrate_gyros(float gx, float gy, float gz) {
         Serial.print(gyro_calib[2],4);
         Serial.println();
         if ( total_timer > 15000 ) {
-            Serial.println("Result: too much motion failed.");
+            Serial.println("gyro init: too much motion failed.");
         } else {
-            Serial.println("Result: success.");
+            Serial.println("gyro init: success.");
         }
     }
 }

@@ -46,6 +46,7 @@ bool SerialLink::update() {
     // Serial.print("start read_commands(): "); Serial.println(state);
 
     if ( state == 0 ) {
+        counter = 0;
         while ( _port->available() >= 1 ) {
             // scan for start of message
             input = _port->read();
@@ -87,21 +88,19 @@ bool SerialLink::update() {
                 state = 0;
             }  else {
                 state = 4;
-                buf_counter = 0;
             }
         }
     }
     if ( state == 4 ) {
-        while ( _port->available() >= 1 && buf_counter < pkt_len ) {
-            if ( buf_counter < MAX_MESSAGE_LEN ) {
-                payload[buf_counter] = _port->read();
-                buf_counter++;
+        while ( _port->available() >= 1 && counter < pkt_len ) {
+            if ( counter < MAX_MESSAGE_LEN ) {
+                payload[counter++] = _port->read();
                 // Serial.println(buf[i], DEC);
             } else {
                 state = 0;
             }
         }
-        if ( buf_counter >= pkt_len ) {
+        if ( counter >= pkt_len ) {
             state = 5;
         }
     }
