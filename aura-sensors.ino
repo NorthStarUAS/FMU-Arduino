@@ -15,8 +15,7 @@ message_config_actuators_t config_actuators;
 message_config_airdata_t config_airdata;
 message_config_power_t config_power;
 message_config_led_t config_led;
-static int config_size = config_master.len + config_imu.len + config_actuators.len +
-    config_airdata.len + config_power.len + config_led.len;
+int config_size = 0;
 
 // IMU
 int gyros_calibrated = 0; // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished
@@ -156,7 +155,7 @@ void setup() {
 
     // force/hard-code a specific board config if desired
     // force_config_aura_v2();
-    // force_config_talon_marmot();
+    force_config_talon_marmot();
     
     // initialize the IMU
     imu_setup();

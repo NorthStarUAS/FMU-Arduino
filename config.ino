@@ -59,6 +59,15 @@ int extract_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
 }
 
 int config_read_eeprom() {
+    // call pack to initialize internal stucture len
+    config_master.pack();
+    config_imu.pack();
+    config_actuators.pack();
+    config_airdata.pack();
+    config_power.pack();
+    config_led.pack();
+    config_size = config_master.len + config_imu.len + config_actuators.len +
+        config_airdata.len + config_power.len + config_led.len;
     uint8_t config_buf[config_size];
     int status = 0;
     if ( config_size + CONFIG_OFFSET <= E2END - 2 /* checksum */ + 1 ) {
@@ -80,12 +89,18 @@ int config_read_eeprom() {
             status = 1;
             // assemble packed config buffer
             int pos = 0;
-            pos += extract_config_buf( config_buf, pos, (uint8_t *)&config_master, config_master.len );
-            pos += extract_config_buf( config_buf, pos, (uint8_t *)&config_imu, config_imu.len );
-            pos += extract_config_buf( config_buf, pos, (uint8_t *)&config_actuators, config_actuators.len );
-            pos += extract_config_buf( config_buf, pos, (uint8_t *)&config_airdata, config_airdata.len );
-            pos += extract_config_buf( config_buf, pos, (uint8_t *)&config_power, config_power.len );
-            pos += extract_config_buf( config_buf, pos, (uint8_t *)&config_led, config_led.len );    
+            config_master.unpack((uint8_t *)&(config_buf[pos]), config_master.len);
+            pos += config_master.len;
+            config_imu.unpack((uint8_t *)&(config_buf[pos]), config_imu.len);
+            pos += config_imu.len;
+            config_actuators.unpack((uint8_t *)&(config_buf[pos]), config_actuators.len);
+            pos += config_actuators.len;
+            config_airdata.unpack((uint8_t *)&(config_buf[pos]), config_airdata.len);
+            pos += config_airdata.len;
+            config_power.unpack((uint8_t *)&(config_buf[pos]), config_power.len);
+            pos += config_power.len;
+            config_led.unpack((uint8_t *)&(config_buf[pos]), config_led.len);
+            pos += config_led.len;
         }
     } else {
         Serial.println("ERROR: config structure too large for EEPROM hardware!");
@@ -101,15 +116,22 @@ int build_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
 }
 
 int config_write_eeprom() {
+    // create packed version of messages
+    config_master.pack();
+    config_imu.pack();
+    config_actuators.pack();
+    config_airdata.pack();
+    config_power.pack();
+    config_led.pack();
     // assemble packed config buffer
     uint8_t config_buf[config_size];
     int pos = 0;
-    pos += build_config_buf( config_buf, pos, (uint8_t *)&config_master, config_master.len );
-    pos += build_config_buf( config_buf, pos, (uint8_t *)&config_imu, config_imu.len );
-    pos += build_config_buf( config_buf, pos, (uint8_t *)&config_actuators, config_actuators.len );
-    pos += build_config_buf( config_buf, pos, (uint8_t *)&config_airdata, config_airdata.len );
-    pos += build_config_buf( config_buf, pos, (uint8_t *)&config_power, config_power.len );
-    pos += build_config_buf( config_buf, pos, (uint8_t *)&config_led, config_led.len );
+    pos += build_config_buf( config_buf, pos, config_master.payload, config_master.len );
+    pos += build_config_buf( config_buf, pos, config_imu.payload, config_imu.len );
+    pos += build_config_buf( config_buf, pos, config_actuators.payload, config_actuators.len );
+    pos += build_config_buf( config_buf, pos, config_airdata.payload, config_airdata.len );
+    pos += build_config_buf( config_buf, pos, config_power.payload, config_power.len );
+    pos += build_config_buf( config_buf, pos, config_led.payload, config_led.len );
     
     Serial.println("Write EEPROM (any changed bytes) ...");
     int status = 0;

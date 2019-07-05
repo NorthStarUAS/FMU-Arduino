@@ -50,6 +50,7 @@ bool SerialLink::update() {
         while ( _port->available() >= 1 ) {
             // scan for start of message
             input = _port->read();
+            // Serial.println(input);
             if ( input == START_OF_MSG0 ) {
                 // Serial.println("start of msg0");
                 state = 1;
@@ -117,6 +118,7 @@ bool SerialLink::update() {
             checksum( pkt_id, pkt_len, payload, pkt_len, &cksum0, &cksum1 );
             if ( cksum_lo == cksum0 && cksum_hi == cksum1 ) {
                 // Serial.println("passed check sum!");
+                // Serial.print("pkt_id = "); Serial.println(pkt_id);
                 // Serial.print("size="); Serial.println(pkt_len);
                 // parse_message_bin( pkt_id, payload, pkt_len );
                 new_data = true;

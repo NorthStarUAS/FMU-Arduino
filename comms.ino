@@ -18,8 +18,8 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
     
     if ( id == message_command_inceptors_id && message_size == AP_CHANNELS * 2 ) {
         static message_command_inceptors_t inceptors;
+        inceptors.unpack(buf, message_size);
         if ( message_size == inceptors.len ) {
-            inceptors.unpack(buf);
             // autopilot_norm uses the same channel mapping as sbus_norm,
             // so map ap_tmp values to their correct places in
             // autopilot_norm
@@ -46,50 +46,50 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             result = true;
         }
     } else if ( id == message_config_master_id ) {
+        config_master.unpack(buf, message_size);
         if ( message_size == config_master.len ) {
             Serial.println("received master config");
-            config_master.unpack(buf);
             config_write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
         }
     } else if ( id == message_config_imu_id ) {
+        config_imu.unpack(buf, message_size);
         if ( message_size == config_imu.len ) {
             Serial.println("received imu config");
-            config_imu.unpack(buf);
             config_write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
         }
     } else if ( id == message_config_actuators_id ) {
+        config_actuators.unpack(buf, message_size);
         if ( message_size == config_actuators.len ) {
             Serial.println("received new actuator config");
-            config_actuators.unpack(buf);
             pwm_setup();  // update pwm config in case it has been changed.
             config_write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
         }
     } else if ( id == message_config_airdata_id ) {
+        config_airdata.unpack(buf, message_size);
         if ( message_size == config_airdata.len ) {
             Serial.println("received new airdata config");
-            config_airdata.unpack(buf);
             config_write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
         }
     } else if ( id == message_config_power_id ) {
+        config_power.unpack(buf, message_size);
         if ( message_size == config_power.len ) {
             Serial.println("received new power config");
-            config_power.unpack(buf);
             config_write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
         }
     } else if ( id == message_config_led_id ) {
+        config_led.unpack(buf, message_size);
         if ( message_size == config_led.len ) {
             Serial.println("received new led config");
-            config_led.unpack(buf);
             config_write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
@@ -112,7 +112,8 @@ int write_ack_bin( uint8_t command_id, uint8_t subcommand_id )
     static message_command_ack_t ack;
     ack.command_id = command_id;
     ack.subcommand_id = subcommand_id;
-    return serial.write_packet( ack.id, ack.pack(), ack.len);
+    ack.pack();
+    return serial.write_packet( ack.id, ack.payload, ack.len);
 }
 
 
@@ -128,8 +129,9 @@ int write_pilot_in_bin()
 
     // flags
     pilot.flags = receiver_flags;
-
-    return serial.write_packet( pilot.id, pilot.pack(), pilot.len);
+    
+    pilot.pack();
+    return serial.write_packet( pilot.id, pilot.payload, pilot.len);
 }
 
 void write_pilot_in_ascii()
@@ -174,7 +176,8 @@ int write_imu_bin()
     for ( int i = 0; i < 10; i++ ) {
         imu.channel[i] = imu_packed[i];
     }
-    return serial.write_packet( imu.id, imu.pack(), imu.len );
+    imu.pack();
+    return serial.write_packet( imu.id, imu.payload, imu.len );
 }
 
 void write_imu_ascii()
@@ -248,7 +251,8 @@ int write_airdata_bin()
     airdata.ext_static_press_pa = 0.0; // fixme!
     airdata.ext_temp_C = airdata_temp_C;
     airdata.error_count = airdata_error_count;
-    return serial.write_packet( airdata.id, airdata.pack(), airdata.len );
+    airdata.pack();
+    return serial.write_packet( airdata.id, airdata.payload, airdata.len );
 }
 
 void write_airdata_ascii()
@@ -272,7 +276,8 @@ int write_power_bin()
     power.avionics_v = avionics_v;
     power.ext_main_v = pwr2_v;
     power.ext_main_amp = pwr_a;
-    return serial.write_packet( power.id, power.pack(), power.len );
+    power.pack();
+    return serial.write_packet( power.id, power.payload, power.len );
 }
 
 void write_power_ascii()
@@ -318,8 +323,9 @@ int write_status_info_bin()
     write_millis = current_time;
     output_counter = 0;
     status.byte_rate = byte_rate;
- 
-    return serial.write_packet( status.id, status.pack(), status.len );
+
+    status.pack();
+    return serial.write_packet( status.id, status.payload, status.len );
 }
 
 void write_status_info_ascii()
