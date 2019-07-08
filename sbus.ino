@@ -16,8 +16,6 @@
 #define SBUS_HALF_RANGE          820
 #define SBUS_QUARTER_RANGE       410
 
-#define SBUS_CH_MAX 16
-
 // Structure defining the contents of the SBUS data payload (23
 // bytes).  Each of the channel fields (ch1:ch16) occupies 11 bytes.
 typedef union {
@@ -58,7 +56,7 @@ typedef union {
 } SBUS_DATA_U;
     
 static SBUS_DATA_U sbus_data;
-static uint16_t sbus_ch_data[ SBUS_CH_MAX ];
+static uint16_t sbus_ch_data[ SBUS_CHANNELS ];
 uint16_t sbus_raw[SBUS_CHANNELS];
 
 // define if an sbus input channel is symmetrical or not (i.e. mapped
@@ -115,7 +113,7 @@ void sbus_parse() {
 #endif
 
 #if 0    
-    for ( int i = 0; i < SBUS_CH_MAX; i++ ) {
+    for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
         if ( ch_data[i] < SBUS_MIN_VALUE || ch_data[i] > SBUS_MAX_VALUE ) {
             Serial1.print("Warning detected a problem with sbus packet data, skipping frame, ch = ");
             Serial1.println(i);

@@ -2,28 +2,6 @@
 
 #include "setup_pwm.h"
 
-// Actuator gain (reversing) commands, format is cmd(byte) ch(byte)
-// gain(float)
-#define ACT_GAIN_DEFAULTS 0
-#define ACT_GAIN_SET 1
-
-// SAS mode command, format is cmd(byte), gain(float)
-#define SAS_DEFAULTS 0
-#define SAS_ROLLAXIS 1
-#define SAS_PITCHAXIS 2
-#define SAS_YAWAXIS 3
-#define SAS_TUNE 10
-
-// Mix mode commands, format is cmd(byte), gain 1(float), gain 2(float)
-#define MIX_DEFAULTS 0
-#define MIX_AUTOCOORDINATE 1
-#define MIX_THROTTLE_TRIM 2
-#define MIX_FLAP_TRIM 3
-#define MIX_ELEVONS 4
-#define MIX_FLAPERONS 5
-#define MIX_VTAIL 6
-#define MIX_DIFF_THRUST 7
-
 // official flight command values.  These could source from the RC
 // receiver or the autopilot depending on the auto/manual selection
 // switch state.  These are pre-mix commands and will be mixed and
@@ -40,14 +18,14 @@ float ch8_cmd = 0.0;
 
 // reset pwm output rates to safe startup defaults
 void pwm_defaults() {
-    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
+    for ( int i = 0; i < message_pwm_channels; i++ ) {
          config_actuators.pwm_hz[i] = 50;    
     }
 }
 
 // reset actuator gains (reversing) to startup defaults
 void act_gain_defaults() {
-    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
+    for ( int i = 0; i < message_pwm_channels; i++ ) {
         config_actuators.act_gain[i] = 1.0;
     }
 }
@@ -89,106 +67,6 @@ void mixing_defaults() {
     config_actuators.mix_Gtt = 1.0;       // throttle gain for diff thrust
     config_actuators.mix_Gtr = 0.1;       // rudder gain for diff thrust
 };
-
-bool act_gain_command_parse(byte *buf) {
-    uint8_t ch = buf[0];
-    if ( ch >= PWM_CHANNELS ) {
-        return false;
-    }
-
-    byte lo = buf[1];
-    byte hi = buf[2];
-    uint16_t val = hi*256 + lo; 
-    float gain = ((float)val - 32767.0) / 10000.0;
-    if ( gain < -2.0 || gain > 2.0 ) {
-        return false;
-    }
-
-    config_actuators.act_gain[ch] = gain;
-    
-    return true;
-}
-
-
-bool sas_command_parse(byte *buf) {
-    bool enable = buf[1];
-    uint8_t lo, hi;
-    uint16_t val;
-
-    lo = buf[2];
-    hi = buf[3];
-    val = hi*256 + lo; 
-    float gain = ((float)val - 32767.0) / 10000.0;
-
-    if ( buf[0] == SAS_DEFAULTS ) {
-        sas_defaults();
-    } else if ( buf[0] == SAS_ROLLAXIS ) {
-        config_actuators.sas_rollaxis = enable;
-        config_actuators.sas_rollgain = gain;
-    } else if ( buf[0] == SAS_PITCHAXIS ) {
-        config_actuators.sas_pitchaxis = enable;
-        config_actuators.sas_pitchgain = gain;
-    } else if ( buf[0] == SAS_YAWAXIS ) {
-        config_actuators.sas_yawaxis = enable;
-        config_actuators.sas_yawgain = gain;
-    } else if ( buf[0] == SAS_TUNE ) {
-        config_actuators.sas_tune = enable;
-    } else {
-        return false;
-    }
-    
-    return true;
-}
-
-
-bool mixing_command_parse(byte *buf) {
-    bool enable = buf[1];
-    uint8_t lo, hi;
-    uint16_t val;
-
-    lo = buf[2];
-    hi = buf[3];
-    val = hi*256 + lo; 
-    float g1 = ((float)val - 32767.0) / 10000.0;
-
-    lo = buf[4];
-    hi = buf[5];
-    val = hi*256 + lo;    
-    float g2 = ((float)val - 32767.0) / 10000.0;
-    
-    if ( buf[0] == MIX_DEFAULTS ) {
-        mixing_defaults();
-    } else if ( buf[0] == MIX_AUTOCOORDINATE ) {
-        config_actuators.mix_autocoord = enable;
-        config_actuators.mix_Gac = g1;
-    } else if ( buf[0] == MIX_THROTTLE_TRIM ) {
-        config_actuators.mix_throttle_trim = enable;
-        config_actuators.mix_Get = g1;
-    } else if ( buf[0] == MIX_FLAP_TRIM ) {
-        config_actuators.mix_flap_trim = enable;
-        config_actuators.mix_Gef = g1;
-    } else if ( buf[0] == MIX_ELEVONS ) {
-        config_actuators.mix_elevon = enable;
-        config_actuators.mix_Gea = g1;
-        config_actuators.mix_Gee = g2;
-    } else if ( buf[0] == MIX_FLAPERONS ) {
-        config_actuators.mix_flaperon = enable;
-        config_actuators.mix_Gfa = g1;
-        config_actuators.mix_Gff = g2;
-    } else if ( buf[0] == MIX_VTAIL ) {
-        config_actuators.mix_vtail = enable;
-        config_actuators.mix_Gve = g1;
-        config_actuators.mix_Gvr = g2;
-    } else if ( buf[0] == MIX_DIFF_THRUST ) {
-        config_actuators.mix_diff_thrust = enable;
-        config_actuators.mix_Gtt = g1;
-        config_actuators.mix_Gtr = g2;
-    } else {
-        return false;
-    }
-    
-    return true;
-}
 
 
 // compute the sas compensation in normalized 'command' space so that

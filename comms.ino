@@ -16,7 +16,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 
     // Serial.print("message id = "); Serial.print(id); Serial.print(" len = "); Serial.println(message_size);
     
-    if ( id == message_command_inceptors_id && message_size == AP_CHANNELS * 2 ) {
+    if ( id == message_command_inceptors_id ) {
         static message_command_inceptors_t inceptors;
         inceptors.unpack(buf, message_size);
         if ( message_size == inceptors.len ) {
@@ -122,8 +122,12 @@ int write_pilot_in_bin()
 {
     static message_pilot_t pilot;
 
+    if (message_sbus_channels > SBUS_CHANNELS) {
+        return 0;
+    }
+    
     // receiver data
-    for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
+    for ( int i = 0; i < message_sbus_channels; i++ ) {
         pilot.channel[i] = receiver_norm[i];
     }
 

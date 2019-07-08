@@ -26,13 +26,5 @@ const int DT_MILLIS = (1000 / MASTER_HZ);
 // baud rates vs. host baud rates.
 const int DEFAULT_BAUD = 500000;
 
-
-//////////////////////////////////////////////////////////////////////////
-// AP definitions
-//////////////////////////////////////////////////////////////////////////
-
-// Maximum number of input or output channels supported
-const int AP_CHANNELS = 6;
-
 extern uint16_t serial_number;
 
