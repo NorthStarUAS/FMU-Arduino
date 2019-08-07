@@ -62,6 +62,7 @@ SerialLink serial;
 
 // force/hard-code a specific board config if desired
 void force_config_aura_v2() {
+    Serial.println("Forcing an aura v2 eeprom config");
     config_master.board = 1;    // 0 = marmot v1, 1 = aura v2
     config_imu.interface = 1;   // i2c
     config_imu.pin_or_address = 0x68; // mpu9250 i2c addr
@@ -92,6 +93,7 @@ void force_config_aura_v2() {
 
 // force/hard-code a specific board config if desired
 void force_config_talon_marmot() {
+    Serial.println("Forcing a bfs/marmot eeprom config");
     config_master.board = 0;    // 0 = marmot v1, 1 = aura v2
     config_imu.interface = 0;   // spi
     config_imu.pin_or_address = 24; // marmot imu spi cs line
@@ -155,7 +157,7 @@ void setup() {
 
     // force/hard-code a specific board config if desired
     // force_config_aura_v2();
-    force_config_talon_marmot();
+    // force_config_talon_marmot();
     
     // initialize the IMU
     imu_setup();

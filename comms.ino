@@ -154,7 +154,7 @@ void write_pilot_in_ascii()
     } else {
         Serial.print("(Throttle enable) ");
     }
-    for ( int i = 0; i < 7; i++ ) {
+    for ( int i = 0; i < 8; i++ ) {
         Serial.print(receiver_norm[i], 3);
         Serial.print(" ");
     }
