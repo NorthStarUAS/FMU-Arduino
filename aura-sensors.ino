@@ -9,12 +9,12 @@
 #include "aura3_messages.h"
 
 // master config (for messages and saving in eeprom)
-message_config_master_t config_master;
-message_config_imu_t config_imu;
-message_config_actuators_t config_actuators;
-message_config_airdata_t config_airdata;
-message_config_power_t config_power;
-message_config_led_t config_led;
+message::config_master_t config_master;
+message::config_imu_t config_imu;
+message::config_actuators_t config_actuators;
+message::config_airdata_t config_airdata;
+message::config_power_t config_power;
+message::config_led_t config_led;
 int config_size = 0;
 
 // IMU

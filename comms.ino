@@ -16,8 +16,8 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 
     // Serial.print("message id = "); Serial.print(id); Serial.print(" len = "); Serial.println(message_size);
     
-    if ( id == message_command_inceptors_id ) {
-        static message_command_inceptors_t inceptors;
+    if ( id == message::command_inceptors_id ) {
+        static message::command_inceptors_t inceptors;
         inceptors.unpack(buf, message_size);
         if ( message_size == inceptors.len ) {
             // autopilot_norm uses the same channel mapping as sbus_norm,
@@ -45,7 +45,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             }
             result = true;
         }
-    } else if ( id == message_config_master_id ) {
+    } else if ( id == message::config_master_id ) {
         config_master.unpack(buf, message_size);
         if ( message_size == config_master.len ) {
             Serial.println("received master config");
@@ -53,7 +53,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             write_ack_bin( id, 0 );
             result = true;
         }
-    } else if ( id == message_config_imu_id ) {
+    } else if ( id == message::config_imu_id ) {
         config_imu.unpack(buf, message_size);
         if ( message_size == config_imu.len ) {
             Serial.println("received imu config");
@@ -61,7 +61,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             write_ack_bin( id, 0 );
             result = true;
         }
-    } else if ( id == message_config_actuators_id ) {
+    } else if ( id == message::config_actuators_id ) {
         config_actuators.unpack(buf, message_size);
         if ( message_size == config_actuators.len ) {
             Serial.println("received new actuator config");
@@ -70,7 +70,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             write_ack_bin( id, 0 );
             result = true;
         }
-    } else if ( id == message_config_airdata_id ) {
+    } else if ( id == message::config_airdata_id ) {
         config_airdata.unpack(buf, message_size);
         if ( message_size == config_airdata.len ) {
             Serial.println("received new airdata config");
@@ -78,7 +78,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             write_ack_bin( id, 0 );
             result = true;
         }
-    } else if ( id == message_config_power_id ) {
+    } else if ( id == message::config_power_id ) {
         config_power.unpack(buf, message_size);
         if ( message_size == config_power.len ) {
             Serial.println("received new power config");
@@ -86,7 +86,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             write_ack_bin( id, 0 );
             result = true;
         }
-    } else if ( id == message_config_led_id ) {
+    } else if ( id == message::config_led_id ) {
         config_led.unpack(buf, message_size);
         if ( message_size == config_led.len ) {
             Serial.println("received new led config");
@@ -94,7 +94,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             write_ack_bin( id, 0 );
             result = true;
         }
-    } else if ( id == message_command_zero_gyros_id && message_size == 0 ) {
+    } else if ( id == message::command_zero_gyros_id && message_size == 0 ) {
         Serial.println("received zero gyros command");
         gyros_calibrated = 0;   // start state
         write_ack_bin( id, 0 );
@@ -109,7 +109,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 /* output an acknowledgement of a message received */
 int write_ack_bin( uint8_t command_id, uint8_t subcommand_id )
 {
-    static message_command_ack_t ack;
+    static message::command_ack_t ack;
     ack.command_id = command_id;
     ack.subcommand_id = subcommand_id;
     ack.pack();
@@ -120,14 +120,14 @@ int write_ack_bin( uint8_t command_id, uint8_t subcommand_id )
 /* output a binary representation of the pilot (rc receiver) data */
 int write_pilot_in_bin()
 {
-    static message_pilot_t pilot;
+    static message::pilot_t pilot;
 
-    if (message_sbus_channels > SBUS_CHANNELS) {
+    if (message::sbus_channels > SBUS_CHANNELS) {
         return 0;
     }
     
     // receiver data
-    for ( int i = 0; i < message_sbus_channels; i++ ) {
+    for ( int i = 0; i < message::sbus_channels; i++ ) {
         pilot.channel[i] = receiver_norm[i];
     }
 
@@ -175,7 +175,7 @@ void write_actuator_out_ascii()
 /* output a binary representation of the IMU data (note: scaled to 16bit values) */
 int write_imu_bin()
 {
-    static message_imu_raw_t imu;
+    static message::imu_raw_t imu;
     imu.micros = imu_micros;
     for ( int i = 0; i < 10; i++ ) {
         imu.channel[i] = imu_packed[i];
@@ -206,7 +206,7 @@ int write_gps_bin()
         new_gps_data = false;
     }
 
-    return serial.write_packet( message_aura_nav_pvt_id, (uint8_t *)&gps_data, size );
+    return serial.write_packet( message::aura_nav_pvt_id, (uint8_t *)&gps_data, size );
 }
 
 void write_gps_ascii() {
@@ -247,7 +247,7 @@ void write_gps_ascii() {
 /* output a binary representation of the barometer data */
 int write_airdata_bin()
 {
-    static message_airdata_t airdata;
+    static message::airdata_t airdata;
     airdata.baro_press_pa = baro_press;
     airdata.baro_temp_C = baro_temp;
     airdata.baro_hum = baro_hum;
@@ -275,7 +275,7 @@ void write_airdata_ascii()
 /* output a binary representation of various volt/amp sensors */
 int write_power_bin()
 {
-    static message_power_t power;
+    static message::power_t power;
     power.int_main_v = pwr1_v;
     power.avionics_v = avionics_v;
     power.ext_main_v = pwr2_v;
@@ -303,7 +303,7 @@ void write_power_ascii()
 int write_status_info_bin()
 {
     static uint32_t write_millis = millis();
-    static message_status_t status;
+    static message::status_t status;
 
     // This info is static or slow changing so we don't need to send
     // it at a high rate.

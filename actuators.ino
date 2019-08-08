@@ -18,14 +18,14 @@ float ch8_cmd = 0.0;
 
 // reset pwm output rates to safe startup defaults
 void pwm_defaults() {
-    for ( int i = 0; i < message_pwm_channels; i++ ) {
+    for ( int i = 0; i < message::pwm_channels; i++ ) {
          config_actuators.pwm_hz[i] = 50;    
     }
 }
 
 // reset actuator gains (reversing) to startup defaults
 void act_gain_defaults() {
-    for ( int i = 0; i < message_pwm_channels; i++ ) {
+    for ( int i = 0; i < message::pwm_channels; i++ ) {
         config_actuators.act_gain[i] = 1.0;
     }
 }
