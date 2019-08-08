@@ -149,12 +149,12 @@ void calibrate_gyros(float gx, float gy, float gz) {
         gyros_calibrated = 1;
     }
     
-    gxf = 0.9 * gxf + 0.1 * gx;
-    gyf = 0.9 * gyf + 0.1 * gy;
-    gzf = 0.9 * gzf + 0.1 * gz;
-    gxs = 0.99 * gxs + 0.01 * gx;
-    gys = 0.99 * gys + 0.01 * gy;
-    gzs = 0.99 * gzs + 0.01 * gz;
+    gxf = 0.95 * gxf + 0.05 * gx;
+    gyf = 0.95 * gyf + 0.05 * gy;
+    gzf = 0.95 * gzf + 0.05 * gz;
+    gxs = 0.995 * gxs + 0.005 * gx;
+    gys = 0.995 * gys + 0.005 * gy;
+    gzs = 0.995 * gzs + 0.005 * gz;
     
     // use 'slow' filter value for calibration while calibrating
     gyro_calib[0] = gxs;
@@ -191,7 +191,7 @@ void calibrate_gyros(float gx, float gy, float gz) {
         Serial.print(gyro_calib[2],4);
         Serial.println();
         if ( total_timer > 15000 ) {
-            Serial.println("gyro init: too much motion failed.");
+            Serial.println("gyro init: too much motion, using best average guess.");
         } else {
             Serial.println("gyro init: success.");
         }

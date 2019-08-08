@@ -139,7 +139,7 @@ void setup() {
     
     // The following code (when enabled) will force setting a specific
     // device serial number when the device boots:
-    // set_serial_number(122);
+    // set_serial_number(116);
     
     read_serial_number();
     
