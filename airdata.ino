@@ -1,5 +1,9 @@
 // module to query air data sensors
 
+#include "src/BMP180/SFE_BMP180.h"
+SFE_BMP180 bmp180;
+bool bmp180_status = false;
+
 #include "src/BME280/BME280.h"
 BME280 barometer;
 
@@ -44,6 +48,17 @@ void airdata_setup() {
         ams_barometer.configure(config_airdata.swift_baro_addr, &Wire1, AMS5915_1200_B);
         ams_barometer.begin();
         baro_status = 0;
+    } else if (config_airdata.barometer == 3 ) {
+        // BMP180
+        Serial.println("BMP180 on I2C");
+        bmp180_status = bmp180.begin();
+        if ( !bmp180_status ) {
+            Serial.println("Onboard barometer initialization unsuccessful");
+            Serial.println("Check wiring or try cycling power");
+            delay(1000);
+        } else {
+            Serial.println("BMP180 barometer ready.");
+        }
     }
     if ( baro_status < 0 ) {
         Serial.println("Onboard barometer initialization unsuccessful");
@@ -81,6 +96,36 @@ void airdata_update() {
                 if ( ams_baro_found ) {
                     // Serial.println("Error while reading sPress sensor.");
                     airdata_error_count++;
+                }
+            }
+        }
+    }
+    if ( config_airdata.barometer == 3 ) {
+        // BMP180
+        static int bmp180_state = 0;
+        static unsigned long wait_until;
+        double tmp_temp;
+        if ( bmp180_status ) {
+            if ( bmp180_state == 0 ) {
+                wait_until = bmp180.startTemperature() + millis();
+                bmp180_state += 1;
+            } else if ( bmp180_state == 1 ) {
+                if ( millis() > wait_until ) {
+                    if ( bmp180.getTemperature(tmp_temp) ) {
+                        baro_temp = tmp_temp;
+                    }
+                    bmp180_state += 1;
+                }
+            } else if ( bmp180_state == 2 ) {
+                wait_until = bmp180.startPressure(1) + millis();
+                bmp180_state += 1;
+            } else if ( bmp180_state == 3 ) {
+                if ( millis() > wait_until ) {
+                    double tmp;
+                    if ( bmp180.getPressure(tmp, tmp_temp) ) {
+                        baro_press = tmp;
+                    }
+                    bmp180_state = 0;
                 }
             }
         }
