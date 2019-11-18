@@ -173,6 +173,7 @@ void setup() {
     gps.begin(115200);
 
     // initialize air data (marmot v1)
+    // config_airdata.barometer = 3; // 3 = bmp180
     airdata_setup();
     
     // set up ADC0
