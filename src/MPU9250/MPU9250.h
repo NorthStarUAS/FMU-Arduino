@@ -21,8 +21,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef MPU9250_h
-#define MPU9250_h
+#pragma once
 
 #include "Arduino.h"
 #include "Wire.h"               // I2C library
@@ -204,5 +203,3 @@ class MPU9250{
         uint8_t whoAmI();
         uint8_t whoAmIAK8963();
 };
-
-#endif

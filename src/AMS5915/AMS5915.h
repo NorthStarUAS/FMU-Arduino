@@ -22,8 +22,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef AMS5915_h
-#define AMS5915_h
+#pragma once
 
 #include "Arduino.h"
 #include "Wire.h"
@@ -126,4 +125,3 @@ class AMS5915 {
     bool readBytes(uint16_t* pressureCounts, uint16_t* temperatureCounts);
 };
 
-#endif

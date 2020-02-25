@@ -21,8 +21,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef BME280_h
-#define BME280_h
+#pragma once
 
 #include "Arduino.h"
 #include "Wire.h"  // I2C library
@@ -161,4 +160,3 @@ class BME280{
     void readRegisters(uint8_t subAddress, uint8_t count, uint8_t* dest);
 };
 
-#endif
