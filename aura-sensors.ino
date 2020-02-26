@@ -2,6 +2,7 @@
 
 #include "src/UBLOX8/UBLOX8.h"
 #include "src/serial_link/serial_link.h"
+#include "src/EKF15/EKF_15state.h"
 
 #include "setup_board.h"
 #include "setup_sbus.h"
@@ -59,6 +60,9 @@ float pwr_a = 0.0;
 // aura-v2 and marmot-v1 hardware
 unsigned long output_counter = 0;
 SerialLink serial;
+
+// 15 State EKF
+EKF15 ekf;
 
 // force/hard-code a specific board config if desired
 void force_config_aura_v2() {
@@ -209,6 +213,9 @@ void loop() {
     // put your main code here, to run repeatedly:
     static elapsedMillis mainTimer = 0;
     static elapsedMillis debugTimer = 0;
+    static elapsedMillis gpsSettle = 0;
+    static bool gps_found = false;
+    static bool ekf_inited = false;
        
     // When new IMU data is ready (new pulse from IMU), go out and grab the IMU data
     // and output fresh IMU message plus the most recent data from everything else.
@@ -217,6 +224,58 @@ void loop() {
         
         // top priority, used for timing sync downstream.
         imu_update();
+
+        // handle ekf init/update
+        if ( !gps_found and new_gps_data ) {
+            gps_found = true;
+            gpsSettle = 0;
+            Serial.println("EKF: gps found itself");
+        }
+        IMUdata imu;
+        imu.time = imu_micros / 1000000.0;
+        imu.p = imu_calib[0];
+        imu.q = imu_calib[1];
+        imu.r = imu_calib[2];
+        imu.ax = imu_calib[3];
+        imu.ay = imu_calib[4];
+        imu.az = imu_calib[5];
+        imu.hx = imu_calib[6];
+        imu.hy = imu_calib[7];
+        imu.hz = imu_calib[8];
+        GPSdata gps;
+        gps.time = imu_micros / 1000000.0;
+        gps.unix_sec = gps.time;
+        gps.lat = gps_data.lat / 10000000.0;
+        gps.lon = gps_data.lon / 10000000.0;
+        gps.alt = gps_data.hMSL / 1000.0;
+        gps.vn = gps_data.velN / 1000.0;
+        gps.ve = gps_data.velE / 1000.0;
+        gps.vd = gps_data.velD / 1000.0;
+        if ( !ekf_inited and gps_found and gpsSettle > 10000 ) {
+            ekf.init(imu, gps);
+            ekf_inited = true;
+            Serial.println("EKF: initialized");
+        } else if ( ekf_inited ) {
+            ekf.time_update(imu);
+            if ( new_gps_data ) {
+                ekf.measurement_update(gps);
+            }
+            NAVdata nav = ekf.get_nav();
+            Serial.print("ekf pos: ");
+            Serial.print(nav.lat*R2D);
+            Serial.print(", ");
+            Serial.print(nav.lon*R2D);
+            Serial.print(", ");
+            Serial.print(nav.alt);
+            Serial.print(" euler: ");
+            Serial.print(", ");
+            Serial.print(nav.phi*R2D);
+            Serial.print(", ");
+            Serial.print(nav.the*R2D);
+            Serial.print(", ");
+            Serial.print(nav.psi*R2D);
+            Serial.println();
+        }
         
         // output keyed off new IMU data
         output_counter += write_pilot_in_bin();

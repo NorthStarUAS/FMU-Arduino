@@ -1,3 +1,7 @@
+#include <Eigen.h>
+#include <Eigen/Core>
+using namespace Eigen;
+
 #include "src/MPU9250/MPU9250.h"
 
 // IMU full scale ranges, DLPF bandwidth, interrupt SRD, and interrupt pin
@@ -18,7 +22,7 @@ const float tempScale = 0.01;
 
 MPU9250 IMU;
 
-float gyro_calib[3] = { 0.0, 0.0, 0.0 };
+Vector3f gyro_calib( 0.0, 0.0, 0.0 );
 
 // Setup imu defaults:
 // Marmot v1 has mpu9250 on SPI CS line 24
@@ -157,9 +161,7 @@ void calibrate_gyros(float gx, float gy, float gz) {
     gzs = 0.995 * gzs + 0.005 * gz;
     
     // use 'slow' filter value for calibration while calibrating
-    gyro_calib[0] = gxs;
-    gyro_calib[1] = gys;
-    gyro_calib[2] = gzs;
+    gyro_calib << gxs, gys, gzs;
 
     float dx = fabs(gxs - gxf);
     float dy = fabs(gys - gyf);
@@ -178,17 +180,15 @@ void calibrate_gyros(float gx, float gy, float gz) {
     if ( good_timer > 4100 || total_timer > 15000 ) {
         Serial.println();
         // set gyro zero points from the 'slow' filter.
-        gyro_calib[0] = gxs;
-        gyro_calib[1] = gys;
-        gyro_calib[2] = gzs;
+        gyro_calib << gxs, gys, gzs;
         gyros_calibrated = 2;
         imu_update(); // update imu_calib values before anything else get's a chance to read them
         Serial.print("Average gyros: ");
-        Serial.print(gyro_calib[0],4);
+        Serial.print(gyro_calib[0], 4);
         Serial.print(" ");
-        Serial.print(gyro_calib[1],4);
+        Serial.print(gyro_calib[1], 4);
         Serial.print(" ");
-        Serial.print(gyro_calib[2],4);
+        Serial.print(gyro_calib[2], 4);
         Serial.println();
         if ( total_timer > 15000 ) {
             Serial.println("gyro init: too much motion, using best average guess.");
