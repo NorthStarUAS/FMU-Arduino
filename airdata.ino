@@ -1,4 +1,4 @@
-// module to query air data sensors
+// Module to query air data sensors
 
 #include "src/BMP180/SFE_BMP180.h"
 SFE_BMP180 bmp180;

@@ -6,7 +6,7 @@
  * Following that is a two byte check sum.  The check sum includes the packet id and size as well as the data.
  */
 
-#include "src/serial_link/serial_link.h"
+#include "src/util/serial_link.h"
 #include "aura3_messages.h"
 
 
@@ -189,9 +189,13 @@ void write_imu_ascii()
     // output imu data
     Serial.print("IMU: ");
     Serial.print(imu_micros); Serial.print(" ");
-    for ( int i = 0; i < 10; i++ ) {
-        Serial.print(imu_calib[i], 3); Serial.print(" ");
-    }
+    Serial.print(p_node->getFloat(), 3); Serial.print(" ");
+    Serial.print(q_node->getFloat(), 3); Serial.print(" ");
+    Serial.print(r_node->getFloat(), 3); Serial.print(" ");
+    Serial.print(ax_node->getFloat(), 3); Serial.print(" ");
+    Serial.print(ay_node->getFloat(), 3); Serial.print(" ");
+    Serial.print(az_node->getFloat(), 3); Serial.print(" ");
+    Serial.print(temp_node->getFloat(), 3);
     Serial.println();
 }
 

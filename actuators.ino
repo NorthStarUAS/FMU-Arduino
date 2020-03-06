@@ -86,13 +86,13 @@ void sas_update( float control_norm[SBUS_CHANNELS] ) {
     }
 
     if ( config_actuators.sas_rollaxis ) {
-        control_norm[3] -= tune * config_actuators.sas_rollgain * imu_calib[3];  // p
+        control_norm[3] -= tune * config_actuators.sas_rollgain * p_node->getFloat();
     }
     if ( config_actuators.sas_pitchaxis ) {
-        control_norm[4] += tune * config_actuators.sas_pitchgain * imu_calib[4]; // q
+        control_norm[4] += tune * config_actuators.sas_pitchgain * q_node->getFloat();
     }
     if ( config_actuators.sas_yawaxis ) {
-        control_norm[5] += tune * config_actuators.sas_yawgain * imu_calib[5];   // r
+        control_norm[5] += tune * config_actuators.sas_yawgain * r_node->getFloat();
     }
 }
 

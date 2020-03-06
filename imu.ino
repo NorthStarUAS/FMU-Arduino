@@ -2,6 +2,8 @@
 #include <Eigen/Core>
 using namespace Eigen;
 
+#include "src/util/definition-tree2.h"
+
 #include "src/MPU9250/MPU9250.h"
 
 // IMU full scale ranges, DLPF bandwidth, interrupt SRD, and interrupt pin
@@ -23,6 +25,18 @@ const float tempScale = 0.01;
 MPU9250 IMU;
 
 Vector3f gyro_calib( 0.0, 0.0, 0.0 );
+
+// shared deftree nodes
+// static ElementPtr p_node = deftree.initElement("/sensors/imu/p_rps");
+// static ElementPtr q_node = deftree.initElement("/sensors/imu/q_rps");
+// static ElementPtr r_node = deftree.initElement("/sensors/imu/r_rps");
+// static ElementPtr ax_node = deftree.initElement("/sensors/imu/ax_mss");
+// static ElementPtr ay_node = deftree.initElement("/sensors/imu/ay_mss");
+// static ElementPtr az_node = deftree.initElement("/sensors/imu/az_mss");
+// static ElementPtr hx_node = deftree.initElement("/sensors/imu/hx");
+// static ElementPtr hy_node = deftree.initElement("/sensors/imu/hy");
+// static ElementPtr hz_node = deftree.initElement("/sensors/imu/hz");
+// static ElementPtr temp_node = deftree.initElement("/sensors/imu/temp_C");
 
 // Setup imu defaults:
 // Marmot v1 has mpu9250 on SPI CS line 24
@@ -92,33 +106,57 @@ void imu_rotate(float v0, float v1, float v2,
 // query the imu and update the structures
 void imu_update() {
     imu_micros = micros();
-    float ax, ay, az, gx, gy, gz, hx, hy, hz, t;
-    IMU.getMotion10(&ax, &ay, &az, &gx, &gy, &gz, &hx, &hy, &hz, &t);
+    float ax_raw, ay_raw, az_raw;
+    float gx_raw, gy_raw, gz_raw;
+    float hx_raw, hy_raw, hz_raw;
+    float t;
+    IMU.getMotion10(&ax_raw, &ay_raw, &az_raw,
+                    &gx_raw, &gy_raw, &gz_raw,
+                    &hx_raw, &hy_raw, &hz_raw, &t);
+    
+    // rotate into aircraft body frame
+    float ax, ay, az, gx, gy, gz, hx, hy, hz;
+    imu_rotate(ax_raw, ay_raw, az_raw, &ax, &ay, &az);
+    imu_rotate(gx_raw, gy_raw, gz_raw, &gx, &gy, &gz);
+    imu_rotate(hx_raw, hy_raw, hz_raw, &hx, &hy, &hz);
+    
     if ( gyros_calibrated < 2 ) {
-        calibrate_gyros(gx, gy, gz);  // caution: axis remapping
+        calibrate_gyros(gx, gy, gz);
     } else {
         gx -= gyro_calib[0];
         gy -= gyro_calib[1];
         gz -= gyro_calib[2];
     }
 
-    // translate into aircraft body frame
-    imu_rotate(ax, ay, az, &imu_calib[0], &imu_calib[1], &imu_calib[2]);
-    imu_rotate(gx, gy, gz, &imu_calib[3], &imu_calib[4], &imu_calib[5]);
-    imu_rotate(hx, hy, hz, &imu_calib[6], &imu_calib[7], &imu_calib[8]);
-    imu_calib[9] = t;
+    // publish
+    ax_node->setFloat(ax);
+    ay_node->setFloat(ay);
+    az_node->setFloat(az);
+    p_node->setFloat(gx);
+    q_node->setFloat(gy);
+    r_node->setFloat(gz);
+    hx_node->setFloat(hx);
+    hy_node->setFloat(hy);
+    hz_node->setFloat(hz);
+    temp_node->setFloat(t);
 
     // packed imu structure
     for ( int i = 0; i < 3; i++ ) {
-        imu_packed[i] = imu_calib[i] / accelScale;
+        imu_packed[0] = ax / accelScale;
+        imu_packed[1] = ay / accelScale;
+        imu_packed[2] = az / accelScale;
     }
     for ( int i = 3; i < 6; i++ ) {
-        imu_packed[i] = imu_calib[i] / gyroScale;
+        imu_packed[3] = gx / gyroScale;
+        imu_packed[4] = gy / gyroScale;
+        imu_packed[5] = gz / gyroScale;
     }
     for (int i = 6; i < 9; i++ ) {
-        imu_packed[i] = imu_calib[i] / magScale;
+        imu_packed[6] = hx / magScale;
+        imu_packed[7] = hy / magScale;
+        imu_packed[8] = hz / magScale;
     }
-    imu_packed[9] = imu_calib[9] / tempScale;
+    imu_packed[9] = t / tempScale;
 }
 
 

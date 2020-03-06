@@ -1,7 +1,9 @@
 #include <HardwareSerial.h>
 
+#include "src/util/definition-tree2.h"
+
 #include "src/UBLOX8/UBLOX8.h"
-#include "src/serial_link/serial_link.h"
+#include "src/util/serial_link.h"
 #include "src/EKF15/EKF_15state.h"
 
 #include "setup_board.h"
@@ -20,7 +22,6 @@ int config_size = 0;
 
 // IMU
 int gyros_calibrated = 0; // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished
-float imu_calib[10]; // the calibrated version of the imu sensors
 int16_t imu_packed[10]; // calibrated and packed version of the imu sensors
 unsigned long imu_micros = 0;
 
@@ -63,6 +64,19 @@ SerialLink serial;
 
 // 15 State EKF
 EKF15 ekf;
+
+// shared deftree nodes (available in all the .ino files due to the
+// way arduino aggregates code)
+ElementPtr p_node = deftree.initElement("/sensors/imu/p_rps");
+ElementPtr q_node = deftree.initElement("/sensors/imu/q_rps");
+ElementPtr r_node = deftree.initElement("/sensors/imu/r_rps");
+ElementPtr ax_node = deftree.initElement("/sensors/imu/ax_mss");
+ElementPtr ay_node = deftree.initElement("/sensors/imu/ay_mss");
+ElementPtr az_node = deftree.initElement("/sensors/imu/az_mss");
+ElementPtr hx_node = deftree.initElement("/sensors/imu/hx");
+ElementPtr hy_node = deftree.initElement("/sensors/imu/hy");
+ElementPtr hz_node = deftree.initElement("/sensors/imu/hz");
+ElementPtr temp_node = deftree.initElement("/sensors/imu/temp_C");
 
 // force/hard-code a specific board config if desired
 void force_config_aura_v2() {
@@ -233,15 +247,15 @@ void loop() {
         }
         IMUdata imu;
         imu.time = imu_micros / 1000000.0;
-        imu.p = imu_calib[0];
-        imu.q = imu_calib[1];
-        imu.r = imu_calib[2];
-        imu.ax = imu_calib[3];
-        imu.ay = imu_calib[4];
-        imu.az = imu_calib[5];
-        imu.hx = imu_calib[6];
-        imu.hy = imu_calib[7];
-        imu.hz = imu_calib[8];
+        imu.p = p_node->getFloat();
+        imu.q = q_node->getFloat();
+        imu.r = r_node->getFloat();
+        imu.ax = ax_node->getFloat();
+        imu.ay = ay_node->getFloat();
+        imu.az = az_node->getFloat();
+        imu.hx = hx_node->getFloat();
+        imu.hy = hy_node->getFloat();
+        imu.hz = hz_node->getFloat();
         GPSdata gps;
         gps.time = imu_micros / 1000000.0;
         gps.unix_sec = gps.time;
