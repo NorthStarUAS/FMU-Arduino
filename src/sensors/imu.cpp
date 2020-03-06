@@ -1,22 +1,20 @@
-#include <Eigen.h>
-#include <Eigen/Core>
-using namespace Eigen;
+// #include <Eigen.h>
+// #include <Eigen/Core>
+// using namespace Eigen;
 
-#include "src/MPU9250/MPU9250.h"
+#include "imu.h"
+
+#include "MPU9250/MPU9250.h"
 
 // IMU full scale ranges, DLPF bandwidth, interrupt SRD, and interrupt pin
 const uint8_t MPU9250_SRD = 9;  // Data Output Rate = 1000 / (1 + SRD)
 
 MPU9250 IMU;
 
-static float gx_calib = 0.0;
-static float gy_calib = 0.0;
-static float gz_calib = 0.0;
-
 // Setup imu defaults:
 // Marmot v1 has mpu9250 on SPI CS line 24
 // Aura v2 has mpu9250 on I2C Addr 0x68
-static void imu_setup_defaults() {
+void imu_t::defaults(message::config_imu_t &config_imu) {
     config_imu.interface = 0;       // SPI
     config_imu.pin_or_address = 24; // CS pin
     float ident[] = { 1.0, 0.0, 0.0,
@@ -28,7 +26,7 @@ static void imu_setup_defaults() {
 }
 
 // configure the IMU settings and setup the ISR to aquire the data
-void imu_setup() {
+void imu_t::setup(message::config_imu_t &config_imu) {
     if ( config_imu.interface == 0 ) {
         // SPI
         Serial.print("MPU9250 @ SPI pin: ");
@@ -70,8 +68,9 @@ void imu_setup() {
     }
 }
 
-void imu_rotate(float v0, float v1, float v2,
-                float *r0, float *r1, float *r2)
+void imu_t::rotate(float v0, float v1, float v2,
+                   float *r0, float *r1, float *r2,
+                   message::config_imu_t &config_imu)
 {
     *r0 = v0*config_imu.orientation[0] + v1*config_imu.orientation[1] + v2*config_imu.orientation[2];
     *r1 = v0*config_imu.orientation[3] + v1*config_imu.orientation[4] + v2*config_imu.orientation[5];
@@ -79,8 +78,8 @@ void imu_rotate(float v0, float v1, float v2,
 }
 
 // query the imu and update the structures
-void imu_update() {
-    unsigned long imu_micros = micros();
+void imu_t::update(message::config_imu_t &config_imu) {
+    imu_micros = micros();
     float ax_raw, ay_raw, az_raw;
     float gx_raw, gy_raw, gz_raw;
     float hx_raw, hy_raw, hz_raw;
@@ -90,31 +89,17 @@ void imu_update() {
                     &hx_raw, &hy_raw, &hz_raw, &t);
     
     // rotate into aircraft body frame
-    float ax, ay, az, gx, gy, gz, hx, hy, hz;
-    imu_rotate(ax_raw, ay_raw, az_raw, &ax, &ay, &az);
-    imu_rotate(gx_raw, gy_raw, gz_raw, &gx, &gy, &gz);
-    imu_rotate(hx_raw, hy_raw, hz_raw, &hx, &hy, &hz);
+    rotate(ax_raw, ay_raw, az_raw, &ax, &ay, &az, config_imu);
+    rotate(gx_raw, gy_raw, gz_raw, &p, &q, &r, config_imu);
+    rotate(hx_raw, hy_raw, hz_raw, &hx, &hy, &hz, config_imu);
     
     if ( gyros_calibrated < 2 ) {
-        calibrate_gyros(gx, gy, gz);
+        calibrate_gyros(p, q, r);
     } else {
-        gx -= gx_calib;
-        gy -= gy_calib;
-        gz -= gz_calib;
+        p -= p_calib;
+        q -= q_calib;
+        r -= r_calib;
     }
-
-    // publish
-    micros_node->setLongLong(imu_micros);
-    ax_node->setFloat(ax);
-    ay_node->setFloat(ay);
-    az_node->setFloat(az);
-    p_node->setFloat(gx);
-    q_node->setFloat(gy);
-    r_node->setFloat(gz);
-    hx_node->setFloat(hx);
-    hy_node->setFloat(hy);
-    hz_node->setFloat(hz);
-    temp_node->setFloat(t);
 }
 
 
@@ -123,7 +108,7 @@ void imu_update() {
 // agree (close enough) for 4 consecutive seconds, then we calibrate
 // with the 1 sec low pass filter value.  If time expires, the
 // calibration fails and we run with raw gyro values.
-void calibrate_gyros(float gx, float gy, float gz) {
+void imu_t::calibrate_gyros(float gx, float gy, float gz) {
     static const float cutoff = 0.005;
     static float gxs = 0.0;
     static float gys = 0.0;
@@ -157,9 +142,9 @@ void calibrate_gyros(float gx, float gy, float gz) {
     gzs = 0.995 * gzs + 0.005 * gz;
     
     // use 'slow' filter value for calibration while calibrating
-    gx_calib = gxs;
-    gy_calib = gys;
-    gz_calib = gzs;
+    p_calib = gxs;
+    q_calib = gys;
+    r_calib = gzs;
 
     float dx = fabs(gxs - gxf);
     float dy = fabs(gys - gyf);
@@ -178,17 +163,17 @@ void calibrate_gyros(float gx, float gy, float gz) {
     if ( good_timer > 4100 || total_timer > 15000 ) {
         Serial.println();
         // set gyro zero points from the 'slow' filter.
-        gx_calib = gxs;
-        gy_calib = gys;
-        gz_calib = gzs;
+        p_calib = gxs;
+        q_calib = gys;
+        r_calib = gzs;
         gyros_calibrated = 2;
-        imu_update(); // update imu_calib values before anything else get's a chance to read them
+        // update(); // update imu_calib values before anything else get's a chance to read them // FIXME???
         Serial.print("Average gyros: ");
-        Serial.print(gx_calib, 4);
+        Serial.print(p_calib, 4);
         Serial.print(" ");
-        Serial.print(gy_calib, 4);
+        Serial.print(q_calib, 4);
         Serial.print(" ");
-        Serial.print(gz_calib, 4);
+        Serial.print(r_calib, 4);
         Serial.println();
         if ( total_timer > 15000 ) {
             Serial.println("gyro init: too much motion, using best average guess.");

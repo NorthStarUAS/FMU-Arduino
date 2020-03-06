@@ -2,7 +2,8 @@
 
 #include "src/util/definition-tree2.h"
 
-#include "src/UBLOX8/UBLOX8.h"
+#include "src/sensors/imu.h"
+#include "src/sensors/UBLOX8/UBLOX8.h"
 #include "src/util/serial_link.h"
 #include "src/EKF15/EKF_15state.h"
 
@@ -21,7 +22,7 @@ message::config_led_t config_led;
 int config_size = 0;
 
 // IMU
-int gyros_calibrated = 0; // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished
+imu_t imu;
 
 // Controls and Actuators
 float receiver_norm[SBUS_CHANNELS];
@@ -62,20 +63,6 @@ SerialLink serial;
 
 // 15 State EKF
 EKF15 ekf;
-
-// shared deftree nodes (available in all the .ino files due to the
-// way arduino aggregates code)
-ElementPtr micros_node = deftree.initElement("/sensors/imu/micros");
-ElementPtr p_node = deftree.initElement("/sensors/imu/p_rps");
-ElementPtr q_node = deftree.initElement("/sensors/imu/q_rps");
-ElementPtr r_node = deftree.initElement("/sensors/imu/r_rps");
-ElementPtr ax_node = deftree.initElement("/sensors/imu/ax_mss");
-ElementPtr ay_node = deftree.initElement("/sensors/imu/ay_mss");
-ElementPtr az_node = deftree.initElement("/sensors/imu/az_mss");
-ElementPtr hx_node = deftree.initElement("/sensors/imu/hx");
-ElementPtr hy_node = deftree.initElement("/sensors/imu/hy");
-ElementPtr hz_node = deftree.initElement("/sensors/imu/hz");
-ElementPtr temp_node = deftree.initElement("/sensors/imu/temp_C");
 
 // force/hard-code a specific board config if desired
 void force_config_aura_v2() {
@@ -177,7 +164,7 @@ void setup() {
     // force_config_talon_marmot();
     
     // initialize the IMU
-    imu_setup();
+    imu.setup(config_imu);
     delay(100);
 
     // initialize the SBUS receiver
@@ -236,7 +223,7 @@ void loop() {
         mainTimer -= DT_MILLIS;
         
         // top priority, used for timing sync downstream.
-        imu_update();
+        imu.update(config_imu);
 
         // handle ekf init/update
         if ( !gps_found and new_gps_data ) {
@@ -244,19 +231,19 @@ void loop() {
             gpsSettle = 0;
             Serial.println("EKF: gps found itself");
         }
-        IMUdata imu;
-        imu.time = micros_node->getLongLong() / 1000000.0;
-        imu.p = p_node->getFloat();
-        imu.q = q_node->getFloat();
-        imu.r = r_node->getFloat();
-        imu.ax = ax_node->getFloat();
-        imu.ay = ay_node->getFloat();
-        imu.az = az_node->getFloat();
-        imu.hx = hx_node->getFloat();
-        imu.hy = hy_node->getFloat();
-        imu.hz = hz_node->getFloat();
+        IMUdata imu1;
+        imu1.time = imu.imu_micros / 1000000.0;
+        imu1.p = imu.p;
+        imu1.q = imu.q;
+        imu1.r = imu.r;
+        imu1.ax = imu.ax;
+        imu1.ay = imu.ay;
+        imu1.az = imu.az;
+        imu1.hx = imu.hx;
+        imu1.hy = imu.hy;
+        imu1.hz = imu.hz;
         GPSdata gps;
-        gps.time = micros_node->getLongLong() / 1000000.0;
+        gps.time = imu.imu_micros / 1000000.0;
         gps.unix_sec = gps.time;
         gps.lat = gps_data.lat / 10000000.0;
         gps.lon = gps_data.lon / 10000000.0;
@@ -265,11 +252,11 @@ void loop() {
         gps.ve = gps_data.velE / 1000.0;
         gps.vd = gps_data.velD / 1000.0;
         if ( !ekf_inited and gps_found and gpsSettle > 10000 ) {
-            ekf.init(imu, gps);
+            ekf.init(imu1, gps);
             ekf_inited = true;
             Serial.println("EKF: initialized");
         } else if ( ekf_inited ) {
-            ekf.time_update(imu);
+            ekf.time_update(imu1);
             if ( new_gps_data ) {
                 ekf.measurement_update(gps);
             }
@@ -302,7 +289,7 @@ void loop() {
         output_counter += write_imu_bin(); // write IMU data last as an implicit 'end of data frame' marker.
 
         // 10hz human debugging output, but only after gyros finish calibrating
-        if ( debugTimer >= 100 && gyros_calibrated == 2) {
+        if ( debugTimer >= 100 && imu.gyros_calibrated == 2) {
             debugTimer = 0;
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();

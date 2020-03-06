@@ -96,7 +96,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         }
     } else if ( id == message::command_zero_gyros_id && message_size == 0 ) {
         Serial.println("received zero gyros command");
-        gyros_calibrated = 0;   // start state
+        imu.gyros_calibrated = 0;   // start state
         write_ack_bin( id, 0 );
         result = true;
     } else {
@@ -188,34 +188,34 @@ int write_imu_bin()
     const float magScale = 0.01;
     const float tempScale = 0.01;
     
-    static message::imu_raw_t imu;
-    imu.micros = micros_node->getLongLong();
-    imu.channel[0] = ax_node->getFloat() / accelScale;
-    imu.channel[1] = ay_node->getFloat() / accelScale;
-    imu.channel[2] = az_node->getFloat() / accelScale;
-    imu.channel[3] = p_node->getFloat() / gyroScale;
-    imu.channel[4] = q_node->getFloat() / gyroScale;
-    imu.channel[5] = r_node->getFloat() / gyroScale;
-    imu.channel[6] = hx_node->getFloat() / magScale;
-    imu.channel[7] = hy_node->getFloat() / magScale;
-    imu.channel[8] = hz_node->getFloat() / magScale;
-    imu.channel[0] = temp_node->getFloat() / tempScale;
-    imu.pack();
-    return serial.write_packet( imu.id, imu.payload, imu.len );
+    static message::imu_raw_t imu1;
+    imu1.micros = imu.imu_micros;
+    imu1.channel[0] = imu.ax;
+    imu1.channel[1] = imu.ay;
+    imu1.channel[2] = imu.az;
+    imu1.channel[3] = imu.p;
+    imu1.channel[4] = imu.q;
+    imu1.channel[5] = imu.r;
+    imu1.channel[6] = imu.hx;
+    imu1.channel[7] = imu.hy;
+    imu1.channel[8] = imu.hz;
+    imu1.channel[0] = imu.temp;
+    imu1.pack();
+    return serial.write_packet( imu1.id, imu1.payload, imu1.len );
 }
 
 void write_imu_ascii()
 {
     // output imu data
     Serial.print("IMU: ");
-    Serial.print(micros_node->getLong()); Serial.print(" ");
-    Serial.print(p_node->getFloat(), 3); Serial.print(" ");
-    Serial.print(q_node->getFloat(), 3); Serial.print(" ");
-    Serial.print(r_node->getFloat(), 3); Serial.print(" ");
-    Serial.print(ax_node->getFloat(), 3); Serial.print(" ");
-    Serial.print(ay_node->getFloat(), 3); Serial.print(" ");
-    Serial.print(az_node->getFloat(), 3); Serial.print(" ");
-    Serial.print(temp_node->getFloat(), 3);
+    Serial.print(imu.imu_micros); Serial.print(" ");
+    Serial.print(imu.p, 2); Serial.print(" ");
+    Serial.print(imu.q, 2); Serial.print(" ");
+    Serial.print(imu.r, 2); Serial.print(" ");
+    Serial.print(imu.ax, 3); Serial.print(" ");
+    Serial.print(imu.ay, 3); Serial.print(" ");
+    Serial.print(imu.az, 3); Serial.print(" ");
+    Serial.print(imu.temp, 2);
     Serial.println();
 }
 

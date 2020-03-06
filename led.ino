@@ -14,7 +14,7 @@ void led_update() {
         static unsigned int blink_rate = 100;
         static bool blink_state = true;
 
-        if ( gyros_calibrated < 2 ) {
+        if ( imu.gyros_calibrated < 2 ) {
             blink_rate = 50;
         } else if ( gps_data.fixType < 3 ) {
             blink_rate = 200;

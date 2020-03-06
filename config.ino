@@ -42,7 +42,7 @@ void led_defaults() {
 void config_load_defaults() {
     Serial.println("Setting default config ...");
     master_defaults();
-    imu_setup_defaults();
+    imu.defaults(config_imu);
     pwm_defaults();
     act_gain_defaults();
     mixing_defaults();

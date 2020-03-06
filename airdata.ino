@@ -1,21 +1,21 @@
 // Module to query air data sensors
 
-#include "src/BMP180/SFE_BMP180.h"
+#include "src/sensors/BMP180/SFE_BMP180.h"
 SFE_BMP180 bmp180;
 bool bmp180_status = false;
 
-#include "src/BME280/BME280.h"
+#include "src/sensors/BME280/BME280.h"
 BME280 bme280;
 bool bme280_status = false;
 
-#include "src/AMS5915/AMS5915.h"
+#include "src/sensors/AMS5915/AMS5915.h"
 AMS5915 ams_barometer;
 AMS5915 ams_pitot;
 
-#include "src/MS4525DO/MS4525DO.h"
+#include "src/sensors/MS4525DO/MS4525DO.h"
 MS4525DO ms45_pitot;
 
-#include "src/MS5525DO/MS5525DO.h"
+#include "src/sensors/MS5525DO/MS5525DO.h"
 MS5525DO ms55_pitot;
 
 float baro_press, baro_temp, baro_hum;
