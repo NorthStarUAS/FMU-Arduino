@@ -14,7 +14,6 @@
 
 // master config (for messages and saving in eeprom)
 message::config_master_t config_master;
-message::config_imu_t config_imu;
 message::config_actuators_t config_actuators;
 message::config_airdata_t config_airdata;
 message::config_power_t config_power;
@@ -65,11 +64,10 @@ SerialLink serial;
 EKF15 ekf;
 
 // force/hard-code a specific board config if desired
-void force_config_aura_v2() {
+void force_config_aura3() {
     Serial.println("Forcing an aura v2 eeprom config");
     config_master.board = 1;    // 0 = marmot v1, 1 = aura v2
-    config_imu.interface = 1;   // i2c
-    config_imu.pin_or_address = 0x68; // mpu9250 i2c addr
+    imu.defaults_aura3();
     config_airdata.barometer = 1; // 1 = bmp280/i2c
     config_airdata.pitot = 0;     // 0 MS4525
     config_led.pin = 13;
@@ -96,11 +94,10 @@ void force_config_aura_v2() {
 }
 
 // force/hard-code a specific board config if desired
-void force_config_talon_marmot() {
+void force_config_goldy3() {
     Serial.println("Forcing a bfs/marmot eeprom config");
     config_master.board = 0;    // 0 = marmot v1, 1 = aura v2
-    config_imu.interface = 0;   // spi
-    config_imu.pin_or_address = 24; // marmot imu spi cs line
+    imu.defaults_goldy3();
     config_airdata.barometer = 2; // 2 = swift
     config_airdata.pitot = 2;     // 2 = swift, 0x25
     config_airdata.swift_baro_addr = 0x24; // Idun = 0x24
@@ -164,7 +161,7 @@ void setup() {
     // force_config_talon_marmot();
     
     // initialize the IMU
-    imu.setup(config_imu);
+    imu.setup();
     delay(100);
 
     // initialize the SBUS receiver
@@ -223,7 +220,7 @@ void loop() {
         mainTimer -= DT_MILLIS;
         
         // top priority, used for timing sync downstream.
-        imu.update(config_imu);
+        imu.update();
 
         // handle ekf init/update
         if ( !gps_found and new_gps_data ) {

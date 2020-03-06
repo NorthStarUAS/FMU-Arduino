@@ -54,8 +54,8 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             result = true;
         }
     } else if ( id == message::config_imu_id ) {
-        config_imu.unpack(buf, message_size);
-        if ( message_size == config_imu.len ) {
+        imu.config_imu.unpack(buf, message_size);
+        if ( message_size == imu.config_imu.len ) {
             Serial.println("received imu config");
             config_write_eeprom();
             write_ack_bin( id, 0 );
@@ -190,16 +190,16 @@ int write_imu_bin()
     
     static message::imu_raw_t imu1;
     imu1.micros = imu.imu_micros;
-    imu1.channel[0] = imu.ax;
-    imu1.channel[1] = imu.ay;
-    imu1.channel[2] = imu.az;
-    imu1.channel[3] = imu.p;
-    imu1.channel[4] = imu.q;
-    imu1.channel[5] = imu.r;
-    imu1.channel[6] = imu.hx;
-    imu1.channel[7] = imu.hy;
-    imu1.channel[8] = imu.hz;
-    imu1.channel[0] = imu.temp;
+    imu1.channel[0] = imu.ax / accelScale;
+    imu1.channel[1] = imu.ay / accelScale;
+    imu1.channel[2] = imu.az / accelScale;
+    imu1.channel[3] = imu.p / gyroScale;
+    imu1.channel[4] = imu.q / gyroScale;
+    imu1.channel[5] = imu.r / gyroScale;
+    imu1.channel[6] = imu.hx / magScale;
+    imu1.channel[7] = imu.hy / magScale;
+    imu1.channel[8] = imu.hz / magScale;
+    imu1.channel[0] = imu.temp / tempScale;
     imu1.pack();
     return serial.write_packet( imu1.id, imu1.payload, imu1.len );
 }

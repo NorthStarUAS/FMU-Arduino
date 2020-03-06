@@ -12,9 +12,8 @@ const uint8_t MPU9250_SRD = 9;  // Data Output Rate = 1000 / (1 + SRD)
 MPU9250 IMU;
 
 // Setup imu defaults:
-// Marmot v1 has mpu9250 on SPI CS line 24
-// Aura v2 has mpu9250 on I2C Addr 0x68
-void imu_t::defaults(message::config_imu_t &config_imu) {
+// Goldy3 has mpu9250 on SPI CS line 24
+void imu_t::defaults_goldy3() {
     config_imu.interface = 0;       // SPI
     config_imu.pin_or_address = 24; // CS pin
     float ident[] = { 1.0, 0.0, 0.0,
@@ -25,8 +24,21 @@ void imu_t::defaults(message::config_imu_t &config_imu) {
     }
 }
 
+// Setup imu defaults:
+// Aura3 has mpu9250 on I2C Addr 0x68
+void imu_t::defaults_aura3() {
+    config_imu.interface = 1;       // i2c
+    config_imu.pin_or_address = 0x68; // mpu9250 i2c addr
+    float ident[] = { 1.0, 0.0, 0.0,
+                      0.0, 1.0, 0.0,
+                      0.0, 0.0, 1.0};
+    for ( int i = 0; i < 9; i++ ) {
+        config_imu.orientation[i] = ident[i];
+    }
+}
+
 // configure the IMU settings and setup the ISR to aquire the data
-void imu_t::setup(message::config_imu_t &config_imu) {
+void imu_t::setup() {
     if ( config_imu.interface == 0 ) {
         // SPI
         Serial.print("MPU9250 @ SPI pin: ");
@@ -69,8 +81,7 @@ void imu_t::setup(message::config_imu_t &config_imu) {
 }
 
 void imu_t::rotate(float v0, float v1, float v2,
-                   float *r0, float *r1, float *r2,
-                   message::config_imu_t &config_imu)
+                   float *r0, float *r1, float *r2)
 {
     *r0 = v0*config_imu.orientation[0] + v1*config_imu.orientation[1] + v2*config_imu.orientation[2];
     *r1 = v0*config_imu.orientation[3] + v1*config_imu.orientation[4] + v2*config_imu.orientation[5];
@@ -78,7 +89,7 @@ void imu_t::rotate(float v0, float v1, float v2,
 }
 
 // query the imu and update the structures
-void imu_t::update(message::config_imu_t &config_imu) {
+void imu_t::update() {
     imu_micros = micros();
     float ax_raw, ay_raw, az_raw;
     float gx_raw, gy_raw, gz_raw;
@@ -89,9 +100,9 @@ void imu_t::update(message::config_imu_t &config_imu) {
                     &hx_raw, &hy_raw, &hz_raw, &t);
     
     // rotate into aircraft body frame
-    rotate(ax_raw, ay_raw, az_raw, &ax, &ay, &az, config_imu);
-    rotate(gx_raw, gy_raw, gz_raw, &p, &q, &r, config_imu);
-    rotate(hx_raw, hy_raw, hz_raw, &hx, &hy, &hz, config_imu);
+    rotate(ax_raw, ay_raw, az_raw, &ax, &ay, &az);
+    rotate(gx_raw, gy_raw, gz_raw, &p, &q, &r);
+    rotate(hx_raw, hy_raw, hz_raw, &hx, &hy, &hz);
     
     if ( gyros_calibrated < 2 ) {
         calibrate_gyros(p, q, r);

@@ -42,7 +42,7 @@ void led_defaults() {
 void config_load_defaults() {
     Serial.println("Setting default config ...");
     master_defaults();
-    imu.defaults(config_imu);
+    imu.defaults_goldy3();
     pwm_defaults();
     act_gain_defaults();
     mixing_defaults();
@@ -61,13 +61,14 @@ int extract_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
 int config_read_eeprom() {
     // call pack to initialize internal stucture len
     config_master.pack();
-    config_imu.pack();
+    imu.config_imu.pack();
     config_actuators.pack();
     config_airdata.pack();
     config_power.pack();
     config_led.pack();
-    config_size = config_master.len + config_imu.len + config_actuators.len +
-        config_airdata.len + config_power.len + config_led.len;
+    config_size = config_master.len + imu.config_imu.len +
+        config_actuators.len + config_airdata.len + config_power.len +
+        config_led.len;
     uint8_t config_buf[config_size];
     int status = 0;
     if ( config_size + CONFIG_OFFSET <= E2END - 2 /* checksum */ + 1 ) {
@@ -91,8 +92,8 @@ int config_read_eeprom() {
             int pos = 0;
             config_master.unpack((uint8_t *)&(config_buf[pos]), config_master.len);
             pos += config_master.len;
-            config_imu.unpack((uint8_t *)&(config_buf[pos]), config_imu.len);
-            pos += config_imu.len;
+            imu.config_imu.unpack((uint8_t *)&(config_buf[pos]), imu.config_imu.len);
+            pos += imu.config_imu.len;
             config_actuators.unpack((uint8_t *)&(config_buf[pos]), config_actuators.len);
             pos += config_actuators.len;
             config_airdata.unpack((uint8_t *)&(config_buf[pos]), config_airdata.len);
@@ -118,7 +119,7 @@ int build_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
 int config_write_eeprom() {
     // create packed version of messages
     config_master.pack();
-    config_imu.pack();
+    imu.config_imu.pack();
     config_actuators.pack();
     config_airdata.pack();
     config_power.pack();
@@ -127,7 +128,7 @@ int config_write_eeprom() {
     uint8_t config_buf[config_size];
     int pos = 0;
     pos += build_config_buf( config_buf, pos, config_master.payload, config_master.len );
-    pos += build_config_buf( config_buf, pos, config_imu.payload, config_imu.len );
+    pos += build_config_buf( config_buf, pos, imu.config_imu.payload, imu.config_imu.len );
     pos += build_config_buf( config_buf, pos, config_actuators.payload, config_actuators.len );
     pos += build_config_buf( config_buf, pos, config_airdata.payload, config_airdata.len );
     pos += build_config_buf( config_buf, pos, config_power.payload, config_power.len );
