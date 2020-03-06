@@ -2,41 +2,16 @@
 #include <Eigen/Core>
 using namespace Eigen;
 
-#include "src/util/definition-tree2.h"
-
 #include "src/MPU9250/MPU9250.h"
 
 // IMU full scale ranges, DLPF bandwidth, interrupt SRD, and interrupt pin
 const uint8_t MPU9250_SRD = 9;  // Data Output Rate = 1000 / (1 + SRD)
 
-const float _pi = 3.14159265358979323846;
-const float _g = 9.807;
-const float _d2r = _pi / 180.0;
-
-const float _gyro_lsb_per_dps = 32767.5 / 500;  // -500 to +500 spread across 65535
-const float gyroScale = _d2r / _gyro_lsb_per_dps;
-
-const float _accel_lsb_per_dps = 32767.5 / 8;   // -4g to +4g spread across 65535
-const float accelScale = _g / _accel_lsb_per_dps;
-
-const float magScale = 0.01;
-const float tempScale = 0.01;
-
 MPU9250 IMU;
 
-Vector3f gyro_calib( 0.0, 0.0, 0.0 );
-
-// shared deftree nodes
-// static ElementPtr p_node = deftree.initElement("/sensors/imu/p_rps");
-// static ElementPtr q_node = deftree.initElement("/sensors/imu/q_rps");
-// static ElementPtr r_node = deftree.initElement("/sensors/imu/r_rps");
-// static ElementPtr ax_node = deftree.initElement("/sensors/imu/ax_mss");
-// static ElementPtr ay_node = deftree.initElement("/sensors/imu/ay_mss");
-// static ElementPtr az_node = deftree.initElement("/sensors/imu/az_mss");
-// static ElementPtr hx_node = deftree.initElement("/sensors/imu/hx");
-// static ElementPtr hy_node = deftree.initElement("/sensors/imu/hy");
-// static ElementPtr hz_node = deftree.initElement("/sensors/imu/hz");
-// static ElementPtr temp_node = deftree.initElement("/sensors/imu/temp_C");
+static float gx_calib = 0.0;
+static float gy_calib = 0.0;
+static float gz_calib = 0.0;
 
 // Setup imu defaults:
 // Marmot v1 has mpu9250 on SPI CS line 24
@@ -105,7 +80,7 @@ void imu_rotate(float v0, float v1, float v2,
 
 // query the imu and update the structures
 void imu_update() {
-    imu_micros = micros();
+    unsigned long imu_micros = micros();
     float ax_raw, ay_raw, az_raw;
     float gx_raw, gy_raw, gz_raw;
     float hx_raw, hy_raw, hz_raw;
@@ -123,12 +98,13 @@ void imu_update() {
     if ( gyros_calibrated < 2 ) {
         calibrate_gyros(gx, gy, gz);
     } else {
-        gx -= gyro_calib[0];
-        gy -= gyro_calib[1];
-        gz -= gyro_calib[2];
+        gx -= gx_calib;
+        gy -= gy_calib;
+        gz -= gz_calib;
     }
 
     // publish
+    micros_node->setLongLong(imu_micros);
     ax_node->setFloat(ax);
     ay_node->setFloat(ay);
     az_node->setFloat(az);
@@ -139,24 +115,6 @@ void imu_update() {
     hy_node->setFloat(hy);
     hz_node->setFloat(hz);
     temp_node->setFloat(t);
-
-    // packed imu structure
-    for ( int i = 0; i < 3; i++ ) {
-        imu_packed[0] = ax / accelScale;
-        imu_packed[1] = ay / accelScale;
-        imu_packed[2] = az / accelScale;
-    }
-    for ( int i = 3; i < 6; i++ ) {
-        imu_packed[3] = gx / gyroScale;
-        imu_packed[4] = gy / gyroScale;
-        imu_packed[5] = gz / gyroScale;
-    }
-    for (int i = 6; i < 9; i++ ) {
-        imu_packed[6] = hx / magScale;
-        imu_packed[7] = hy / magScale;
-        imu_packed[8] = hz / magScale;
-    }
-    imu_packed[9] = t / tempScale;
 }
 
 
@@ -199,7 +157,9 @@ void calibrate_gyros(float gx, float gy, float gz) {
     gzs = 0.995 * gzs + 0.005 * gz;
     
     // use 'slow' filter value for calibration while calibrating
-    gyro_calib << gxs, gys, gzs;
+    gx_calib = gxs;
+    gy_calib = gys;
+    gz_calib = gzs;
 
     float dx = fabs(gxs - gxf);
     float dy = fabs(gys - gyf);
@@ -218,15 +178,17 @@ void calibrate_gyros(float gx, float gy, float gz) {
     if ( good_timer > 4100 || total_timer > 15000 ) {
         Serial.println();
         // set gyro zero points from the 'slow' filter.
-        gyro_calib << gxs, gys, gzs;
+        gx_calib = gxs;
+        gy_calib = gys;
+        gz_calib = gzs;
         gyros_calibrated = 2;
         imu_update(); // update imu_calib values before anything else get's a chance to read them
         Serial.print("Average gyros: ");
-        Serial.print(gyro_calib[0], 4);
+        Serial.print(gx_calib, 4);
         Serial.print(" ");
-        Serial.print(gyro_calib[1], 4);
+        Serial.print(gy_calib, 4);
         Serial.print(" ");
-        Serial.print(gyro_calib[2], 4);
+        Serial.print(gz_calib, 4);
         Serial.println();
         if ( total_timer > 15000 ) {
             Serial.println("gyro init: too much motion, using best average guess.");

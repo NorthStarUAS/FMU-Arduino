@@ -175,11 +175,31 @@ void write_actuator_out_ascii()
 /* output a binary representation of the IMU data (note: scaled to 16bit values) */
 int write_imu_bin()
 {
+    const float _pi = 3.14159265358979323846;
+    const float _g = 9.807;
+    const float _d2r = _pi / 180.0;
+    
+    const float _gyro_lsb_per_dps = 32767.5 / 500;  // -500 to +500 spread across 65535
+    const float gyroScale = _d2r / _gyro_lsb_per_dps;
+    
+    const float _accel_lsb_per_dps = 32767.5 / 8;   // -4g to +4g spread across 65535
+    const float accelScale = _g / _accel_lsb_per_dps;
+
+    const float magScale = 0.01;
+    const float tempScale = 0.01;
+    
     static message::imu_raw_t imu;
-    imu.micros = imu_micros;
-    for ( int i = 0; i < 10; i++ ) {
-        imu.channel[i] = imu_packed[i];
-    }
+    imu.micros = micros_node->getLongLong();
+    imu.channel[0] = ax_node->getFloat() / accelScale;
+    imu.channel[1] = ay_node->getFloat() / accelScale;
+    imu.channel[2] = az_node->getFloat() / accelScale;
+    imu.channel[3] = p_node->getFloat() / gyroScale;
+    imu.channel[4] = q_node->getFloat() / gyroScale;
+    imu.channel[5] = r_node->getFloat() / gyroScale;
+    imu.channel[6] = hx_node->getFloat() / magScale;
+    imu.channel[7] = hy_node->getFloat() / magScale;
+    imu.channel[8] = hz_node->getFloat() / magScale;
+    imu.channel[0] = temp_node->getFloat() / tempScale;
     imu.pack();
     return serial.write_packet( imu.id, imu.payload, imu.len );
 }
@@ -188,7 +208,7 @@ void write_imu_ascii()
 {
     // output imu data
     Serial.print("IMU: ");
-    Serial.print(imu_micros); Serial.print(" ");
+    Serial.print(micros_node->getLong()); Serial.print(" ");
     Serial.print(p_node->getFloat(), 3); Serial.print(" ");
     Serial.print(q_node->getFloat(), 3); Serial.print(" ");
     Serial.print(r_node->getFloat(), 3); Serial.print(" ");

@@ -22,8 +22,6 @@ int config_size = 0;
 
 // IMU
 int gyros_calibrated = 0; // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished
-int16_t imu_packed[10]; // calibrated and packed version of the imu sensors
-unsigned long imu_micros = 0;
 
 // Controls and Actuators
 float receiver_norm[SBUS_CHANNELS];
@@ -67,6 +65,7 @@ EKF15 ekf;
 
 // shared deftree nodes (available in all the .ino files due to the
 // way arduino aggregates code)
+ElementPtr micros_node = deftree.initElement("/sensors/imu/micros");
 ElementPtr p_node = deftree.initElement("/sensors/imu/p_rps");
 ElementPtr q_node = deftree.initElement("/sensors/imu/q_rps");
 ElementPtr r_node = deftree.initElement("/sensors/imu/r_rps");
@@ -246,7 +245,7 @@ void loop() {
             Serial.println("EKF: gps found itself");
         }
         IMUdata imu;
-        imu.time = imu_micros / 1000000.0;
+        imu.time = micros_node->getLongLong() / 1000000.0;
         imu.p = p_node->getFloat();
         imu.q = q_node->getFloat();
         imu.r = r_node->getFloat();
@@ -257,7 +256,7 @@ void loop() {
         imu.hy = hy_node->getFloat();
         imu.hz = hz_node->getFloat();
         GPSdata gps;
-        gps.time = imu_micros / 1000000.0;
+        gps.time = micros_node->getLongLong() / 1000000.0;
         gps.unix_sec = gps.time;
         gps.lat = gps_data.lat / 10000000.0;
         gps.lon = gps_data.lon / 10000000.0;
@@ -310,7 +309,7 @@ void loop() {
             // write_gps_ascii();
             // write_airdata_ascii();
             // write_status_info_ascii();
-            // write_imu_ascii();
+            write_imu_ascii();
         }
 
         // uncomment this next line to test drive individual servo channels
