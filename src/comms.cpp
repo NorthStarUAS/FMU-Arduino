@@ -16,7 +16,6 @@
 #include "led.h"
 #include "power.h"
 #include "pwm.h"
-#include "setup_pwm.h"
 #include "sbus.h"
 #include "util/serial_link.h"
 #include "aura3_messages.h"

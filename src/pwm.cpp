@@ -1,8 +1,6 @@
 #include "actuators.h"
 #include "pwm.h"
 
-#include "setup_pwm.h"
-
 const uint8_t marmot1_pins[PWM_CHANNELS] = {21, 22, 23, 2, 3, 4, 5, 6};
 const uint8_t aura2_pins[PWM_CHANNELS] = {6, 5, 4, 3, 23, 22, 21, 20};
 static uint8_t servoPins[PWM_CHANNELS];

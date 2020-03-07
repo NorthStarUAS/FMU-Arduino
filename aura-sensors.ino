@@ -1,8 +1,6 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 
-#include "src/util/definition-tree2.h"
-
 #include "src/actuators.h"
 #include "src/airdata.h"
 #include "src/comms.h"
@@ -16,8 +14,6 @@
 #include "src/sbus.h"
 
 #include "setup_board.h"
-#include "src/setup_sbus.h"
-#include "src/setup_pwm.h"
 
 // Controls and Actuators
 uint8_t test_pwm_channel = -1;

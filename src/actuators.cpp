@@ -2,7 +2,6 @@
 
 #include "imu.h"
 #include "pwm.h"
-#include "setup_pwm.h"
 #include "sbus.h"
 
 #include "actuators.h"
