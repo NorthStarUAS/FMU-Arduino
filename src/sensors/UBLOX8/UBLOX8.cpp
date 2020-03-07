@@ -37,7 +37,7 @@ bool UBLOX8::read_ublox8() {
 	cksum_A = cksum_B = 0;
 	while ( _port->available() ) {
 	    input = _port->read();
-	    // fprintf( stderr, "state0: len = %d val = %2X\n", len, input );
+	    // Serial.print("state0: val = "); Serial.println( input, HEX );
             if ( input == 0xB5 ) {\
                 state = 1;
                 break;
