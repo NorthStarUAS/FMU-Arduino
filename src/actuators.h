@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../aura3_messages.h"
+#include "aura3_messages.h"
 
 #include "setup_sbus.h"
 

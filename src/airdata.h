@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../aura3_messages.h"
+#include "aura3_messages.h"
 
 class airdata_t {
  private:

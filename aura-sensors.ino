@@ -18,7 +18,6 @@
 #include "setup_board.h"
 #include "src/setup_sbus.h"
 #include "src/setup_pwm.h"
-#include "aura3_messages.h"
 
 // Controls and Actuators
 uint8_t test_pwm_channel = -1;

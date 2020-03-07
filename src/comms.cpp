@@ -19,8 +19,8 @@
 #include "setup_pwm.h"
 #include "sbus.h"
 #include "util/serial_link.h"
+#include "aura3_messages.h"
 #include "../setup_board.h"
-#include "../aura3_messages.h"
 
 #include "comms.h"
 

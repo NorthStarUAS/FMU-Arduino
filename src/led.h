@@ -4,7 +4,7 @@
 
 #include <Arduino.h>
 
-#include "../aura3_messages.h"
+#include "aura3_messages.h"
 
 class led_t {
 private:
