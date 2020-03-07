@@ -12,7 +12,6 @@ private:
     
 public:
     message::config_master_t master;
-    message::config_power_t power;
     
     uint16_t read_serial_number();
     uint16_t set_serial_number(uint16_t value);

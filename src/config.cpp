@@ -7,6 +7,7 @@
 #include "config.h"
 #include "imu.h"
 #include "led.h"
+#include "power.h"
 
 // starting point for writing big eeprom struct
 static const int CONFIG_OFFSET = 2;
@@ -40,7 +41,7 @@ void config_t::master_defaults() {
 }
 
 void config_t::power_defaults() {
-     power.have_attopilot = false;
+     power.config.have_attopilot = false;
 }
 
 void config_t::load_defaults() {
@@ -68,10 +69,10 @@ int config_t::read_eeprom() {
     imu.config.pack();
     actuators.config.pack();
     airdata.config.pack();
-    power.pack();
+    power.config.pack();
     led.config.pack();
     config_size = master.len + imu.config.len +
-        actuators.config.len + airdata.config.len + power.len +
+        actuators.config.len + airdata.config.len + power.config.len +
         led.config.len;
     uint8_t config_buf[config_size];
     int status = 0;
@@ -102,8 +103,8 @@ int config_t::read_eeprom() {
             pos += actuators.config.len;
             airdata.config.unpack((uint8_t *)&(config_buf[pos]), airdata.config.len);
             pos += airdata.config.len;
-            power.unpack((uint8_t *)&(config_buf[pos]), power.len);
-            pos += power.len;
+            power.config.unpack((uint8_t *)&(config_buf[pos]), power.config.len);
+            pos += power.config.len;
             led.config.unpack((uint8_t *)&(config_buf[pos]), led.config.len);
             pos += led.config.len;
         }
@@ -126,7 +127,7 @@ int config_t::write_eeprom() {
     imu.config.pack();
     actuators.config.pack();
     airdata.config.pack();
-    power.pack();
+    power.config.pack();
     led.config.pack();
     // assemble packed config buffer
     uint8_t config_buf[config_size];
@@ -135,7 +136,7 @@ int config_t::write_eeprom() {
     pos += build_config_buf( config_buf, pos, imu.config.payload, imu.config.len );
     pos += build_config_buf( config_buf, pos, actuators.config.payload, actuators.config.len );
     pos += build_config_buf( config_buf, pos, airdata.config.payload, airdata.config.len );
-    pos += build_config_buf( config_buf, pos, power.payload, power.len );
+    pos += build_config_buf( config_buf, pos, power.config.payload, power.config.len );
     pos += build_config_buf( config_buf, pos, led.config.payload, led.config.len );
     
     Serial.println("Write EEPROM (any changed bytes) ...");

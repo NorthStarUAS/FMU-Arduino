@@ -97,8 +97,8 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
             result = true;
         }
     } else if ( id == message::config_power_id ) {
-        config.power.unpack(buf, message_size);
-        if ( message_size == config.power.len ) {
+        power.config.unpack(buf, message_size);
+        if ( message_size == power.config.len ) {
             Serial.println("received new power config");
             config.write_eeprom();
             write_ack_bin( id, 0 );

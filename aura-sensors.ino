@@ -25,7 +25,7 @@ void force_config_aura3() {
     imu.defaults_aura3();
     airdata.defaults_aura3();
     led.defaults_aura3();
-    config.power.have_attopilot = true;
+    power.config.have_attopilot = true;
     actuators.config.act_gain[0] = 1.0;
     actuators.config.act_gain[1] = 1.0;
     actuators.config.act_gain[2] = -1.0;
@@ -132,7 +132,7 @@ void setup() {
     
     // power sensing
     analogReadResolution(16);   // set up ADC0
-    power.setup();
+    power.setup(config.master.board);
     
     // led for status blinking if defined
     led.setup();

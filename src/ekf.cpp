@@ -10,6 +10,7 @@ void ekf_t::update() {
         gpsSettle = 0;
         Serial.println("EKF: gps found itself");
     }
+    
     IMUdata imu1;
     imu1.time = imu.imu_micros / 1000000.0;
     imu1.p = imu.p;
@@ -21,6 +22,7 @@ void ekf_t::update() {
     imu1.hx = imu.hx;
     imu1.hy = imu.hy;
     imu1.hz = imu.hz;
+    
     GPSdata gps1;
     gps1.time = imu.imu_micros / 1000000.0;
     gps1.unix_sec = gps1.time;
@@ -30,6 +32,7 @@ void ekf_t::update() {
     gps1.vn = gps.gps_data.velN / 1000.0;
     gps1.ve = gps.gps_data.velE / 1000.0;
     gps1.vd = gps.gps_data.velD / 1000.0;
+    
     if ( !ekf_inited and gps_found and gpsSettle > 10000 ) {
         ekf.init(imu1, gps1);
         ekf_inited = true;
@@ -41,13 +44,12 @@ void ekf_t::update() {
         }
         NAVdata nav = ekf.get_nav();
         Serial.print("ekf pos: ");
-        Serial.print(nav.lat*R2D);
+        Serial.print(nav.lat*R2D, 6);
         Serial.print(", ");
-        Serial.print(nav.lon*R2D);
+        Serial.print(nav.lon*R2D, 6);
         Serial.print(", ");
         Serial.print(nav.alt);
         Serial.print(" euler: ");
-        Serial.print(", ");
         Serial.print(nav.phi*R2D);
         Serial.print(", ");
         Serial.print(nav.the*R2D);
