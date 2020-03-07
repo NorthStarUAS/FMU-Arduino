@@ -1,8 +1,7 @@
 #pragma once
 
 #include "aura3_messages.h"
-
-#include "setup_sbus.h"
+#include "sbus.h"
 
 class actuators_t {
 private:

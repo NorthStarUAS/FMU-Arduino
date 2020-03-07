@@ -1,74 +1,24 @@
 #include "actuators.h"
 #include "pwm.h"
-#include "setup_sbus.h"
-
 #include "sbus.h"
 
-#define SBUS_SIGNAL_OK          0x00
-#define SBUS_SIGNAL_LOST        0x01
-#define SBUS_SIGNAL_FAILSAFE    0x03
+static const uint8_t SBUS_SIGNAL_OK = 0x00;
+static const uint8_t SBUS_SIGNAL_LOST = 0x01;
+static const uint8_t SBUS_SIGNAL_FAILSAFE = 0x03;
 
-#define SBUS_HEADER_VALUE       0x0F
-#define SBUS_FOOTER_VALUE       0x00
+static const uint8_t SBUS_HEADER_VALUE = 0x0F;
+static const uint8_t SBUS_FOOTER_VALUE = 0x00;
 
-#define SBUS_PAYLOAD_LEN          23
-
-#define SBUS_MIN_VALUE           172
-#define SBUS_CENTER_VALUE        992
-#define SBUS_MAX_VALUE          1811
-#define SBUS_RANGE              1640
-#define SBUS_HALF_RANGE          820
-#define SBUS_QUARTER_RANGE       410
-
-// Structure defining the contents of the SBUS data payload (23
-// bytes).  Each of the channel fields (ch1:ch16) occupies 11 bytes.
-typedef union {
-    byte buf[SBUS_PAYLOAD_LEN];
-
-    struct __attribute__ ((packed)) {
-        uint32_t ch1          : 11;
-        uint32_t ch2          : 11;
-        uint32_t ch3_lo       : 10;
-
-        uint32_t ch3_hi       :  1;
-        uint32_t ch4          : 11;
-        uint32_t ch5          : 11;
-        uint32_t ch6_lo       :  9;
-
-        uint32_t ch6_hi       :  2;
-        uint32_t ch7          : 11;
-        uint32_t ch8          : 11;
-        uint32_t ch9_lo       :  8;
-
-        uint32_t ch9_hi       :  3;
-        uint32_t ch10         : 11;
-        uint32_t ch11         : 11;
-        uint32_t ch12_lo      :  7;
-
-        uint32_t ch12_hi      :  4;
-        uint32_t ch13         : 11;
-        uint32_t ch14         : 11;
-        uint32_t ch15_lo      :  6;
-
-        uint32_t ch15_hi      :  5;
-        uint32_t ch16         : 11;
-        uint32_t ch17         :  1; // digital channel
-        uint32_t ch18         :  1; // digital channel
-        uint32_t frame_lost   :  1;
-        uint32_t failsafe_act :  1;
-    };
-} SBUS_DATA_U;
-    
-static SBUS_DATA_U sbus_data;
-static uint16_t sbus_ch_data[ SBUS_CHANNELS ];
-uint16_t sbus_raw[SBUS_CHANNELS];
-
-// define if an sbus input channel is symmetrical or not (i.e. mapped
-// to [0,1] for throttle, flaps, spoilers; [-1,1] for aileron,
-// elevator, rudder
-bool sbus_symmetrical[SBUS_CHANNELS] = {1, 1, 0, 1, 1, 1, 1, 0, 0};
+static const int SBUS_MIN_VALUE = 172;
+static const int SBUS_CENTER_VALUE = 992;
+static const int SBUS_MAX_VALUE = 1811;
+static const int SBUS_RANGE = 1640;
+static const int SBUS_HALF_RANGE = 820;
+static const int SBUS_QUARTER_RANGE = 410;
 
 void sbus_t::parse() {
+    uint16_t sbus_raw[SBUS_CHANNELS];
+    
     // we don't need to return from these, these are just notifying us
     // of receiver state
     if ( sbus_data.failsafe_act ) {
@@ -77,22 +27,22 @@ void sbus_t::parse() {
     if ( sbus_data.frame_lost ) {
         // Serial1.println("SBUS: frame lost");
     }
-    sbus_ch_data[  0 ] = sbus_data.ch1;
-    sbus_ch_data[  1 ] = sbus_data.ch2;
-    sbus_ch_data[  2 ] = ( sbus_data.ch3_hi << 10 ) | sbus_data.ch3_lo;
-    sbus_ch_data[  3 ] = sbus_data.ch4;
-    sbus_ch_data[  4 ] = sbus_data.ch5;
-    sbus_ch_data[  5 ] = ( sbus_data.ch6_hi <<  9 ) | sbus_data.ch6_lo;
-    sbus_ch_data[  6 ] = sbus_data.ch7;
-    sbus_ch_data[  7 ] = sbus_data.ch8;
-    sbus_ch_data[  8 ] = ( sbus_data.ch9_hi <<  8 ) | sbus_data.ch9_lo;
-    sbus_ch_data[  9 ] = sbus_data.ch10;
-    sbus_ch_data[ 10 ] = sbus_data.ch11;
-    sbus_ch_data[ 11 ] = ( sbus_data.ch12_hi << 7 ) | sbus_data.ch12_lo;
-    sbus_ch_data[ 12 ] = sbus_data.ch13;
-    sbus_ch_data[ 13 ] = sbus_data.ch14;
-    sbus_ch_data[ 14 ] = ( sbus_data.ch15_hi << 6 ) | sbus_data.ch15_lo;
-    sbus_ch_data[ 15 ] = sbus_data.ch16;
+    sbus_raw[  0 ] = sbus_data.ch1;
+    sbus_raw[  1 ] = sbus_data.ch2;
+    sbus_raw[  2 ] = ( sbus_data.ch3_hi << 10 ) | sbus_data.ch3_lo;
+    sbus_raw[  3 ] = sbus_data.ch4;
+    sbus_raw[  4 ] = sbus_data.ch5;
+    sbus_raw[  5 ] = ( sbus_data.ch6_hi <<  9 ) | sbus_data.ch6_lo;
+    sbus_raw[  6 ] = sbus_data.ch7;
+    sbus_raw[  7 ] = sbus_data.ch8;
+    sbus_raw[  8 ] = ( sbus_data.ch9_hi <<  8 ) | sbus_data.ch9_lo;
+    sbus_raw[  9 ] = sbus_data.ch10;
+    sbus_raw[ 10 ] = sbus_data.ch11;
+    sbus_raw[ 11 ] = ( sbus_data.ch12_hi << 7 ) | sbus_data.ch12_lo;
+    sbus_raw[ 12 ] = sbus_data.ch13;
+    sbus_raw[ 13 ] = sbus_data.ch14;
+    sbus_raw[ 14 ] = ( sbus_data.ch15_hi << 6 ) | sbus_data.ch15_lo;
+    sbus_raw[ 15 ] = sbus_data.ch16;
 
     uint8_t sbus_flags = 0x00;
     sbus_flags |= sbus_data.ch17;
@@ -102,13 +52,13 @@ void sbus_t::parse() {
     
 #if 0    
     Serial1.print(" ");
-    Serial1.print(sbus_ch_data[0]);
+    Serial1.print(sbus_raw[0]);
     Serial1.print(" ");
-    Serial1.print(sbus_ch_data[1]);
+    Serial1.print(sbus_raw[1]);
     Serial1.print(" ");
-    Serial1.print(sbus_ch_data[2]);
+    Serial1.print(sbus_raw[2]);
     Serial1.print(" ");
-    Serial1.print(sbus_ch_data[3]);
+    Serial1.print(sbus_raw[3]);
     for ( int i = 0; i < SBUS_PAYLOAD_LEN; i++ ) {
         Serial1.print(" ");
         Serial1.print(sbus_data.buf[i], DEC);
@@ -125,11 +75,6 @@ void sbus_t::parse() {
         }
     }
 #endif
-    
-    // copy sbus values to receiver_raw
-    for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
-        sbus_raw[i] = sbus_ch_data[i];
-    }
     
     raw2norm(sbus_raw, receiver_norm);
     receiver_flags = sbus_flags;
