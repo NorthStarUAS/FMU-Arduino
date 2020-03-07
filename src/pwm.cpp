@@ -1,13 +1,36 @@
 #include "actuators.h"
 #include "pwm.h"
 
-const uint8_t marmot1_pins[PWM_CHANNELS] = {21, 22, 23, 2, 3, 4, 5, 6};
-const uint8_t aura2_pins[PWM_CHANNELS] = {6, 5, 4, 3, 23, 22, 21, 20};
+// For a Futaba T6EX 2.4Ghz FASST system:
+//   These number match a futaba T6EX FASST system output
+//   Minimum position = 1107
+//   Center position = 1520
+//   Max position = 1933
+static const int PWM_CENTER = 1520;
+static const int PWM_HALF_RANGE = 413;
+static const int PWM_QUARTER_RANGE = 206;
+static const int PWM_RANGE = PWM_HALF_RANGE * 2;
+static const int PWM_MIN = PWM_CENTER - PWM_HALF_RANGE;
+static const int PWM_MAX = PWM_CENTER + PWM_HALF_RANGE;
+
+static const uint8_t marmot1_pins[PWM_CHANNELS] = {21, 22, 23, 2, 3, 4, 5, 6};
+static const uint8_t aura2_pins[PWM_CHANNELS] = {6, 5, 4, 3, 23, 22, 21, 20};
 static uint8_t servoPins[PWM_CHANNELS];
 
 // define if a channel is symmetrical or not (i.e. mapped to [0,1] for
 // throttle, flaps, spoilers; [-1,1] for aileron, elevator, rudder
-bool pwm_symmetrical[PWM_CHANNELS] = {0, 1, 1, 1, 1, 0, 0, 0};
+static bool pwm_symmetrical[PWM_CHANNELS] = {0, 1, 1, 1, 1, 0, 0, 0};
+
+// This is the hardware PWM generation rate note the default is 50hz
+// and this is the max we can drive analog servos.  Digital servos
+// should be able to run at 200hz.  250hz is getting up close to the
+// theoretical maximum of a 100% duty cycle.  Advantage for running
+// this at 200+hz with digital servos is we should catch commanded
+// position changes slightly faster for a slightly more responsive
+// system (emphasis on slightly).  In practice, changing this to
+// something higher than 50 hz has little practical effect and can
+// often cause problems with ESC's that expect 50hz pwm signals.
+static const int servoFreq_hz = 50; // servo pwm update rate
 
 void pwm_t::setup(int board) {
     Serial.print("PWM: ");
