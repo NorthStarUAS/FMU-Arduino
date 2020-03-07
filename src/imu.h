@@ -5,7 +5,7 @@
 #include "../aura3_messages.h"
 
 class imu_t {
- private:
+private:
     float p_calib = 0.0;
     float q_calib = 0.0;
     float r_calib = 0.0;
@@ -14,7 +14,7 @@ class imu_t {
                 float *r0, float *r1, float *r2);
     void calibrate_gyros(float gx, float gy, float gz);
 
- public:
+public:
     message::config_imu_t config;
     // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished
     int gyros_calibrated = 0;

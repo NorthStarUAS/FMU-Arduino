@@ -11,6 +11,7 @@
 #include "actuators.h"
 #include "airdata.h"
 #include "config.h"
+#include "gps.h"
 #include "imu.h"
 #include "led.h"
 #include "power.h"
@@ -238,51 +239,51 @@ void write_imu_ascii()
 }
 
 /* output a binary representation of the GPS data */
-int comms_t::write_gps_bin(ublox8_nav_pvt_t *gps_data, bool new_gps_data)
+int comms_t::write_gps_bin()
 {
-    byte size = sizeof(*gps_data);
+    byte size = sizeof(gps.gps_data);
 
-    if ( !new_gps_data ) {
+    if ( !gps.new_gps_data ) {
         return 0;
     } else {
-        new_gps_data = false;
+        gps.new_gps_data = false;
     }
 
-    return serial.write_packet( message::aura_nav_pvt_id, (uint8_t *)gps_data, size );
+    return serial.write_packet( message::aura_nav_pvt_id, (uint8_t *)(&(gps.gps_data)), size );
 }
 
-void comms_t::write_gps_ascii(ublox8_nav_pvt_t *gps_data) {
+void comms_t::write_gps_ascii() {
     Serial.print("GPS:");
     Serial.print(" Lat:");
-    Serial.print((double)gps_data->lat / 10000000.0, 7);
-    //Serial.print(gps_data->lat);
+    Serial.print((double)gps.gps_data.lat / 10000000.0, 7);
+    //Serial.print(gps.gps_data.lat);
     Serial.print(" Lon:");
-    Serial.print((double)gps_data->lon / 10000000.0, 7);
-    //Serial.print(gps_data->lon);
+    Serial.print((double)gps.gps_data.lon / 10000000.0, 7);
+    //Serial.print(gps.gps_data.lon);
     Serial.print(" Alt:");
-    Serial.print((float)gps_data->hMSL / 1000.0);
+    Serial.print((float)gps.gps_data.hMSL / 1000.0);
     Serial.print(" Vel:");
-    Serial.print(gps_data->velN / 1000.0);
+    Serial.print(gps.gps_data.velN / 1000.0);
     Serial.print(", ");
-    Serial.print(gps_data->velE / 1000.0);
+    Serial.print(gps.gps_data.velE / 1000.0);
     Serial.print(", ");
-    Serial.print(gps_data->velD / 1000.0);
+    Serial.print(gps.gps_data.velD / 1000.0);
     Serial.print(" GSP:");
-    Serial.print(gps_data->gSpeed, DEC);
+    Serial.print(gps.gps_data.gSpeed, DEC);
     Serial.print(" COG:");
-    Serial.print(gps_data->heading, DEC);
+    Serial.print(gps.gps_data.heading, DEC);
     Serial.print(" SAT:");
-    Serial.print(gps_data->numSV, DEC);
+    Serial.print(gps.gps_data.numSV, DEC);
     Serial.print(" FIX:");
-    Serial.print(gps_data->fixType, DEC);
+    Serial.print(gps.gps_data.fixType, DEC);
     Serial.print(" TIM:");
-    Serial.print(gps_data->hour); Serial.print(':');
-    Serial.print(gps_data->min); Serial.print(':');
-    Serial.print(gps_data->sec);
+    Serial.print(gps.gps_data.hour); Serial.print(':');
+    Serial.print(gps.gps_data.min); Serial.print(':');
+    Serial.print(gps.gps_data.sec);
     Serial.print(" DATE:");
-    Serial.print(gps_data->month); Serial.print('/');
-    Serial.print(gps_data->day); Serial.print('/');
-    Serial.print(gps_data->year);
+    Serial.print(gps.gps_data.month); Serial.print('/');
+    Serial.print(gps.gps_data.day); Serial.print('/');
+    Serial.print(gps.gps_data.year);
     Serial.println();
 }
 

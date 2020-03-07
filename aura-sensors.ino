@@ -7,13 +7,13 @@
 #include "src/airdata.h"
 #include "src/comms.h"
 #include "src/config.h"
+#include "src/gps.h"
 #include "src/imu.h"
 #include "src/led.h"
 #include "src/power.h"
 #include "src/pwm.h"
 #include "src/sbus.h"
 
-#include "src/sensors/UBLOX8/UBLOX8.h"
 #include "src/EKF15/EKF_15state.h"
 
 #include "setup_board.h"
@@ -23,11 +23,6 @@
 
 // Controls and Actuators
 uint8_t test_pwm_channel = -1;
-
-// GPS
-UBLOX8 gps(&Serial3); // ublox m8n
-bool new_gps_data = false;
-ublox8_nav_pvt_t gps_data;
 
 // 15 State EKF
 EKF15 ekf;
@@ -139,7 +134,7 @@ void setup() {
     pwm.setup(config.master.board);
 
     // initialize the gps receiver
-    gps.begin(115200);
+    gps.setup();
 
     // initialize air data (marmot v1)
     airdata.setup();
@@ -171,7 +166,7 @@ void loop() {
         imu.update();
 
         // handle ekf init/update
-        if ( !gps_found and new_gps_data ) {
+        if ( !gps_found and gps.new_gps_data ) {
             gps_found = true;
             gpsSettle = 0;
             Serial.println("EKF: gps found itself");
@@ -187,23 +182,23 @@ void loop() {
         imu1.hx = imu.hx;
         imu1.hy = imu.hy;
         imu1.hz = imu.hz;
-        GPSdata gps;
-        gps.time = imu.imu_micros / 1000000.0;
-        gps.unix_sec = gps.time;
-        gps.lat = gps_data.lat / 10000000.0;
-        gps.lon = gps_data.lon / 10000000.0;
-        gps.alt = gps_data.hMSL / 1000.0;
-        gps.vn = gps_data.velN / 1000.0;
-        gps.ve = gps_data.velE / 1000.0;
-        gps.vd = gps_data.velD / 1000.0;
+        GPSdata gps1;
+        gps1.time = imu.imu_micros / 1000000.0;
+        gps1.unix_sec = gps1.time;
+        gps1.lat = gps.gps_data.lat / 10000000.0;
+        gps1.lon = gps.gps_data.lon / 10000000.0;
+        gps1.alt = gps.gps_data.hMSL / 1000.0;
+        gps1.vn = gps.gps_data.velN / 1000.0;
+        gps1.ve = gps.gps_data.velE / 1000.0;
+        gps1.vd = gps.gps_data.velD / 1000.0;
         if ( !ekf_inited and gps_found and gpsSettle > 10000 ) {
-            ekf.init(imu1, gps);
+            ekf.init(imu1, gps1);
             ekf_inited = true;
             Serial.println("EKF: initialized");
         } else if ( ekf_inited ) {
             ekf.time_update(imu1);
-            if ( new_gps_data ) {
-                ekf.measurement_update(gps);
+            if ( gps.new_gps_data ) {
+                ekf.measurement_update(gps1);
             }
             NAVdata nav = ekf.get_nav();
             Serial.print("ekf pos: ");
@@ -224,7 +219,7 @@ void loop() {
         
         // output keyed off new IMU data
         comms.output_counter += comms.write_pilot_in_bin();
-        comms.output_counter += comms.write_gps_bin(&gps_data, new_gps_data);
+        comms.output_counter += comms.write_gps_bin();
         comms.output_counter += comms.write_airdata_bin();
         comms.output_counter += comms.write_power_bin();
         // do a little extra dance with the return value because write_status_info_bin()
@@ -238,7 +233,7 @@ void loop() {
             debugTimer = 0;
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
-            comms.write_gps_ascii(&gps_data);
+            comms.write_gps_ascii();
             // write_airdata_ascii();
             // write_status_info_ascii();
             // write_imu_ascii();
@@ -258,12 +253,8 @@ void loop() {
         power.update();
     }
 
-    // suck in any available gps bytes
-    if ( gps.read_ublox8() ) {
-        new_gps_data = true;
-        // gps_data = gps.get_data();
-        gps.update_data(&gps_data, sizeof(gps_data));
-    }
+    // suck in any available gps messages
+    gps.update();
 
     // keep processing while there is data in the uart buffer
     while ( sbus.process() );
@@ -272,5 +263,5 @@ void loop() {
     comms.read_commands();
 
     // blink the led on boards that support it
-    led.update(imu.gyros_calibrated, gps_data.fixType);
+    led.update(imu.gyros_calibrated, gps.gps_data.fixType);
 }

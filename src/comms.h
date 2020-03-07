@@ -17,8 +17,8 @@ public:
     int write_ack_bin( uint8_t command_id, uint8_t subcommand_id );
     int write_pilot_in_bin();
     int write_imu_bin();
-    int write_gps_bin(ublox8_nav_pvt_t *gps_data, bool new_gps_data);
-    void write_gps_ascii(ublox8_nav_pvt_t *gps_data);
+    int write_gps_bin();
+    void write_gps_ascii();
     int write_airdata_bin();
     int write_power_bin();
     int write_status_info_bin();

@@ -72,7 +72,7 @@ bool UBLOX8::read_ublox8() {
 	    msg_id = _port->read();
 	    cksum_A += msg_id;
 	    cksum_B += cksum_A;
-            Serial.print("msg id = "); Serial.println(msg_id);
+            // Serial.print("msg id = "); Serial.println(msg_id);
 	    state = 4;
 	}
     }
