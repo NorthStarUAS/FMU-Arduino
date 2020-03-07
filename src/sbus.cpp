@@ -1,4 +1,8 @@
+#include "actuators.h"
+#include "pwm.h"
 #include "setup_sbus.h"
+
+#include "sbus.h"
 
 #define SBUS_SIGNAL_OK          0x00
 #define SBUS_SIGNAL_LOST        0x01
@@ -64,7 +68,7 @@ uint16_t sbus_raw[SBUS_CHANNELS];
 // elevator, rudder
 bool sbus_symmetrical[SBUS_CHANNELS] = {1, 1, 0, 1, 1, 1, 1, 0, 0};
 
-void sbus_parse() {
+void sbus_t::parse() {
     // we don't need to return from these, these are just notifying us
     // of receiver state
     if ( sbus_data.failsafe_act ) {
@@ -127,19 +131,19 @@ void sbus_parse() {
         sbus_raw[i] = sbus_ch_data[i];
     }
     
-    sbus_raw2norm(sbus_raw, receiver_norm);
+    raw2norm(sbus_raw, receiver_norm);
     receiver_flags = sbus_flags;
 
     if ( receiver_norm[0] < 0.0 ) {
         // manual flight mode requested, let's get it done right now
-        sas_update( receiver_norm );
-        mixing_update( receiver_norm );
-        pwm_update(); // for the outputs
+        actuators.sas_update( receiver_norm );
+        actuators.mixing_update( receiver_norm );
+        pwm.update(); // for the outputs
     }
 }
 
 // setup the sbus (currently hard coded on Serial2)
-void sbus_setup() {
+void sbus_t::setup() {
     Serial2.begin(100000,SERIAL_8E1_RXINV_TXINV); // newer teensies should use SERIAL_8E2_RXINV_TXINV
     Serial.println("SBUS on Serial2 (SERIAL_8E2)");
 
@@ -152,7 +156,7 @@ void sbus_setup() {
 // data is read when a full packet is read, send that to the parser
 // which will push the new data into the various data structures and
 // trigger and output of new actuator (currently PWM only) values.
-bool sbus_process() {
+bool sbus_t::process() {
     static byte state = 0;
     byte input;
     bool new_data = false;
@@ -192,7 +196,7 @@ bool sbus_process() {
             //Serial1.println("bytes are available");
             input = Serial2.read();
             if ( input == SBUS_FOOTER_VALUE ) {
-                sbus_parse();
+                parse();
                 state = 0; 
             } else {
                 //Serial1.println("wrong sbus footer value, skipping ahead to next footer byte");
@@ -213,7 +217,7 @@ bool sbus_process() {
 }
 
 // compute normalized command values from the raw sbus values
-void sbus_raw2norm( uint16_t *raw, float *norm ) {
+void sbus_t::raw2norm( uint16_t *raw, float *norm ) {
     for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
         // convert to normalized form
         if ( sbus_symmetrical[i] ) {
@@ -226,3 +230,5 @@ void sbus_raw2norm( uint16_t *raw, float *norm ) {
     }
 }
 
+// global shared instance
+sbus_t sbus;

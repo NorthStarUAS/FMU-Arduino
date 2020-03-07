@@ -36,3 +36,5 @@ void led_t::update(int gyros_calibrated, int gps_fix) {
     }
 }
         
+// global shared instance
+led_t led;

@@ -28,7 +28,7 @@ bool UBLOX8::read_ublox8() {
     uint8_t input;
     static uint8_t payload[500];
 
-    // printf("read ublox8, entry state = %d\n", state);
+    // Serial.print("read ublox8, entry state = "); Serial.println(state);
 
     bool new_data = false;
 
@@ -72,7 +72,7 @@ bool UBLOX8::read_ublox8() {
 	    msg_id = _port->read();
 	    cksum_A += msg_id;
 	    cksum_B += cksum_A;
-            // Serial.print("msg id = "); Serial.println(msg_id);
+            Serial.print("msg id = "); Serial.println(msg_id);
 	    state = 4;
 	}
     }

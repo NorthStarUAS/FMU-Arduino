@@ -3,40 +3,25 @@
 
 #include "src/util/definition-tree2.h"
 
+#include "src/actuators.h"
 #include "src/airdata.h"
+#include "src/comms.h"
+#include "src/config.h"
 #include "src/imu.h"
 #include "src/led.h"
+#include "src/power.h"
+#include "src/pwm.h"
+#include "src/sbus.h"
 
 #include "src/sensors/UBLOX8/UBLOX8.h"
-#include "src/util/serial_link.h"
 #include "src/EKF15/EKF_15state.h"
 
 #include "setup_board.h"
-#include "setup_sbus.h"
-#include "setup_pwm.h"
+#include "src/setup_sbus.h"
+#include "src/setup_pwm.h"
 #include "aura3_messages.h"
 
-// master config (for messages and saving in eeprom)
-message::config_master_t config_master;
-message::config_actuators_t config_actuators;
-message::config_power_t config_power;
-int config_size = 0;
-
-// Air Data
-airdata_t airdata;
-
-// IMU
-imu_t imu;
-
-// LED
-led_t led;
-
 // Controls and Actuators
-float receiver_norm[SBUS_CHANNELS];
-uint8_t receiver_flags = 0x00;
-float autopilot_norm[SBUS_CHANNELS];
-float actuator_norm[SBUS_CHANNELS];
-uint16_t actuator_pwm[PWM_CHANNELS];
 uint8_t test_pwm_channel = -1;
 
 // GPS
@@ -44,83 +29,64 @@ UBLOX8 gps(&Serial3); // ublox m8n
 bool new_gps_data = false;
 ublox8_nav_pvt_t gps_data;
 
-// Power
-const float analogResolution = 65535.0f;
-const float pwr_scale = 11.0f;
-const float avionics_scale = 2.0f;
-uint8_t avionics_pin;
-uint8_t source_volt_pin;
-uint8_t atto_volts_pin = A2;
-uint8_t atto_amps_pin = A3;
-float pwr1_v = 0.0;
-float pwr2_v = 0.0;
-float avionics_v = 0.0;
-float pwr_a = 0.0;
-    
-// COMS
-// Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in
-// aura-v2 and marmot-v1 hardware
-unsigned long output_counter = 0;
-SerialLink serial;
-
 // 15 State EKF
 EKF15 ekf;
 
 // force/hard-code a specific board config if desired
 void force_config_aura3() {
     Serial.println("Forcing an aura v2 eeprom config");
-    config_master.board = 1;    // 0 = marmot v1, 1 = aura v2
+    config.master.board = 1;    // 0 = marmot v1, 1 = aura v2
     imu.defaults_aura3();
     airdata.defaults_aura3();
     led.defaults_aura3();
-    config_power.have_attopilot = true;
-    config_actuators.act_gain[0] = 1.0;
-    config_actuators.act_gain[1] = 1.0;
-    config_actuators.act_gain[2] = -1.0;
-    config_actuators.act_gain[3] = 1.0;
-    config_actuators.act_gain[4] = -1.0;
-    config_actuators.mix_vtail = true;
-    config_actuators.mix_Gve = 1.0;
-    config_actuators.mix_Gvr = 1.0;
-    config_actuators.mix_flaperon = true;
-    config_actuators.mix_Gfa = 1.0;
-    config_actuators.mix_Gff = 1.0;
-    config_actuators.mix_autocoord = true;
-    config_actuators.mix_Gac = 0.25;
-    config_actuators.sas_rollaxis = true;
-    config_actuators.sas_pitchaxis = true;
-    config_actuators.sas_yawaxis = true;
-    config_actuators.sas_rollgain = 0.2;
-    config_actuators.sas_pitchgain = 0.2;
-    config_actuators.sas_yawgain = 0.2;
+    config.power.have_attopilot = true;
+    actuators.config.act_gain[0] = 1.0;
+    actuators.config.act_gain[1] = 1.0;
+    actuators.config.act_gain[2] = -1.0;
+    actuators.config.act_gain[3] = 1.0;
+    actuators.config.act_gain[4] = -1.0;
+    actuators.config.mix_vtail = true;
+    actuators.config.mix_Gve = 1.0;
+    actuators.config.mix_Gvr = 1.0;
+    actuators.config.mix_flaperon = true;
+    actuators.config.mix_Gfa = 1.0;
+    actuators.config.mix_Gff = 1.0;
+    actuators.config.mix_autocoord = true;
+    actuators.config.mix_Gac = 0.25;
+    actuators.config.sas_rollaxis = true;
+    actuators.config.sas_pitchaxis = true;
+    actuators.config.sas_yawaxis = true;
+    actuators.config.sas_rollgain = 0.2;
+    actuators.config.sas_pitchgain = 0.2;
+    actuators.config.sas_yawgain = 0.2;
 }
 
 // force/hard-code a specific board config if desired
 void force_config_goldy3() {
     Serial.println("Forcing a bfs/marmot eeprom config");
-    config_master.board = 0;    // 0 = marmot v1, 1 = aura v2
+    config.master.board = 0;    // 0 = marmot v1, 1 = aura v2
     imu.defaults_goldy3();
     airdata.defaults_goldy3();
     led.defaults_goldy3();
-    config_actuators.act_gain[0] = 1.0;
-    config_actuators.act_gain[1] = 1.0;
-    config_actuators.act_gain[2] = -1.0;
-    config_actuators.act_gain[3] = 1.0;
-    config_actuators.act_gain[4] = -1.0;
-    config_actuators.mix_vtail = true;
-    config_actuators.mix_Gve = 1.0;
-    config_actuators.mix_Gvr = 1.0;
-    config_actuators.mix_flaperon = true;
-    config_actuators.mix_Gfa = 1.0;
-    config_actuators.mix_Gff = 1.0;
-    config_actuators.mix_autocoord = true;
-    config_actuators.mix_Gac = 0.25;
-    config_actuators.sas_rollaxis = true;
-    config_actuators.sas_pitchaxis = true;
-    config_actuators.sas_yawaxis = true;
-    config_actuators.sas_rollgain = 0.2;
-    config_actuators.sas_pitchgain = 0.2;
-    config_actuators.sas_yawgain = 0.2;
+    actuators.config.act_gain[0] = 1.0;
+    actuators.config.act_gain[1] = 1.0;
+    actuators.config.act_gain[2] = -1.0;
+    actuators.config.act_gain[3] = 1.0;
+    actuators.config.act_gain[4] = -1.0;
+    actuators.config.mix_vtail = true;
+    actuators.config.mix_Gve = 1.0;
+    actuators.config.mix_Gvr = 1.0;
+    actuators.config.mix_flaperon = true;
+    actuators.config.mix_Gfa = 1.0;
+    actuators.config.mix_Gff = 1.0;
+    actuators.config.mix_autocoord = true;
+    actuators.config.mix_Gac = 0.25;
+    actuators.config.sas_rollaxis = true;
+    actuators.config.sas_pitchaxis = true;
+    actuators.config.sas_yawaxis = true;
+    actuators.config.sas_rollgain = 0.2;
+    actuators.config.sas_pitchgain = 0.2;
+    actuators.config.sas_yawgain = 0.2;
 }
 
 void setup() {
@@ -129,7 +95,7 @@ void setup() {
     Serial.begin(DEFAULT_BAUD);
     delay(1000);  // hopefully long enough for serial to come alive
 
-    serial.open(DEFAULT_BAUD, &Serial1);
+    comms.setup();
 
     Serial.print("\nAura Sensors: Rev "); Serial.println(FIRMWARE_REV);
     Serial.println("You are seeing this message on the usb interface.");
@@ -139,20 +105,20 @@ void setup() {
     
     // The following code (when enabled) will force setting a specific
     // device serial number when the device boots:
-    // set_serial_number(116);
+    // config.set_serial_number(116);
     
-    read_serial_number();
+    config.read_serial_number();
     
-    if ( !config_read_eeprom() ) {
+    if ( !config.read_eeprom() ) {
         Serial.println("Resetting eeprom to default values.");
-        config_load_defaults();
-        config_write_eeprom();
+        config.load_defaults();
+        config.write_eeprom();
     } else {
         Serial.println("Successfully loaded eeprom config.");
     }
     
     Serial.print("Serial Number: ");
-    Serial.println(read_serial_number());
+    Serial.println(config.read_serial_number());
     delay(100);
 
     // force/hard-code a specific board config if desired
@@ -164,10 +130,13 @@ void setup() {
     delay(100);
 
     // initialize the SBUS receiver
-    sbus_setup();
+    sbus.setup();
 
+    // intialize actuators (before pwm)
+    actuators.setup();
+    
     // initialize PWM output
-    pwm_setup();
+    pwm.setup(config.master.board);
 
     // initialize the gps receiver
     gps.begin(115200);
@@ -175,28 +144,9 @@ void setup() {
     // initialize air data (marmot v1)
     airdata.setup();
     
-    // set up ADC0
-    analogReadResolution(16);
-
     // power sensing
-    if ( config_master.board == 0 ) {
-        // Marmot v1
-        #ifdef HAVE_TEENSY36    // A22 doesn't exist for teensy3.2
-        avionics_pin = A22;
-        #endif
-        source_volt_pin = 15;
-    } else if ( config_master.board == 1 ) {
-        // Aura v2
-        avionics_pin = A1;
-        source_volt_pin = A0;
-        if ( config_power.have_attopilot ) {
-            Serial.println("Attopilot enabled.");
-            atto_volts_pin = A2;
-            atto_amps_pin = A3;
-        }
-    } else {
-        Serial.println("Master board configuration not defined correctly.");
-    }
+    analogReadResolution(16);   // set up ADC0
+    power.setup();
     
     // led for status blinking if defined
     led.setup();
@@ -273,23 +223,23 @@ void loop() {
         }
         
         // output keyed off new IMU data
-        output_counter += write_pilot_in_bin();
-        output_counter += write_gps_bin();
-        output_counter += write_airdata_bin();
-        output_counter += write_power_bin();
+        comms.output_counter += comms.write_pilot_in_bin();
+        comms.output_counter += comms.write_gps_bin(&gps_data, new_gps_data);
+        comms.output_counter += comms.write_airdata_bin();
+        comms.output_counter += comms.write_power_bin();
         // do a little extra dance with the return value because write_status_info_bin()
-        // can reset output_counter (but that gets ignored if we do the math in one step)
-        uint8_t result = write_status_info_bin();
-        output_counter += result;
-        output_counter += write_imu_bin(); // write IMU data last as an implicit 'end of data frame' marker.
+        // can reset comms.output_counter (but that gets ignored if we do the math in one step)
+        uint8_t result = comms.write_status_info_bin();
+        comms.output_counter += result;
+        comms.output_counter += comms.write_imu_bin(); // write IMU data last as an implicit 'end of data frame' marker.
 
         // 10hz human debugging output, but only after gyros finish calibrating
         if ( debugTimer >= 100 && imu.gyros_calibrated == 2) {
             debugTimer = 0;
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
-            // write_gps_ascii();
-            write_airdata_ascii();
+            comms.write_gps_ascii(&gps_data);
+            // write_airdata_ascii();
             // write_status_info_ascii();
             // write_imu_ascii();
         }
@@ -298,25 +248,14 @@ void loop() {
         // (for debugging or validation.)
         test_pwm_channel = -1;  // zero is throttle so be careful!
         if ( test_pwm_channel >= 0 ) {
-            pwm_update();
+            pwm.update(test_pwm_channel);
         }
 
         // poll the pressure sensors
         airdata.update();
 
-        // battery voltage
-        uint16_t ain;
-        ain = analogRead(source_volt_pin);
-        pwr1_v = ((float)ain) * 3.3 / analogResolution * pwr_scale;
-
-        ain = analogRead(avionics_pin);
-        avionics_v = ((float)ain) * 3.3 / analogResolution * avionics_scale;
-
-        if ( config_power.have_attopilot ) {
-            ain = analogRead(atto_volts_pin);
-            // Serial.print("atto volts: ");
-            // Serial.println( ((float)ain) * 3.3 / analogResolution );
-        }
+        // read power values
+        power.update();
     }
 
     // suck in any available gps bytes
@@ -327,13 +266,10 @@ void loop() {
     }
 
     // keep processing while there is data in the uart buffer
-    while ( sbus_process() );
+    while ( sbus.process() );
 
     // suck in any host commmands (flight control updates, etc.)
-    // debug: while ( Serial1.available() ) Serial1.read();
-    while ( serial.update() ) {
-        parse_message_bin( serial.pkt_id, serial.payload, serial.pkt_len );
-    }
+    comms.read_commands();
 
     // blink the led on boards that support it
     led.update(imu.gyros_calibrated, gps_data.fixType);

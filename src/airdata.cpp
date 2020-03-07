@@ -173,3 +173,6 @@ void airdata_t::update() {
         pitot_found = true;
     }
 }
+
+// shared global instance
+airdata_t airdata;

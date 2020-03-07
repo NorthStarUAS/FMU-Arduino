@@ -193,3 +193,6 @@ void imu_t::calibrate_gyros(float gx, float gy, float gz) {
         }
     }
 }
+
+// global shared instance
+imu_t imu;

@@ -1,5 +1,7 @@
 // Airdata class
 
+#pragma once
+
 #include "../aura3_messages.h"
 
 class airdata_t {
@@ -22,3 +24,5 @@ class airdata_t {
     void setup();
     void update();
 };
+
+extern airdata_t airdata;

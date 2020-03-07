@@ -1,4 +1,12 @@
+#include <Arduino.h>
 #include <EEPROM.h>
+
+#include "actuators.h"
+#include "airdata.h"
+#include "comms.h"
+#include "config.h"
+#include "imu.h"
+#include "led.h"
 
 // starting point for writing big eeprom struct
 static const int CONFIG_OFFSET = 2;
@@ -9,7 +17,7 @@ static const uint8_t START_OF_CFG1 = 224;
 // global definitions
 uint16_t serial_number;
 
-uint16_t read_serial_number() {
+uint16_t config_t::read_serial_number() {
     uint8_t lo = EEPROM.read(0);
     uint8_t hi = EEPROM.read(1);
     // Serial.printf(" raw serial number read %d %d\n", hi, lo);
@@ -17,7 +25,7 @@ uint16_t read_serial_number() {
     return serial_number;
 };
 
-int set_serial_number(uint16_t value) {
+uint16_t config_t::set_serial_number(uint16_t value) {
     serial_number = value;
     uint16_t hi = serial_number / 256;
     uint16_t lo = serial_number - (hi * 256);
@@ -27,23 +35,23 @@ int set_serial_number(uint16_t value) {
     return serial_number;
 };
 
-void master_defaults() {
-    config_master.board = 0;
+void config_t::master_defaults() {
+    master.board = 0;
 }
 
-void power_defaults() {
-     config_power.have_attopilot = false;
+void config_t::power_defaults() {
+     power.have_attopilot = false;
 }
 
-void config_load_defaults() {
+void config_t::load_defaults() {
     Serial.println("Setting default config ...");
     master_defaults();
     imu.defaults_goldy3();
     led.defaults_goldy3();
-    pwm_defaults();
-    act_gain_defaults();
-    mixing_defaults();
-    sas_defaults();
+    actuators.pwm_defaults();
+    actuators.act_gain_defaults();
+    actuators.mixing_defaults();
+    actuators.sas_defaults();
     power_defaults();
 }
 
@@ -54,16 +62,16 @@ int extract_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
     return len;
 }
 
-int config_read_eeprom() {
+int config_t::read_eeprom() {
     // call pack to initialize internal stucture len
-    config_master.pack();
+    master.pack();
     imu.config.pack();
-    config_actuators.pack();
+    actuators.config.pack();
     airdata.config.pack();
-    config_power.pack();
+    power.pack();
     led.config.pack();
-    config_size = config_master.len + imu.config.len +
-        config_actuators.len + airdata.config.len + config_power.len +
+    config_size = master.len + imu.config.len +
+        actuators.config.len + airdata.config.len + power.len +
         led.config.len;
     uint8_t config_buf[config_size];
     int status = 0;
@@ -79,23 +87,23 @@ int config_read_eeprom() {
         interrupts()
         byte calc_cksum0 = 0;
         byte calc_cksum1 = 0;
-        serial.checksum( START_OF_CFG0 /* arbitrary magic # */, START_OF_CFG1 /* arbitrary magic # */, (byte *)&config_buf, config_size, &calc_cksum0, &calc_cksum1 );
+        comms.serial.checksum( START_OF_CFG0 /* arbitrary magic # */, START_OF_CFG1 /* arbitrary magic # */, (byte *)&config_buf, config_size, &calc_cksum0, &calc_cksum1 );
         if ( read_cksum0 != calc_cksum0 || read_cksum1 != calc_cksum1 ) {
             Serial.println("Check sum error!");
         } else {
             status = 1;
             // assemble packed config buffer
             int pos = 0;
-            config_master.unpack((uint8_t *)&(config_buf[pos]), config_master.len);
-            pos += config_master.len;
+            master.unpack((uint8_t *)&(config_buf[pos]), master.len);
+            pos += master.len;
             imu.config.unpack((uint8_t *)&(config_buf[pos]), imu.config.len);
             pos += imu.config.len;
-            config_actuators.unpack((uint8_t *)&(config_buf[pos]), config_actuators.len);
-            pos += config_actuators.len;
+            actuators.config.unpack((uint8_t *)&(config_buf[pos]), actuators.config.len);
+            pos += actuators.config.len;
             airdata.config.unpack((uint8_t *)&(config_buf[pos]), airdata.config.len);
             pos += airdata.config.len;
-            config_power.unpack((uint8_t *)&(config_buf[pos]), config_power.len);
-            pos += config_power.len;
+            power.unpack((uint8_t *)&(config_buf[pos]), power.len);
+            pos += power.len;
             led.config.unpack((uint8_t *)&(config_buf[pos]), led.config.len);
             pos += led.config.len;
         }
@@ -112,22 +120,22 @@ int build_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
     return len;
 }
 
-int config_write_eeprom() {
+int config_t::write_eeprom() {
     // create packed version of messages
-    config_master.pack();
+    master.pack();
     imu.config.pack();
-    config_actuators.pack();
+    actuators.config.pack();
     airdata.config.pack();
-    config_power.pack();
+    power.pack();
     led.config.pack();
     // assemble packed config buffer
     uint8_t config_buf[config_size];
     int pos = 0;
-    pos += build_config_buf( config_buf, pos, config_master.payload, config_master.len );
+    pos += build_config_buf( config_buf, pos, master.payload, master.len );
     pos += build_config_buf( config_buf, pos, imu.config.payload, imu.config.len );
-    pos += build_config_buf( config_buf, pos, config_actuators.payload, config_actuators.len );
+    pos += build_config_buf( config_buf, pos, actuators.config.payload, actuators.config.len );
     pos += build_config_buf( config_buf, pos, airdata.config.payload, airdata.config.len );
-    pos += build_config_buf( config_buf, pos, config_power.payload, config_power.len );
+    pos += build_config_buf( config_buf, pos, power.payload, power.len );
     pos += build_config_buf( config_buf, pos, led.config.payload, led.config.len );
     
     Serial.println("Write EEPROM (any changed bytes) ...");
@@ -135,7 +143,7 @@ int config_write_eeprom() {
     if ( config_size + CONFIG_OFFSET <= E2END - 2 /* checksum */ + 1 ) {
         byte calc_cksum0 = 0;
         byte calc_cksum1 = 0;
-        serial.checksum( START_OF_CFG0 /* arbitrary magic # */, START_OF_CFG1 /* arbitrary magic # */, (byte *)&config_buf, config_size, &calc_cksum0, &calc_cksum1 );
+        comms.serial.checksum( START_OF_CFG0 /* arbitrary magic # */, START_OF_CFG1 /* arbitrary magic # */, (byte *)&config_buf, config_size, &calc_cksum0, &calc_cksum1 );
         noInterrupts();
         for ( int i = 0; i < config_size; i++ ) {
             EEPROM.update(CONFIG_OFFSET + i, config_buf[i]);
@@ -149,3 +157,6 @@ int config_write_eeprom() {
     }
     return status;
 }
+
+// global shared instance
+config_t config;

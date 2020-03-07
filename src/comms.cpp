@@ -6,11 +6,28 @@
  * Following that is a two byte check sum.  The check sum includes the packet id and size as well as the data.
  */
 
-#include "src/util/serial_link.h"
-#include "aura3_messages.h"
+#include <Arduino.h>
 
+#include "actuators.h"
+#include "airdata.h"
+#include "config.h"
+#include "imu.h"
+#include "led.h"
+#include "power.h"
+#include "pwm.h"
+#include "setup_pwm.h"
+#include "sbus.h"
+#include "util/serial_link.h"
+#include "../setup_board.h"
+#include "../aura3_messages.h"
 
-bool parse_message_bin( byte id, byte *buf, byte message_size )
+#include "comms.h"
+
+void comms_t::setup() {
+    serial.open(DEFAULT_BAUD, &Serial1);
+}
+
+bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
 {
     bool result = false;
 
@@ -23,22 +40,22 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             // autopilot_norm uses the same channel mapping as sbus_norm,
             // so map ap_tmp values to their correct places in
             // autopilot_norm
-            autopilot_norm[0] = receiver_norm[0]; // auto/manual switch
-            autopilot_norm[1] = receiver_norm[1]; // throttle enable
-            autopilot_norm[2] = inceptors.channel[0];        // throttle
+            autopilot_norm[0] = sbus.receiver_norm[0]; // auto/manual switch
+            autopilot_norm[1] = sbus.receiver_norm[1]; // throttle enable
+            autopilot_norm[2] = inceptors.channel[0];  // throttle
             autopilot_norm[3] = inceptors.channel[1];
             autopilot_norm[4] = inceptors.channel[2];
             autopilot_norm[5] = inceptors.channel[3];
             autopilot_norm[6] = inceptors.channel[4];
             autopilot_norm[7] = inceptors.channel[5];
 
-            if ( receiver_norm[0] > 0.0 ) {
+            if ( sbus.receiver_norm[0] > 0.0 ) {
                 // autopilot mode active (determined elsewhere when each
                 // new receiver frame is ready) mix the inputs and write
                 // the actuator outputs now
-                sas_update( autopilot_norm );
-                mixing_update( autopilot_norm );
-                pwm_update();
+                actuators.sas_update( autopilot_norm );
+                actuators.mixing_update( autopilot_norm );
+                pwm.update();
             } else {
                 // manual mode, do nothing with actuator commands from the
                 // autopilot
@@ -46,10 +63,10 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             result = true;
         }
     } else if ( id == message::config_master_id ) {
-        config_master.unpack(buf, message_size);
-        if ( message_size == config_master.len ) {
+        config.master.unpack(buf, message_size);
+        if ( message_size == config.master.len ) {
             Serial.println("received master config");
-            config_write_eeprom();
+            config.write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
         }
@@ -57,16 +74,17 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         imu.config.unpack(buf, message_size);
         if ( message_size == imu.config.len ) {
             Serial.println("received imu config");
-            config_write_eeprom();
+            config.write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
         }
     } else if ( id == message::config_actuators_id ) {
-        config_actuators.unpack(buf, message_size);
-        if ( message_size == config_actuators.len ) {
+        actuators.config.unpack(buf, message_size);
+        if ( message_size == actuators.config.len ) {
             Serial.println("received new actuator config");
-            pwm_setup();  // update pwm config in case it has been changed.
-            config_write_eeprom();
+            // update pwm config in case it has been changed.
+            pwm.setup(config.master.board);
+            config.write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
         }
@@ -74,15 +92,15 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         airdata.config.unpack(buf, message_size);
         if ( message_size == airdata.config.len ) {
             Serial.println("received new airdata config");
-            config_write_eeprom();
+            config.write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
         }
     } else if ( id == message::config_power_id ) {
-        config_power.unpack(buf, message_size);
-        if ( message_size == config_power.len ) {
+        config.power.unpack(buf, message_size);
+        if ( message_size == config.power.len ) {
             Serial.println("received new power config");
-            config_write_eeprom();
+            config.write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
         }
@@ -90,7 +108,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
         led.config.unpack(buf, message_size);
         if ( message_size == led.config.len ) {
             Serial.println("received new led config");
-            config_write_eeprom();
+            config.write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
         }
@@ -107,7 +125,7 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
 
 
 /* output an acknowledgement of a message received */
-int write_ack_bin( uint8_t command_id, uint8_t subcommand_id )
+int comms_t::write_ack_bin( uint8_t command_id, uint8_t subcommand_id )
 {
     static message::command_ack_t ack;
     ack.command_id = command_id;
@@ -118,7 +136,7 @@ int write_ack_bin( uint8_t command_id, uint8_t subcommand_id )
 
 
 /* output a binary representation of the pilot (rc receiver) data */
-int write_pilot_in_bin()
+int comms_t::write_pilot_in_bin()
 {
     static message::pilot_t pilot;
 
@@ -128,11 +146,11 @@ int write_pilot_in_bin()
     
     // receiver data
     for ( int i = 0; i < message::sbus_channels; i++ ) {
-        pilot.channel[i] = receiver_norm[i];
+        pilot.channel[i] = sbus.receiver_norm[i];
     }
 
     // flags
-    pilot.flags = receiver_flags;
+    pilot.flags = sbus.receiver_flags;
     
     pilot.pack();
     return serial.write_packet( pilot.id, pilot.payload, pilot.len);
@@ -141,21 +159,21 @@ int write_pilot_in_bin()
 void write_pilot_in_ascii()
 {
     // pilot (receiver) input data
-    if ( receiver_flags & SBUS_FAILSAFE ) {
+    if ( sbus.receiver_flags & SBUS_FAILSAFE ) {
         Serial.print("FAILSAFE! ");
     }
-    if ( receiver_norm[0] < 0 ) {
+    if ( sbus.receiver_norm[0] < 0 ) {
         Serial.print("(Manual) ");
     } else {
         Serial.print("(Auto) ");
     }
-    if ( receiver_norm[1] < 0 ) {
+    if ( sbus.receiver_norm[1] < 0 ) {
         Serial.print("(Throttle safety) ");
     } else {
         Serial.print("(Throttle enable) ");
     }
     for ( int i = 0; i < 8; i++ ) {
-        Serial.print(receiver_norm[i], 3);
+        Serial.print(sbus.receiver_norm[i], 3);
         Serial.print(" ");
     }
     Serial.println();
@@ -166,14 +184,14 @@ void write_actuator_out_ascii()
     // actuator output
     Serial.print("RCOUT:");
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-        Serial.print(actuator_pwm[i]);
+        Serial.print(pwm.actuator_pwm[i]);
         Serial.print(" ");
     }
     Serial.println();
 }
 
 /* output a binary representation of the IMU data (note: scaled to 16bit values) */
-int write_imu_bin()
+int comms_t::write_imu_bin()
 {
     const float _pi = 3.14159265358979323846;
     const float _g = 9.807;
@@ -220,9 +238,9 @@ void write_imu_ascii()
 }
 
 /* output a binary representation of the GPS data */
-int write_gps_bin()
+int comms_t::write_gps_bin(ublox8_nav_pvt_t *gps_data, bool new_gps_data)
 {
-    byte size = sizeof(gps_data);
+    byte size = sizeof(*gps_data);
 
     if ( !new_gps_data ) {
         return 0;
@@ -230,46 +248,46 @@ int write_gps_bin()
         new_gps_data = false;
     }
 
-    return serial.write_packet( message::aura_nav_pvt_id, (uint8_t *)&gps_data, size );
+    return serial.write_packet( message::aura_nav_pvt_id, (uint8_t *)gps_data, size );
 }
 
-void write_gps_ascii() {
+void comms_t::write_gps_ascii(ublox8_nav_pvt_t *gps_data) {
     Serial.print("GPS:");
     Serial.print(" Lat:");
-    Serial.print((double)gps_data.lat / 10000000.0, 7);
-    //Serial.print(gps_data.lat);
+    Serial.print((double)gps_data->lat / 10000000.0, 7);
+    //Serial.print(gps_data->lat);
     Serial.print(" Lon:");
-    Serial.print((double)gps_data.lon / 10000000.0, 7);
-    //Serial.print(gps_data.lon);
+    Serial.print((double)gps_data->lon / 10000000.0, 7);
+    //Serial.print(gps_data->lon);
     Serial.print(" Alt:");
-    Serial.print((float)gps_data.hMSL / 1000.0);
+    Serial.print((float)gps_data->hMSL / 1000.0);
     Serial.print(" Vel:");
-    Serial.print(gps_data.velN / 1000.0);
+    Serial.print(gps_data->velN / 1000.0);
     Serial.print(", ");
-    Serial.print(gps_data.velE / 1000.0);
+    Serial.print(gps_data->velE / 1000.0);
     Serial.print(", ");
-    Serial.print(gps_data.velD / 1000.0);
+    Serial.print(gps_data->velD / 1000.0);
     Serial.print(" GSP:");
-    Serial.print(gps_data.gSpeed, DEC);
+    Serial.print(gps_data->gSpeed, DEC);
     Serial.print(" COG:");
-    Serial.print(gps_data.heading, DEC);
+    Serial.print(gps_data->heading, DEC);
     Serial.print(" SAT:");
-    Serial.print(gps_data.numSV, DEC);
+    Serial.print(gps_data->numSV, DEC);
     Serial.print(" FIX:");
-    Serial.print(gps_data.fixType, DEC);
+    Serial.print(gps_data->fixType, DEC);
     Serial.print(" TIM:");
-    Serial.print(gps_data.hour); Serial.print(':');
-    Serial.print(gps_data.min); Serial.print(':');
-    Serial.print(gps_data.sec);
+    Serial.print(gps_data->hour); Serial.print(':');
+    Serial.print(gps_data->min); Serial.print(':');
+    Serial.print(gps_data->sec);
     Serial.print(" DATE:");
-    Serial.print(gps_data.month); Serial.print('/');
-    Serial.print(gps_data.day); Serial.print('/');
-    Serial.print(gps_data.year);
+    Serial.print(gps_data->month); Serial.print('/');
+    Serial.print(gps_data->day); Serial.print('/');
+    Serial.print(gps_data->year);
     Serial.println();
 }
 
 /* output a binary representation of the barometer data */
-int write_airdata_bin()
+int comms_t::write_airdata_bin()
 {
     static message::airdata_t airdata1;
     airdata1.baro_press_pa = airdata.baro_press;
@@ -297,15 +315,15 @@ void write_airdata_ascii()
 }
 
 /* output a binary representation of various volt/amp sensors */
-int write_power_bin()
+int comms_t::write_power_bin()
 {
-    static message::power_t power;
-    power.int_main_v = pwr1_v;
-    power.avionics_v = avionics_v;
-    power.ext_main_v = pwr2_v;
-    power.ext_main_amp = pwr_a;
-    power.pack();
-    return serial.write_packet( power.id, power.payload, power.len );
+    static message::power_t power1;
+    power1.int_main_v = power.pwr1_v;
+    power1.avionics_v = power.avionics_v;
+    power1.ext_main_v = power.pwr2_v;
+    power1.ext_main_amp = power.pwr_a;
+    power1.pack();
+    return serial.write_packet( power1.id, power1.payload, power1.len );
 }
 
 void write_power_ascii()
@@ -313,18 +331,18 @@ void write_power_ascii()
     // This info is static so we don't need to send it at a high rate ... once every 10 seconds (?)
     // with an immediate message at the start.
     Serial.print("SN: ");
-    Serial.println(read_serial_number());
+    Serial.println(config.read_serial_number());
     Serial.print("Firmware: ");
     Serial.println(FIRMWARE_REV);
     Serial.print("Main loop hz: ");
     Serial.println( MASTER_HZ);
     Serial.print("Baud: ");Serial.println(DEFAULT_BAUD);
-    Serial.print("Main v: "); Serial.print(pwr1_v, 2);
-    Serial.print(" av: "); Serial.println(avionics_v, 2);
+    Serial.print("Main v: "); Serial.print(power.pwr1_v, 2);
+    Serial.print(" av: "); Serial.println(power.avionics_v, 2);
 }
 
 /* output a binary representation of various status and config information */
-int write_status_info_bin()
+int comms_t::write_status_info_bin()
 {
     static uint32_t write_millis = millis();
     static message::status_t status;
@@ -361,10 +379,19 @@ void write_status_info_ascii()
     // This info is static so we don't need to send it at a high rate ... once every 10 seconds (?)
     // with an immediate message at the start.
     Serial.print("SN: ");
-    Serial.println(read_serial_number());
+    Serial.println(config.read_serial_number());
     Serial.print("Firmware: ");
     Serial.println(FIRMWARE_REV);
     Serial.print("Main loop hz: ");
     Serial.println( MASTER_HZ);
     Serial.print("Baud: ");Serial.println(DEFAULT_BAUD);
 }
+
+void comms_t::read_commands() {
+    while ( serial.update() ) {
+        parse_message_bin( serial.pkt_id, serial.payload, serial.pkt_len );
+    }
+}
+
+// global shared instance
+comms_t comms;

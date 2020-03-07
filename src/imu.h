@@ -1,5 +1,7 @@
 // IMU wrapper class
 
+#pragma once
+
 #include "../aura3_messages.h"
 
 class imu_t {
@@ -33,3 +35,5 @@ class imu_t {
     void setup();
     void update();
 };
+
+extern imu_t imu;

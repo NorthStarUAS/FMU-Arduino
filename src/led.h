@@ -1,5 +1,7 @@
 // das blinken class
 
+#pragma once
+
 #include <Arduino.h>
 
 #include "../aura3_messages.h"
@@ -17,3 +19,5 @@ public:
     void setup();
     void update(int gyros_calibrated, int gps_fix);
 };
+
+extern led_t led;

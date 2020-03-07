@@ -1,3 +1,6 @@
+#include "actuators.h"
+#include "pwm.h"
+
 #include "setup_pwm.h"
 
 const uint8_t marmot1_pins[PWM_CHANNELS] = {21, 22, 23, 2, 3, 4, 5, 6};
@@ -8,15 +11,15 @@ static uint8_t servoPins[PWM_CHANNELS];
 // throttle, flaps, spoilers; [-1,1] for aileron, elevator, rudder
 bool pwm_symmetrical[PWM_CHANNELS] = {0, 1, 1, 1, 1, 0, 0, 0};
 
-void pwm_setup() {
+void pwm_t::setup(int board) {
     Serial.print("PWM: ");
-    if ( config_master.board == 0 ) {
-        Serial.print("Marmot v1 pin mapping.");
+    if ( board == 0 ) {
+        Serial.println("Marmot v1 pin mapping.");
         for ( int i = 0; i < PWM_CHANNELS; i++ ) {
             servoPins[i] = marmot1_pins[i];
         }
-    } else if ( config_master.board == 1 ) {
-        Serial.print("Aura v2 pin mapping.");
+    } else if ( board == 1 ) {
+        Serial.println("Aura v2 pin mapping.");
         for ( int i = 0; i < PWM_CHANNELS; i++ ) {
             servoPins[i] = aura2_pins[i];
         }
@@ -30,28 +33,30 @@ void pwm_setup() {
         analogWriteFrequency(servoPins[i], servoFreq_hz);
     }
     
-    // set default safe values for actuator outputs
-    actuator_set_defaults();
-    pwm_update();
-    Serial.println();
+    // set default safe values for actuator outputs (should already at
+    // a higher level, but this is important enough to do it again
+    // just in case someone changed the higher level and messed up the
+    // init order without realizing)
+    actuators.setup();
+    update();
 }
 
 // compute raw pwm values from normalized command values.  (handle
 // actuator reversing here.)
-void pwm_norm2pwm( float *norm, uint16_t *pwm ) {
+void pwm_t::norm2pwm( float *norm, uint16_t *pwm ) {
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         // convert to pulse length (special case ch6 when in flaperon mode)
-        if ( pwm_symmetrical[i] || (i == 4 && config_actuators.mix_flaperon) ) {
+        if ( pwm_symmetrical[i] || (i == 4 && actuators.config.mix_flaperon) ) {
             // i.e. aileron, rudder, elevator
             // Serial1.println(i);
             // Serial1.println(config_actuators.act_rev[i]);
-            pwm[i] = PWM_CENTER + (int)(PWM_HALF_RANGE * norm[i] * config_actuators.act_gain[i]);
+            pwm[i] = PWM_CENTER + (int)(PWM_HALF_RANGE * norm[i] * actuators.config.act_gain[i]);
         } else {
             // i.e. throttle, flaps
-            if ( config_actuators.act_gain[i] > 0.0 ) {
-                pwm[i] = PWM_MIN + (int)(PWM_RANGE * norm[i] * config_actuators.act_gain[i]);
+            if ( actuators.config.act_gain[i] > 0.0 ) {
+                pwm[i] = PWM_MIN + (int)(PWM_RANGE * norm[i] * actuators.config.act_gain[i]);
             } else {
-                pwm[i] = PWM_MAX + (int)(PWM_RANGE * norm[i] * config_actuators.act_gain[i]);
+                pwm[i] = PWM_MAX + (int)(PWM_RANGE * norm[i] * actuators.config.act_gain[i]);
             }
         }
         if ( pwm[i] < PWM_MIN ) {
@@ -65,7 +70,7 @@ void pwm_norm2pwm( float *norm, uint16_t *pwm ) {
 
 
 // write the raw actuator values to the RC system
-void pwm_update() {
+void pwm_t::update(uint8_t test_pwm_channel) {
     // hook for testing servos
     if ( test_pwm_channel >= 0 && test_pwm_channel < PWM_CHANNELS ) {
         actuator_pwm[test_pwm_channel] = gen_pwm_test_value();
@@ -78,6 +83,9 @@ void pwm_update() {
 }
 
 // test drive a servo channel (sine wave)
-uint16_t gen_pwm_test_value() {
+uint16_t pwm_t::gen_pwm_test_value() {
     return sin((float)millis() / 500.0) * PWM_HALF_RANGE + PWM_CENTER;
 }
+
+// make a global instance
+pwm_t pwm;
