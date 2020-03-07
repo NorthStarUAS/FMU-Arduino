@@ -1,6 +1,6 @@
 // IMU wrapper class
 
-#include "../../aura3_messages.h"
+#include "../aura3_messages.h"
 
 class imu_t {
  private:
@@ -13,7 +13,7 @@ class imu_t {
     void calibrate_gyros(float gx, float gy, float gz);
 
  public:
-    message::config_imu_t config_imu;
+    message::config_imu_t config;
     // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished
     int gyros_calibrated = 0;
     unsigned long imu_micros = 0;

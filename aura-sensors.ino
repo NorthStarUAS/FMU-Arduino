@@ -1,8 +1,10 @@
+#include <Arduino.h>
 #include <HardwareSerial.h>
 
 #include "src/util/definition-tree2.h"
 
-#include "src/sensors/imu.h"
+#include "src/airdata.h"
+#include "src/imu.h"
 #include "src/sensors/UBLOX8/UBLOX8.h"
 #include "src/util/serial_link.h"
 #include "src/EKF15/EKF_15state.h"
@@ -15,10 +17,12 @@
 // master config (for messages and saving in eeprom)
 message::config_master_t config_master;
 message::config_actuators_t config_actuators;
-message::config_airdata_t config_airdata;
 message::config_power_t config_power;
 message::config_led_t config_led;
 int config_size = 0;
+
+// Air Data
+airdata_t airdata;
 
 // IMU
 imu_t imu;
@@ -35,11 +39,6 @@ uint8_t test_pwm_channel = -1;
 UBLOX8 gps(&Serial3); // ublox m8n
 bool new_gps_data = false;
 ublox8_nav_pvt_t gps_data;
-
-// Air Data
-int airdata_error_count = 0;
-float airdata_diffPress_pa = 0.0;
-float airdata_temp_C = 0.0;
 
 // Power
 const float analogResolution = 65535.0f;
@@ -68,8 +67,7 @@ void force_config_aura3() {
     Serial.println("Forcing an aura v2 eeprom config");
     config_master.board = 1;    // 0 = marmot v1, 1 = aura v2
     imu.defaults_aura3();
-    config_airdata.barometer = 1; // 1 = bmp280/i2c
-    config_airdata.pitot = 0;     // 0 MS4525
+    airdata.defaults_aura3();
     config_led.pin = 13;
     config_power.have_attopilot = true;
     config_actuators.act_gain[0] = 1.0;
@@ -98,10 +96,7 @@ void force_config_goldy3() {
     Serial.println("Forcing a bfs/marmot eeprom config");
     config_master.board = 0;    // 0 = marmot v1, 1 = aura v2
     imu.defaults_goldy3();
-    config_airdata.barometer = 2; // 2 = swift
-    config_airdata.pitot = 2;     // 2 = swift, 0x25
-    config_airdata.swift_baro_addr = 0x24; // Idun = 0x24
-    config_airdata.swift_pitot_addr = 0x25; // Idun = 0x24
+    airdata.defaults_goldy3();
     config_led.pin = 0;
     config_actuators.act_gain[0] = 1.0;
     config_actuators.act_gain[1] = 1.0;
@@ -174,8 +169,7 @@ void setup() {
     gps.begin(115200);
 
     // initialize air data (marmot v1)
-    // config_airdata.barometer = 3; // 3 = bmp180
-    airdata_setup();
+    airdata.setup();
     
     // set up ADC0
     analogReadResolution(16);
@@ -291,9 +285,9 @@ void loop() {
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
             // write_gps_ascii();
-            // write_airdata_ascii();
+            write_airdata_ascii();
             // write_status_info_ascii();
-            write_imu_ascii();
+            // write_imu_ascii();
         }
 
         // uncomment this next line to test drive individual servo channels
@@ -304,7 +298,7 @@ void loop() {
         }
 
         // poll the pressure sensors
-        airdata_update();
+        airdata.update();
 
         // battery voltage
         uint16_t ain;

@@ -4,7 +4,7 @@
 
 #include "imu.h"
 
-#include "MPU9250/MPU9250.h"
+#include "sensors/MPU9250/MPU9250.h"
 
 // IMU full scale ranges, DLPF bandwidth, interrupt SRD, and interrupt pin
 const uint8_t MPU9250_SRD = 9;  // Data Output Rate = 1000 / (1 + SRD)
@@ -14,40 +14,40 @@ MPU9250 IMU;
 // Setup imu defaults:
 // Goldy3 has mpu9250 on SPI CS line 24
 void imu_t::defaults_goldy3() {
-    config_imu.interface = 0;       // SPI
-    config_imu.pin_or_address = 24; // CS pin
+    config.interface = 0;       // SPI
+    config.pin_or_address = 24; // CS pin
     float ident[] = { 1.0, 0.0, 0.0,
                       0.0, 1.0, 0.0,
                       0.0, 0.0, 1.0};
     for ( int i = 0; i < 9; i++ ) {
-        config_imu.orientation[i] = ident[i];
+        config.orientation[i] = ident[i];
     }
 }
 
 // Setup imu defaults:
 // Aura3 has mpu9250 on I2C Addr 0x68
 void imu_t::defaults_aura3() {
-    config_imu.interface = 1;       // i2c
-    config_imu.pin_or_address = 0x68; // mpu9250 i2c addr
+    config.interface = 1;       // i2c
+    config.pin_or_address = 0x68; // mpu9250 i2c addr
     float ident[] = { 1.0, 0.0, 0.0,
                       0.0, 1.0, 0.0,
                       0.0, 0.0, 1.0};
     for ( int i = 0; i < 9; i++ ) {
-        config_imu.orientation[i] = ident[i];
+        config.orientation[i] = ident[i];
     }
 }
 
 // configure the IMU settings and setup the ISR to aquire the data
 void imu_t::setup() {
-    if ( config_imu.interface == 0 ) {
+    if ( config.interface == 0 ) {
         // SPI
         Serial.print("MPU9250 @ SPI pin: ");
-        Serial.println(config_imu.pin_or_address);
-        IMU.configure(config_imu.pin_or_address);
-    } else if ( config_imu.interface == 1 ) {
+        Serial.println(config.pin_or_address);
+        IMU.configure(config.pin_or_address);
+    } else if ( config.interface == 1 ) {
         Serial.print("MPU9250 @ I2C Addr: 0x");
-        Serial.println(config_imu.pin_or_address, HEX);
-        IMU.configure(config_imu.pin_or_address, &Wire);
+        Serial.println(config.pin_or_address, HEX);
+        IMU.configure(config.pin_or_address, &Wire);
     } else {
         Serial.println("Error: problem with MPU9250 (IMU) configuration");
     }
@@ -72,7 +72,7 @@ void imu_t::setup() {
 
     Serial.println("MPU-9250 ready.");
     for ( int i = 0; i < 9; i++ ) {
-        Serial.print(config_imu.orientation[i], 2);
+        Serial.print(config.orientation[i], 2);
         Serial.print(" ");
         if ( i == 2 or i == 5 or i == 8 ) {
             Serial.println();
@@ -83,9 +83,9 @@ void imu_t::setup() {
 void imu_t::rotate(float v0, float v1, float v2,
                    float *r0, float *r1, float *r2)
 {
-    *r0 = v0*config_imu.orientation[0] + v1*config_imu.orientation[1] + v2*config_imu.orientation[2];
-    *r1 = v0*config_imu.orientation[3] + v1*config_imu.orientation[4] + v2*config_imu.orientation[5];
-    *r2 = v0*config_imu.orientation[6] + v1*config_imu.orientation[7] + v2*config_imu.orientation[8];
+    *r0 = v0*config.orientation[0] + v1*config.orientation[1] + v2*config.orientation[2];
+    *r1 = v0*config.orientation[3] + v1*config.orientation[4] + v2*config.orientation[5];
+    *r2 = v0*config.orientation[6] + v1*config.orientation[7] + v2*config.orientation[8];
 }
 
 // query the imu and update the structures

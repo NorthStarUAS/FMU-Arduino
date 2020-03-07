@@ -1,42 +1,53 @@
 // Module to query air data sensors
 
-#include "src/sensors/BMP180/SFE_BMP180.h"
-SFE_BMP180 bmp180;
-bool bmp180_status = false;
+#include "airdata.h"
 
-#include "src/sensors/BME280/BME280.h"
-BME280 bme280;
-bool bme280_status = false;
+#include "sensors/BMP180/SFE_BMP180.h"
+static SFE_BMP180 bmp180;
+static bool bmp180_status = false;
 
-#include "src/sensors/AMS5915/AMS5915.h"
-AMS5915 ams_barometer;
-AMS5915 ams_pitot;
+#include "sensors/BME280/BME280.h"
+static BME280 bme280;
+static bool bme280_status = false;
 
-#include "src/sensors/MS4525DO/MS4525DO.h"
-MS4525DO ms45_pitot;
+#include "sensors/AMS5915/AMS5915.h"
+static AMS5915 ams_barometer;
+static AMS5915 ams_pitot;
 
-#include "src/sensors/MS5525DO/MS5525DO.h"
-MS5525DO ms55_pitot;
+#include "sensors/MS4525DO/MS4525DO.h"
+static MS4525DO ms45_pitot;
 
-float baro_press, baro_temp, baro_hum;
+#include "sensors/MS5525DO/MS5525DO.h"
+static MS5525DO ms55_pitot;
 
-bool pitot_found = false;
-bool ams_baro_found = false;
-
-void airdata_defaults() {
-    config_airdata.barometer = 0;
-    config_airdata.pitot = 0;
-    config_airdata.swift_baro_addr = 0;
-    config_airdata.swift_pitot_addr = 0;
+void airdata_t::defaults_none() {
+    config.barometer = 0;
+    config.pitot = 0;
+    config.swift_baro_addr = 0;
+    config.swift_pitot_addr = 0;
 }
 
-void airdata_setup() {
-    if ( config_airdata.barometer == 0 || config_airdata.barometer == 1 ) {
-        if ( config_airdata.barometer == 0 ) {
+void airdata_t::defaults_goldy3() {
+    config.barometer = 0; // 0 = onboard bmp280
+    config.pitot = 2;     // 2 = swift
+    config.swift_baro_addr = 0x24;
+    config.swift_pitot_addr = 0x25;
+}
+
+void airdata_t::defaults_aura3() {
+    config.barometer = 1; // 1 = bmp280/i2c
+    config.pitot = 0;     // 0 = ms4525
+    config.swift_baro_addr = 0;
+    config.swift_pitot_addr = 0;
+}
+
+void airdata_t::setup() {
+    if ( config.barometer == 0 || config.barometer == 1 ) {
+        if ( config.barometer == 0 ) {
             // BME280/SPI
             Serial.println("BME280 on SPI:26");
             bme280.configure(26);
-        } else if ( config_airdata.barometer == 1 ) {
+        } else if ( config.barometer == 1 ) {
             // BMP280/I2C
             Serial.println("BMP280 on I2C:0x76");
             bme280.configure(0x76, &Wire);
@@ -49,18 +60,18 @@ void airdata_setup() {
         } else {
             Serial.println("BME280 barometer driver ready.");
         }
-    } else if (config_airdata.barometer == 1 ) {
+    } else if (config.barometer == 1 ) {
         // BMP280/I2C
         Serial.println("BMP280 on I2C:0x76");
         bme280.configure(0x76, &Wire);
         bme280_status = bme280.begin();
-    } else if (config_airdata.barometer == 2 ) {
+    } else if (config.barometer == 2 ) {
         // BFS Swift
         Serial.print("Swift barometer on I2C: 0x");
-        Serial.println(config_airdata.swift_baro_addr, HEX);
-        ams_barometer.configure(config_airdata.swift_baro_addr, &Wire1, AMS5915_1200_B);
+        Serial.println(config.swift_baro_addr, HEX);
+        ams_barometer.configure(config.swift_baro_addr, &Wire1, AMS5915_1200_B);
         ams_barometer.begin();
-    } else if (config_airdata.barometer == 3 ) {
+    } else if (config.barometer == 3 ) {
         // BMP180
         Serial.println("BMP180 on I2C");
         bmp180_status = bmp180.begin();
@@ -80,38 +91,38 @@ void airdata_setup() {
         Serial.println("Onboard barometer driver ready.");
     }
 
-    if ( config_airdata.pitot == 0 ) {
+    if ( config.pitot == 0 ) {
         ms45_pitot.configure(0x28, &Wire);
         ms45_pitot.begin();
-    } else if ( config_airdata.pitot == 1 ) {
+    } else if ( config.pitot == 1 ) {
         ms55_pitot.configure(0x76, &Wire);
         ms55_pitot.begin();
-    } else if ( config_airdata.pitot == 2 ) {
+    } else if ( config.pitot == 2 ) {
         Serial.print("Swift pitot on I2C: 0x");
-        Serial.println(config_airdata.swift_pitot_addr, HEX);
-        ams_pitot.configure(config_airdata.swift_pitot_addr, &Wire1, AMS5915_0020_D);
+        Serial.println(config.swift_pitot_addr, HEX);
+        ams_pitot.configure(config.swift_pitot_addr, &Wire1, AMS5915_0020_D);
         ams_pitot.begin();
     }
 }
 
-void airdata_update() {
+void airdata_t::update() {
     bool result;
 
     // read barometer (static pressure sensor)
-    if ( config_airdata.barometer == 0 || config_airdata.barometer == 1 ) {
+    if ( config.barometer == 0 || config.barometer == 1 ) {
         if ( bme280_status ) {
             bme280.getData(&baro_press, &baro_temp, &baro_hum);
         }
-    } else if ( config_airdata.barometer == 2 ) {
+    } else if ( config.barometer == 2 ) {
         if ( ams_barometer.getData(&baro_press, &baro_temp) ) {
             ams_baro_found = true;
         } else {
             if ( ams_baro_found ) {
                 // Serial.println("Error while reading sPress sensor.");
-                airdata_error_count++;
+                error_count++;
             }
         }
-    } else if ( config_airdata.barometer == 3 ) {
+    } else if ( config.barometer == 3 ) {
         // BMP180 (requires a delicate dance of requesting a read,
         // then coming back some amount of millis later to do the
         // actual read.)
@@ -144,19 +155,19 @@ void airdata_update() {
         }
     }
 
-    if ( config_airdata.pitot == 0 ) {
-        result = ms45_pitot.getData(&airdata_diffPress_pa, &airdata_temp_C);
-    } else if ( config_airdata.pitot == 1 ) {
-        result = ms55_pitot.getData(&airdata_diffPress_pa, &airdata_temp_C);
-    } else if ( config_airdata.pitot == 2 ) {
-        result = ams_pitot.getData(&airdata_diffPress_pa, &airdata_temp_C);
+    if ( config.pitot == 0 ) {
+        result = ms45_pitot.getData(&diffPress_pa, &temp_C);
+    } else if ( config.pitot == 1 ) {
+        result = ms55_pitot.getData(&diffPress_pa, &temp_C);
+    } else if ( config.pitot == 2 ) {
+        result = ams_pitot.getData(&diffPress_pa, &temp_C);
     } else {
         result = false;
     }
     if ( !result ) {
         if ( pitot_found ) {
             // Serial.println("Error while reading pitot sensor.");
-            airdata_error_count++;
+            error_count++;
         }
     } else {
         pitot_found = true;

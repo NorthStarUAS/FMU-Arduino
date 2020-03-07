@@ -54,8 +54,8 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             result = true;
         }
     } else if ( id == message::config_imu_id ) {
-        imu.config_imu.unpack(buf, message_size);
-        if ( message_size == imu.config_imu.len ) {
+        imu.config.unpack(buf, message_size);
+        if ( message_size == imu.config.len ) {
             Serial.println("received imu config");
             config_write_eeprom();
             write_ack_bin( id, 0 );
@@ -71,8 +71,8 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             result = true;
         }
     } else if ( id == message::config_airdata_id ) {
-        config_airdata.unpack(buf, message_size);
-        if ( message_size == config_airdata.len ) {
+        airdata.config.unpack(buf, message_size);
+        if ( message_size == airdata.config.len ) {
             Serial.println("received new airdata config");
             config_write_eeprom();
             write_ack_bin( id, 0 );
@@ -271,28 +271,28 @@ void write_gps_ascii() {
 /* output a binary representation of the barometer data */
 int write_airdata_bin()
 {
-    static message::airdata_t airdata;
-    airdata.baro_press_pa = baro_press;
-    airdata.baro_temp_C = baro_temp;
-    airdata.baro_hum = baro_hum;
-    airdata.ext_diff_press_pa = airdata_diffPress_pa;
-    airdata.ext_static_press_pa = 0.0; // fixme!
-    airdata.ext_temp_C = airdata_temp_C;
-    airdata.error_count = airdata_error_count;
-    airdata.pack();
-    return serial.write_packet( airdata.id, airdata.payload, airdata.len );
+    static message::airdata_t airdata1;
+    airdata1.baro_press_pa = airdata.baro_press;
+    airdata1.baro_temp_C = airdata.baro_temp;
+    airdata1.baro_hum = airdata.baro_hum;
+    airdata1.ext_diff_press_pa = airdata.diffPress_pa;
+    airdata1.ext_static_press_pa = 0.0; // fixme!
+    airdata1.ext_temp_C = airdata.temp_C;
+    airdata1.error_count = airdata.error_count;
+    airdata1.pack();
+    return serial.write_packet( airdata1.id, airdata1.payload, airdata1.len );
 }
 
 void write_airdata_ascii()
 {
     Serial.print("Barometer: ");
-    Serial.print(baro_press, 2); Serial.print(" (st pa) ");
-    Serial.print(baro_temp, 2); Serial.print(" (C) ");
-    Serial.print(baro_hum, 1); Serial.print(" (%RH) ");
+    Serial.print(airdata.baro_press, 2); Serial.print(" (st pa) ");
+    Serial.print(airdata.baro_temp, 2); Serial.print(" (C) ");
+    Serial.print(airdata.baro_hum, 1); Serial.print(" (%RH) ");
     Serial.print("Pitot: ");
-    Serial.print(airdata_diffPress_pa, 4); Serial.print(" (diff pa) ");
-    Serial.print(airdata_temp_C, 2); Serial.print(" (C) ");
-    Serial.print(airdata_error_count); Serial.print(" (errors) ");
+    Serial.print(airdata.diffPress_pa, 4); Serial.print(" (diff pa) ");
+    Serial.print(airdata.temp_C, 2); Serial.print(" (C) ");
+    Serial.print(airdata.error_count); Serial.print(" (errors) ");
     Serial.println();
 }
 

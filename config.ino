@@ -61,13 +61,13 @@ int extract_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
 int config_read_eeprom() {
     // call pack to initialize internal stucture len
     config_master.pack();
-    imu.config_imu.pack();
+    imu.config.pack();
     config_actuators.pack();
-    config_airdata.pack();
+    airdata.config.pack();
     config_power.pack();
     config_led.pack();
-    config_size = config_master.len + imu.config_imu.len +
-        config_actuators.len + config_airdata.len + config_power.len +
+    config_size = config_master.len + imu.config.len +
+        config_actuators.len + airdata.config.len + config_power.len +
         config_led.len;
     uint8_t config_buf[config_size];
     int status = 0;
@@ -92,12 +92,12 @@ int config_read_eeprom() {
             int pos = 0;
             config_master.unpack((uint8_t *)&(config_buf[pos]), config_master.len);
             pos += config_master.len;
-            imu.config_imu.unpack((uint8_t *)&(config_buf[pos]), imu.config_imu.len);
-            pos += imu.config_imu.len;
+            imu.config.unpack((uint8_t *)&(config_buf[pos]), imu.config.len);
+            pos += imu.config.len;
             config_actuators.unpack((uint8_t *)&(config_buf[pos]), config_actuators.len);
             pos += config_actuators.len;
-            config_airdata.unpack((uint8_t *)&(config_buf[pos]), config_airdata.len);
-            pos += config_airdata.len;
+            airdata.config.unpack((uint8_t *)&(config_buf[pos]), airdata.config.len);
+            pos += airdata.config.len;
             config_power.unpack((uint8_t *)&(config_buf[pos]), config_power.len);
             pos += config_power.len;
             config_led.unpack((uint8_t *)&(config_buf[pos]), config_led.len);
@@ -119,18 +119,18 @@ int build_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
 int config_write_eeprom() {
     // create packed version of messages
     config_master.pack();
-    imu.config_imu.pack();
+    imu.config.pack();
     config_actuators.pack();
-    config_airdata.pack();
+    airdata.config.pack();
     config_power.pack();
     config_led.pack();
     // assemble packed config buffer
     uint8_t config_buf[config_size];
     int pos = 0;
     pos += build_config_buf( config_buf, pos, config_master.payload, config_master.len );
-    pos += build_config_buf( config_buf, pos, imu.config_imu.payload, imu.config_imu.len );
+    pos += build_config_buf( config_buf, pos, imu.config.payload, imu.config.len );
     pos += build_config_buf( config_buf, pos, config_actuators.payload, config_actuators.len );
-    pos += build_config_buf( config_buf, pos, config_airdata.payload, config_airdata.len );
+    pos += build_config_buf( config_buf, pos, airdata.config.payload, airdata.config.len );
     pos += build_config_buf( config_buf, pos, config_power.payload, config_power.len );
     pos += build_config_buf( config_buf, pos, config_led.payload, config_led.len );
     
