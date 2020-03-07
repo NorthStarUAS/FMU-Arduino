@@ -87,8 +87,8 @@ bool parse_message_bin( byte id, byte *buf, byte message_size )
             result = true;
         }
     } else if ( id == message::config_led_id ) {
-        config_led.unpack(buf, message_size);
-        if ( message_size == config_led.len ) {
+        led.config.unpack(buf, message_size);
+        if ( message_size == led.config.len ) {
             Serial.println("received new led config");
             config_write_eeprom();
             write_ack_bin( id, 0 );

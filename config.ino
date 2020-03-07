@@ -35,20 +35,16 @@ void power_defaults() {
      config_power.have_attopilot = false;
 }
 
-void led_defaults() {
-     config_led.pin = 0;
-}
-
 void config_load_defaults() {
     Serial.println("Setting default config ...");
     master_defaults();
     imu.defaults_goldy3();
+    led.defaults_goldy3();
     pwm_defaults();
     act_gain_defaults();
     mixing_defaults();
     sas_defaults();
     power_defaults();
-    led_defaults();
 }
 
 int extract_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
@@ -65,10 +61,10 @@ int config_read_eeprom() {
     config_actuators.pack();
     airdata.config.pack();
     config_power.pack();
-    config_led.pack();
+    led.config.pack();
     config_size = config_master.len + imu.config.len +
         config_actuators.len + airdata.config.len + config_power.len +
-        config_led.len;
+        led.config.len;
     uint8_t config_buf[config_size];
     int status = 0;
     if ( config_size + CONFIG_OFFSET <= E2END - 2 /* checksum */ + 1 ) {
@@ -100,8 +96,8 @@ int config_read_eeprom() {
             pos += airdata.config.len;
             config_power.unpack((uint8_t *)&(config_buf[pos]), config_power.len);
             pos += config_power.len;
-            config_led.unpack((uint8_t *)&(config_buf[pos]), config_led.len);
-            pos += config_led.len;
+            led.config.unpack((uint8_t *)&(config_buf[pos]), led.config.len);
+            pos += led.config.len;
         }
     } else {
         Serial.println("ERROR: config structure too large for EEPROM hardware!");
@@ -123,7 +119,7 @@ int config_write_eeprom() {
     config_actuators.pack();
     airdata.config.pack();
     config_power.pack();
-    config_led.pack();
+    led.config.pack();
     // assemble packed config buffer
     uint8_t config_buf[config_size];
     int pos = 0;
@@ -132,7 +128,7 @@ int config_write_eeprom() {
     pos += build_config_buf( config_buf, pos, config_actuators.payload, config_actuators.len );
     pos += build_config_buf( config_buf, pos, airdata.config.payload, airdata.config.len );
     pos += build_config_buf( config_buf, pos, config_power.payload, config_power.len );
-    pos += build_config_buf( config_buf, pos, config_led.payload, config_led.len );
+    pos += build_config_buf( config_buf, pos, led.config.payload, led.config.len );
     
     Serial.println("Write EEPROM (any changed bytes) ...");
     int status = 0;

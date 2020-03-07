@@ -5,6 +5,8 @@
 
 #include "src/airdata.h"
 #include "src/imu.h"
+#include "src/led.h"
+
 #include "src/sensors/UBLOX8/UBLOX8.h"
 #include "src/util/serial_link.h"
 #include "src/EKF15/EKF_15state.h"
@@ -18,7 +20,6 @@
 message::config_master_t config_master;
 message::config_actuators_t config_actuators;
 message::config_power_t config_power;
-message::config_led_t config_led;
 int config_size = 0;
 
 // Air Data
@@ -26,6 +27,9 @@ airdata_t airdata;
 
 // IMU
 imu_t imu;
+
+// LED
+led_t led;
 
 // Controls and Actuators
 float receiver_norm[SBUS_CHANNELS];
@@ -68,7 +72,7 @@ void force_config_aura3() {
     config_master.board = 1;    // 0 = marmot v1, 1 = aura v2
     imu.defaults_aura3();
     airdata.defaults_aura3();
-    config_led.pin = 13;
+    led.defaults_aura3();
     config_power.have_attopilot = true;
     config_actuators.act_gain[0] = 1.0;
     config_actuators.act_gain[1] = 1.0;
@@ -97,7 +101,7 @@ void force_config_goldy3() {
     config_master.board = 0;    // 0 = marmot v1, 1 = aura v2
     imu.defaults_goldy3();
     airdata.defaults_goldy3();
-    config_led.pin = 0;
+    led.defaults_goldy3();
     config_actuators.act_gain[0] = 1.0;
     config_actuators.act_gain[1] = 1.0;
     config_actuators.act_gain[2] = -1.0;
@@ -195,7 +199,7 @@ void setup() {
     }
     
     // led for status blinking if defined
-    led_setup();
+    led.setup();
 
     Serial.println("Ready and transmitting...");
 }
@@ -332,5 +336,5 @@ void loop() {
     }
 
     // blink the led on boards that support it
-    led_update();
+    led.update(imu.gyros_calibrated, gps_data.fixType);
 }
