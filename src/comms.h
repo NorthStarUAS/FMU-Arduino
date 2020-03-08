@@ -19,6 +19,8 @@ public:
     int write_imu_bin();
     int write_gps_bin();
     void write_gps_ascii();
+    int write_nav_bin();
+    void write_nav_ascii();
     int write_airdata_bin();
     int write_power_bin();
     int write_status_info_bin();

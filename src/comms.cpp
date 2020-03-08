@@ -11,6 +11,7 @@
 #include "actuators.h"
 #include "airdata.h"
 #include "config.h"
+#include "ekf.h"
 #include "gps.h"
 #include "imu.h"
 #include "led.h"
@@ -124,7 +125,7 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
 }
 
 
-/* output an acknowledgement of a message received */
+// output an acknowledgement of a message received
 int comms_t::write_ack_bin( uint8_t command_id, uint8_t subcommand_id )
 {
     static message::command_ack_t ack;
@@ -135,7 +136,7 @@ int comms_t::write_ack_bin( uint8_t command_id, uint8_t subcommand_id )
 }
 
 
-/* output a binary representation of the pilot (rc receiver) data */
+// output a binary representation of the pilot (rc receiver) data
 int comms_t::write_pilot_in_bin()
 {
     static message::pilot_t pilot;
@@ -190,7 +191,7 @@ void write_actuator_out_ascii()
     Serial.println();
 }
 
-/* output a binary representation of the IMU data (note: scaled to 16bit values) */
+// output a binary representation of the IMU data (note: scaled to 16bit values)
 int comms_t::write_imu_bin()
 {
     const float _pi = 3.14159265358979323846;
@@ -237,7 +238,7 @@ void write_imu_ascii()
     Serial.println();
 }
 
-/* output a binary representation of the GPS data */
+// output a binary representation of the GPS data
 int comms_t::write_gps_bin()
 {
     byte size = sizeof(gps.gps_data);
@@ -286,7 +287,47 @@ void comms_t::write_gps_ascii() {
     Serial.println();
 }
 
-/* output a binary representation of the barometer data */
+// output a binary representation of the Nav data
+int comms_t::write_nav_bin()
+{
+    static message::ekf_t nav;
+    nav.micros = imu.imu_micros;
+    nav.lat_rad = ekf.nav.lat;
+    nav.lon_rad = ekf.nav.lon;
+    nav.altitude_m = ekf.nav.alt;
+    nav.vn_ms = ekf.nav.vn;
+    nav.ve_ms = ekf.nav.ve;
+    nav.vd_ms = ekf.nav.vd;
+    nav.phi_rad = ekf.nav.phi;
+    nav.the_rad = ekf.nav.the;
+    nav.psi_rad = ekf.nav.psi;
+    nav.pack();
+    return serial.write_packet( nav.id, nav.payload, nav.len );
+}
+
+void comms_t::write_nav_ascii() {
+    Serial.print("Pos: ");
+    Serial.print(ekf.nav.lat*R2D, 7);
+    Serial.print(", ");
+    Serial.print(ekf.nav.lon*R2D, 7);
+    Serial.print(", ");
+    Serial.print(ekf.nav.alt, 2);
+    Serial.print(" Vel: ");
+    Serial.print(ekf.nav.vn, 2);
+    Serial.print(", ");
+    Serial.print(ekf.nav.ve, 2);
+    Serial.print(", ");
+    Serial.print(ekf.nav.vd, 2);
+    Serial.print(" Att: ");
+    Serial.print(ekf.nav.phi*R2D, 2);
+    Serial.print(", ");
+    Serial.print(ekf.nav.the*R2D, 2);
+    Serial.print(", ");
+    Serial.print(ekf.nav.psi*R2D, 2);
+    Serial.println();
+}
+
+// output a binary representation of the barometer data
 int comms_t::write_airdata_bin()
 {
     static message::airdata_t airdata1;
@@ -314,7 +355,7 @@ void write_airdata_ascii()
     Serial.println();
 }
 
-/* output a binary representation of various volt/amp sensors */
+// output a binary representation of various volt/amp sensors
 int comms_t::write_power_bin()
 {
     static message::power_t power1;
@@ -341,7 +382,7 @@ void write_power_ascii()
     Serial.print(" av: "); Serial.println(power.avionics_v, 2);
 }
 
-/* output a binary representation of various status and config information */
+// output a binary representation of various status and config information
 int comms_t::write_status_info_bin()
 {
     static uint32_t write_millis = millis();

@@ -11,9 +11,10 @@ private:
     bool gps_found = false;
     bool ekf_inited = false;
     elapsedMillis gpsSettle = 0;
+    EKF15 ekf;
     
 public:
-    EKF15 ekf;
+    NAVdata nav;
     void setup();
     void update();
 };

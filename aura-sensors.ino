@@ -160,8 +160,10 @@ void loop() {
         comms.output_counter += comms.write_gps_bin();
         comms.output_counter += comms.write_airdata_bin();
         comms.output_counter += comms.write_power_bin();
-        // do a little extra dance with the return value because write_status_info_bin()
-        // can reset comms.output_counter (but that gets ignored if we do the math in one step)
+        comms.output_counter += comms.write_nav_bin();
+        // do a little extra dance with the return value because
+        // write_status_info_bin() can reset comms.output_counter (but
+        // that gets ignored if we do the math in one step)
         uint8_t result = comms.write_status_info_bin();
         comms.output_counter += result;
         comms.output_counter += comms.write_imu_bin(); // write IMU data last as an implicit 'end of data frame' marker.
@@ -171,7 +173,8 @@ void loop() {
             debugTimer = 0;
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
-            comms.write_gps_ascii();
+            // comms.write_gps_ascii();
+            comms.write_nav_ascii();
             // write_airdata_ascii();
             // write_status_info_ascii();
             // write_imu_ascii();

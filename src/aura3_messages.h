@@ -30,6 +30,7 @@ const uint8_t aura_nav_pvt_id = 52;
 const uint8_t airdata_id = 53;
 const uint8_t power_id = 54;
 const uint8_t status_id = 55;
+const uint8_t ekf_id = 56;
 
 // max of one byte used to store message len
 static const uint8_t message_max_len = 255;
@@ -1009,6 +1010,84 @@ struct status_t {
         master_hz = _buf->master_hz;
         baud = _buf->baud;
         byte_rate = _buf->byte_rate;
+        return true;
+    }
+};
+
+// Message: ekf (id: 56)
+struct ekf_t {
+    // public fields
+    uint32_t micros;
+    double lat_rad;
+    double lon_rad;
+    float altitude_m;
+    float vn_ms;
+    float ve_ms;
+    float vd_ms;
+    float phi_rad;
+    float the_rad;
+    float psi_rad;
+
+    // internal structure for packing
+    uint8_t payload[message_max_len];
+    #pragma pack(push, 1)
+    struct _compact_t {
+        uint32_t micros;
+        double lat_rad;
+        double lon_rad;
+        float altitude_m;
+        int16_t vn_ms;
+        int16_t ve_ms;
+        int16_t vd_ms;
+        int16_t phi_rad;
+        int16_t the_rad;
+        int16_t psi_rad;
+    };
+    #pragma pack(pop)
+
+    // public info fields
+    static const uint8_t id = 56;
+    int len = 0;
+
+    bool pack() {
+        len = sizeof(_compact_t);
+        // size sanity check
+        int size = len;
+        if ( size > message_max_len ) {
+            return false;
+        }
+        // copy values
+        _compact_t *_buf = (_compact_t *)payload;
+        _buf->micros = micros;
+        _buf->lat_rad = lat_rad;
+        _buf->lon_rad = lon_rad;
+        _buf->altitude_m = altitude_m;
+        _buf->vn_ms = intround(vn_ms * 100);
+        _buf->ve_ms = intround(ve_ms * 100);
+        _buf->vd_ms = intround(vd_ms * 100);
+        _buf->phi_rad = intround(phi_rad * 90);
+        _buf->the_rad = intround(the_rad * 90);
+        _buf->psi_rad = intround(psi_rad * 90);
+        return true;
+    }
+
+    bool unpack(uint8_t *external_message, int message_size) {
+        if ( message_size > message_max_len ) {
+            return false;
+        }
+        memcpy(payload, external_message, message_size);
+        _compact_t *_buf = (_compact_t *)payload;
+        len = sizeof(_compact_t);
+        micros = _buf->micros;
+        lat_rad = _buf->lat_rad;
+        lon_rad = _buf->lon_rad;
+        altitude_m = _buf->altitude_m;
+        vn_ms = _buf->vn_ms / (float)100;
+        ve_ms = _buf->ve_ms / (float)100;
+        vd_ms = _buf->vd_ms / (float)100;
+        phi_rad = _buf->phi_rad / (float)90;
+        the_rad = _buf->the_rad / (float)90;
+        psi_rad = _buf->psi_rad / (float)90;
         return true;
     }
 };

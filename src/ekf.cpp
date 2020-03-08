@@ -42,20 +42,7 @@ void ekf_t::update() {
         if ( gps.new_gps_data ) {
             ekf.measurement_update(gps1);
         }
-        NAVdata nav = ekf.get_nav();
-        Serial.print("ekf pos: ");
-        Serial.print(nav.lat*R2D, 6);
-        Serial.print(", ");
-        Serial.print(nav.lon*R2D, 6);
-        Serial.print(", ");
-        Serial.print(nav.alt);
-        Serial.print(" euler: ");
-        Serial.print(nav.phi*R2D);
-        Serial.print(", ");
-        Serial.print(nav.the*R2D);
-        Serial.print(", ");
-        Serial.print(nav.psi*R2D);
-        Serial.println();
+        nav = ekf.get_nav();
     }
 }
 
