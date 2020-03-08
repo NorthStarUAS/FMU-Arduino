@@ -4,7 +4,7 @@
 
 #include "sensors/UBLOX8/UBLOX8.h"
 
-#include "aura3_messages.h"
+#include "aura4_messages.h"
 
 class gps_t {
 public:

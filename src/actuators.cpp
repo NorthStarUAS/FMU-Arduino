@@ -90,13 +90,13 @@ void actuators_t::sas_update( float control_norm[SBUS_CHANNELS] ) {
     }
 
     if ( config.sas_rollaxis ) {
-        control_norm[3] -= tune * config.sas_rollgain * imu.p;
+        control_norm[3] -= tune * config.sas_rollgain * imu.get_p();
     }
     if ( config.sas_pitchaxis ) {
-        control_norm[4] += tune * config.sas_pitchgain * imu.q;
+        control_norm[4] += tune * config.sas_pitchgain * imu.get_q();
     }
     if ( config.sas_yawaxis ) {
-        control_norm[5] += tune * config.sas_yawgain * imu.r;
+        control_norm[5] += tune * config.sas_yawgain * imu.get_r();
     }
 }
 

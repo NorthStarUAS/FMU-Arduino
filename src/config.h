@@ -4,7 +4,7 @@
 
 #include <Arduino.h>
 
-#include "aura3_messages.h"
+#include "aura4_messages.h"
 
 class config_t {
 private:

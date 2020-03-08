@@ -1,6 +1,6 @@
 #pragma once
 
-#include "aura3_messages.h"
+#include "aura4_messages.h"
 
 class power_t {
 private:

@@ -19,7 +19,7 @@
 #include "pwm.h"
 #include "sbus.h"
 #include "util/serial_link.h"
-#include "aura3_messages.h"
+#include "aura4_messages.h"
 #include "../setup_board.h"
 
 #include "comms.h"
@@ -75,6 +75,7 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
         imu.config.unpack(buf, message_size);
         if ( message_size == imu.config.len ) {
             Serial.println("received imu config");
+            imu.set_orientation(); // update R matrix
             config.write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
@@ -209,16 +210,16 @@ int comms_t::write_imu_bin()
     
     static message::imu_raw_t imu1;
     imu1.micros = imu.imu_micros;
-    imu1.channel[0] = imu.ax / accelScale;
-    imu1.channel[1] = imu.ay / accelScale;
-    imu1.channel[2] = imu.az / accelScale;
-    imu1.channel[3] = imu.p / gyroScale;
-    imu1.channel[4] = imu.q / gyroScale;
-    imu1.channel[5] = imu.r / gyroScale;
-    imu1.channel[6] = imu.hx / magScale;
-    imu1.channel[7] = imu.hy / magScale;
-    imu1.channel[8] = imu.hz / magScale;
-    imu1.channel[0] = imu.temp / tempScale;
+    imu1.channel[0] = imu.get_ax() / accelScale;
+    imu1.channel[1] = imu.get_ay() / accelScale;
+    imu1.channel[2] = imu.get_az() / accelScale;
+    imu1.channel[3] = imu.get_p() / gyroScale;
+    imu1.channel[4] = imu.get_q() / gyroScale;
+    imu1.channel[5] = imu.get_r() / gyroScale;
+    imu1.channel[6] = imu.get_hx() / magScale;
+    imu1.channel[7] = imu.get_hy() / magScale;
+    imu1.channel[8] = imu.get_hz() / magScale;
+    imu1.channel[0] = imu.get_temp() / tempScale;
     imu1.pack();
     return serial.write_packet( imu1.id, imu1.payload, imu1.len );
 }
@@ -228,13 +229,13 @@ void write_imu_ascii()
     // output imu data
     Serial.print("IMU: ");
     Serial.print(imu.imu_micros); Serial.print(" ");
-    Serial.print(imu.p, 2); Serial.print(" ");
-    Serial.print(imu.q, 2); Serial.print(" ");
-    Serial.print(imu.r, 2); Serial.print(" ");
-    Serial.print(imu.ax, 3); Serial.print(" ");
-    Serial.print(imu.ay, 3); Serial.print(" ");
-    Serial.print(imu.az, 3); Serial.print(" ");
-    Serial.print(imu.temp, 2);
+    Serial.print(imu.get_p(), 2); Serial.print(" ");
+    Serial.print(imu.get_q(), 2); Serial.print(" ");
+    Serial.print(imu.get_r(), 2); Serial.print(" ");
+    Serial.print(imu.get_ax(), 3); Serial.print(" ");
+    Serial.print(imu.get_ay(), 3); Serial.print(" ");
+    Serial.print(imu.get_az(), 3); Serial.print(" ");
+    Serial.print(imu.get_temp(), 2);
     Serial.println();
 }
 
