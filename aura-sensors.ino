@@ -9,6 +9,7 @@
 #include "src/gps.h"
 #include "src/imu.h"
 #include "src/led.h"
+#include "src/pilot.h"
 #include "src/power.h"
 #include "src/pwm.h"
 #include "src/sbus.h"
@@ -192,13 +193,21 @@ void loop() {
 
         // read power values
         power.update();
+
+        // suck in any available gps messages
+        gps.update();
     }
-
-    // suck in any available gps messages
-    gps.update();
-
+    
     // keep processing while there is data in the uart buffer
-    while ( sbus.process() );
+    while ( sbus.process() ) {
+        pilot.update_manual();
+        if ( pilot.ap_enabled() ) {
+            actuators.update( pilot.ap_inputs );
+        } else {
+            actuators.update( pilot.manual_inputs );
+        }
+        pwm.update();
+    }
 
     // suck in any host commmands (flight control updates, etc.)
     comms.read_commands();

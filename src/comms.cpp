@@ -15,6 +15,7 @@
 #include "gps.h"
 #include "imu.h"
 #include "led.h"
+#include "pilot.h"
 #include "power.h"
 #include "pwm.h"
 #include "sbus.h"
@@ -38,29 +39,7 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
         static message::command_inceptors_t inceptors;
         inceptors.unpack(buf, message_size);
         if ( message_size == inceptors.len ) {
-            // autopilot_norm uses the same channel mapping as sbus_norm,
-            // so map ap_tmp values to their correct places in
-            // autopilot_norm
-            autopilot_norm[0] = sbus.receiver_norm[0]; // auto/manual switch
-            autopilot_norm[1] = sbus.receiver_norm[1]; // throttle enable
-            autopilot_norm[2] = inceptors.channel[0];  // throttle
-            autopilot_norm[3] = inceptors.channel[1];
-            autopilot_norm[4] = inceptors.channel[2];
-            autopilot_norm[5] = inceptors.channel[3];
-            autopilot_norm[6] = inceptors.channel[4];
-            autopilot_norm[7] = inceptors.channel[5];
-
-            if ( sbus.receiver_norm[0] > 0.0 ) {
-                // autopilot mode active (determined elsewhere when each
-                // new receiver frame is ready) mix the inputs and write
-                // the actuator outputs now
-                actuators.sas_update( autopilot_norm );
-                actuators.mixing_update( autopilot_norm );
-                pwm.update();
-            } else {
-                // manual mode, do nothing with actuator commands from the
-                // autopilot
-            }
+            pilot.update_ap(&inceptors);
             result = true;
         }
     } else if ( id == message::config_master_id ) {
@@ -137,10 +116,10 @@ int comms_t::write_ack_bin( uint8_t command_id, uint8_t subcommand_id )
 }
 
 
-// output a binary representation of the pilot (rc receiver) data
+// output a binary representation of the pilot manual (rc receiver) data
 int comms_t::write_pilot_in_bin()
 {
-    static message::pilot_t pilot;
+    static message::pilot_t pilot1;
 
     if (message::sbus_channels > SBUS_CHANNELS) {
         return 0;
@@ -148,14 +127,14 @@ int comms_t::write_pilot_in_bin()
     
     // receiver data
     for ( int i = 0; i < message::sbus_channels; i++ ) {
-        pilot.channel[i] = sbus.receiver_norm[i];
+        pilot1.channel[i] = pilot.manual_inputs[i];
     }
 
     // flags
-    pilot.flags = sbus.receiver_flags;
+    pilot1.flags = sbus.receiver_flags;
     
-    pilot.pack();
-    return serial.write_packet( pilot.id, pilot.payload, pilot.len);
+    pilot1.pack();
+    return serial.write_packet( pilot1.id, pilot1.payload, pilot1.len);
 }
 
 void write_pilot_in_ascii()
@@ -164,18 +143,18 @@ void write_pilot_in_ascii()
     if ( sbus.receiver_flags & SBUS_FAILSAFE ) {
         Serial.print("FAILSAFE! ");
     }
-    if ( sbus.receiver_norm[0] < 0 ) {
-        Serial.print("(Manual) ");
-    } else {
+    if ( pilot.ap_enabled() ) {
         Serial.print("(Auto) ");
+    } else {
+        Serial.print("(Manual) ");
     }
-    if ( sbus.receiver_norm[1] < 0 ) {
+    if ( pilot.throttle_safety() ) {
         Serial.print("(Throttle safety) ");
     } else {
         Serial.print("(Throttle enable) ");
     }
     for ( int i = 0; i < 8; i++ ) {
-        Serial.print(sbus.receiver_norm[i], 3);
+        Serial.print(pilot.manual_inputs[i], 3);
         Serial.print(" ");
     }
     Serial.println();
@@ -186,7 +165,7 @@ void write_actuator_out_ascii()
     // actuator output
     Serial.print("RCOUT:");
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-        Serial.print(pwm.actuator_pwm[i]);
+        Serial.print(pwm.output_pwm[i]);
         Serial.print(" ");
     }
     Serial.println();

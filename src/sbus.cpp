@@ -1,4 +1,3 @@
-#include "actuators.h"
 #include "pwm.h"
 #include "sbus.h"
 
@@ -17,8 +16,6 @@ static const int SBUS_HALF_RANGE = 820;
 static const int SBUS_QUARTER_RANGE = 410;
 
 void sbus_t::parse() {
-    uint16_t sbus_raw[SBUS_CHANNELS];
-    
     // we don't need to return from these, these are just notifying us
     // of receiver state
     if ( sbus_data.failsafe_act ) {
@@ -76,31 +73,17 @@ void sbus_t::parse() {
     }
 #endif
     
-    raw2norm(sbus_raw, receiver_norm);
     receiver_flags = sbus_flags;
-
-    if ( receiver_norm[0] < 0.0 ) {
-        // manual flight mode requested, let's get it done right now
-        actuators.sas_update( receiver_norm );
-        actuators.mixing_update( receiver_norm );
-        pwm.update(); // for the outputs
-    }
 }
 
 // setup the sbus (currently hard coded on Serial2)
 void sbus_t::setup() {
     Serial2.begin(100000,SERIAL_8E1_RXINV_TXINV); // newer teensies should use SERIAL_8E2_RXINV_TXINV
     Serial.println("SBUS on Serial2 (SERIAL_8E2)");
-
-    // seed receiver_norm to safe values (pending receipt of first valid sbus packet)
-    receiver_norm[0] = -1.0;        // manual mode
-    receiver_norm[1] = -1.0;        // throttle safety enabled
 }
 
 // read available bytes on the sbus uart and return true if any new
 // data is read when a full packet is read, send that to the parser
-// which will push the new data into the various data structures and
-// trigger and output of new actuator (currently PWM only) values.
 bool sbus_t::process() {
     static byte state = 0;
     byte input;
@@ -162,15 +145,15 @@ bool sbus_t::process() {
 }
 
 // compute normalized command values from the raw sbus values
-void sbus_t::raw2norm( uint16_t *raw, float *norm ) {
+void sbus_t::raw2norm( float norm[SBUS_CHANNELS] ) {
     for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
         // convert to normalized form
         if ( sbus_symmetrical[i] ) {
             // i.e. aileron, rudder, elevator
-            norm[i] = (float)((int)raw[i] - SBUS_CENTER_VALUE) / SBUS_HALF_RANGE;
+            norm[i] = (float)((int)sbus_raw[i] - SBUS_CENTER_VALUE) / SBUS_HALF_RANGE;
         } else {
             // i.e. throttle, flaps
-            norm[i] = (float)((int)raw[i] - SBUS_MIN_VALUE) / SBUS_RANGE;
+            norm[i] = (float)((int)sbus_raw[i] - SBUS_MIN_VALUE) / SBUS_RANGE;
         }
     }
 }

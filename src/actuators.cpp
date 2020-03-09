@@ -1,24 +1,9 @@
 // Module to handle actuator input/output and mixing.
 
 #include "imu.h"
-#include "pwm.h"
-#include "sbus.h"
+#include "pilot.h"
 
 #include "actuators.h"
-
-// official flight command values.  These could source from the RC
-// receiver or the autopilot depending on the auto/manual selection
-// switch state.  These are pre-mix commands and will be mixed and
-// written to the actuators for both manual and autonomous flight
-// modes.
-float aileron_cmd = 0.0;
-float elevator_cmd = 0.0;
-float throttle_cmd = 0.0;
-float rudder_cmd = 0.0;
-float gear_cmd = 0.0;
-float flap_cmd = 0.0;
-float ch7_cmd = 0.0;
-float ch8_cmd = 0.0;
 
 // reset pwm output rates to safe startup defaults
 void actuators_t::pwm_defaults() {
@@ -75,13 +60,13 @@ void actuators_t::mixing_defaults() {
 
 // compute the sas compensation in normalized 'command' space so that
 // we can do proper output channel mixing later
-void actuators_t::sas_update( float control_norm[SBUS_CHANNELS] ) {
+void actuators_t::sas_update() {
     // mixing modes that work at the 'command' level (before actuator
     // value assignment)
 
     float tune = 1.0;
     if ( config.sas_tune ) {
-        tune = config.sas_max_gain * sbus.receiver_norm[7];
+        tune = config.sas_max_gain * pilot.manual_inputs[7];
         if ( tune < 0.0 ) {
             tune = 0.0;
         } else if ( tune > 2.0 ) {
@@ -90,27 +75,19 @@ void actuators_t::sas_update( float control_norm[SBUS_CHANNELS] ) {
     }
 
     if ( config.sas_rollaxis ) {
-        control_norm[3] -= tune * config.sas_rollgain * imu.get_p();
+        aileron_cmd -= tune * config.sas_rollgain * imu.get_p();
     }
     if ( config.sas_pitchaxis ) {
-        control_norm[4] += tune * config.sas_pitchgain * imu.get_q();
+        elevator_cmd += tune * config.sas_pitchgain * imu.get_q();
     }
     if ( config.sas_yawaxis ) {
-        control_norm[5] += tune * config.sas_yawgain * imu.get_r();
+        rudder_cmd += tune * config.sas_yawgain * imu.get_r();
     }
 }
 
 // compute the actuator (servo) values for each channel.  Handle all
 // the requested mixing modes here.
-void actuators_t::mixing_update( float control_norm[SBUS_CHANNELS] ) {
-    bool throttle_enabled = control_norm[1] > 0.0;
-    aileron_cmd = control_norm[3];
-    elevator_cmd = control_norm[4];
-    throttle_cmd = control_norm[2];
-    rudder_cmd = control_norm[5];
-    flap_cmd = control_norm[6];
-    gear_cmd = control_norm[7];
-        
+void actuators_t::mixing_update() {
     // mixing modes that work at the 'command' level (before actuator
     // value assignment)
     if ( config.mix_autocoord ) {
@@ -123,10 +100,10 @@ void actuators_t::mixing_update( float control_norm[SBUS_CHANNELS] ) {
         elevator_cmd += config.mix_Gef * flap_cmd;
     }
 
-    if ( throttle_enabled ) {
-        actuator_norm[0] = throttle_cmd;
-    } else {
+    if ( pilot.throttle_safety() ) {
         actuator_norm[0] = 0.0;
+    } else {
+        actuator_norm[0] = throttle_cmd;
     }
     actuator_norm[1] = aileron_cmd;
     actuator_norm[2] = elevator_cmd;
@@ -154,15 +131,28 @@ void actuators_t::mixing_update( float control_norm[SBUS_CHANNELS] ) {
     }
 
     // compute pwm actuator output values from the normalized values
-    pwm.norm2pwm( actuator_norm, pwm.actuator_pwm );
+    pwm.norm2pwm( actuator_norm );
+}
+
+void actuators_t::update( float control_norm[SBUS_CHANNELS] ) {
+    // initialize commands
+    aileron_cmd = pilot.get_aileron();
+    elevator_cmd = pilot.get_elevator();
+    throttle_cmd = pilot.get_throttle();
+    rudder_cmd = pilot.get_rudder();
+    flap_cmd = pilot.get_flap();
+    gear_cmd = pilot.get_gear();
+    
+    sas_update();
+    mixing_update();
 }
 
 // set (zero) default raw actuator values
 void actuators_t::setup() {
-    for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
+    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         actuator_norm[i] = 0.0;
     }
-    pwm.norm2pwm(actuator_norm, pwm.actuator_pwm);
+    pwm.norm2pwm( actuator_norm );
 }
 
 // global shared instance
