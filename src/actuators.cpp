@@ -18,6 +18,7 @@ void actuators_t::act_gain_defaults() {
 }
 
 // set (zero) default raw actuator values
+// FIXME: doesn't make sense to depend on an external module being initialized first I don't think.
 void actuators_t::setup() {
     pwm.norm2pwm( mixer.outputs );
 }
