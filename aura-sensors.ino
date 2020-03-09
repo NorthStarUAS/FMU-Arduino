@@ -9,6 +9,7 @@
 #include "src/gps.h"
 #include "src/imu.h"
 #include "src/led.h"
+#include "src/mixer.h"
 #include "src/pilot.h"
 #include "src/power.h"
 #include "src/pwm.h"
@@ -119,6 +120,9 @@ void setup() {
     // initialize the SBUS receiver
     sbus.setup();
 
+    // initialize mixer (before actuators/pwm)
+    mixer.setup();
+    
     // intialize actuators (before pwm)
     actuators.setup();
     
@@ -202,10 +206,11 @@ void loop() {
     while ( sbus.process() ) {
         pilot.update_manual();
         if ( pilot.ap_enabled() ) {
-            actuators.update( pilot.ap_inputs );
+            mixer.update( pilot.ap_inputs );
         } else {
-            actuators.update( pilot.manual_inputs );
+            mixer.update( pilot.manual_inputs );
         }
+        actuators.update();
         pwm.update();
     }
 

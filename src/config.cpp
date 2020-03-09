@@ -7,6 +7,7 @@
 #include "config.h"
 #include "imu.h"
 #include "led.h"
+#include "mixer.h"
 #include "power.h"
 
 // starting point for writing big eeprom struct
@@ -51,8 +52,8 @@ void config_t::load_defaults() {
     led.defaults_goldy3();
     actuators.pwm_defaults();
     actuators.act_gain_defaults();
-    actuators.mixing_defaults();
-    actuators.sas_defaults();
+    mixer.sas_defaults();
+    mixer.mixing_defaults();
     power_defaults();
 }
 
