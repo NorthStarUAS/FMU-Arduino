@@ -202,11 +202,9 @@ void loop() {
     while ( sbus.process() ) {
         pilot.update_manual();
         if ( pilot.ap_enabled() ) {
-            actuators.sas_update( pilot.ap_inputs );
-            actuators.mixing_update( pilot.ap_inputs );
+            actuators.update( pilot.ap_inputs );
         } else {
-            actuators.sas_update( pilot.manual_inputs );
-            actuators.mixing_update( pilot.manual_inputs );
+            actuators.update( pilot.manual_inputs );
         }
         pwm.update();
     }
