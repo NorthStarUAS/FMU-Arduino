@@ -1,4 +1,3 @@
-#include "pwm.h"
 #include "sbus.h"
 
 static const uint8_t SBUS_SIGNAL_OK = 0x00;

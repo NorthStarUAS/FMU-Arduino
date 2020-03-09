@@ -18,7 +18,7 @@
 #include "pilot.h"
 #include "power.h"
 #include "pwm.h"
-#include "sbus.h"
+#include "sensors/sbus/sbus.h"
 #include "util/serial_link.h"
 #include "aura4_messages.h"
 #include "../setup_board.h"

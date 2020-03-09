@@ -1,7 +1,7 @@
 #pragma once
 
 #include "aura4_messages.h"
-#include "sbus.h"
+#include "sensors/sbus/sbus.h"
 
 class pilot_t {
 public:

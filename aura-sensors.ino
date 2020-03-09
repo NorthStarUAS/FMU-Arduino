@@ -12,7 +12,7 @@
 #include "src/pilot.h"
 #include "src/power.h"
 #include "src/pwm.h"
-#include "src/sbus.h"
+#include "src/sensors/sbus/sbus.h"
 
 #include "setup_board.h"
 
