@@ -55,8 +55,9 @@ private:
         };
     } SBUS_DATA_U;
     SBUS_DATA_U sbus_data;
-    
-    void raw2norm( uint16_t *raw, float *norm );
+    uint16_t sbus_raw[SBUS_CHANNELS];
+
+    void raw2norm();
     
 public:
     float receiver_norm[SBUS_CHANNELS];

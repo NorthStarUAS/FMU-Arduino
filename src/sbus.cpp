@@ -17,8 +17,6 @@ static const int SBUS_HALF_RANGE = 820;
 static const int SBUS_QUARTER_RANGE = 410;
 
 void sbus_t::parse() {
-    uint16_t sbus_raw[SBUS_CHANNELS];
-    
     // we don't need to return from these, these are just notifying us
     // of receiver state
     if ( sbus_data.failsafe_act ) {
@@ -76,7 +74,7 @@ void sbus_t::parse() {
     }
 #endif
     
-    raw2norm(sbus_raw, receiver_norm);
+    raw2norm();
     receiver_flags = sbus_flags;
 
     if ( receiver_norm[0] < 0.0 ) {
@@ -162,15 +160,15 @@ bool sbus_t::process() {
 }
 
 // compute normalized command values from the raw sbus values
-void sbus_t::raw2norm( uint16_t *raw, float *norm ) {
+void sbus_t::raw2norm() {
     for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
         // convert to normalized form
         if ( sbus_symmetrical[i] ) {
             // i.e. aileron, rudder, elevator
-            norm[i] = (float)((int)raw[i] - SBUS_CENTER_VALUE) / SBUS_HALF_RANGE;
+            receiver_norm[i] = (float)((int)sbus_raw[i] - SBUS_CENTER_VALUE) / SBUS_HALF_RANGE;
         } else {
             // i.e. throttle, flaps
-            norm[i] = (float)((int)raw[i] - SBUS_MIN_VALUE) / SBUS_RANGE;
+            receiver_norm[i] = (float)((int)sbus_raw[i] - SBUS_MIN_VALUE) / SBUS_RANGE;
         }
     }
 }
