@@ -1,8 +1,6 @@
 // Module to handle actuator input/output and mixing.
 
 #include "imu.h"
-#include "pwm.h"
-#include "sbus.h"
 
 #include "actuators.h"
 
@@ -154,15 +152,15 @@ void actuators_t::mixing_update( float control_norm[SBUS_CHANNELS] ) {
     }
 
     // compute pwm actuator output values from the normalized values
-    pwm.norm2pwm( actuator_norm, pwm.actuator_pwm );
+    pwm.norm2pwm( actuator_norm );
 }
 
 // set (zero) default raw actuator values
 void actuators_t::setup() {
-    for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
+    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         actuator_norm[i] = 0.0;
     }
-    pwm.norm2pwm(actuator_norm, pwm.actuator_pwm);
+    pwm.norm2pwm( actuator_norm );
 }
 
 // global shared instance

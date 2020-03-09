@@ -64,27 +64,27 @@ void pwm_t::setup(int board) {
 
 // compute raw pwm values from normalized command values.  (handle
 // actuator reversing here.)
-void pwm_t::norm2pwm( float *norm, uint16_t *pwm ) {
+void pwm_t::norm2pwm( float *norm ) {
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         // convert to pulse length (special case ch6 when in flaperon mode)
         if ( pwm_symmetrical[i] || (i == 4 && actuators.config.mix_flaperon) ) {
             // i.e. aileron, rudder, elevator
             // Serial1.println(i);
             // Serial1.println(config_actuators.act_rev[i]);
-            pwm[i] = PWM_CENTER + (int)(PWM_HALF_RANGE * norm[i] * actuators.config.act_gain[i]);
+            output_pwm[i] = PWM_CENTER + (int)(PWM_HALF_RANGE * norm[i] * actuators.config.act_gain[i]);
         } else {
             // i.e. throttle, flaps
             if ( actuators.config.act_gain[i] > 0.0 ) {
-                pwm[i] = PWM_MIN + (int)(PWM_RANGE * norm[i] * actuators.config.act_gain[i]);
+                output_pwm[i] = PWM_MIN + (int)(PWM_RANGE * norm[i] * actuators.config.act_gain[i]);
             } else {
-                pwm[i] = PWM_MAX + (int)(PWM_RANGE * norm[i] * actuators.config.act_gain[i]);
+                output_pwm[i] = PWM_MAX + (int)(PWM_RANGE * norm[i] * actuators.config.act_gain[i]);
             }
         }
-        if ( pwm[i] < PWM_MIN ) {
-            pwm[i] = PWM_MIN;
+        if ( output_pwm[i] < PWM_MIN ) {
+            output_pwm[i] = PWM_MIN;
         }
-        if ( pwm[i] > PWM_MAX ) {
-            pwm[i] = PWM_MAX;
+        if ( output_pwm[i] > PWM_MAX ) {
+            output_pwm[i] = PWM_MAX;
         }
     }
 }
@@ -94,12 +94,12 @@ void pwm_t::norm2pwm( float *norm, uint16_t *pwm ) {
 void pwm_t::update(uint8_t test_pwm_channel) {
     // hook for testing servos
     if ( test_pwm_channel >= 0 && test_pwm_channel < PWM_CHANNELS ) {
-        actuator_pwm[test_pwm_channel] = gen_pwm_test_value();
+        output_pwm[test_pwm_channel] = gen_pwm_test_value();
     }
 
     // sending servo pwm commands
     for ( uint8_t i = 0; i < PWM_CHANNELS; i++ ) {
-        analogWrite(servoPins[i], actuator_pwm[i] / ((1/((float) servoFreq_hz)) * 1000000.0f )*65535.0f);
+        analogWrite(servoPins[i], output_pwm[i] / ((1/((float) servoFreq_hz)) * 1000000.0f )*65535.0f);
     }
 }
 

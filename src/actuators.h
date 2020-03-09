@@ -1,11 +1,12 @@
 #pragma once
 
 #include "aura4_messages.h"
+#include "pwm.h"
 #include "sbus.h"
 
 class actuators_t {
 private:
-    float actuator_norm[SBUS_CHANNELS];
+    float actuator_norm[PWM_CHANNELS];
 
 public:
     message::config_actuators_t config;

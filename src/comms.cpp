@@ -186,7 +186,7 @@ void write_actuator_out_ascii()
     // actuator output
     Serial.print("RCOUT:");
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-        Serial.print(pwm.actuator_pwm[i]);
+        Serial.print(pwm.output_pwm[i]);
         Serial.print(" ");
     }
     Serial.println();
