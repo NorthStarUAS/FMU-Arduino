@@ -355,7 +355,7 @@ void EKF15::measurement_update(GPSdata gps) {
     nav.vn = nav.vn + x(3);
     nav.ve = nav.ve + x(4);
     nav.vd = nav.vd + x(5);
-		
+
     // Attitude correction
     Quaternionf dq = Quaternionf(1.0, x(6), x(7), x(8));
     quat = (quat * dq).normalized();

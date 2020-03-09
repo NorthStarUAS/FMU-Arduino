@@ -307,25 +307,49 @@ int comms_t::write_nav_bin()
 }
 
 void comms_t::write_nav_ascii() {
-    Serial.print("Pos: ");
-    Serial.print(ekf.nav.lat*R2D, 7);
-    Serial.print(", ");
-    Serial.print(ekf.nav.lon*R2D, 7);
-    Serial.print(", ");
-    Serial.print(ekf.nav.alt, 2);
-    Serial.print(" Vel: ");
-    Serial.print(ekf.nav.vn, 2);
-    Serial.print(", ");
-    Serial.print(ekf.nav.ve, 2);
-    Serial.print(", ");
-    Serial.print(ekf.nav.vd, 2);
-    Serial.print(" Att: ");
-    Serial.print(ekf.nav.phi*R2D, 2);
-    Serial.print(", ");
-    Serial.print(ekf.nav.the*R2D, 2);
-    Serial.print(", ");
-    Serial.print(ekf.nav.psi*R2D, 2);
-    Serial.println();
+    if ( false ) {
+        // values
+        Serial.print("Pos: ");
+        Serial.print(ekf.nav.lat*R2D, 7);
+        Serial.print(", ");
+        Serial.print(ekf.nav.lon*R2D, 7);
+        Serial.print(", ");
+        Serial.print(ekf.nav.alt, 2);
+        Serial.print(" Vel: ");
+        Serial.print(ekf.nav.vn, 2);
+        Serial.print(", ");
+        Serial.print(ekf.nav.ve, 2);
+        Serial.print(", ");
+        Serial.print(ekf.nav.vd, 2);
+        Serial.print(" Att: ");
+        Serial.print(ekf.nav.phi*R2D, 2);
+        Serial.print(", ");
+        Serial.print(ekf.nav.the*R2D, 2);
+        Serial.print(", ");
+        Serial.print(ekf.nav.psi*R2D, 2);
+        Serial.println();
+    } else {
+        // covariances
+        Serial.print("cov pos: ");
+        Serial.print(ekf.nav.Pp0, 2);
+        Serial.print(", ");
+        Serial.print(ekf.nav.Pp1, 2);
+        Serial.print(", ");
+        Serial.print(ekf.nav.Pp2, 2);
+        Serial.print(" vel: ");
+        Serial.print(ekf.nav.Pv0, 2);
+        Serial.print(", ");
+        Serial.print(ekf.nav.Pv1, 2);
+        Serial.print(", ");
+        Serial.print(ekf.nav.Pv2, 2);
+        Serial.print(" att: ");
+        Serial.print(ekf.nav.Pa0*R2D, 2);
+        Serial.print(", ");
+        Serial.print(ekf.nav.Pa1*R2D, 2);
+        Serial.print(", ");
+        Serial.print(ekf.nav.Pa2*R2D, 2);
+        Serial.println();
+    }
 }
 
 // output a binary representation of the barometer data

@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "gps.h"
 #include "imu.h"
 
@@ -43,6 +45,12 @@ void ekf_t::update() {
             ekf.measurement_update(gps1);
         }
         nav = ekf.get_nav();
+
+        // sanity checks in case degenerate input leads to filter blow up
+        if ( std::isnan(nav.phi) or std::isnan(nav.the) or std::isnan(nav.psi) ) {
+            Serial.println("filter blew up, reiniting");
+            ekf_inited = false;
+        }
     }
 }
 
