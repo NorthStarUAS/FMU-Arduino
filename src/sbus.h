@@ -57,14 +57,12 @@ private:
     SBUS_DATA_U sbus_data;
     uint16_t sbus_raw[SBUS_CHANNELS];
 
-    void raw2norm();
-    
 public:
-    float receiver_norm[SBUS_CHANNELS];
     uint8_t receiver_flags = 0x00;
     void setup();
     void parse();
     bool process();
+    void raw2norm( float norm[SBUS_CHANNELS] );
 };
 
 extern sbus_t sbus;

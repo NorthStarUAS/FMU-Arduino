@@ -1,6 +1,7 @@
 // Module to handle actuator input/output and mixing.
 
 #include "imu.h"
+#include "pilot.h"
 
 #include "actuators.h"
 
@@ -79,7 +80,7 @@ void actuators_t::sas_update( float control_norm[SBUS_CHANNELS] ) {
 
     float tune = 1.0;
     if ( config.sas_tune ) {
-        tune = config.sas_max_gain * sbus.receiver_norm[7];
+        tune = config.sas_max_gain * pilot.manual_inputs[7];
         if ( tune < 0.0 ) {
             tune = 0.0;
         } else if ( tune > 2.0 ) {
