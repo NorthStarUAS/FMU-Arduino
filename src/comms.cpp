@@ -309,24 +309,25 @@ void comms_t::write_nav_ascii() {
         Serial.println();
     } else {
         // covariances
+        float num = 3.0;        // how many standard deviations
         Serial.print("cov pos: ");
-        Serial.print(ekf.nav.Pp0, 2);
+        Serial.print(num * ekf.nav.Pp0, 2);
         Serial.print(", ");
-        Serial.print(ekf.nav.Pp1, 2);
+        Serial.print(num * ekf.nav.Pp1, 2);
         Serial.print(", ");
-        Serial.print(ekf.nav.Pp2, 2);
+        Serial.print(num * ekf.nav.Pp2, 2);
         Serial.print(" vel: ");
-        Serial.print(ekf.nav.Pv0, 2);
+        Serial.print(num * ekf.nav.Pv0, 2);
         Serial.print(", ");
-        Serial.print(ekf.nav.Pv1, 2);
+        Serial.print(num * ekf.nav.Pv1, 2);
         Serial.print(", ");
-        Serial.print(ekf.nav.Pv2, 2);
+        Serial.print(num * ekf.nav.Pv2, 2);
         Serial.print(" att: ");
-        Serial.print(ekf.nav.Pa0*R2D, 2);
+        Serial.print(num * ekf.nav.Pa0*R2D, 2);
         Serial.print(", ");
-        Serial.print(ekf.nav.Pa1*R2D, 2);
+        Serial.print(num * ekf.nav.Pa1*R2D, 2);
         Serial.print(", ");
-        Serial.print(ekf.nav.Pa2*R2D, 2);
+        Serial.print(num * ekf.nav.Pa2*R2D, 2);
         Serial.println();
     }
 }
