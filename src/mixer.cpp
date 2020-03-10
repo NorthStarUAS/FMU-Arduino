@@ -53,7 +53,6 @@ void mixer_t::mixing_defaults() {
 
 
 void mixer_t::setup() {
-    mixing_defaults();
     M.setIdentity();            // straight pass through default
     outputs.setZero();
     pwm.norm2pwm( outputs.data() );
@@ -62,6 +61,9 @@ void mixer_t::setup() {
     // value assignment)
     if ( config.actuators.mix_autocoord ) {
         M(3,1) = config.actuators.mix_Gac;
+        if ( config.actuators.mix_vtail && !config.actuators.mix_elevon) {
+            M(2,1) = -config.actuators.mix_Gac;
+        }
     }
     if ( config.actuators.mix_throttle_trim ) {
         M(2,0) = config.actuators.mix_Get;

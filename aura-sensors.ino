@@ -179,7 +179,7 @@ void loop() {
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
             // comms.write_gps_ascii();
-            comms.write_nav_ascii();
+            // comms.write_nav_ascii();
             // write_airdata_ascii();
             // write_status_info_ascii();
             // write_imu_ascii();
