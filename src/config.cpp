@@ -108,7 +108,9 @@ int config_t::read_eeprom() {
             led.config.unpack((uint8_t *)&(config_buf[pos]), led.config.len);
             pos += led.config.len;
             // update imu R matrix from config
-            imu.set_orientation();           
+            imu.set_orientation();
+            // update mixer matrix
+            mixer.setup();
         }
     } else {
         Serial.println("ERROR: config structure too large for EEPROM hardware!");

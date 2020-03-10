@@ -15,6 +15,7 @@
 #include "gps.h"
 #include "imu.h"
 #include "led.h"
+#include "mixer.h"
 #include "pilot.h"
 #include "power.h"
 #include "pwm.h"
@@ -64,8 +65,8 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
         if ( message_size == config.actuators.len ) {
             Serial.println("received new actuator config");
             // update pwm config in case it has been changed.
-            pwm.setup(config.master.board);
             config.write_eeprom();
+            mixer.setup();
             write_ack_bin( id, 0 );
             result = true;
         }
