@@ -57,6 +57,12 @@ public:
             return manual_inputs[7];
         }
     }
+    inline float get_ch7() {
+        return manual_inputs[8];
+    }
+    inline float get_ch8() {
+        return manual_inputs[9];
+    }
 };
 
 extern pilot_t pilot;

@@ -5,12 +5,6 @@
 
 #include "mixer.h"
 
-void mixer_t::setup() {
-    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-        outputs[i] = 0.0;
-    }
-}
-
 // reset sas parameters to startup defaults
 void mixer_t::sas_defaults() {
     config.sas_rollaxis = false;
@@ -50,12 +44,63 @@ void mixer_t::mixing_defaults() {
 };
 
 
-// compute the sas compensation in normalized 'command' space so that
-// we can do proper output channel mixing later
-void mixer_t::sas_update() {
+void mixer_t::setup() {
+    mixing_defaults();
+    M.setIdentity();            // straight pass through default
+
     // mixing modes that work at the 'command' level (before actuator
     // value assignment)
+    if ( config.mix_autocoord ) {
+        M(3,1) = config.mix_Gac;
+    }
+    if ( config.mix_throttle_trim ) {
+        M(2,0) = config.mix_Get;
+    }
+    if ( config.mix_flap_trim ) {
+        M(2,4) = config.mix_Gef;
+    }
 
+    // elevon and flaperon mixing are mutually exclusive
+    if ( config.mix_elevon ) {
+        M(1,1) = config.mix_Gea;
+        M(1,2) = config.mix_Gee;
+        M(2,1) = config.mix_Gea;
+        M(2,2) = -config.mix_Gee;
+    } else if ( config.mix_flaperon ) {
+        M(1,1) = config.mix_Gfa;
+        M(1,4) = config.mix_Gff;
+        M(4,1) = -config.mix_Gfa;
+        M(4,4) = config.mix_Gff;
+    }
+    // vtail mixing can't work with elevon mixing
+    if ( config.mix_vtail && !config.mix_elevon) {
+        M(2,2) = config.mix_Gve;
+        M(2,3) = config.mix_Gvr;
+        M(3,2) = config.mix_Gve;
+        M(3,3) = -config.mix_Gvr;
+    }
+    if ( config.mix_diff_thrust ) {
+        // fixme: never tested in the wild (need to think through channel assignments)
+        // outputs[0] = config.mix_Gtt * throttle_cmd + config.mix_Gtr * rudder_cmd;
+        // outputs[5] = config.mix_Gtt * throttle_cmd - config.mix_Gtr * rudder_cmd;
+    }
+    
+    Serial.println("Mixer Matrix:");
+    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
+        for ( int j = 0; j < PWM_CHANNELS; j++ ) {
+            Serial.print(M(i,j), 2);
+            Serial.print(" ");
+        }
+        Serial.println();
+    }
+    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
+        outputs[i] = 0.0;
+    }
+}
+
+// compute the stability damping in normalized command/input space
+// which simplifies mixing later
+void mixer_t::sas_update() {
     float tune = 1.0;
     if ( config.sas_tune ) {
         tune = config.sas_max_gain * pilot.manual_inputs[7];
@@ -67,76 +112,37 @@ void mixer_t::sas_update() {
     }
 
     if ( config.sas_rollaxis ) {
-        aileron_cmd -= tune * config.sas_rollgain * imu.get_p();
+        inputs[1] -= tune * config.sas_rollgain * imu.get_p();
     }
     if ( config.sas_pitchaxis ) {
-        elevator_cmd += tune * config.sas_pitchgain * imu.get_q();
+        inputs[2] += tune * config.sas_pitchgain * imu.get_q();
     }
     if ( config.sas_yawaxis ) {
-        rudder_cmd += tune * config.sas_yawgain * imu.get_r();
+        inputs[3] += tune * config.sas_yawgain * imu.get_r();
     }
 }
 
 // compute the actuator (servo) values for each channel.  Handle all
 // the requested mixing modes here.
 void mixer_t::mixing_update() {
-    // mixing modes that work at the 'command' level (before actuator
-    // value assignment)
-    if ( config.mix_autocoord ) {
-        rudder_cmd += config.mix_Gac * aileron_cmd;
-    }
-    if ( config.mix_throttle_trim ) {
-        elevator_cmd += config.mix_Get * throttle_cmd;
-    }
-    if ( config.mix_flap_trim ) {
-        elevator_cmd += config.mix_Gef * flap_cmd;
-    }
-
+    outputs = M * inputs;
+    
     if ( pilot.throttle_safety() ) {
         outputs[0] = 0.0;
-    } else {
-        outputs[0] = throttle_cmd;
-    }
-    outputs[1] = aileron_cmd;
-    outputs[2] = elevator_cmd;
-    outputs[3] = rudder_cmd;
-    outputs[4] = flap_cmd;
-    outputs[5] = gear_cmd;
-
-    // elevon and flaperon mixing are mutually exclusive
-    if ( config.mix_elevon ) {
-        outputs[1] = config.mix_Gea * aileron_cmd + config.mix_Gee * elevator_cmd;
-        outputs[2] = config.mix_Gea * aileron_cmd - config.mix_Gee * elevator_cmd;
-    } else if ( config.mix_flaperon ) {
-        outputs[1] = config.mix_Gfa * aileron_cmd + config.mix_Gff * flap_cmd;
-        outputs[4] = -config.mix_Gfa * aileron_cmd + config.mix_Gff * flap_cmd;
-    }
-    // vtail mixing can't work with elevon mixing
-    if ( config.mix_vtail && !config.mix_elevon) {
-        outputs[2] = config.mix_Gve * elevator_cmd + config.mix_Gvr * rudder_cmd;
-        outputs[3] = config.mix_Gve * elevator_cmd - config.mix_Gvr * rudder_cmd;
-    }
-    if ( config.mix_diff_thrust ) {
-        // fixme: never tested in the wild (need to think through channel assignments)
-        // outputs[0] = config.mix_Gtt * throttle_cmd + config.mix_Gtr * rudder_cmd;
-        // outputs[5] = config.mix_Gtt * throttle_cmd - config.mix_Gtr * rudder_cmd;
     }
 }
 
 void mixer_t::update( float control_norm[SBUS_CHANNELS] ) {
     // initialize commands
-    aileron_cmd = pilot.get_aileron();
-    elevator_cmd = pilot.get_elevator();
-    throttle_cmd = pilot.get_throttle();
-    rudder_cmd = pilot.get_rudder();
-    flap_cmd = pilot.get_flap();
-    gear_cmd = pilot.get_gear();
+    inputs << pilot.get_throttle(), pilot.get_aileron(), pilot.get_elevator(),
+        pilot.get_rudder(), pilot.get_flap(), pilot.get_gear(),
+        pilot.get_ch7(), pilot.get_ch8();
     
     sas_update();
     mixing_update();
 
     // compute pwm actuator output values from the normalized values
-    pwm.norm2pwm( outputs );
+    pwm.norm2pwm( outputs.data() );
 }
 
 // global shared instance

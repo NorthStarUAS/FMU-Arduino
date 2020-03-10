@@ -18,11 +18,11 @@ void pilot_t::update_ap( message::command_inceptors_t *inceptors ) {
     ap_inputs[0] = manual_inputs[0];      // auto/manual switch
     ap_inputs[1] = manual_inputs[1];      // throttle enable
     ap_inputs[2] = inceptors->channel[0]; // throttle
-    ap_inputs[3] = inceptors->channel[1];
-    ap_inputs[4] = inceptors->channel[2];
-    ap_inputs[5] = inceptors->channel[3];
-    ap_inputs[6] = inceptors->channel[4];
-    ap_inputs[7] = inceptors->channel[5];
+    ap_inputs[3] = inceptors->channel[1]; // aileron
+    ap_inputs[4] = inceptors->channel[2]; // elevator
+    ap_inputs[5] = inceptors->channel[3]; // rudder
+    ap_inputs[6] = inceptors->channel[4]; // flap
+    ap_inputs[7] = inceptors->channel[5]; // gear
 }
 
 // global shared instance
