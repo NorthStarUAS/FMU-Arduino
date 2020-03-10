@@ -1,4 +1,4 @@
-#include "actuators.h"
+#include "config.h"
 #include "pwm.h"
 
 // For a Futaba T6EX 2.4Ghz FASST system:
@@ -58,8 +58,8 @@ void pwm_t::setup(int board) {
     // a higher level, but this is important enough to do it again
     // just in case someone changed the higher level and messed up the
     // init order without realizing)
-    actuators.setup();
-    update();
+    // actuators.setup();
+    // update();
 }
 
 // compute raw pwm values from normalized command values.  (handle
@@ -67,17 +67,17 @@ void pwm_t::setup(int board) {
 void pwm_t::norm2pwm( float *norm ) {
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         // convert to pulse length (special case ch6 when in flaperon mode)
-        if ( pwm_symmetrical[i] || (i == 4 && actuators.config.mix_flaperon) ) {
+        if ( pwm_symmetrical[i] || (i == 4 && config.actuators.mix_flaperon) ) {
             // i.e. aileron, rudder, elevator
             // Serial1.println(i);
             // Serial1.println(config_actuators.act_rev[i]);
-            output_pwm[i] = PWM_CENTER + (int)(PWM_HALF_RANGE * norm[i] * actuators.config.act_gain[i]);
+            output_pwm[i] = PWM_CENTER + (int)(PWM_HALF_RANGE * norm[i] * config.actuators.act_gain[i]);
         } else {
             // i.e. throttle, flaps
-            if ( actuators.config.act_gain[i] > 0.0 ) {
-                output_pwm[i] = PWM_MIN + (int)(PWM_RANGE * norm[i] * actuators.config.act_gain[i]);
+            if ( config.actuators.act_gain[i] > 0.0 ) {
+                output_pwm[i] = PWM_MIN + (int)(PWM_RANGE * norm[i] * config.actuators.act_gain[i]);
             } else {
-                output_pwm[i] = PWM_MAX + (int)(PWM_RANGE * norm[i] * actuators.config.act_gain[i]);
+                output_pwm[i] = PWM_MAX + (int)(PWM_RANGE * norm[i] * config.actuators.act_gain[i]);
             }
         }
         if ( output_pwm[i] < PWM_MIN ) {

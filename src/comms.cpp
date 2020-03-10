@@ -60,8 +60,8 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
             result = true;
         }
     } else if ( id == message::config_actuators_id ) {
-        actuators.config.unpack(buf, message_size);
-        if ( message_size == actuators.config.len ) {
+        config.actuators.unpack(buf, message_size);
+        if ( message_size == config.actuators.len ) {
             Serial.println("received new actuator config");
             // update pwm config in case it has been changed.
             pwm.setup(config.master.board);

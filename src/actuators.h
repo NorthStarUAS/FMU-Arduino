@@ -7,7 +7,6 @@
 class actuators_t {
 
 public:
-    message::config_actuators_t config;
     void setup();
     void pwm_defaults();
     void act_gain_defaults();

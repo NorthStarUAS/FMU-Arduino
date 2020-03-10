@@ -50,8 +50,7 @@ void config_t::load_defaults() {
     master_defaults();
     imu.defaults_goldy3();
     led.defaults_goldy3();
-    actuators.pwm_defaults();
-    actuators.act_gain_defaults();
+    mixer.act_gain_defaults();
     mixer.sas_defaults();
     mixer.mixing_defaults();
     power_defaults();
@@ -68,12 +67,12 @@ int config_t::read_eeprom() {
     // call pack to initialize internal stucture len
     master.pack();
     imu.config.pack();
-    actuators.config.pack();
+    config.actuators.pack();
     airdata.config.pack();
     power.config.pack();
     led.config.pack();
     config_size = master.len + imu.config.len +
-        actuators.config.len + airdata.config.len + power.config.len +
+        config.actuators.len + airdata.config.len + power.config.len +
         led.config.len;
     uint8_t config_buf[config_size];
     int status = 0;
@@ -100,8 +99,8 @@ int config_t::read_eeprom() {
             pos += master.len;
             imu.config.unpack((uint8_t *)&(config_buf[pos]), imu.config.len);
             pos += imu.config.len;
-            actuators.config.unpack((uint8_t *)&(config_buf[pos]), actuators.config.len);
-            pos += actuators.config.len;
+            config.actuators.unpack((uint8_t *)&(config_buf[pos]), config.actuators.len);
+            pos += config.actuators.len;
             airdata.config.unpack((uint8_t *)&(config_buf[pos]), airdata.config.len);
             pos += airdata.config.len;
             power.config.unpack((uint8_t *)&(config_buf[pos]), power.config.len);
@@ -128,7 +127,7 @@ int config_t::write_eeprom() {
     // create packed version of messages
     master.pack();
     imu.config.pack();
-    actuators.config.pack();
+    config.actuators.pack();
     airdata.config.pack();
     power.config.pack();
     led.config.pack();
@@ -137,7 +136,7 @@ int config_t::write_eeprom() {
     int pos = 0;
     pos += build_config_buf( config_buf, pos, master.payload, master.len );
     pos += build_config_buf( config_buf, pos, imu.config.payload, imu.config.len );
-    pos += build_config_buf( config_buf, pos, actuators.config.payload, actuators.config.len );
+    pos += build_config_buf( config_buf, pos, config.actuators.payload, config.actuators.len );
     pos += build_config_buf( config_buf, pos, airdata.config.payload, airdata.config.len );
     pos += build_config_buf( config_buf, pos, power.config.payload, power.config.len );
     pos += build_config_buf( config_buf, pos, led.config.payload, led.config.len );

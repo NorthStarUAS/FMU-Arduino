@@ -5,16 +5,16 @@
 
 // reset pwm output rates to safe startup defaults
 void actuators_t::pwm_defaults() {
-    for ( int i = 0; i < message::pwm_channels; i++ ) {
-         config.pwm_hz[i] = 50;    
-    }
+    // for ( int i = 0; i < message::pwm_channels; i++ ) {
+    //      config.pwm_hz[i] = 50;    
+    // }
 }
 
 // reset actuator gains (reversing) to startup defaults
 void actuators_t::act_gain_defaults() {
-    for ( int i = 0; i < message::pwm_channels; i++ ) {
-        config.act_gain[i] = 1.0;
-    }
+    // for ( int i = 0; i < message::pwm_channels; i++ ) {
+    //     config.act_gain[i] = 1.0;
+    // }
 }
 
 // set (zero) default raw actuator values
