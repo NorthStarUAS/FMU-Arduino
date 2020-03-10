@@ -10,7 +10,7 @@ void ekf_t::update() {
     if ( !gps_found and gps.new_gps_data ) {
         gps_found = true;
         gpsSettle = 0;
-        Serial.println("EKF: gps found itself");
+        Serial.println("EKF: gps has a fix.");
     }
     
     IMUdata imu1;
@@ -46,8 +46,11 @@ void ekf_t::update() {
         }
         nav = ekf.get_nav();
 
-        // sanity checks in case degenerate input leads to filter blow up
-        if ( std::isnan(nav.phi) or std::isnan(nav.the) or std::isnan(nav.psi) ) {
+        // sanity checks in case degenerate input leads to the filter
+        // blowing up.  look for nans (or even negative #'s) in the
+        // covariance matrix.
+        if ( std::isnan(nav.Pp0) or std::isnan(nav.Pv0) or std::isnan(nav.Pa0)
+             or (nav.Pp0 < -0.1) or (nav.Pv0 < -0.1) or (nav.Pa0 < -0.1) ) {
             Serial.println("filter blew up, reiniting");
             ekf_inited = false;
         }
