@@ -100,6 +100,9 @@ void mixer_t::setup() {
     Serial.println("Mixer Matrix:");
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         for ( int j = 0; j < PWM_CHANNELS; j++ ) {
+            if ( M(i,j) >= 0 ) {
+                Serial.print(" ");
+            }
             Serial.print(M(i,j), 2);
             Serial.print(" ");
         }
