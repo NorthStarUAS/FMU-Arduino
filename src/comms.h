@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util/serial_link.h"
+#include "sensors/sbus/sbus.h"
 #include "sensors/UBLOX8/UBLOX8.h"
 
 class comms_t {

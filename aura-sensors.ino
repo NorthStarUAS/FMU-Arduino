@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 
-#include "src/actuators.h"
 #include "src/airdata.h"
 #include "src/comms.h"
 #include "src/config.h"
@@ -123,9 +122,6 @@ void setup() {
     // initialize mixer (before actuators/pwm)
     mixer.setup();
     
-    // intialize actuators (before pwm)
-    actuators.setup();
-    
     // initialize PWM output
     pwm.setup(config.master.board);
 
@@ -210,7 +206,6 @@ void loop() {
         } else {
             mixer.update( pilot.manual_inputs );
         }
-        actuators.update();
         pwm.update();
     }
 
