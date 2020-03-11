@@ -5,8 +5,6 @@
 #include "sensors/UBLOX8/UBLOX8.h"
 
 class comms_t {
-private:
-    float autopilot_norm[SBUS_CHANNELS];
     
 public:
     // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in

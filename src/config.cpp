@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 
-#include "actuators.h"
 #include "airdata.h"
 #include "comms.h"
 #include "config.h"

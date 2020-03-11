@@ -8,7 +8,6 @@
 
 #include <Arduino.h>
 
-#include "actuators.h"
 #include "airdata.h"
 #include "config.h"
 #include "ekf.h"
