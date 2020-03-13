@@ -75,6 +75,16 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
             write_ack_bin( id, 0 );
             result = true;
         }
+    } else if ( id == message::config_mixer_id ) {
+        message::config_mixer_t config_mixer;
+        config_mixer.unpack(buf, message_size);
+        if ( message_size == config_mixer.len ) {
+            mixer.update_matrix(&config_mixer);
+            Serial.println("received new logic level mixer config");
+            config.write_eeprom();
+            write_ack_bin( id, 0 );
+            result = true;
+        }
     } else if ( id == message::config_mix_matrix_id ) {
         config.mix_matrix.unpack(buf, message_size);
         if ( message_size == config.mix_matrix.len ) {
