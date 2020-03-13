@@ -36,25 +36,6 @@ uint16_t config_t::set_serial_number(uint16_t value) {
     return serial_number;
 };
 
-void config_t::master_defaults() {
-    master.board = 0;
-}
-
-void config_t::power_defaults() {
-     power.config.have_attopilot = false;
-}
-
-void config_t::load_defaults() {
-    Serial.println("Setting default config ...");
-    master_defaults();
-    imu.defaults_goldy3();
-    led.defaults_goldy3();
-    pwm.act_gain_defaults();
-    mixer.sas_defaults();
-    mixer.setup();
-    power_defaults();
-}
-
 int extract_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
     for ( int i = 0; i < len; i++ ) {
         buf[i] = config_buf[pos + i];
@@ -65,16 +46,16 @@ int extract_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
 int config_t::read_eeprom() {
     // call pack to initialize internal stucture len
     master.pack();
-    airdata.config.pack();
-    imu.config.pack();
+    airdata.pack();
+    imu.pack();
     led.config.pack();
     config.mix_matrix.pack();
     power.config.pack();
-    config.pwm_c.pack();
+    config.pwm.pack();
     config.stab.pack();
-    config_size = master.len + airdata.config.len + imu.config.len +
+    config_size = master.len + airdata.len + imu.len +
         led.config.len + config.mix_matrix.len + power.config.len +
-        config.pwm_c.len + config.stab.len;
+        config.pwm.len + config.stab.len;
     uint8_t config_buf[config_size];
     int status = 0;
     if ( config_size + CONFIG_OFFSET <= E2END - 2 /* checksum */ + 1 ) {
@@ -98,22 +79,20 @@ int config_t::read_eeprom() {
             int pos = 0;
             master.unpack((uint8_t *)&(config_buf[pos]), master.len);
             pos += master.len;
-            airdata.config.unpack((uint8_t *)&(config_buf[pos]), airdata.config.len);
-            pos += airdata.config.len;
-            imu.config.unpack((uint8_t *)&(config_buf[pos]), imu.config.len);
-            pos += imu.config.len;
+            airdata.unpack((uint8_t *)&(config_buf[pos]), airdata.len);
+            pos += airdata.len;
+            imu.unpack((uint8_t *)&(config_buf[pos]), imu.len);
+            pos += imu.len;
             led.config.unpack((uint8_t *)&(config_buf[pos]), led.config.len);
             pos += led.config.len;
             config.mix_matrix.unpack((uint8_t *)&(config_buf[pos]), config.mix_matrix.len);
             pos += config.mix_matrix.len;
             power.config.unpack((uint8_t *)&(config_buf[pos]), power.config.len);
             pos += power.config.len;
-            config.pwm_c.unpack((uint8_t *)&(config_buf[pos]), config.pwm_c.len);
-            pos += config.pwm_c.len;
+            config.pwm.unpack((uint8_t *)&(config_buf[pos]), config.pwm.len);
+            pos += config.pwm.len;
             config.stab.unpack((uint8_t *)&(config_buf[pos]), config.stab.len);
             pos += config.stab.len;
-            // update imu R matrix from config
-            imu.set_orientation();
         }
     } else {
         Serial.println("ERROR: config structure too large for EEPROM hardware!");
@@ -131,23 +110,23 @@ int build_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
 int config_t::write_eeprom() {
     // create packed version of messages
     master.pack();
-    airdata.config.pack();
-    imu.config.pack();
+    airdata.pack();
+    imu.pack();
     led.config.pack();
     config.mix_matrix.pack();
     power.config.pack();
-    config.pwm_c.pack();
+    config.pwm.pack();
     config.stab.pack();
     // assemble packed config buffer
     uint8_t config_buf[config_size];
     int pos = 0;
     pos += build_config_buf( config_buf, pos, master.payload, master.len );
-    pos += build_config_buf( config_buf, pos, airdata.config.payload, airdata.config.len );
-    pos += build_config_buf( config_buf, pos, imu.config.payload, imu.config.len );
+    pos += build_config_buf( config_buf, pos, airdata.payload, airdata.len );
+    pos += build_config_buf( config_buf, pos, imu.payload, imu.len );
     pos += build_config_buf( config_buf, pos, led.config.payload, led.config.len );
     pos += build_config_buf( config_buf, pos, config.mix_matrix.payload, config.mix_matrix.len );
     pos += build_config_buf( config_buf, pos, power.config.payload, power.config.len );
-    pos += build_config_buf( config_buf, pos, config.pwm_c.payload, config.pwm_c.len );
+    pos += build_config_buf( config_buf, pos, config.pwm.payload, config.pwm.len );
     pos += build_config_buf( config_buf, pos, config.stab.payload, config.stab.len );
     
     Serial.println("Write EEPROM (any changed bytes) ...");

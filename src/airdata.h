@@ -10,7 +10,6 @@ class airdata_t {
     bool ams_baro_found = false;
     
  public:
-    message::config_airdata_t config;
     float baro_press = 0.0;
     float baro_temp = 0.0;
     float baro_hum = 0.0;

@@ -54,6 +54,17 @@ void force_config_goldy3() {
     config.stab.sas_yawgain = 0.2;
 }
 
+void reset_config_defaults() {
+    Serial.println("Setting default config ...");
+    config.master.board = 0;
+    imu.defaults_goldy3();
+    led.defaults_goldy3();
+    pwm.act_gain_defaults();
+    mixer.sas_defaults();
+    mixer.setup();
+    power.config.have_attopilot = false;
+}
+
 void setup() {
     // put your setup code here, to run once:
 
@@ -76,11 +87,14 @@ void setup() {
     
     if ( !config.read_eeprom() ) {
         Serial.println("Resetting eeprom to default values.");
-        config.load_defaults();
+        reset_config_defaults();
         config.write_eeprom();
     } else {
         Serial.println("Successfully loaded eeprom config.");
     }
+    
+    // update imu R matrix from config
+    imu.set_orientation();
     
     Serial.print("Serial Number: ");
     Serial.println(config.read_serial_number());

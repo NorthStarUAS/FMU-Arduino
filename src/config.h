@@ -12,15 +12,14 @@ private:
     
 public:
     message::config_master_t master;
+    message::config_airdata_t airdata;
+    message::config_imu_t imu;
     message::config_mix_matrix_t mix_matrix;
-    message::config_pwm_t pwm_c;
+    message::config_pwm_t pwm;
     message::config_stab_damping_t stab;
     
     uint16_t read_serial_number();
     uint16_t set_serial_number(uint16_t value);
-    void load_defaults();
-    void master_defaults();
-    void power_defaults();
     int read_eeprom();
     int write_eeprom();
 };

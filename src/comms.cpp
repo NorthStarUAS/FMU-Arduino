@@ -51,16 +51,16 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
             result = true;
         }
     } else if ( id == message::config_airdata_id ) {
-        airdata.config.unpack(buf, message_size);
-        if ( message_size == airdata.config.len ) {
+        config.airdata.unpack(buf, message_size);
+        if ( message_size == config.airdata.len ) {
             Serial.println("received new airdata config");
             config.write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
         }
     } else if ( id == message::config_imu_id ) {
-        imu.config.unpack(buf, message_size);
-        if ( message_size == imu.config.len ) {
+        config.imu.unpack(buf, message_size);
+        if ( message_size == config.imu.len ) {
             Serial.println("received imu config");
             imu.set_orientation(); // update R matrix
             config.write_eeprom();
@@ -92,8 +92,8 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
             result = true;
         }
     } else if ( id == message::config_pwm_id ) {
-        config.pwm_c.unpack(buf, message_size);
-        if ( message_size == config.pwm_c.len ) {
+        config.pwm.unpack(buf, message_size);
+        if ( message_size == config.pwm.len ) {
             Serial.println("received new pwm config");
             config.write_eeprom();
             write_ack_bin( id, 0 );

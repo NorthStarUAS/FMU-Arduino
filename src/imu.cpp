@@ -1,6 +1,4 @@
-// #include <Eigen.h>
-// #include <Eigen/Core>
-// using namespace Eigen;
+#include "config.h"
 
 #include "imu.h"
 
@@ -14,45 +12,45 @@ MPU9250 IMU;
 // Setup imu defaults:
 // Goldy3 has mpu9250 on SPI CS line 24
 void imu_t::defaults_goldy3() {
-    config.interface = 0;       // SPI
-    config.pin_or_address = 24; // CS pin
+    config.imu.interface = 0;       // SPI
+    config.imu.pin_or_address = 24; // CS pin
     R = Matrix3f::Identity();
     for ( int i = 0; i < 9; i++ ) {
         // no need to worry about row vs. column major here (symmetrical ident)
-        config.orientation[i] = R.data()[i];
+        config.imu.orientation[i] = R.data()[i];
     }
 }
 
 // Setup imu defaults:
 // Aura3 has mpu9250 on I2C Addr 0x68
 void imu_t::defaults_aura3() {
-    config.interface = 1;       // i2c
-    config.pin_or_address = 0x68; // mpu9250 i2c addr
+    config.imu.interface = 1;       // i2c
+    config.imu.pin_or_address = 0x68; // mpu9250 i2c addr
     R = Matrix3f::Identity();
     for ( int i = 0; i < 9; i++ ) {
         // no need to worry about row vs. column major here (symmetrical ident)
-        config.orientation[i] = R.data()[i];
+        config.imu.orientation[i] = R.data()[i];
     }
 }
 
 // Update the R matrix (called after loading/receiving any new config message)
 void imu_t::set_orientation() {
-    // config.orientation is row major, but internally Eigen defaults
+    // config.imu.orientation is row major, but internally Eigen defaults
     // to column major.
-    R = Matrix<float, 3, 3, RowMajor>(config.orientation);
+    R = Matrix<float, 3, 3, RowMajor>(config.imu.orientation);
 }
 
 // configure the IMU settings and setup the ISR to aquire the data
 void imu_t::setup() {
-    if ( config.interface == 0 ) {
+    if ( config.imu.interface == 0 ) {
         // SPI
         Serial.print("MPU9250 @ SPI pin: ");
-        Serial.println(config.pin_or_address);
-        IMU.configure(config.pin_or_address);
-    } else if ( config.interface == 1 ) {
+        Serial.println(config.imu.pin_or_address);
+        IMU.configure(config.imu.pin_or_address);
+    } else if ( config.imu.interface == 1 ) {
         Serial.print("MPU9250 @ I2C Addr: 0x");
-        Serial.println(config.pin_or_address, HEX);
-        IMU.configure(config.pin_or_address, &Wire);
+        Serial.println(config.imu.pin_or_address, HEX);
+        IMU.configure(config.imu.pin_or_address, &Wire);
     } else {
         Serial.println("Error: problem with MPU9250 (IMU) configuration");
     }
