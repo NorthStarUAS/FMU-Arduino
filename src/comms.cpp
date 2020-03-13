@@ -68,8 +68,8 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
             result = true;
         }
     } else if ( id == message::config_led_id ) {
-        led.config.unpack(buf, message_size);
-        if ( message_size == led.config.len ) {
+        config.led.unpack(buf, message_size);
+        if ( message_size == config.led.len ) {
             Serial.println("received new led config");
             config.write_eeprom();
             write_ack_bin( id, 0 );
@@ -84,8 +84,8 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
             result = true;
         }
     } else if ( id == message::config_power_id ) {
-        power.config.unpack(buf, message_size);
-        if ( message_size == power.config.len ) {
+        config.power.unpack(buf, message_size);
+        if ( message_size == config.power.len ) {
             Serial.println("received new power config");
             config.write_eeprom();
             write_ack_bin( id, 0 );

@@ -8,8 +8,6 @@
 #include <Eigen/Core>
 using namespace Eigen;
 
-#include "aura4_messages.h"
-
 class imu_t {
 private:
     Matrix3f R = Matrix3f::Identity();

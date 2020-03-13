@@ -14,7 +14,9 @@ public:
     message::config_master_t master;
     message::config_airdata_t airdata;
     message::config_imu_t imu;
+    message::config_led_t led;
     message::config_mix_matrix_t mix_matrix;
+    message::config_power_t power;
     message::config_pwm_t pwm;
     message::config_stab_damping_t stab;
     

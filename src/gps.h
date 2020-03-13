@@ -4,8 +4,6 @@
 
 #include "sensors/UBLOX8/UBLOX8.h"
 
-#include "aura4_messages.h"
-
 class gps_t {
 public:
     ublox8_nav_pvt_t gps_data;

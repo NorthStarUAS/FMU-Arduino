@@ -9,7 +9,6 @@
 #include <Eigen/LU>
 using namespace Eigen;
 
-#include "aura4_messages.h"
 #include "pwm.h"
 #include "sensors/sbus/sbus.h"
 

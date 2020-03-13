@@ -1,7 +1,5 @@
 #pragma once
 
-#include "aura4_messages.h"
-
 class power_t {
 private:
     const float analogResolution = 65535.0f;
@@ -13,7 +11,6 @@ private:
     uint8_t atto_amps_pin = A3;
     
 public:
-    message::config_power_t config;
     float pwr1_v = 0.0;
     float pwr2_v = 0.0;
     float avionics_v = 0.0;

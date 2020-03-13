@@ -26,7 +26,7 @@ void force_config_aura3() {
     imu.defaults_aura3();
     airdata.defaults_aura3();
     led.defaults_aura3();
-    power.config.have_attopilot = true;
+    config.power.have_attopilot = true;
     pwm.act_gain_defaults();
     mixer.setup();
     config.stab.sas_rollaxis = true;
@@ -62,7 +62,7 @@ void reset_config_defaults() {
     pwm.act_gain_defaults();
     mixer.sas_defaults();
     mixer.setup();
-    power.config.have_attopilot = false;
+    config.power.have_attopilot = false;
 }
 
 void setup() {

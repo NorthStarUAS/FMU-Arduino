@@ -4,8 +4,6 @@
 
 #include <Arduino.h>
 
-#include "aura4_messages.h"
-
 class led_t {
 private:
     elapsedMillis blinkTimer = 0;
@@ -13,7 +11,6 @@ private:
     bool blink_state = true;
     
 public:
-    message::config_led_t config;
     void defaults_goldy3();
     void defaults_aura3();
     void setup();
