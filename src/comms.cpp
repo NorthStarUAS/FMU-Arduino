@@ -50,25 +50,6 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
             write_ack_bin( id, 0 );
             result = true;
         }
-    } else if ( id == message::config_imu_id ) {
-        imu.config.unpack(buf, message_size);
-        if ( message_size == imu.config.len ) {
-            Serial.println("received imu config");
-            imu.set_orientation(); // update R matrix
-            config.write_eeprom();
-            write_ack_bin( id, 0 );
-            result = true;
-        }
-    } else if ( id == message::config_actuators_id ) {
-        config.actuators.unpack(buf, message_size);
-        if ( message_size == config.actuators.len ) {
-            Serial.println("received new actuator config");
-            // update pwm config in case it has been changed.
-            config.write_eeprom();
-            mixer.setup();
-            write_ack_bin( id, 0 );
-            result = true;
-        }
     } else if ( id == message::config_airdata_id ) {
         airdata.config.unpack(buf, message_size);
         if ( message_size == airdata.config.len ) {
@@ -77,10 +58,11 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
             write_ack_bin( id, 0 );
             result = true;
         }
-    } else if ( id == message::config_power_id ) {
-        power.config.unpack(buf, message_size);
-        if ( message_size == power.config.len ) {
-            Serial.println("received new power config");
+    } else if ( id == message::config_imu_id ) {
+        imu.config.unpack(buf, message_size);
+        if ( message_size == imu.config.len ) {
+            Serial.println("received imu config");
+            imu.set_orientation(); // update R matrix
             config.write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
@@ -93,9 +75,46 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
             write_ack_bin( id, 0 );
             result = true;
         }
+    } else if ( id == message::config_mix_matrix_id ) {
+        config.mix_matrix.unpack(buf, message_size);
+        if ( message_size == config.mix_matrix.len ) {
+            Serial.println("received new mixer matrix config");
+            config.write_eeprom();
+            write_ack_bin( id, 0 );
+            result = true;
+        }
+    } else if ( id == message::config_power_id ) {
+        power.config.unpack(buf, message_size);
+        if ( message_size == power.config.len ) {
+            Serial.println("received new power config");
+            config.write_eeprom();
+            write_ack_bin( id, 0 );
+            result = true;
+        }
+    } else if ( id == message::config_pwm_id ) {
+        config.pwm_c.unpack(buf, message_size);
+        if ( message_size == config.pwm_c.len ) {
+            Serial.println("received new pwm config");
+            config.write_eeprom();
+            write_ack_bin( id, 0 );
+            result = true;
+        }
+    } else if ( id == message::config_stab_damping_id ) {
+        config.stab.unpack(buf, message_size);
+        if ( message_size == config.stab.len ) {
+            Serial.println("received new stability damping config");
+            config.write_eeprom();
+            write_ack_bin( id, 0 );
+            result = true;
+        }
     } else if ( id == message::command_zero_gyros_id && message_size == 0 ) {
         Serial.println("received zero gyros command");
         imu.gyros_calibrated = 0;   // start state
+        write_ack_bin( id, 0 );
+        result = true;
+    } else if ( id == message::command_reset_ekf_id && message_size == 0 ) {
+        Serial.println("received reset ekf command");
+        ekf.reinit();
         write_ack_bin( id, 0 );
         result = true;
     } else {

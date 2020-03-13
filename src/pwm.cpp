@@ -32,6 +32,13 @@ static bool pwm_symmetrical[PWM_CHANNELS] = {0, 1, 1, 1, 1, 0, 0, 0};
 // often cause problems with ESC's that expect 50hz pwm signals.
 static const int servoFreq_hz = 50; // servo pwm update rate
 
+// reset actuator gains (reversing) to startup defaults
+void pwm_t::act_gain_defaults() {
+    for ( int i = 0; i < message::pwm_channels; i++ ) {
+        config.pwm_c.act_gain[i] = 1.0;
+    }
+}
+
 void pwm_t::setup(int board) {
     Serial.print("PWM: ");
     if ( board == 0 ) {
@@ -67,17 +74,17 @@ void pwm_t::setup(int board) {
 void pwm_t::norm2pwm( float *norm ) {
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         // convert to pulse length (special case ch6 when in flaperon mode)
-        if ( pwm_symmetrical[i] || (i == 4 && config.actuators.mix_flaperon) ) {
+        if ( pwm_symmetrical[i] /* FIXME: flaperon? */ ) {
             // i.e. aileron, rudder, elevator
             // Serial1.println(i);
             // Serial1.println(config_actuators.act_rev[i]);
-            output_pwm[i] = PWM_CENTER + (int)(PWM_HALF_RANGE * norm[i] * config.actuators.act_gain[i]);
+            output_pwm[i] = PWM_CENTER + (int)(PWM_HALF_RANGE * norm[i] * config.pwm_c.act_gain[i]);
         } else {
             // i.e. throttle, flaps
-            if ( config.actuators.act_gain[i] > 0.0 ) {
-                output_pwm[i] = PWM_MIN + (int)(PWM_RANGE * norm[i] * config.actuators.act_gain[i]);
+            if ( config.pwm_c.act_gain[i] > 0.0 ) {
+                output_pwm[i] = PWM_MIN + (int)(PWM_RANGE * norm[i] * config.pwm_c.act_gain[i]);
             } else {
-                output_pwm[i] = PWM_MAX + (int)(PWM_RANGE * norm[i] * config.actuators.act_gain[i]);
+                output_pwm[i] = PWM_MAX + (int)(PWM_RANGE * norm[i] * config.pwm_c.act_gain[i]);
             }
         }
         if ( output_pwm[i] < PWM_MIN ) {

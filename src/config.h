@@ -12,8 +12,10 @@ private:
     
 public:
     message::config_master_t master;
-    message::config_actuators_t actuators;
-
+    message::config_mix_matrix_t mix_matrix;
+    message::config_pwm_t pwm_c;
+    message::config_stab_damping_t stab;
+    
     uint16_t read_serial_number();
     uint16_t set_serial_number(uint16_t value);
     void load_defaults();

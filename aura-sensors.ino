@@ -27,25 +27,14 @@ void force_config_aura3() {
     airdata.defaults_aura3();
     led.defaults_aura3();
     power.config.have_attopilot = true;
-    config.actuators.act_gain[0] = 1.0;
-    config.actuators.act_gain[1] = 1.0;
-    config.actuators.act_gain[2] = -1.0;
-    config.actuators.act_gain[3] = 1.0;
-    config.actuators.act_gain[4] = -1.0;
-    config.actuators.mix_vtail = true;
-    config.actuators.mix_Gve = 1.0;
-    config.actuators.mix_Gvr = 1.0;
-    config.actuators.mix_flaperon = true;
-    config.actuators.mix_Gfa = 1.0;
-    config.actuators.mix_Gff = 1.0;
-    config.actuators.mix_autocoord = true;
-    config.actuators.mix_Gac = 0.25;
-    config.actuators.sas_rollaxis = true;
-    config.actuators.sas_pitchaxis = true;
-    config.actuators.sas_yawaxis = true;
-    config.actuators.sas_rollgain = 0.2;
-    config.actuators.sas_pitchgain = 0.2;
-    config.actuators.sas_yawgain = 0.2;
+    pwm.act_gain_defaults();
+    mixer.setup();
+    config.stab.sas_rollaxis = true;
+    config.stab.sas_pitchaxis = true;
+    config.stab.sas_yawaxis = true;
+    config.stab.sas_rollgain = 0.2;
+    config.stab.sas_pitchgain = 0.2;
+    config.stab.sas_yawgain = 0.2;
 }
 
 // force/hard-code a specific board config if desired
@@ -55,25 +44,14 @@ void force_config_goldy3() {
     imu.defaults_goldy3();
     airdata.defaults_goldy3();
     led.defaults_goldy3();
-    config.actuators.act_gain[0] = 1.0;
-    config.actuators.act_gain[1] = 1.0;
-    config.actuators.act_gain[2] = -1.0;
-    config.actuators.act_gain[3] = 1.0;
-    config.actuators.act_gain[4] = -1.0;
-    config.actuators.mix_vtail = true;
-    config.actuators.mix_Gve = 1.0;
-    config.actuators.mix_Gvr = 1.0;
-    config.actuators.mix_flaperon = true;
-    config.actuators.mix_Gfa = 1.0;
-    config.actuators.mix_Gff = 1.0;
-    config.actuators.mix_autocoord = true;
-    config.actuators.mix_Gac = 0.25;
-    config.actuators.sas_rollaxis = true;
-    config.actuators.sas_pitchaxis = true;
-    config.actuators.sas_yawaxis = true;
-    config.actuators.sas_rollgain = 0.2;
-    config.actuators.sas_pitchgain = 0.2;
-    config.actuators.sas_yawgain = 0.2;
+    pwm.act_gain_defaults();
+    mixer.setup();
+    config.stab.sas_rollaxis = true;
+    config.stab.sas_pitchaxis = true;
+    config.stab.sas_yawaxis = true;
+    config.stab.sas_rollgain = 0.2;
+    config.stab.sas_pitchgain = 0.2;
+    config.stab.sas_yawgain = 0.2;
 }
 
 void setup() {

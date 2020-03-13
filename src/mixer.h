@@ -22,14 +22,11 @@ private:
     void mixing_update();
 
 public:
-    //message::config_actuators_t config;
-    // float outputs[PWM_CHANNELS]; // mixed output values (normalized)
     Matrix<float, PWM_CHANNELS, 1> outputs;
     
     void setup();
-    void act_gain_defaults();
     void sas_defaults();
-    void mixing_defaults();
+    void update_matrix(message::config_mixer_t *mix_config );
     void update( float control_norm[SBUS_CHANNELS] );
 };
 

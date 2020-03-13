@@ -49,9 +49,9 @@ void config_t::load_defaults() {
     master_defaults();
     imu.defaults_goldy3();
     led.defaults_goldy3();
-    mixer.act_gain_defaults();
+    pwm.act_gain_defaults();
     mixer.sas_defaults();
-    mixer.mixing_defaults();
+    mixer.setup();
     power_defaults();
 }
 
@@ -65,14 +65,16 @@ int extract_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
 int config_t::read_eeprom() {
     // call pack to initialize internal stucture len
     master.pack();
-    imu.config.pack();
-    config.actuators.pack();
     airdata.config.pack();
-    power.config.pack();
+    imu.config.pack();
     led.config.pack();
-    config_size = master.len + imu.config.len +
-        config.actuators.len + airdata.config.len + power.config.len +
-        led.config.len;
+    config.mix_matrix.pack();
+    power.config.pack();
+    config.pwm_c.pack();
+    config.stab.pack();
+    config_size = master.len + airdata.config.len + imu.config.len +
+        led.config.len + config.mix_matrix.len + power.config.len +
+        config.pwm_c.len + config.stab.len;
     uint8_t config_buf[config_size];
     int status = 0;
     if ( config_size + CONFIG_OFFSET <= E2END - 2 /* checksum */ + 1 ) {
@@ -96,16 +98,20 @@ int config_t::read_eeprom() {
             int pos = 0;
             master.unpack((uint8_t *)&(config_buf[pos]), master.len);
             pos += master.len;
-            imu.config.unpack((uint8_t *)&(config_buf[pos]), imu.config.len);
-            pos += imu.config.len;
-            config.actuators.unpack((uint8_t *)&(config_buf[pos]), config.actuators.len);
-            pos += config.actuators.len;
             airdata.config.unpack((uint8_t *)&(config_buf[pos]), airdata.config.len);
             pos += airdata.config.len;
-            power.config.unpack((uint8_t *)&(config_buf[pos]), power.config.len);
-            pos += power.config.len;
+            imu.config.unpack((uint8_t *)&(config_buf[pos]), imu.config.len);
+            pos += imu.config.len;
             led.config.unpack((uint8_t *)&(config_buf[pos]), led.config.len);
             pos += led.config.len;
+            config.mix_matrix.unpack((uint8_t *)&(config_buf[pos]), config.mix_matrix.len);
+            pos += config.mix_matrix.len;
+            power.config.unpack((uint8_t *)&(config_buf[pos]), power.config.len);
+            pos += power.config.len;
+            config.pwm_c.unpack((uint8_t *)&(config_buf[pos]), config.pwm_c.len);
+            pos += config.pwm_c.len;
+            config.stab.unpack((uint8_t *)&(config_buf[pos]), config.stab.len);
+            pos += config.stab.len;
             // update imu R matrix from config
             imu.set_orientation();
         }
@@ -125,20 +131,24 @@ int build_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
 int config_t::write_eeprom() {
     // create packed version of messages
     master.pack();
-    imu.config.pack();
-    config.actuators.pack();
     airdata.config.pack();
-    power.config.pack();
+    imu.config.pack();
     led.config.pack();
+    config.mix_matrix.pack();
+    power.config.pack();
+    config.pwm_c.pack();
+    config.stab.pack();
     // assemble packed config buffer
     uint8_t config_buf[config_size];
     int pos = 0;
     pos += build_config_buf( config_buf, pos, master.payload, master.len );
-    pos += build_config_buf( config_buf, pos, imu.config.payload, imu.config.len );
-    pos += build_config_buf( config_buf, pos, config.actuators.payload, config.actuators.len );
     pos += build_config_buf( config_buf, pos, airdata.config.payload, airdata.config.len );
-    pos += build_config_buf( config_buf, pos, power.config.payload, power.config.len );
+    pos += build_config_buf( config_buf, pos, imu.config.payload, imu.config.len );
     pos += build_config_buf( config_buf, pos, led.config.payload, led.config.len );
+    pos += build_config_buf( config_buf, pos, config.mix_matrix.payload, config.mix_matrix.len );
+    pos += build_config_buf( config_buf, pos, power.config.payload, power.config.len );
+    pos += build_config_buf( config_buf, pos, config.pwm_c.payload, config.pwm_c.len );
+    pos += build_config_buf( config_buf, pos, config.stab.payload, config.stab.len );
     
     Serial.println("Write EEPROM (any changed bytes) ...");
     int status = 0;

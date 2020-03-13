@@ -51,11 +51,15 @@ void ekf_t::update() {
         // covariance matrix.
         if ( std::isnan(nav.Pp0) or std::isnan(nav.Pv0) or std::isnan(nav.Pa0)
              or (nav.Pp0 < -0.1) or (nav.Pv0 < -0.1) or (nav.Pa0 < -0.1) ) {
-            Serial.println("filter blew up, reiniting");
-            ekf_inited = false;
+            Serial.println("filter blew up...");
+            reinit();
         }
     }
 }
 
+void ekf_t::reinit() {
+    Serial.println("Reinitializing EKF filter");
+    ekf_inited = false;
+}
 // global shared instance
 ekf_t ekf;

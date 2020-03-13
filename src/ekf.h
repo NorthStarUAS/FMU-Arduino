@@ -17,6 +17,7 @@ public:
     NAVdata nav;
     void setup();
     void update();
+    void reinit();              // request the filter reinit itself
 };
 
 extern ekf_t ekf;
