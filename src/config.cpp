@@ -43,6 +43,13 @@ int extract_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
     return len;
 }
 
+static int mycopy(uint8_t *src, uint8_t *dst, int len) {
+    for ( int i = 0; i < len; i++ ) {
+        dst[i] = src[i];
+    }
+    return len;
+}
+
 int config_t::read_eeprom() {
     // call pack to initialize internal stucture len
     master.pack();
@@ -53,46 +60,36 @@ int config_t::read_eeprom() {
     power.pack();
     pwm.pack();
     stab.pack();
-    config_size = master.len + airdata.len + imu.len +
-        led.len + mix_matrix.len + power.len +
-        pwm.len + stab.len;
-    uint8_t config_buf[config_size];
+    
+    packed_config_t packed;
+    uint8_t *buf = (uint8_t *)&packed;
     int status = 0;
-    if ( config_size + CONFIG_OFFSET <= E2END - 2 /* checksum */ + 1 ) {
-        Serial.print("Loading EEPROM, bytes: ");
-        Serial.println(config_size);
+    if ( sizeof(packed) + CONFIG_OFFSET <= E2END - 2 /* checksum */ + 1 ) {
+        Serial.print("Loading EEPROM.  Size: ");
+        Serial.println(sizeof(packed));
         noInterrupts();
-        for ( int i = 0; i < config_size; i++ ) {
-            config_buf[i] = EEPROM.read(CONFIG_OFFSET + i);
+        for ( int i = 0; i < sizeof(packed); i++ ) {
+            buf[i] = EEPROM.read(CONFIG_OFFSET + i);
         }
-        byte read_cksum0 = EEPROM.read(CONFIG_OFFSET + config_size);
-        byte read_cksum1 = EEPROM.read(CONFIG_OFFSET + config_size+1);
+        byte read_cksum0 = EEPROM.read(CONFIG_OFFSET + sizeof(packed));
+        byte read_cksum1 = EEPROM.read(CONFIG_OFFSET + sizeof(packed)+1);
         interrupts()
         byte calc_cksum0 = 0;
         byte calc_cksum1 = 0;
-        comms.serial.checksum( START_OF_CFG0 /* arbitrary magic # */, START_OF_CFG1 /* arbitrary magic # */, (byte *)&config_buf, config_size, &calc_cksum0, &calc_cksum1 );
+        comms.serial.checksum( START_OF_CFG0 /* arbitrary magic # */, START_OF_CFG1 /* arbitrary magic # */, buf, sizeof(packed), &calc_cksum0, &calc_cksum1 );
         if ( read_cksum0 != calc_cksum0 || read_cksum1 != calc_cksum1 ) {
             Serial.println("Check sum error!");
         } else {
             status = 1;
-            // assemble packed config buffer
-            int pos = 0;
-            master.unpack((uint8_t *)&(config_buf[pos]), master.len);
-            pos += master.len;
-            airdata.unpack((uint8_t *)&(config_buf[pos]), airdata.len);
-            pos += airdata.len;
-            imu.unpack((uint8_t *)&(config_buf[pos]), imu.len);
-            pos += imu.len;
-            led.unpack((uint8_t *)&(config_buf[pos]), led.len);
-            pos += led.len;
-            mix_matrix.unpack((uint8_t *)&(config_buf[pos]), mix_matrix.len);
-            pos += mix_matrix.len;
-            power.unpack((uint8_t *)&(config_buf[pos]), power.len);
-            pos += power.len;
-            pwm.unpack((uint8_t *)&(config_buf[pos]), pwm.len);
-            pos += pwm.len;
-            stab.unpack((uint8_t *)&(config_buf[pos]), stab.len);
-            pos += stab.len;
+            // unpack the config structures from the load buffer.
+            master.unpack((uint8_t *)&packed.master, master.len);
+            airdata.unpack((uint8_t *)&packed.airdata, airdata.len);
+            imu.unpack((uint8_t *)&packed.imu, imu.len);
+            led.unpack((uint8_t *)&packed.led, led.len);
+            mix_matrix.unpack((uint8_t *)&packed.mix_matrix, mix_matrix.len);
+            power.unpack((uint8_t *)&packed.power, power.len);
+            pwm.unpack((uint8_t *)&packed.pwm, pwm.len);
+            stab.unpack((uint8_t *)&packed.stab, stab.len);
         }
     } else {
         Serial.println("ERROR: config structure too large for EEPROM hardware!");
@@ -117,30 +114,32 @@ int config_t::write_eeprom() {
     power.pack();
     pwm.pack();
     stab.pack();
-    // assemble packed config buffer
-    uint8_t config_buf[config_size];
-    int pos = 0;
-    pos += build_config_buf( config_buf, pos, master.payload, master.len );
-    pos += build_config_buf( config_buf, pos, airdata.payload, airdata.len );
-    pos += build_config_buf( config_buf, pos, imu.payload, imu.len );
-    pos += build_config_buf( config_buf, pos, led.payload, led.len );
-    pos += build_config_buf( config_buf, pos, mix_matrix.payload, mix_matrix.len );
-    pos += build_config_buf( config_buf, pos, power.payload, power.len );
-    pos += build_config_buf( config_buf, pos, pwm.payload, pwm.len );
-    pos += build_config_buf( config_buf, pos, stab.payload, stab.len );
+
+    // copy the packed config structures to the save buffer
+    packed_config_t packed;
+    mycopy(master.payload, (uint8_t *)&packed.master, master.len);
+    mycopy(airdata.payload, (uint8_t *)&packed.airdata, airdata.len);
+    mycopy(imu.payload, (uint8_t *)&packed.imu, imu.len);
+    mycopy(led.payload, (uint8_t *)&packed.led, led.len);
+    mycopy(mix_matrix.payload, (uint8_t *)&packed.mix_matrix, mix_matrix.len);
+    mycopy(power.payload, (uint8_t *)&packed.power, power.len);
+    mycopy(pwm.payload, (uint8_t *)&packed.pwm, pwm.len);
+    mycopy(stab.payload, (uint8_t *)&packed.stab, stab.len);
     
-    Serial.println("Write EEPROM (any changed bytes) ...");
+    Serial.print("Write EEPROM (any changed bytes.)  Size: ");
+    Serial.println(sizeof(packed));
     int status = 0;
-    if ( config_size + CONFIG_OFFSET <= E2END - 2 /* checksum */ + 1 ) {
+    if ( sizeof(packed) + CONFIG_OFFSET <= E2END - 2 /* checksum */ + 1 ) {
         byte calc_cksum0 = 0;
         byte calc_cksum1 = 0;
-        comms.serial.checksum( START_OF_CFG0 /* arbitrary magic # */, START_OF_CFG1 /* arbitrary magic # */, (byte *)&config_buf, config_size, &calc_cksum0, &calc_cksum1 );
+        comms.serial.checksum( START_OF_CFG0 /* arbitrary magic # */, START_OF_CFG1 /* arbitrary magic # */, (byte *)&packed, sizeof(packed), &calc_cksum0, &calc_cksum1 );
         noInterrupts();
-        for ( int i = 0; i < config_size; i++ ) {
-            EEPROM.update(CONFIG_OFFSET + i, config_buf[i]);
+        uint8_t *buf = (uint8_t *)&packed;
+        for ( int i = 0; i < sizeof(packed); i++ ) {
+            EEPROM.update(CONFIG_OFFSET + i, buf[i]);
         }
-        EEPROM.update(CONFIG_OFFSET + config_size, calc_cksum0);
-        EEPROM.update(CONFIG_OFFSET + config_size+1, calc_cksum1);
+        EEPROM.update(CONFIG_OFFSET + sizeof(packed), calc_cksum0);
+        EEPROM.update(CONFIG_OFFSET + sizeof(packed)+1, calc_cksum1);
         interrupts();
         status = 1;
     } else {
