@@ -52,11 +52,11 @@ static int mycopy(uint8_t *src, uint8_t *dst, int len) {
 
 int config_t::read_eeprom() {
     // call pack to initialize internal stucture len
-    master.pack();
-    airdata.pack();
+    airdata.pack(); 
+    board.pack();
+    ekf.pack();
     imu.pack();
-    led.pack();
-    mix_matrix.pack();
+    mixer_matrix.pack();
     power.pack();
     pwm.pack();
     stab.pack();
@@ -68,7 +68,7 @@ int config_t::read_eeprom() {
         Serial.print("Loading EEPROM.  Size: ");
         Serial.println(sizeof(packed));
         noInterrupts();
-        for ( int i = 0; i < sizeof(packed); i++ ) {
+        for ( unsigned int i = 0; i < sizeof(packed); i++ ) {
             buf[i] = EEPROM.read(CONFIG_OFFSET + i);
         }
         byte read_cksum0 = EEPROM.read(CONFIG_OFFSET + sizeof(packed));
@@ -82,11 +82,11 @@ int config_t::read_eeprom() {
         } else {
             status = 1;
             // unpack the config structures from the load buffer.
-            master.unpack((uint8_t *)&packed.master, master.len);
             airdata.unpack((uint8_t *)&packed.airdata, airdata.len);
+            board.unpack((uint8_t *)&packed.board, board.len);
+            ekf.unpack((uint8_t *)&packed.ekf, ekf.len);
             imu.unpack((uint8_t *)&packed.imu, imu.len);
-            led.unpack((uint8_t *)&packed.led, led.len);
-            mix_matrix.unpack((uint8_t *)&packed.mix_matrix, mix_matrix.len);
+            mixer_matrix.unpack((uint8_t *)&packed.mixer_matrix, mixer_matrix.len);
             power.unpack((uint8_t *)&packed.power, power.len);
             pwm.unpack((uint8_t *)&packed.pwm, pwm.len);
             stab.unpack((uint8_t *)&packed.stab, stab.len);
@@ -106,22 +106,22 @@ int build_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
 
 int config_t::write_eeprom() {
     // create packed version of messages
-    master.pack();
     airdata.pack();
+    board.pack();
+    ekf.pack();
     imu.pack();
-    led.pack();
-    mix_matrix.pack();
+    mixer_matrix.pack();
     power.pack();
     pwm.pack();
     stab.pack();
 
     // copy the packed config structures to the save buffer
     packed_config_t packed;
-    mycopy(master.payload, (uint8_t *)&packed.master, master.len);
-    mycopy(airdata.payload, (uint8_t *)&packed.airdata, airdata.len);
+    mycopy(airdata.payload, (uint8_t *)&packed.airdata, airdata.len); 
+    mycopy(board.payload, (uint8_t *)&packed.board, board.len);
+    mycopy(ekf.payload, (uint8_t *)&packed.ekf, ekf.len);
     mycopy(imu.payload, (uint8_t *)&packed.imu, imu.len);
-    mycopy(led.payload, (uint8_t *)&packed.led, led.len);
-    mycopy(mix_matrix.payload, (uint8_t *)&packed.mix_matrix, mix_matrix.len);
+    mycopy(mixer_matrix.payload, (uint8_t *)&packed.mixer_matrix, mixer_matrix.len);
     mycopy(power.payload, (uint8_t *)&packed.power, power.len);
     mycopy(pwm.payload, (uint8_t *)&packed.pwm, pwm.len);
     mycopy(stab.payload, (uint8_t *)&packed.stab, stab.len);
@@ -135,7 +135,7 @@ int config_t::write_eeprom() {
         comms.serial.checksum( START_OF_CFG0 /* arbitrary magic # */, START_OF_CFG1 /* arbitrary magic # */, (byte *)&packed, sizeof(packed), &calc_cksum0, &calc_cksum1 );
         noInterrupts();
         uint8_t *buf = (uint8_t *)&packed;
-        for ( int i = 0; i < sizeof(packed); i++ ) {
+        for ( unsigned int i = 0; i < sizeof(packed); i++ ) {
             EEPROM.update(CONFIG_OFFSET + i, buf[i]);
         }
         EEPROM.update(CONFIG_OFFSET + sizeof(packed), calc_cksum0);

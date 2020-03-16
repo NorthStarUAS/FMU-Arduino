@@ -22,7 +22,7 @@ uint8_t test_pwm_channel = -1;
 // force/hard-code a specific board config if desired
 void force_config_aura3() {
     Serial.println("Forcing an aura v2 eeprom config");
-    config.master.board = 1;    // 0 = marmot v1, 1 = aura v2
+    config.board.board = 1;    // 0 = marmot v1, 1 = aura v2
     imu.defaults_aura3();
     airdata.defaults_aura3();
     led.defaults_aura3();
@@ -40,7 +40,7 @@ void force_config_aura3() {
 // force/hard-code a specific board config if desired
 void force_config_goldy3() {
     Serial.println("Forcing a bfs/marmot eeprom config");
-    config.master.board = 0;    // 0 = marmot v1, 1 = aura v2
+    config.board.board = 0;    // 0 = marmot v1, 1 = aura v2
     imu.defaults_goldy3();
     airdata.defaults_goldy3();
     led.defaults_goldy3();
@@ -56,7 +56,7 @@ void force_config_goldy3() {
 
 void reset_config_defaults() {
     Serial.println("Setting default config ...");
-    config.master.board = 0;
+    config.board.board = 0;
     imu.defaults_goldy3();
     led.defaults_goldy3();
     pwm.act_gain_defaults();
@@ -115,7 +115,7 @@ void setup() {
     mixer.setup();
     
     // initialize PWM output
-    pwm.setup(config.master.board);
+    pwm.setup(config.board.board);
 
     // initialize the gps receiver
     gps.setup();
@@ -125,7 +125,7 @@ void setup() {
     
     // power sensing
     analogReadResolution(16);   // set up ADC0
-    power.setup(config.master.board);
+    power.setup(config.board.board);
     
     // led for status blinking if defined
     led.setup();

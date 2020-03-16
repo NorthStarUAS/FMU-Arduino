@@ -42,18 +42,26 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
             pilot.update_ap(&inceptors);
             result = true;
         }
-    } else if ( id == message::config_master_id ) {
-        config.master.unpack(buf, message_size);
-        if ( message_size == config.master.len ) {
-            Serial.println("received master config");
-            config.write_eeprom();
-            write_ack_bin( id, 0 );
-            result = true;
-        }
     } else if ( id == message::config_airdata_id ) {
         config.airdata.unpack(buf, message_size);
         if ( message_size == config.airdata.len ) {
             Serial.println("received new airdata config");
+            config.write_eeprom();
+            write_ack_bin( id, 0 );
+            result = true;
+        }
+    } else if ( id == message::config_board_id ) {
+        config.board.unpack(buf, message_size);
+        if ( message_size == config.board.len ) {
+            Serial.println("received board config");
+            config.write_eeprom();
+            write_ack_bin( id, 0 );
+            result = true;
+        }
+    } else if ( id == message::config_ekf_id ) {
+        config.ekf.unpack(buf, message_size);
+        if ( message_size == config.ekf.len ) {
+            Serial.println("received ekf config");
             config.write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
@@ -63,14 +71,6 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
         if ( message_size == config.imu.len ) {
             Serial.println("received imu config");
             imu.set_orientation(); // update R matrix
-            config.write_eeprom();
-            write_ack_bin( id, 0 );
-            result = true;
-        }
-    } else if ( id == message::config_led_id ) {
-        config.led.unpack(buf, message_size);
-        if ( message_size == config.led.len ) {
-            Serial.println("received new led config");
             config.write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
@@ -85,9 +85,9 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
             write_ack_bin( id, 0 );
             result = true;
         }
-    } else if ( id == message::config_mix_matrix_id ) {
-        config.mix_matrix.unpack(buf, message_size);
-        if ( message_size == config.mix_matrix.len ) {
+    } else if ( id == message::config_mixer_matrix_id ) {
+        config.mixer_matrix.unpack(buf, message_size);
+        if ( message_size == config.mixer_matrix.len ) {
             Serial.println("received new mixer matrix config");
             config.write_eeprom();
             write_ack_bin( id, 0 );
@@ -109,7 +109,7 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
             write_ack_bin( id, 0 );
             result = true;
         }
-    } else if ( id == message::config_stab_damping_id ) {
+    } else if ( id == message::config_stability_damping_id ) {
         config.stab.unpack(buf, message_size);
         if ( message_size == config.stab.len ) {
             Serial.println("received new stability damping config");

@@ -3,25 +3,25 @@
 #include "led.h"
 
 void led_t::defaults_goldy3() {
-    config.led.pin = 0;
+    config.board.led_pin = 0;
 }
 
 void led_t::defaults_aura3() {
-    config.led.pin = 13;
+    config.board.led_pin = 13;
 }
 
 void led_t::setup() {
-    if ( config.led.pin > 0 ) {
-        pinMode(config.led.pin, OUTPUT);
-        digitalWrite(config.led.pin, HIGH);
-        Serial.print("LED on pin: "); Serial.println(config.led.pin);
+    if ( config.board.led_pin > 0 ) {
+        pinMode(config.board.led_pin, OUTPUT);
+        digitalWrite(config.board.led_pin, HIGH);
+        Serial.print("LED on pin: "); Serial.println(config.board.led_pin);
     } else {
         Serial.println("No LED defined.");
     }
 }
 
 void led_t::update(int gyros_calibrated, int gps_fix) {
-    if ( config.led.pin > 0 ) {
+    if ( config.board.led_pin > 0 ) {
 
         if ( gyros_calibrated < 2 ) {
             blink_rate = 50;
@@ -33,7 +33,7 @@ void led_t::update(int gyros_calibrated, int gps_fix) {
         if ( blinkTimer >= blink_rate ) {
             blinkTimer = 0;
             blink_state = !blink_state;
-            digitalWrite(config.led.pin, blink_state);
+            digitalWrite(config.board.led_pin, blink_state);
         }
     }
 }
