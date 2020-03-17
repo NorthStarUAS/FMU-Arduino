@@ -279,6 +279,12 @@ struct config_imu_t {
     uint8_t interface;
     uint8_t pin_or_address;
     float orientation[9];
+    float min_temp;
+    float max_temp;
+    float ax_coeff[3];
+    float ay_coeff[3];
+    float az_coeff[3];
+    float mag_affine[16];
 
     // internal structure for packing
     uint8_t payload[message_max_len];
@@ -287,6 +293,12 @@ struct config_imu_t {
         uint8_t interface;
         uint8_t pin_or_address;
         float orientation[9];
+        int16_t min_temp;
+        int16_t max_temp;
+        float ax_coeff[3];
+        float ay_coeff[3];
+        float az_coeff[3];
+        float mag_affine[16];
     };
     #pragma pack(pop)
 
@@ -306,6 +318,12 @@ struct config_imu_t {
         _buf->interface = interface;
         _buf->pin_or_address = pin_or_address;
         for (int _i=0; _i<9; _i++) _buf->orientation[_i] = orientation[_i];
+        _buf->min_temp = intround(min_temp * 100);
+        _buf->max_temp = intround(max_temp * 100);
+        for (int _i=0; _i<3; _i++) _buf->ax_coeff[_i] = ax_coeff[_i];
+        for (int _i=0; _i<3; _i++) _buf->ay_coeff[_i] = ay_coeff[_i];
+        for (int _i=0; _i<3; _i++) _buf->az_coeff[_i] = az_coeff[_i];
+        for (int _i=0; _i<16; _i++) _buf->mag_affine[_i] = mag_affine[_i];
         return true;
     }
 
@@ -319,6 +337,12 @@ struct config_imu_t {
         interface = _buf->interface;
         pin_or_address = _buf->pin_or_address;
         for (int _i=0; _i<9; _i++) orientation[_i] = _buf->orientation[_i];
+        min_temp = _buf->min_temp / (float)100;
+        max_temp = _buf->max_temp / (float)100;
+        for (int _i=0; _i<3; _i++) ax_coeff[_i] = _buf->ax_coeff[_i];
+        for (int _i=0; _i<3; _i++) ay_coeff[_i] = _buf->ay_coeff[_i];
+        for (int _i=0; _i<3; _i++) az_coeff[_i] = _buf->az_coeff[_i];
+        for (int _i=0; _i<16; _i++) mag_affine[_i] = _buf->mag_affine[_i];
         return true;
     }
 };
@@ -520,14 +544,14 @@ struct config_power_t {
 // Message: config_pwm (id: 18)
 struct config_pwm_t {
     // public fields
-    uint16_t pwm_hz[pwm_channels];
+    uint16_t pwm_hz;
     float act_gain[pwm_channels];
 
     // internal structure for packing
     uint8_t payload[message_max_len];
     #pragma pack(push, 1)
     struct _compact_t {
-        uint16_t pwm_hz[pwm_channels];
+        uint16_t pwm_hz;
         float act_gain[pwm_channels];
     };
     #pragma pack(pop)
@@ -545,7 +569,7 @@ struct config_pwm_t {
         }
         // copy values
         _compact_t *_buf = (_compact_t *)payload;
-        for (int _i=0; _i<pwm_channels; _i++) _buf->pwm_hz[_i] = pwm_hz[_i];
+        _buf->pwm_hz = pwm_hz;
         for (int _i=0; _i<pwm_channels; _i++) _buf->act_gain[_i] = act_gain[_i];
         return true;
     }
@@ -557,7 +581,7 @@ struct config_pwm_t {
         memcpy(payload, external_message, message_size);
         _compact_t *_buf = (_compact_t *)payload;
         len = sizeof(_compact_t);
-        for (int _i=0; _i<pwm_channels; _i++) pwm_hz[_i] = _buf->pwm_hz[_i];
+        pwm_hz = _buf->pwm_hz;
         for (int _i=0; _i<pwm_channels; _i++) act_gain[_i] = _buf->act_gain[_i];
         return true;
     }
@@ -1229,6 +1253,12 @@ struct ekf_t {
     float phi_rad;
     float the_rad;
     float psi_rad;
+    float p_bias;
+    float q_bias;
+    float r_bias;
+    float ax_bias;
+    float ay_bias;
+    float az_bias;
 
     // internal structure for packing
     uint8_t payload[message_max_len];
@@ -1238,12 +1268,18 @@ struct ekf_t {
         double lat_rad;
         double lon_rad;
         float altitude_m;
-        int16_t vn_ms;
-        int16_t ve_ms;
-        int16_t vd_ms;
-        int16_t phi_rad;
-        int16_t the_rad;
-        int16_t psi_rad;
+        float vn_ms;
+        float ve_ms;
+        float vd_ms;
+        float phi_rad;
+        float the_rad;
+        float psi_rad;
+        float p_bias;
+        float q_bias;
+        float r_bias;
+        float ax_bias;
+        float ay_bias;
+        float az_bias;
     };
     #pragma pack(pop)
 
@@ -1264,12 +1300,18 @@ struct ekf_t {
         _buf->lat_rad = lat_rad;
         _buf->lon_rad = lon_rad;
         _buf->altitude_m = altitude_m;
-        _buf->vn_ms = intround(vn_ms * 100);
-        _buf->ve_ms = intround(ve_ms * 100);
-        _buf->vd_ms = intround(vd_ms * 100);
-        _buf->phi_rad = intround(phi_rad * 90);
-        _buf->the_rad = intround(the_rad * 90);
-        _buf->psi_rad = intround(psi_rad * 90);
+        _buf->vn_ms = vn_ms;
+        _buf->ve_ms = ve_ms;
+        _buf->vd_ms = vd_ms;
+        _buf->phi_rad = phi_rad;
+        _buf->the_rad = the_rad;
+        _buf->psi_rad = psi_rad;
+        _buf->p_bias = p_bias;
+        _buf->q_bias = q_bias;
+        _buf->r_bias = r_bias;
+        _buf->ax_bias = ax_bias;
+        _buf->ay_bias = ay_bias;
+        _buf->az_bias = az_bias;
         return true;
     }
 
@@ -1284,12 +1326,18 @@ struct ekf_t {
         lat_rad = _buf->lat_rad;
         lon_rad = _buf->lon_rad;
         altitude_m = _buf->altitude_m;
-        vn_ms = _buf->vn_ms / (float)100;
-        ve_ms = _buf->ve_ms / (float)100;
-        vd_ms = _buf->vd_ms / (float)100;
-        phi_rad = _buf->phi_rad / (float)90;
-        the_rad = _buf->the_rad / (float)90;
-        psi_rad = _buf->psi_rad / (float)90;
+        vn_ms = _buf->vn_ms;
+        ve_ms = _buf->ve_ms;
+        vd_ms = _buf->vd_ms;
+        phi_rad = _buf->phi_rad;
+        the_rad = _buf->the_rad;
+        psi_rad = _buf->psi_rad;
+        p_bias = _buf->p_bias;
+        q_bias = _buf->q_bias;
+        r_bias = _buf->r_bias;
+        ax_bias = _buf->ax_bias;
+        ay_bias = _buf->ay_bias;
+        az_bias = _buf->az_bias;
         return true;
     }
 };

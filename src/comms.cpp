@@ -310,6 +310,12 @@ int comms_t::write_nav_bin()
     nav.phi_rad = ekf.nav.phi;
     nav.the_rad = ekf.nav.the;
     nav.psi_rad = ekf.nav.psi;
+    nav.p_bias = ekf.nav.gbx;
+    nav.q_bias = ekf.nav.gby;
+    nav.r_bias = ekf.nav.gbz;
+    nav.ax_bias = ekf.nav.abx;
+    nav.ay_bias = ekf.nav.aby;
+    nav.az_bias = ekf.nav.abz;
     nav.pack();
     return serial.write_packet( nav.id, nav.payload, nav.len );
 }
