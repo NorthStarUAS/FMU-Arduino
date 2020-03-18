@@ -8,9 +8,8 @@
 
 class ekf_t {
 private:
-    bool gps_found = false;
     bool ekf_inited = false;
-    elapsedMillis gpsSettle = 0;
+    unsigned long int gps_last_millis = 0;
     EKF15 ekf;
     
 public:

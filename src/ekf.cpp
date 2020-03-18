@@ -6,13 +6,6 @@
 #include "ekf.h"
 
 void ekf_t::update() {
-    // handle ekf init/update
-    if ( !gps_found and gps.new_gps_data ) {
-        gps_found = true;
-        gpsSettle = 0;
-        Serial.println("EKF: gps has a fix.");
-    }
-    
     IMUdata imu1;
     imu1.time = imu.imu_micros / 1000000.0;
     imu1.p = imu.get_p();
@@ -35,13 +28,14 @@ void ekf_t::update() {
     gps1.ve = gps.gps_data.velE / 1000.0;
     gps1.vd = gps.gps_data.velD / 1000.0;
     
-    if ( !ekf_inited and gps_found and gpsSettle > 10000 ) {
+    if ( !ekf_inited and gps.settle() ) {
         ekf.init(imu1, gps1);
         ekf_inited = true;
         Serial.println("EKF: initialized");
     } else if ( ekf_inited ) {
         ekf.time_update(imu1);
-        if ( gps.new_gps_data ) {
+        if ( gps.gps_millis > gps_last_millis ) {
+            gps_last_millis = gps.gps_millis;
             ekf.measurement_update(gps1);
         }
         nav = ekf.get_nav();
@@ -58,7 +52,6 @@ void ekf_t::update() {
 }
 
 void ekf_t::reinit() {
-    Serial.println("Reinitializing EKF filter");
     ekf_inited = false;
 }
 // global shared instance

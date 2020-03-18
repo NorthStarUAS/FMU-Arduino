@@ -5,7 +5,6 @@
 #include "sensors/UBLOX8/UBLOX8.h"
 
 class comms_t {
-    
 public:
     // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in
     // aura-v2 and marmot-v1 hardware
@@ -25,6 +24,9 @@ public:
     int write_status_info_bin();
     bool parse_message_bin( byte id, byte *buf, byte message_size );
     void read_commands();
+    
+private:
+    unsigned long int gps_last_millis = 0;
 };
 
 extern comms_t comms;

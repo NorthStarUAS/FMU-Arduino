@@ -250,15 +250,14 @@ void write_imu_ascii()
 // output a binary representation of the GPS data
 int comms_t::write_gps_bin()
 {
-    byte size = sizeof(gps.gps_data);
-
-    if ( !gps.new_gps_data ) {
-        return 0;
+    if ( gps.gps_millis > gps_last_millis ) {
+        gps_last_millis = gps.gps_millis;
+        return serial.write_packet( message::aura_nav_pvt_id,
+                                    (uint8_t *)(&(gps.gps_data)),
+                                    sizeof(gps.gps_data) );
     } else {
-        gps.new_gps_data = false;
+        return 0;
     }
-
-    return serial.write_packet( message::aura_nav_pvt_id, (uint8_t *)(&(gps.gps_data)), size );
 }
 
 void comms_t::write_gps_ascii() {

@@ -13,9 +13,22 @@ void gps_t::setup() {
 void gps_t::update() {
     // suck in any available gps bytes
     if ( m8n.read_ublox8() ) {
-        new_gps_data = true;
-        // gps_data = gps.get_data();
         m8n.update_data(&gps_data, sizeof(gps_data));
+        gps_millis = millis();
+        if ( !gps_acquired and gps_data.fixType == 3 ) {
+            // first 3d fix
+            gps_acquired = true;
+            gps_alive = 0;
+            Serial.println("GPS: 3d fix acquired.");
+        }
+    }
+}
+
+bool gps_t::settle() {
+    if ( gps_acquired ) {
+        return gps_alive > 10000; // 10 seconds
+    } else {
+        return false;
     }
 }
 

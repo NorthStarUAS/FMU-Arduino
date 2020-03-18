@@ -1,3 +1,20 @@
+# IMPORTANT ARDUINO SETUP PATCH
+
+* edit
+  # comms with host
+  - $(arduino)/hardware/teensy/avr/cores/teensy3/serial1.c
+  - $(arduino)/hardware/teensy/avr/cores/teensy4/HardwareSerial1.c
+  
+  - SERIAL1_TX_BUFFER_SIZE 512
+  - SERIAL1_RX_BUFFER_SIZE 512
+
+  # gps comms
+  - $(arduino)/hardware/teensy/avr/cores/teensy3/serial3.c
+  - $(arduino)/hardware/teensy/avr/cores/teensy4/HardwareSerial3.c
+  
+  - SERIAL1_TX_BUFFER_SIZE 255
+  - SERIAL1_RX_BUFFER_SIZE 255
+  
 # Teensy vs. Beaglebone baud rate notes:
 
 * supported beaglebone bauds can be found in
