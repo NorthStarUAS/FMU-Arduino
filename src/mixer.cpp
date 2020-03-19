@@ -121,13 +121,13 @@ void mixer_t::sas_update() {
     }
 
     if ( config.stab.sas_rollaxis ) {
-        inputs[1] -= tune * config.stab.sas_rollgain * imu.get_p();
+        inputs[1] -= tune * config.stab.sas_rollgain * imu.get_p_cal();
     }
     if ( config.stab.sas_pitchaxis ) {
-        inputs[2] += tune * config.stab.sas_pitchgain * imu.get_q();
+        inputs[2] += tune * config.stab.sas_pitchgain * imu.get_q_cal();
     }
     if ( config.stab.sas_yawaxis ) {
-        inputs[3] += tune * config.stab.sas_yawgain * imu.get_r();
+        inputs[3] += tune * config.stab.sas_yawgain * imu.get_r_cal();
     }
 }
 

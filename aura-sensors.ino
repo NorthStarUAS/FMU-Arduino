@@ -95,6 +95,7 @@ void setup() {
     
     // update imu R and mag_affine matrices from config
     imu.set_orientation();
+    imu.set_accel_calibration();
     imu.set_mag_calibration();
     
     Serial.print("Serial Number: ");

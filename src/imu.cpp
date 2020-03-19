@@ -52,6 +52,13 @@ void imu_t::set_orientation() {
     R = Matrix<float, 3, 3, RowMajor>(config.imu.orientation);
 }
 
+// setup accel temp calibration
+void imu_t::set_accel_calibration() {
+    ax_cal.init(config.imu.ax_coeff, config.imu.min_temp, config.imu.max_temp);
+    ay_cal.init(config.imu.ay_coeff, config.imu.min_temp, config.imu.max_temp);
+    az_cal.init(config.imu.az_coeff, config.imu.min_temp, config.imu.max_temp);
+}
+
 // update the mag calibration matrix from the config structur
 void imu_t::set_mag_calibration() {
     mag_affine = Matrix<float, 4, 4, RowMajor>(config.imu.mag_affine);
@@ -132,23 +139,41 @@ void imu_t::update() {
     float ax_raw, ay_raw, az_raw;
     float gx_raw, gy_raw, gz_raw;
     float hx_raw, hy_raw, hz_raw;
-    float t;
     IMU.getMotion10(&ax_raw, &ay_raw, &az_raw,
                     &gx_raw, &gy_raw, &gz_raw,
-                    &hx_raw, &hy_raw, &hz_raw, &t);
+                    &hx_raw, &hy_raw, &hz_raw, &tempC);
     
+    Vector3f accels_raw;
+    Vector3f gyros_raw;
+    Vector3f mags_raw;
     accels_raw << ax_raw, ay_raw, az_raw;
     gyros_raw << gx_raw, gy_raw, gz_raw;
     mags_raw << hx_raw, hy_raw, hz_raw;
     
-    accels = R * accels_raw;
-    gyros = R * gyros_raw;
-    mags = R * mags_raw;
+    accels_nocal = R * accels_raw;
+    gyros_nocal = R * gyros_raw;
+    mags_nocal = R * mags_raw;
+
+    // Serial.print("accel bias: ");
+    // Serial.print(ax_cal.get_bias(tempC)); Serial.print(" ");
+    // Serial.print(ay_cal.get_bias(tempC)); Serial.print(" ");
+    // Serial.println(az_cal.get_bias(tempC));
+    accels_cal(0) = ax_cal.calibrate(accels_nocal(0), tempC);
+    accels_cal(1) = ay_cal.calibrate(accels_nocal(1), tempC);
+    accels_cal(2) = az_cal.calibrate(accels_nocal(2), tempC);
+    // Serial.print("accels: ");
+    // Serial.print(accels_cal(0)); Serial.print(" ");
+    // Serial.print(accels_cal(1)); Serial.print(" ");
+    // Serial.println(accels_cal(2));
+        
+    Vector4f hs;
+    hs << mags_nocal(0), mags_nocal(1), mags_nocal(2), 1.0;
+    mags_cal = mag_affine * hs;
     
     if ( gyros_calibrated < 2 ) {
         calibrate_gyros();
     } else {
-        gyros -= gyro_calib;
+        gyros_cal = gyros_nocal - gyro_startup_bias;
     }
 }
 
@@ -161,18 +186,18 @@ void imu_t::update() {
 void imu_t::calibrate_gyros() {
     if ( gyros_calibrated == 0 ) {
         Serial.print("Initialize gyro calibration: ");
-        slow = gyros_raw;
-        fast = gyros_raw;
+        slow = gyros_nocal;
+        fast = gyros_nocal;
         total_timer = 0;
         good_timer = 0;
         output_timer = 0;
         gyros_calibrated = 1;
     }
 
-    fast = 0.95 * fast + 0.05 * gyros_raw;
-    slow = 0.995 * fast + 0.005 * gyros_raw;
+    fast = 0.95 * fast + 0.05 * gyros_nocal;
+    slow = 0.995 * fast + 0.005 * gyros_nocal;
     // use 'slow' filter value for calibration while calibrating
-    gyro_calib << slow;
+    gyro_startup_bias << slow;
 
     float max = (slow - fast).cwiseAbs().maxCoeff();
     if ( max > cutoff ) {
@@ -189,15 +214,15 @@ void imu_t::calibrate_gyros() {
     if ( good_timer > 4100 || total_timer > 15000 ) {
         Serial.println();
         // set gyro zero points from the 'slow' filter.
-        gyro_calib = slow;
+        gyro_startup_bias = slow;
         gyros_calibrated = 2;
         // update(); // update imu_calib values before anything else get's a chance to read them // FIXME???
-        Serial.print("Average gyros: ");
-        Serial.print(gyro_calib(0), 4);
+        Serial.print("Average gyro startup bias: ");
+        Serial.print(gyro_startup_bias(0), 4);
         Serial.print(" ");
-        Serial.print(gyro_calib(1), 4);
+        Serial.print(gyro_startup_bias(1), 4);
         Serial.print(" ");
-        Serial.print(gyro_calib(2), 4);
+        Serial.print(gyro_startup_bias(2), 4);
         Serial.println();
         if ( total_timer > 15000 ) {
             Serial.println("gyro init: too much motion, using best average guess.");

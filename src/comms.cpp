@@ -71,6 +71,7 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
         if ( message_size == config.imu.len ) {
             Serial.println("received imu config");
             imu.set_orientation(); // update R matrix
+            imu.set_accel_calibration(); // update R matrix
             imu.set_mag_calibration(); // update mag_affine matrix
             config.write_eeprom();
             write_ack_bin( id, 0 );
@@ -217,18 +218,24 @@ int comms_t::write_imu_bin()
     const float magScale = 0.01;
     const float tempScale = 0.01;
     
-    static message::imu_raw_t imu1;
+    static message::imu_t imu1;
     imu1.micros = imu.imu_micros;
-    imu1.channel[0] = imu.get_ax() / accelScale;
-    imu1.channel[1] = imu.get_ay() / accelScale;
-    imu1.channel[2] = imu.get_az() / accelScale;
-    imu1.channel[3] = imu.get_p() / gyroScale;
-    imu1.channel[4] = imu.get_q() / gyroScale;
-    imu1.channel[5] = imu.get_r() / gyroScale;
-    imu1.channel[6] = imu.get_hx() / magScale;
-    imu1.channel[7] = imu.get_hy() / magScale;
-    imu1.channel[8] = imu.get_hz() / magScale;
-    imu1.channel[0] = imu.get_temp() / tempScale;
+    imu1.nocal[0] = imu.get_ax_nocal() / accelScale;
+    imu1.nocal[1] = imu.get_ay_nocal() / accelScale;
+    imu1.nocal[2] = imu.get_az_nocal() / accelScale;
+    imu1.nocal[3] = imu.get_hx_nocal() / magScale;
+    imu1.nocal[4] = imu.get_hy_nocal() / magScale;
+    imu1.nocal[5] = imu.get_hz_nocal() / magScale;
+    imu1.cal[0] = imu.get_ax_cal() / accelScale;
+    imu1.cal[1] = imu.get_ay_cal() / accelScale;
+    imu1.cal[2] = imu.get_az_cal() / accelScale;
+    imu1.cal[3] = imu.get_p_cal() / gyroScale;
+    imu1.cal[4] = imu.get_q_cal() / gyroScale;
+    imu1.cal[5] = imu.get_r_cal() / gyroScale;
+    imu1.cal[6] = imu.get_hx_cal() / magScale;
+    imu1.cal[7] = imu.get_hy_cal() / magScale;
+    imu1.cal[8] = imu.get_hz_cal() / magScale;
+    imu1.cal[9] = imu.get_tempC() / tempScale;
     imu1.pack();
     return serial.write_packet( imu1.id, imu1.payload, imu1.len );
 }
@@ -238,13 +245,13 @@ void write_imu_ascii()
     // output imu data
     Serial.print("IMU: ");
     Serial.print(imu.imu_micros); Serial.print(" ");
-    Serial.print(imu.get_p(), 2); Serial.print(" ");
-    Serial.print(imu.get_q(), 2); Serial.print(" ");
-    Serial.print(imu.get_r(), 2); Serial.print(" ");
-    Serial.print(imu.get_ax(), 3); Serial.print(" ");
-    Serial.print(imu.get_ay(), 3); Serial.print(" ");
-    Serial.print(imu.get_az(), 3); Serial.print(" ");
-    Serial.print(imu.get_temp(), 2);
+    Serial.print(imu.get_p_cal(), 2); Serial.print(" ");
+    Serial.print(imu.get_q_cal(), 2); Serial.print(" ");
+    Serial.print(imu.get_r_cal(), 2); Serial.print(" ");
+    Serial.print(imu.get_ax_cal(), 3); Serial.print(" ");
+    Serial.print(imu.get_ay_cal(), 3); Serial.print(" ");
+    Serial.print(imu.get_az_cal(), 3); Serial.print(" ");
+    Serial.print(imu.get_tempC(), 2);
     Serial.println();
 }
 

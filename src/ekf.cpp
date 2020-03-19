@@ -8,15 +8,15 @@
 void ekf_t::update() {
     IMUdata imu1;
     imu1.time = imu.imu_micros / 1000000.0;
-    imu1.p = imu.get_p();
-    imu1.q = imu.get_q();
-    imu1.r = imu.get_r();
-    imu1.ax = imu.get_ax();
-    imu1.ay = imu.get_ay();
-    imu1.az = imu.get_az();
-    imu1.hx = imu.get_hx();
-    imu1.hy = imu.get_hy();
-    imu1.hz = imu.get_hz();
+    imu1.p = imu.get_p_cal();
+    imu1.q = imu.get_q_cal();
+    imu1.r = imu.get_r_cal();
+    imu1.ax = imu.get_ax_cal();
+    imu1.ay = imu.get_ay_cal();
+    imu1.az = imu.get_az_cal();
+    imu1.hx = imu.get_hx_cal();
+    imu1.hy = imu.get_hy_cal();
+    imu1.hz = imu.get_hz_cal();
     
     GPSdata gps1;
     gps1.time = imu.imu_micros / 1000000.0;
