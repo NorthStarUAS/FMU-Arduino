@@ -26,9 +26,9 @@ private:
     Vector3f fast = Vector3f::Zero();
     Vector3f gyro_startup_bias = Vector3f::Zero();
     void calibrate_gyros();
-    AuraCalTemp ax_cal;
-    AuraCalTemp ay_cal;
-    AuraCalTemp az_cal;
+    CalTemp ax_cal;
+    CalTemp ay_cal;
+    CalTemp az_cal;
 
 public:
     // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished
