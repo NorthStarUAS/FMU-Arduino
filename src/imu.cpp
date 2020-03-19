@@ -119,7 +119,7 @@ void imu_t::setup() {
     Serial.println("Magnetometer calibration matrix:");
     for ( int i = 0; i < 4; i++ ) {
         for ( int j = 0; j < 4; j++ ) {
-            Serial.print(mag_affine(i,j), 2);
+            Serial.print(mag_affine(i,j), 4);
             Serial.print(" ");
         }
         Serial.println();

@@ -93,8 +93,9 @@ void setup() {
         Serial.println("Successfully loaded eeprom config.");
     }
     
-    // update imu R matrix from config
+    // update imu R and mag_affine matrices from config
     imu.set_orientation();
+    imu.set_mag_calibration();
     
     Serial.print("Serial Number: ");
     Serial.println(config.read_serial_number());
