@@ -14,11 +14,7 @@ MPU9250 IMU;
 void imu_t::defaults_goldy3() {
     config.imu.interface = 0;       // SPI
     config.imu.pin_or_address = 24; // CS pin
-    R = Matrix3f::Identity();
-    for ( int i = 0; i < 9; i++ ) {
-        // no need to worry about row vs. column major here (symmetrical ident)
-        config.imu.orientation[i] = R.data()[i];
-    }
+    defaults_common();
 }
 
 // Setup imu defaults:
@@ -26,10 +22,26 @@ void imu_t::defaults_goldy3() {
 void imu_t::defaults_aura3() {
     config.imu.interface = 1;       // i2c
     config.imu.pin_or_address = 0x68; // mpu9250 i2c addr
+    defaults_common();
+}
+
+// Setup imu defaults:
+// Aura3 has mpu9250 on I2C Addr 0x68
+void imu_t::defaults_common() {
     R = Matrix3f::Identity();
     for ( int i = 0; i < 9; i++ ) {
         // no need to worry about row vs. column major here (symmetrical ident)
         config.imu.orientation[i] = R.data()[i];
+    }
+    config.imu.min_temp = 27.0;
+    config.imu.max_temp = 27.0;
+    for ( int i = 0; i < 3; i++ ) {
+        config.imu.ax_coeff[i] = 0.0;
+    }
+    mag_affine = Matrix4f::Identity();
+    for ( int i = 0; i < 16; i++ ) {
+        // no need to worry about row vs. column major here (symmetrical ident)
+        config.imu.mag_affine[i] = mag_affine.data()[i];
     }
 }
 
@@ -38,6 +50,11 @@ void imu_t::set_orientation() {
     // config.imu.orientation is row major, but internally Eigen defaults
     // to column major.
     R = Matrix<float, 3, 3, RowMajor>(config.imu.orientation);
+}
+
+// update the mag calibration matrix from the config structur
+void imu_t::set_mag_calibration() {
+    mag_affine = Matrix<float, 4, 4, RowMajor>(config.imu.mag_affine);
 }
 
 // configure the IMU settings and setup the ISR to aquire the data
@@ -74,9 +91,35 @@ void imu_t::setup() {
     }
 
     Serial.println("MPU-9250 ready.");
+    Serial.println("IMU orientation matrix:");
     for ( int i = 0; i < 3; i++ ) {
         for ( int j = 0; j < 3; j++ ) {
             Serial.print(R(i,j), 2);
+            Serial.print(" ");
+        }
+        Serial.println();
+    }
+
+    Serial.print("Accel calibration temp range: ");
+    Serial.print(config.imu.min_temp, 1);
+    Serial.print(" - ");
+    Serial.println(config.imu.max_temp, 1);
+    Serial.print("ax_coeff: ");
+    Serial.print(config.imu.ax_coeff[0], 4); Serial.print(" ");
+    Serial.print(config.imu.ax_coeff[1], 4); Serial.print(" ");
+    Serial.println(config.imu.ax_coeff[2], 4);
+    Serial.print("ay_coeff: ");
+    Serial.print(config.imu.ay_coeff[0], 4); Serial.print(" ");
+    Serial.print(config.imu.ay_coeff[1], 4); Serial.print(" ");
+    Serial.println(config.imu.ay_coeff[2], 4);
+    Serial.print("az_coeff: ");
+    Serial.print(config.imu.az_coeff[0], 4); Serial.print(" ");
+    Serial.print(config.imu.az_coeff[1], 4); Serial.print(" ");
+    Serial.println(config.imu.az_coeff[2], 4);
+    Serial.println("Magnetometer calibration matrix:");
+    for ( int i = 0; i < 4; i++ ) {
+        for ( int j = 0; j < 4; j++ ) {
+            Serial.print(mag_affine(i,j), 2);
             Serial.print(" ");
         }
         Serial.println();

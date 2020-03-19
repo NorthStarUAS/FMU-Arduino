@@ -11,6 +11,7 @@ using namespace Eigen;
 class imu_t {
 private:
     Matrix3f R = Matrix3f::Identity();
+    Matrix4f mag_affine = Matrix4f::Identity();
     Vector3f accels_raw = Vector3f::Zero();
     Vector3f gyros_raw = Vector3f::Zero();
     Vector3f mags_raw = Vector3f::Zero();
@@ -36,7 +37,9 @@ public:
     
     void defaults_goldy3();
     void defaults_aura3();
+    void defaults_common();
     void set_orientation();
+    void set_mag_calibration();
     void setup();
     void update();
     // notational convenience/clarity

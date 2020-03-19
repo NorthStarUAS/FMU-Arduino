@@ -71,6 +71,7 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
         if ( message_size == config.imu.len ) {
             Serial.println("received imu config");
             imu.set_orientation(); // update R matrix
+            imu.set_mag_calibration(); // update mag_affine matrix
             config.write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
