@@ -154,17 +154,9 @@ void imu_t::update() {
     gyros_nocal = R * gyros_raw;
     mags_nocal = R * mags_raw;
 
-    // Serial.print("accel bias: ");
-    // Serial.print(ax_cal.get_bias(tempC)); Serial.print(" ");
-    // Serial.print(ay_cal.get_bias(tempC)); Serial.print(" ");
-    // Serial.println(az_cal.get_bias(tempC));
     accels_cal(0) = ax_cal.calibrate(accels_nocal(0), tempC);
     accels_cal(1) = ay_cal.calibrate(accels_nocal(1), tempC);
     accels_cal(2) = az_cal.calibrate(accels_nocal(2), tempC);
-    // Serial.print("accels: ");
-    // Serial.print(accels_cal(0)); Serial.print(" ");
-    // Serial.print(accels_cal(1)); Serial.print(" ");
-    // Serial.println(accels_cal(2));
         
     Vector4f hs;
     hs << mags_nocal(0), mags_nocal(1), mags_nocal(2), 1.0;
