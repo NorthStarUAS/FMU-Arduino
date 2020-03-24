@@ -102,7 +102,6 @@ void mixer_t::update_matrix(message::config_mixer_t *mix_config ) {
 }
 
 void mixer_t::setup() {
-    M.setIdentity();            // straight pass through default
     outputs.setZero();
     pwm.norm2pwm( outputs.data() );
 }
