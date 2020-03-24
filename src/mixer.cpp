@@ -88,6 +88,10 @@ void mixer_t::update_matrix(message::config_mixer_t *mix_config ) {
         // outputs[5] = mix_config->mix_Gtt * throttle_cmd - mix_config->mix_Gtr * rudder_cmd;
     }
     
+    print_mixer_matrix();
+}
+
+void mixer_t::print_mixer_matrix() {
     Serial.println("Mixer Matrix:");
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         for ( int j = 0; j < PWM_CHANNELS; j++ ) {
@@ -100,11 +104,11 @@ void mixer_t::update_matrix(message::config_mixer_t *mix_config ) {
         Serial.println();
     }
 }
-
 void mixer_t::setup() {
     outputs.setZero();
     pwm.norm2pwm( outputs.data() );
     M = Matrix<float, PWM_CHANNELS, PWM_CHANNELS, RowMajor>(config.mixer_matrix.matrix);
+    print_mixer_matrix();
 }
 
 // compute the stability damping in normalized command/input space
