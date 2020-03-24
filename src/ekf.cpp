@@ -37,6 +37,7 @@ void ekf_t::update() {
         if ( gps.gps_millis > gps_last_millis ) {
             gps_last_millis = gps.gps_millis;
             ekf.measurement_update(gps1);
+            status = 2;         // ok
         }
         nav = ekf.get_nav();
 
@@ -46,8 +47,15 @@ void ekf_t::update() {
         if ( std::isnan(nav.Pp0) or std::isnan(nav.Pv0) or std::isnan(nav.Pa0)
              or (nav.Pp0 < -0.1) or (nav.Pv0 < -0.1) or (nav.Pa0 < -0.1) ) {
             Serial.println("filter blew up...");
+            status = 0;
             reinit();
         }
+        if ( millis() > (gps_last_millis + 2000) ) {
+            // last gps message > 2 seconds ago
+            status = 1;         // no gps
+        }
+    } else {
+        status = 0;             // not initialized
     }
 }
 

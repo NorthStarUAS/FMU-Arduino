@@ -35,6 +35,7 @@ void force_config_aura3() {
     config.stab.sas_rollgain = 0.2;
     config.stab.sas_pitchgain = 0.2;
     config.stab.sas_yawgain = 0.2;
+    config.ekf.enable = false;
 }
 
 // force/hard-code a specific board config if desired
@@ -52,6 +53,7 @@ void force_config_goldy3() {
     config.stab.sas_rollgain = 0.2;
     config.stab.sas_pitchgain = 0.2;
     config.stab.sas_yawgain = 0.2;
+    config.ekf.enable = true;
 }
 
 void reset_config_defaults() {
@@ -103,7 +105,7 @@ void setup() {
     delay(100);
 
     // force/hard-code a specific board config if desired
-    // force_config_aura_v2();
+    force_config_aura3();
     // force_config_talon_marmot();
     
     // initialize the IMU
@@ -147,7 +149,10 @@ void loop() {
         
         // top priority, used for timing sync downstream.
         imu.update();
-        ekf.update();
+
+        if ( config.ekf.enable ) {
+            ekf.update();
+        }
         
         // output keyed off new IMU data
         comms.output_counter += comms.write_pilot_in_bin();
@@ -159,16 +164,21 @@ void loop() {
         // that gets ignored if we do the math in one step)
         uint8_t result = comms.write_status_info_bin();
         comms.output_counter += result;
+        if ( config.ekf.enable ) {
+            comms.output_counter += comms.write_nav_bin();
+        }
+        // write imu message last: used as an implicit end of data
+        // frame marker.
         comms.output_counter += comms.write_imu_bin();
-        comms.output_counter += comms.write_nav_bin(); // write EKF data last as an implicit 'end of data frame' marker.
 
         // 10hz human debugging output, but only after gyros finish calibrating
         if ( debugTimer >= 100 && imu.gyros_calibrated == 2) {
             debugTimer = 0;
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
-            // comms.write_gps_ascii();
-            // comms.write_nav_ascii();
+            comms.write_gps_ascii();
+            if ( config.ekf.enable ) comms.write_nav_ascii();
+            
             // write_airdata_ascii();
             // write_status_info_ascii();
             // write_imu_ascii();

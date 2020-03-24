@@ -323,6 +323,7 @@ int comms_t::write_nav_bin()
     nav.ax_bias = ekf.nav.abx;
     nav.ay_bias = ekf.nav.aby;
     nav.az_bias = ekf.nav.abz;
+    nav.status = ekf.status;
     nav.pack();
     return serial.write_packet( nav.id, nav.payload, nav.len );
 }
