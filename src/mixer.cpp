@@ -51,9 +51,9 @@ void mixer_t::update_matrix(message::config_mixer_t *mix_config ) {
     // mixing modes that work at the 'command' level (before actuator
     // value assignment)
     if ( mix_config->mix_autocoord ) {
-        M(3,1) = mix_config->mix_Gac;
+        M(3,1) = -mix_config->mix_Gac;
         if ( mix_config->mix_vtail && !mix_config->mix_elevon) {
-            M(2,1) = -mix_config->mix_Gac;
+            M(2,1) = mix_config->mix_Gac;
         }
     }
     if ( mix_config->mix_throttle_trim ) {
