@@ -87,7 +87,14 @@ void mixer_t::update_matrix(message::config_mixer_t *mix_config ) {
         // outputs[0] = mix_config->mix_Gtt * throttle_cmd + mix_config->mix_Gtr * rudder_cmd;
         // outputs[5] = mix_config->mix_Gtt * throttle_cmd - mix_config->mix_Gtr * rudder_cmd;
     }
-    
+
+    // updating the mixer_matrix config message so we can save it in eeeprom
+    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
+        for ( int j = 0; i < PWM_CHANNELS; j++ ) {
+            config.imu.orientation[j*PWM_CHANNELS+i] = M(i,j);
+        }
+    }
+
     print_mixer_matrix();
 }
 
