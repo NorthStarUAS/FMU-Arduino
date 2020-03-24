@@ -105,7 +105,7 @@ void setup() {
     delay(100);
 
     // force/hard-code a specific board config if desired
-    force_config_aura3();
+    // force_config_aura3();
     // force_config_talon_marmot();
     
     // initialize the IMU

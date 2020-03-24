@@ -104,6 +104,7 @@ void mixer_t::update_matrix(message::config_mixer_t *mix_config ) {
 void mixer_t::setup() {
     outputs.setZero();
     pwm.norm2pwm( outputs.data() );
+    M = Matrix<float, PWM_CHANNELS, PWM_CHANNELS, RowMajor>(config.mixer_matrix.matrix);
 }
 
 // compute the stability damping in normalized command/input space
