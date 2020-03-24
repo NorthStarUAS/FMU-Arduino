@@ -91,7 +91,7 @@ void mixer_t::update_matrix(message::config_mixer_t *mix_config ) {
     // updating the mixer_matrix config message so we can save it in eeeprom
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         for ( int j = 0; i < PWM_CHANNELS; j++ ) {
-            config.imu.orientation[j*PWM_CHANNELS+i] = M(i,j);
+            config.mixer_matrix.matrix[j*PWM_CHANNELS+i] = M(i,j);
         }
     }
 
