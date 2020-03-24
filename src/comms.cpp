@@ -415,19 +415,12 @@ int comms_t::write_power_bin()
     return serial.write_packet( power1.id, power1.payload, power1.len );
 }
 
-void write_power_ascii()
+void comms_t::write_power_ascii()
 {
     // This info is static so we don't need to send it at a high rate ... once every 10 seconds (?)
     // with an immediate message at the start.
-    Serial.print("SN: ");
-    Serial.println(config.read_serial_number());
-    Serial.print("Firmware: ");
-    Serial.println(FIRMWARE_REV);
-    Serial.print("Main loop hz: ");
-    Serial.println( MASTER_HZ);
-    Serial.print("Baud: ");Serial.println(DEFAULT_BAUD);
-    Serial.print("Main v: "); Serial.print(power.pwr1_v, 2);
-    Serial.print(" av: "); Serial.println(power.avionics_v, 2);
+    Serial.print("Volts Main: "); Serial.print(power.pwr1_v, 2);
+    Serial.print(" avionics: "); Serial.println(power.avionics_v, 2);
 }
 
 // output a binary representation of various status and config information
@@ -463,17 +456,18 @@ int comms_t::write_status_info_bin()
     return serial.write_packet( status.id, status.payload, status.len );
 }
 
-void write_status_info_ascii()
+void comms_t::write_status_info_ascii()
 {
     // This info is static so we don't need to send it at a high rate ... once every 10 seconds (?)
     // with an immediate message at the start.
     Serial.print("SN: ");
-    Serial.println(config.read_serial_number());
-    Serial.print("Firmware: ");
-    Serial.println(FIRMWARE_REV);
-    Serial.print("Main loop hz: ");
-    Serial.println( MASTER_HZ);
-    Serial.print("Baud: ");Serial.println(DEFAULT_BAUD);
+    Serial.print(config.read_serial_number());
+    Serial.print(" Firmware: ");
+    Serial.print(FIRMWARE_REV);
+    Serial.print(" Main loop hz: ");
+    Serial.print( MASTER_HZ);
+    Serial.print(" Baud: ");
+    Serial.println(DEFAULT_BAUD);
 }
 
 void comms_t::read_commands() {

@@ -21,7 +21,9 @@ public:
     void write_nav_ascii();
     int write_airdata_bin();
     int write_power_bin();
+    void write_power_ascii();
     int write_status_info_bin();
+    void write_status_info_ascii();
     bool parse_message_bin( byte id, byte *buf, byte message_size );
     void read_commands();
     

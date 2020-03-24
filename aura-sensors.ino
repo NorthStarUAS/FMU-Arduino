@@ -140,6 +140,7 @@ void setup() {
 void loop() {
     // put your main code here, to run repeatedly:
     static elapsedMillis mainTimer = 0;
+    static elapsedMillis hbTimer = 0;
     static elapsedMillis debugTimer = 0;
        
     // When new IMU data is ready (new pulse from IMU), go out and grab the IMU data
@@ -171,13 +172,20 @@ void loop() {
         // frame marker.
         comms.output_counter += comms.write_imu_bin();
 
+        // 0.1hz heartbeat output
+        if ( hbTimer >= 10000 && imu.gyros_calibrated == 2) {
+            hbTimer = 0;
+            comms.write_status_info_ascii();
+            comms.write_power_ascii();
+            Serial.println();
+        }
         // 10hz human debugging output, but only after gyros finish calibrating
         if ( debugTimer >= 100 && imu.gyros_calibrated == 2) {
             debugTimer = 0;
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
-            comms.write_gps_ascii();
-            if ( config.ekf.enable ) comms.write_nav_ascii();
+            // comms.write_gps_ascii();
+            // if ( config.ekf.enable ) comms.write_nav_ascii();
             
             // write_airdata_ascii();
             // write_status_info_ascii();
