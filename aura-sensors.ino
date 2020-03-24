@@ -106,7 +106,7 @@ void setup() {
 
     // force/hard-code a specific board config if desired
     // force_config_aura3();
-    // force_config_talon_marmot();
+    // force_config_goldy3();
     
     // initialize the IMU
     imu.setup();
