@@ -36,6 +36,7 @@ void force_config_aura3() {
     config.stab.sas_pitchgain = 0.2;
     config.stab.sas_yawgain = 0.2;
     config.ekf.enable = false;
+    config.write_eeprom();
 }
 
 // force/hard-code a specific board config if desired
@@ -211,13 +212,17 @@ void loop() {
     
     // keep processing while there is data in the uart buffer
     while ( sbus.process() ) {
+        static bool last_ap_state = pilot.ap_enabled();
         pilot.update_manual();
         if ( pilot.ap_enabled() ) {
+            if ( !last_ap_state ) { Serial.println("ap enabled"); }
             mixer.update( pilot.ap_inputs );
         } else {
+            if ( last_ap_state ) { Serial.println("ap disabled (manaul flight)"); }
             mixer.update( pilot.manual_inputs );
         }
         pwm.update();
+        last_ap_state = pilot.ap_enabled();
     }
 
     // suck in any host commmands (flight control updates, etc.)
