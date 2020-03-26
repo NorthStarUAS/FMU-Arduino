@@ -47,9 +47,10 @@ void mixer_t::sas_defaults() {
 
 void mixer_t::update_matrix(message::config_mixer_t *mix_config ) {
     M.setIdentity();            // straight pass through default
+
+    // note: M(output_channel, input_channel)
+    // note: elevon and flaperon mixing are mutually exclusive
     
-    // mixing modes that work at the 'command' level (before actuator
-    // value assignment)
     if ( mix_config->mix_autocoord ) {
         M(3,1) = -mix_config->mix_Gac;
         if ( mix_config->mix_vtail && !mix_config->mix_elevon) {
@@ -61,9 +62,10 @@ void mixer_t::update_matrix(message::config_mixer_t *mix_config ) {
     }
     if ( mix_config->mix_flap_trim ) {
         M(2,4) = mix_config->mix_Gef;
+        if ( mix_config->mix_vtail && !mix_config->mix_elevon) {
+            M(3,4) = -mix_config->mix_Gef;
+        }
     }
-
-    // elevon and flaperon mixing are mutually exclusive
     if ( mix_config->mix_elevon ) {
         M(1,1) = mix_config->mix_Gea;
         M(1,2) = mix_config->mix_Gee;
