@@ -1,5 +1,7 @@
 #include <Arduino.h>
 
+#include "../setup_board.h"
+
 #include "config.h"
 
 #include "power.h"
