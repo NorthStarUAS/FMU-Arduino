@@ -63,7 +63,7 @@ void mixer_t::update_matrix(message::config_mixer_t *mix_config ) {
     if ( mix_config->mix_flap_trim ) {
         M(2,4) = mix_config->mix_Gef;
         if ( mix_config->mix_vtail && !mix_config->mix_elevon) {
-            M(3,4) = -mix_config->mix_Gef;
+            M(3,4) = mix_config->mix_Gef;
         }
     }
     if ( mix_config->mix_elevon ) {
