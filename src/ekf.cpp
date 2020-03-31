@@ -27,6 +27,7 @@ void ekf_t::update() {
     gps1.vn = gps.gps_data.velN / 1000.0;
     gps1.ve = gps.gps_data.velE / 1000.0;
     gps1.vd = gps.gps_data.velD / 1000.0;
+    gps1.unix_sec = gps.unix_sec;
     
     if ( !ekf_inited and gps.settle() ) {
         ekf.init(imu1, gps1);

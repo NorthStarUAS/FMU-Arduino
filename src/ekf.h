@@ -4,7 +4,7 @@
 
 #include <Arduino.h>
 
-#include "EKF15/EKF_15state.h"
+#include "nav_ekf15/EKF_15state.h"
 
 class ekf_t {
 private:
