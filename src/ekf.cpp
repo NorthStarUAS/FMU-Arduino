@@ -71,9 +71,9 @@ void ekf_t::update() {
             }
             status = 2;         // ok
         }
-        if ( config.ekf.select == messages::enum_nav::nav15 ) {
+        if ( config.ekf.select == message::enum_nav::nav15 ) {
             nav = ekf.get_nav();
-        } else if ( config.ekf.select == messages::enum_nav::nav15_mag ) {
+        } else if ( config.ekf.select == message::enum_nav::nav15_mag ) {
             nav = ekf_mag.get_nav();
         }
 
