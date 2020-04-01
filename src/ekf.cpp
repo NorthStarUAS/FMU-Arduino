@@ -71,7 +71,11 @@ void ekf_t::update() {
             }
             status = 2;         // ok
         }
-        nav = ekf.get_nav();
+        if ( config.ekf.select == messages::enum_nav::nav15 ) {
+            nav = ekf.get_nav();
+        } else if ( config.ekf.select == messages::enum_nav::nav15_mag ) {
+            nav = ekf_mag.get_nav();
+        }
 
         // sanity checks in case degenerate input leads to the filter
         // blowing up.  look for nans (or even negative #'s) in the
