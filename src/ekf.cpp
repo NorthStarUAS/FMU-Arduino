@@ -1,5 +1,6 @@
 #include <math.h>
 
+#include "config.h"
 #include "gps.h"
 #include "imu.h"
 
@@ -8,11 +9,11 @@
 void ekf_t::setup() {
     #if defined(AURA_ONBOARD_EKF)
     Serial.print("EKF: available  Current setting: ");
-    if ( config_ekf.select == message::enum_nav::none ) {
+    if ( config.ekf.select == message::enum_nav::none ) {
         Serial.println("none");
-    } else if ( config_ekf.select == message::enum_nav::nav15 ) {
+    } else if ( config.ekf.select == message::enum_nav::nav15 ) {
         Serial.println("15 state ins/gps");
-    } else if ( config_ekf.select == message::enum_nav::nav15_mag ) {
+    } else if ( config.ekf.select == message::enum_nav::nav15_mag ) {
         Serial.println("15 state ins/gps/mag");
     } else {
         Serial.println("unknown setting/disabled");
