@@ -452,6 +452,7 @@ int comms_t::write_status_info_bin()
     write_millis = current_time;
     output_counter = 0;
     status.byte_rate = byte_rate;
+    status.timer_misses = main_loop_timer_misses;
 
     status.pack();
     return serial.write_packet( status.id, status.payload, status.len );

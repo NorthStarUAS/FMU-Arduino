@@ -10,6 +10,7 @@ public:
     // aura-v2 and marmot-v1 hardware
     SerialLink serial;
     unsigned long output_counter = 0;
+    int main_loop_timer_misses = 0; // performance sanity check
 
     void setup();
     int write_ack_bin( uint8_t command_id, uint8_t subcommand_id );

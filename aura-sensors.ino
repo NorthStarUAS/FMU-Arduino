@@ -142,8 +142,8 @@ void setup() {
     Serial.println("Ready and transmitting...");
 }
 
+// main arduino loop
 void loop() {
-    // put your main code here, to run repeatedly:
     static elapsedMillis mainTimer = 0;
     static elapsedMillis hbTimer = 0;
     static elapsedMillis debugTimer = 0;
@@ -152,6 +152,13 @@ void loop() {
     // and output fresh IMU message plus the most recent data from everything else.
     if ( mainTimer >= DT_MILLIS ) {
         mainTimer -= DT_MILLIS;
+
+        if ( mainTimer > 0 ) {
+            comms.main_loop_timer_misses++;
+            if ( comms.main_loop_timer_misses % 25 == 0 ) {
+                Serial.println("WARNING: main loop is not completing on time!");
+            }
+        }
         
         // top priority, used for timing sync downstream.
         imu.update();
@@ -177,8 +184,8 @@ void loop() {
         // frame marker.
         comms.output_counter += comms.write_imu_bin();
 
-        // 0.1hz heartbeat output
-        if ( hbTimer >= 10000 && imu.gyros_calibrated == 2) {
+        // one minute heartbeat output
+        if ( hbTimer >= 60000 && imu.gyros_calibrated == 2) {
             hbTimer = 0;
             comms.write_status_info_ascii();
             comms.write_power_ascii();
