@@ -21,6 +21,7 @@ public:
     int write_nav_bin();
     void write_nav_ascii();
     int write_airdata_bin();
+    void write_airdata_ascii();
     int write_power_bin();
     void write_power_ascii();
     int write_status_info_bin();

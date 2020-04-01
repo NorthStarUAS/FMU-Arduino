@@ -47,6 +47,8 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
         config.airdata.unpack(buf, message_size);
         if ( message_size == config.airdata.len ) {
             Serial.println("received new airdata config");
+            Serial.print("Swift barometer on I2C: 0x");
+            Serial.println(config.airdata.swift_baro_addr, HEX);
             config.write_eeprom();
             write_ack_bin( id, 0 );
             result = true;
@@ -391,7 +393,7 @@ int comms_t::write_airdata_bin()
     return serial.write_packet( airdata1.id, airdata1.payload, airdata1.len );
 }
 
-void write_airdata_ascii()
+void comms_t::write_airdata_ascii()
 {
     Serial.print("Barometer: ");
     Serial.print(airdata.baro_press, 2); Serial.print(" (st pa) ");

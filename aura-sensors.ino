@@ -198,7 +198,7 @@ void loop() {
             // write_actuator_out_ascii();
             // comms.write_gps_ascii();
             // if ( config.ekf.enable ) comms.write_nav_ascii();
-            // write_airdata_ascii();
+            // comms.write_airdata_ascii();
             // write_status_info_ascii();
             // write_imu_ascii();
         }
