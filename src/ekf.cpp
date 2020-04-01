@@ -49,25 +49,25 @@ void ekf_t::update() {
     gps1.unix_sec = gps.unix_sec;
     
     if ( !ekf_inited and gps.settle() ) {
-        if ( config.ekf.select == messages::enum_nav::nav15 ) {
+        if ( config.ekf.select == message::enum_nav::nav15 ) {
             ekf.init(imu1, gps1);
-        } else if ( config.ekf.select == messages::enum_nav::nav15_mag ) {
+        } else if ( config.ekf.select == message::enum_nav::nav15_mag ) {
             ekf_mag.init(imu1, gps1);
         }
         ekf_inited = true;
         Serial.println("EKF: initialized");
     } else if ( ekf_inited ) {
-        if ( config.ekf.select == messages::enum_nav::nav15 ) {
+        if ( config.ekf.select == message::enum_nav::nav15 ) {
             ekf.time_update(imu1);
-        } else if ( config.ekf.select == messages::enum_nav::nav15_mag ) {
+        } else if ( config.ekf.select == message::enum_nav::nav15_mag ) {
             ekf_mag.time_update(imu1);
         }
         if ( gps.gps_millis > gps_last_millis ) {
             gps_last_millis = gps.gps_millis;
-            if ( config.ekf.select == messages::enum_nav::nav15 ) {
+            if ( config.ekf.select == message::enum_nav::nav15 ) {
                 ekf.measurement_update(gps1);
-            } else if ( config.ekf.select == messages::enum_nav::nav15_mag ) {
-                ekf_mag.measurement_update(gps1);
+            } else if ( config.ekf.select == message::enum_nav::nav15_mag ) {
+                ekf_mag.measurement_update(imu1, gps1);
             }
             status = 2;         // ok
         }
