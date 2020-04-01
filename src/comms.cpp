@@ -332,7 +332,7 @@ int comms_t::write_nav_bin()
 }
 
 void comms_t::write_nav_ascii() {
-    if ( false ) {
+    if ( true ) {
         // values
         Serial.print("Pos: ");
         Serial.print(ekf.nav.lat*R2D, 7);
