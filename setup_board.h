@@ -7,12 +7,18 @@
 #include <Arduino.h>
 
 // automatic configuration
-#if defined(__MK20DX256__)
- #define HAVE_TEENSY32
+#if defined(ARDUINO_TEENSY32) || defined(ARDUINO_TEENSY40)
  #define AURA_V2
-#elif defined(__MK66FX1M0__)
- #define HAVE_TEENSY36
+#elif defined(ARDUINO_TEENSY36)
  #define MARMOT_V1
+#endif
+
+// teensy32 can barely run the ekf at 50hz so only enable this feature
+// for the newer processors.
+#if defined(ARDUINO_TEENSY32)
+#undef AURA_ONBOARD_EKF
+#else
+#define AURA_ONBOARD_EKF
 #endif
 
 // Firmware rev (needs to be updated here manually to match release number)

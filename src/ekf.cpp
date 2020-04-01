@@ -5,7 +5,25 @@
 
 #include "ekf.h"
 
+void ekf_t::setup() {
+    #if defined(AURA_ONBOARD_EKF)
+    Serial.print("EKF: available  Current setting: ");
+    if ( config_ekf.select == message::enum_nav::none ) {
+        Serial.println("none");
+    } else if ( config_ekf.select == message::enum_nav::nav15 ) {
+        Serial.println("15 state ins/gps");
+    } else if ( config_ekf.select == message::enum_nav::nav15_mag ) {
+        Serial.println("15 state ins/gps/mag");
+    } else {
+        Serial.println("unknown setting/disabled");
+    }
+    #else
+    Serial.println("EKF: not available for Teensy 3.2");
+    #endif
+}
+
 void ekf_t::update() {
+    #if defined(AURA_ONBOARD_EKF)
     IMUdata imu1;
     imu1.time = imu.imu_micros / 1000000.0;
     imu1.p = imu.get_p_cal();
@@ -58,6 +76,7 @@ void ekf_t::update() {
     } else {
         status = 0;             // not initialized
     }
+    #endif // AURA_ONBOARD_EKF
 }
 
 void ekf_t::reinit() {

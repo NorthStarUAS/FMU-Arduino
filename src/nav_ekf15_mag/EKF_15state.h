@@ -27,9 +27,6 @@ using namespace Eigen;
 
 #include "../nav_common/structs.h"
 
-// usefule constants
-const float g = 9.814;
-
 // define some types for notational convenience and consistency
 typedef Matrix<float,9,9>   Matrix9f;
 typedef Matrix<float,12,12> Matrix12f;

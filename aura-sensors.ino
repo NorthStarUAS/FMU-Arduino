@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
 
+#include "setup_board.h"        // #include this early
+
 #include "src/airdata.h"
 #include "src/comms.h"
 #include "src/config.h"
@@ -14,7 +16,6 @@
 #include "src/pwm.h"
 #include "src/sensors/sbus/sbus.h"
 
-#include "setup_board.h"
 
 // Controls and Actuators
 uint8_t test_pwm_channel = -1;
@@ -135,6 +136,9 @@ void setup() {
     // led for status blinking if defined
     led.setup();
 
+    // ekf init (just prints availability status)
+    ekf.setup();
+    
     Serial.println("Ready and transmitting...");
 }
 
@@ -187,7 +191,6 @@ void loop() {
             // write_actuator_out_ascii();
             // comms.write_gps_ascii();
             // if ( config.ekf.enable ) comms.write_nav_ascii();
-            
             // write_airdata_ascii();
             // write_status_info_ascii();
             // write_imu_ascii();

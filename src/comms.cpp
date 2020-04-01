@@ -18,6 +18,7 @@
 #include "pilot.h"
 #include "power.h"
 #include "pwm.h"
+#include "nav_common/constants.h"
 #include "sensors/sbus/sbus.h"
 #include "util/serial_link.h"
 #include "aura4_messages.h"

@@ -32,6 +32,8 @@ const float P_GB_INIT = 0.01745;  // 5 deg/s
 const double Rew = 6.359058719353925e+006; // earth radius
 const double Rns = 6.386034030458164e+006; // earth radius
 
+const float g = 9.814;
+
 // BRT: (1) I think there are some several identity and sparse
 // matrices, so probably some optimization still left there.  (2)
 // Seems like a lot of the transforms could be more efficiently done

@@ -9,7 +9,7 @@
 void power_t::setup(int board) {
     if ( board == 0 ) {
         // Marmot v1
-        #ifdef HAVE_TEENSY36    // A22 doesn't exist for teensy3.2
+        #if defined(ARDUINO_TEENSY36)    // A22 doesn't exist for teensy32
         avionics_pin = A22;
         #endif
         source_volt_pin = 15;
