@@ -35,7 +35,7 @@ void force_config_aura3() {
     config.stab.sas_rollgain = 0.2;
     config.stab.sas_pitchgain = 0.2;
     config.stab.sas_yawgain = 0.2;
-    config.ekf.enable = false;
+    config.ekf.select = message::enum_nav::none;
     config.write_eeprom();
 }
 
@@ -54,7 +54,7 @@ void force_config_goldy3() {
     config.stab.sas_rollgain = 0.2;
     config.stab.sas_pitchgain = 0.2;
     config.stab.sas_yawgain = 0.2;
-    config.ekf.enable = true;
+    config.ekf.select = message::enum_nav::none;
 }
 
 void reset_config_defaults() {
@@ -152,7 +152,7 @@ void loop() {
         // top priority, used for timing sync downstream.
         imu.update();
 
-        if ( config.ekf.enable ) {
+        if ( config.ekf.select != message::enum_nav::none ) {
             ekf.update();
         }
         
@@ -166,7 +166,7 @@ void loop() {
         // that gets ignored if we do the math in one step)
         uint8_t result = comms.write_status_info_bin();
         comms.output_counter += result;
-        if ( config.ekf.enable ) {
+        if ( config.ekf.select != message::enum_nav::none ) {
             comms.output_counter += comms.write_nav_bin();
         }
         // write imu message last: used as an implicit end of data
