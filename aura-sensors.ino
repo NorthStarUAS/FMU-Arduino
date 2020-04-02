@@ -86,9 +86,12 @@ void setup() {
     // The following code (when enabled) will force setting a specific
     // device serial number when the device boots:
     // config.set_serial_number(116);
-    
     config.read_serial_number();
     
+    Serial.print("Serial Number: ");
+    Serial.println(config.read_serial_number());
+    delay(100);
+
     if ( !config.read_eeprom() ) {
         Serial.println("Resetting eeprom to default values.");
         reset_config_defaults();
@@ -97,18 +100,14 @@ void setup() {
         Serial.println("Successfully loaded eeprom config.");
     }
     
+    // force/hard-code a specific board config if desired
+    // force_config_aura3();
+    // force_config_goldy3();
+    
     // update imu R and mag_affine matrices from config
     imu.set_orientation();
     imu.set_accel_calibration();
     imu.set_mag_calibration();
-    
-    Serial.print("Serial Number: ");
-    Serial.println(config.read_serial_number());
-    delay(100);
-
-    // force/hard-code a specific board config if desired
-    // force_config_aura3();
-    // force_config_goldy3();
     
     // initialize the IMU
     imu.setup();
