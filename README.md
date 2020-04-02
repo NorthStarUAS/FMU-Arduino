@@ -1,26 +1,27 @@
 # Aura Sensors
 
-This is a teensy 3.x/4.x (teensyduino) sketch.  Aura-sensors turns an
-inexpensive teensy board into a sensor collector + attitude
-determination system + communications hub + servo controller.  It is
-not yet a full fledged autopilot itself, but designed to pair with a
-host linux board (such as a raspberry pi, beaglebone, gumstix, etc)
-for all the higher level AP functions.  It supports the mpu9250 imu,
-ublox8 gps, bme280/bmp280 pressure sensors, sbus receiver, and
-attopilot volt/amp sensor.  Supports an external airdata systems via
-the i2c bus.
+This is an Arduino (Teensyduino) sketch for building the heart of a
+UAV autopilot.  Aura-sensors turns an inexpensive teensy board into a
+sensor collector, attitude determination system, communications hub,
+and servo controller.  It is not yet a full fledged autopilot itself,
+but designed to pair with a host linux board (such as a beaglebone or
+raspberry pi) for all the higher level autopilot functions.  It
+supports the mpu9250 imu, ublox8 gps, bme280/bmp280 pressure sensors,
+sbus receiver, and attopilot volt/amp sensor.  It also supports an
+external airdata systems via the i2c bus.
 
-As of version 4xx, a high accurancy 15-state EKF has been added for
-precision attitude and lcoation estimate. It is currently inertial
-only (no magenetometer support) and designed to work exceptionally
-well for outdoor dynamic systems such as fixed wing aircraft.
+![prototype](images/IMG_20191118_064616925.jpg "Prototype board")
 
-This is one component of a research grade autopilot system that anyone
-can assemble with basic soldering skills.
+As of version 4, a high accurancy 15-state EKF has been added for
+precision attitude and lcoation estimate. It is designed to work
+exceptionally well for outdoor dynamic systems such as fixed wing
+aircraft.
 
-When paired with a beaglebone, or raspberry pi linux computer running
-the Aura-core AP software, the result is a very high quality and very
-capable autopilot system at a very inexpensive price point.
+Aura Sensors is one component of a research grade autopilot system
+that anyone can assemble with basic soldering skills.  Altogether,
+AuraUAS is a high quality autopilot system that ephasizes high
+reliability and simple code.  It offers many advanced capabilities at
+a very inexpensive price point.
 
 # Features/support
 
@@ -50,4 +51,37 @@ capable autopilot system at a very inexpensive price point.
   and a Xbow MNAV version even earlier.  The PJRC-teensy version of
   this system has been flying since February 2018.
 
-  
+# What's new in 2020?
+
+* I have pushed through quite a few code architecture and
+  simplification changes.  The goal is always to make the structure
+  lighter weight when possible.
+
+* I have added support for on-board accelerometer temperature
+  calibration and onboard magenetometer calibration functions.
+
+* I have added two variants of the UMN AEM ins/gns kalman filter.
+
+  1. A 15-state ins/gps only filter (gyros, accels, gps) that performs
+     extremely well for fixed wing aircraft.
+
+  2. A 15-state ins/gps/mag filter that supports low dynamic vehicles
+     such as quad copters and rovers.  As with any magnetomter based
+     attitude determination system, it is critical to have well
+     calibrated mags for good performance.  I have an offline "self"
+     calibration system that I am considering adapting for
+     onboard/automatic calibration.
+
+# What is next?
+
+* I would like to look into exporting the covariance matrix from the
+  onboard ekf so the host can do quality/performance monitoring or
+  redflag bad peformance so the operator has early notice of a
+  problem.
+
+* I would like to investigate running inner loop PID control onboard
+  the teensy (offloaded from the host.)  This would lead to an
+  extremely tight inner main loop: sense -> state estimator -> pid
+  control -> effector output.  The higher level navigation would
+  remain on the host computer as well as other functions like logging
+  and communication with the ground station.
