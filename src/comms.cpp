@@ -326,6 +326,21 @@ int comms_t::write_nav_bin()
     nav.ax_bias = ekf.nav.abx;
     nav.ay_bias = ekf.nav.aby;
     nav.az_bias = ekf.nav.abz;
+    double max_pos_cov = ekf.nav.Pp0;
+    if ( ekf.nav.Pp1 > max_pos_cov ) { max_pos_cov = ekf.nav.Pp1; }
+    if ( ekf.nav.Pp2 > max_pos_cov ) { max_pos_cov = ekf.nav.Pp2; }
+    if ( max_pos_cov > 655.0 ) { max_pos_cov = 655.0; }
+    nav.max_pos_cov = max_pos_cov;
+    double max_vel_cov = ekf.nav.Pv0;
+    if ( ekf.nav.Pv1 > max_vel_cov ) { max_vel_cov = ekf.nav.Pv1; }
+    if ( ekf.nav.Pv2 > max_vel_cov ) { max_vel_cov = ekf.nav.Pv2; }
+    if ( max_vel_cov > 65.5 ) { max_vel_cov = 65.5; }
+    nav.max_vel_cov = max_vel_cov;
+    double max_att_cov = ekf.nav.Pa0;
+    if ( ekf.nav.Pa1 > max_att_cov ) { max_att_cov = ekf.nav.Pa1; }
+    if ( ekf.nav.Pa2 > max_att_cov ) { max_att_cov = ekf.nav.Pa2; }
+    if ( max_att_cov > 6.55 ) { max_vel_cov = 6.55; }
+    nav.max_att_cov = max_att_cov;
     nav.status = ekf.status;
     nav.pack();
     return serial.write_packet( nav.id, nav.payload, nav.len );
