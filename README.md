@@ -62,6 +62,10 @@ a very inexpensive price point.
   simplification changes.  The goal is always to make the structure
   lighter weight when possible.
 
+* I have added a powerful matrix based inceptor->effector mixing
+  system.  The mixes can be setup logically by function, or by
+  defining the matrix directly.
+
 * I have added support for on-board accelerometer temperature
   calibration and onboard magenetometer calibration functions.
 
