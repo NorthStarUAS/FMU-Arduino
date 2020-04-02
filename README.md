@@ -53,6 +53,11 @@ a very inexpensive price point.
 
 # What's new in 2020?
 
+* 2020 brought us the Teensy 4.0 (yeah!) with crazy fast CPU speeds
+  and more memory.  This allows us to imagine doing more of the flight
+  critical work right on the 'little' processor, leaving the 'big'
+  processor for the tasks that can run at slightly slower rates.
+
 * I have pushed through quite a few code architecture and
   simplification changes.  The goal is always to make the structure
   lighter weight when possible.
