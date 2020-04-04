@@ -135,7 +135,7 @@ void imu_t::setup() {
 
 // query the imu and update the structures
 void imu_t::update() {
-    imu_micros = micros();
+    imu_millis = millis();
     float ax_raw, ay_raw, az_raw;
     float gx_raw, gy_raw, gz_raw;
     float hx_raw, hy_raw, hz_raw;

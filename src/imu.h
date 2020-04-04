@@ -33,7 +33,7 @@ private:
 public:
     // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished
     int gyros_calibrated = 0;
-    unsigned long imu_micros = 0;
+    unsigned long imu_millis = 0;
     // rotation corrected sensor values
     Vector3f accels_nocal = Vector3f::Zero();
     Vector3f gyros_nocal = Vector3f::Zero();

@@ -222,7 +222,7 @@ int comms_t::write_imu_bin()
     const float tempScale = 0.01;
     
     static message::imu_t imu1;
-    imu1.micros = imu.imu_micros;
+    imu1.millis = imu.imu_millis;
     imu1.nocal[0] = imu.get_ax_nocal() / accelScale;
     imu1.nocal[1] = imu.get_ay_nocal() / accelScale;
     imu1.nocal[2] = imu.get_az_nocal() / accelScale;
@@ -247,7 +247,7 @@ void write_imu_ascii()
 {
     // output imu data
     Serial.print("IMU: ");
-    Serial.print(imu.imu_micros); Serial.print(" ");
+    Serial.print(imu.imu_millis); Serial.print(" ");
     Serial.print(imu.get_p_cal(), 2); Serial.print(" ");
     Serial.print(imu.get_q_cal(), 2); Serial.print(" ");
     Serial.print(imu.get_r_cal(), 2); Serial.print(" ");
@@ -310,7 +310,7 @@ void comms_t::write_gps_ascii() {
 int comms_t::write_nav_bin()
 {
     static message::ekf_t nav;
-    nav.micros = imu.imu_micros;
+    nav.millis = imu.imu_millis;
     nav.lat_rad = ekf.nav.lat;
     nav.lon_rad = ekf.nav.lon;
     nav.altitude_m = ekf.nav.alt;
@@ -326,17 +326,17 @@ int comms_t::write_nav_bin()
     nav.ax_bias = ekf.nav.abx;
     nav.ay_bias = ekf.nav.aby;
     nav.az_bias = ekf.nav.abz;
-    double max_pos_cov = ekf.nav.Pp0;
+    float max_pos_cov = ekf.nav.Pp0;
     if ( ekf.nav.Pp1 > max_pos_cov ) { max_pos_cov = ekf.nav.Pp1; }
     if ( ekf.nav.Pp2 > max_pos_cov ) { max_pos_cov = ekf.nav.Pp2; }
     if ( max_pos_cov > 655.0 ) { max_pos_cov = 655.0; }
     nav.max_pos_cov = max_pos_cov;
-    double max_vel_cov = ekf.nav.Pv0;
+    float max_vel_cov = ekf.nav.Pv0;
     if ( ekf.nav.Pv1 > max_vel_cov ) { max_vel_cov = ekf.nav.Pv1; }
     if ( ekf.nav.Pv2 > max_vel_cov ) { max_vel_cov = ekf.nav.Pv2; }
     if ( max_vel_cov > 65.5 ) { max_vel_cov = 65.5; }
     nav.max_vel_cov = max_vel_cov;
-    double max_att_cov = ekf.nav.Pa0;
+    float max_att_cov = ekf.nav.Pa0;
     if ( ekf.nav.Pa1 > max_att_cov ) { max_att_cov = ekf.nav.Pa1; }
     if ( ekf.nav.Pa2 > max_att_cov ) { max_att_cov = ekf.nav.Pa2; }
     if ( max_att_cov > 6.55 ) { max_vel_cov = 6.55; }

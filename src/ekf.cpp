@@ -26,7 +26,7 @@ void ekf_t::setup() {
 void ekf_t::update() {
     #if defined(AURA_ONBOARD_EKF)
     IMUdata imu1;
-    imu1.time = imu.imu_micros / 1000000.0;
+    imu1.time = imu.imu_millis / 1000.0;
     imu1.p = imu.get_p_cal();
     imu1.q = imu.get_q_cal();
     imu1.r = imu.get_r_cal();
@@ -38,7 +38,7 @@ void ekf_t::update() {
     imu1.hz = imu.get_hz_cal();
     
     GPSdata gps1;
-    gps1.time = imu.imu_micros / 1000000.0;
+    gps1.time = imu.imu_millis / 1000.0;
     gps1.unix_sec = gps1.time;
     gps1.lat = gps.gps_data.lat / 10000000.0;
     gps1.lon = gps.gps_data.lon / 10000000.0;
