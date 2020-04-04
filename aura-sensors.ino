@@ -196,9 +196,9 @@ void loop() {
             // write_pilot_in_ascii();
             // write_actuator_out_ascii();
             // comms.write_gps_ascii();
-            if ( config.ekf.select != message::enum_nav::none ) {
-                comms.write_nav_ascii();
-            }
+            // if ( config.ekf.select != message::enum_nav::none ) {
+            //     comms.write_nav_ascii();
+            // }
             // comms.write_airdata_ascii();
             // write_status_info_ascii();
             // write_imu_ascii();

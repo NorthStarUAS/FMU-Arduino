@@ -122,18 +122,18 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
             write_ack_bin( id, 0 );
             result = true;
         }
-    } else if ( id == message::command_zero_gyros_id && message_size == 0 ) {
+    } else if ( id == message::command_zero_gyros_id && message_size == 1 ) {
         Serial.println("received zero gyros command");
         imu.gyros_calibrated = 0;   // start state
         write_ack_bin( id, 0 );
         result = true;
-    } else if ( id == message::command_reset_ekf_id && message_size == 0 ) {
+    } else if ( id == message::command_reset_ekf_id && message_size == 1 ) {
         Serial.println("received reset ekf command");
         ekf.reinit();
         write_ack_bin( id, 0 );
         result = true;
     } else {
-        // Serial.print("unknown message id = "); Serial.print(id); Serial.print(" len = "); Serial.println(message_size);
+        Serial.print("unknown message id = "); Serial.print(id); Serial.print(" len = "); Serial.println(message_size);
     }
     return result;
 }
@@ -347,7 +347,7 @@ int comms_t::write_nav_bin()
 }
 
 void comms_t::write_nav_ascii() {
-    if ( true ) {
+    if ( false ) {
         // values
         Serial.print("Pos: ");
         Serial.print(ekf.nav.lat*R2D, 7);
