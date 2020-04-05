@@ -12,9 +12,9 @@ void ekf_t::setup() {
     if ( config.ekf.select == message::enum_nav::none ) {
         Serial.println("none");
     } else if ( config.ekf.select == message::enum_nav::nav15 ) {
-        Serial.println("15 state ins/gps");
+        Serial.println("15 state ins/gns");
     } else if ( config.ekf.select == message::enum_nav::nav15_mag ) {
-        Serial.println("15 state ins/gps/mag");
+        Serial.println("15 state ins/gns/mag");
     } else {
         Serial.println("unknown setting/disabled");
     }
