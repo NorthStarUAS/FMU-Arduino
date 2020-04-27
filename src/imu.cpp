@@ -28,16 +28,28 @@ void imu_t::defaults_aura3() {
 // Setup imu defaults:
 // Aura3 has mpu9250 on I2C Addr 0x68
 void imu_t::defaults_common() {
-    R = Matrix3f::Identity();
+    Matrix3f strapdown3x3 = Matrix3f::Identity();
     for ( int i = 0; i < 9; i++ ) {
         // no need to worry about row vs. column major here (symmetrical ident)
-        config.imu.orientation[i] = R.data()[i];
+        config.imu.strapdown_calib[i] = strapdown3x3.data()[i];
     }
-    config.imu.min_temp = 27.0;
-    config.imu.max_temp = 27.0;
+    strapdown = Matrix4f::Identity();
+
     for ( int i = 0; i < 3; i++ ) {
-        config.imu.ax_coeff[i] = 0.0;
+        config.imu.accel_scale[i] = 1.0;
     }
+    for ( int i = 0; i < 3; i++ ) {
+        config.imu.accel_translate[i] = 0.0;
+    }
+    accel_affine = Matrix4f::Identity();
+    
+    //config.imu.min_temp = 27.0;
+    //config.imu.max_temp = 27.0;
+    // for ( int i = 0; i < 3; i++ ) {
+    //    config.imu.ax_coeff[i] = 0.0;
+    //    config.imu.ay_coeff[i] = 0.0;
+    //    config.imu.az_coeff[i] = 0.0;
+    //}
     mag_affine = Matrix4f::Identity();
     for ( int i = 0; i < 16; i++ ) {
         // no need to worry about row vs. column major here (symmetrical ident)
@@ -46,18 +58,45 @@ void imu_t::defaults_common() {
 }
 
 // Update the R matrix (called after loading/receiving any new config message)
-void imu_t::set_orientation() {
+void imu_t::set_strapdown_calibration() {
     // config.imu.orientation is row major, but internally Eigen defaults
     // to column major.
-    R = Matrix<float, 3, 3, RowMajor>(config.imu.orientation);
+    Matrix3f strapdown3x3 = Matrix<float, 3, 3, RowMajor>(config.imu.strapdown_calib);
+    strapdown.block(0,0,3,3) = strapdown3x3;
+    Matrix4f scale = Matrix4f::Identity();
+    for (int i = 0; i < 3; i++ ) {
+        scale(i,i) = config.imu.accel_scale[i];
+    }
+    Matrix4f translate = Matrix4f::Identity();
+    for (int i = 0; i < 3; i++ ) {
+        // column major
+        translate(i,3) = config.imu.accel_translate[i];
+    }
+    accel_affine = translate * strapdown * scale;
+    Serial.println("Accel affine calibration matrix:");
+    for ( int i = 0; i < 4; i++ ) {
+        for ( int j = 0; j < 4; j++ ) {
+            Serial.print(accel_affine(i,j), 2);
+            Serial.print(" ");
+        }
+        Serial.println();
+    }
+    Serial.println("IMU strapdown calibration matrix:");
+    for ( int i = 0; i < 3; i++ ) {
+        for ( int j = 0; j < 3; j++ ) {
+            Serial.print(strapdown(i,j), 2);
+            Serial.print(" ");
+        }
+        Serial.println();
+    }
 }
 
 // setup accel temp calibration
-void imu_t::set_accel_calibration() {
-    ax_cal.init(config.imu.ax_coeff, config.imu.min_temp, config.imu.max_temp);
-    ay_cal.init(config.imu.ay_coeff, config.imu.min_temp, config.imu.max_temp);
-    az_cal.init(config.imu.az_coeff, config.imu.min_temp, config.imu.max_temp);
-}
+//void imu_t::set_accel_calibration() {
+    //ax_cal.init(config.imu.ax_coeff, config.imu.min_temp, config.imu.max_temp);
+    //ay_cal.init(config.imu.ay_coeff, config.imu.min_temp, config.imu.max_temp);
+    //az_cal.init(config.imu.az_coeff, config.imu.min_temp, config.imu.max_temp);
+//}
 
 // update the mag calibration matrix from the config structur
 void imu_t::set_mag_calibration() {
@@ -98,31 +137,23 @@ void imu_t::setup() {
     }
 
     Serial.println("MPU-9250 ready.");
-    Serial.println("IMU orientation matrix:");
-    for ( int i = 0; i < 3; i++ ) {
-        for ( int j = 0; j < 3; j++ ) {
-            Serial.print(R(i,j), 2);
-            Serial.print(" ");
-        }
-        Serial.println();
-    }
 
-    Serial.print("Accel calibration temp range: ");
-    Serial.print(config.imu.min_temp, 1);
-    Serial.print(" - ");
-    Serial.println(config.imu.max_temp, 1);
-    Serial.print("ax_coeff: ");
-    Serial.print(config.imu.ax_coeff[0], 4); Serial.print(" ");
-    Serial.print(config.imu.ax_coeff[1], 4); Serial.print(" ");
-    Serial.println(config.imu.ax_coeff[2], 4);
-    Serial.print("ay_coeff: ");
-    Serial.print(config.imu.ay_coeff[0], 4); Serial.print(" ");
-    Serial.print(config.imu.ay_coeff[1], 4); Serial.print(" ");
-    Serial.println(config.imu.ay_coeff[2], 4);
-    Serial.print("az_coeff: ");
-    Serial.print(config.imu.az_coeff[0], 4); Serial.print(" ");
-    Serial.print(config.imu.az_coeff[1], 4); Serial.print(" ");
-    Serial.println(config.imu.az_coeff[2], 4);
+    // Serial.print("Accel calibration temp range: ");
+    // Serial.print(config.imu.min_temp, 1);
+    // Serial.print(" - ");
+    // Serial.println(config.imu.max_temp, 1);
+    // Serial.print("ax_coeff: ");
+    // Serial.print(config.imu.ax_coeff[0], 4); Serial.print(" ");
+    // Serial.print(config.imu.ax_coeff[1], 4); Serial.print(" ");
+    // Serial.println(config.imu.ax_coeff[2], 4);
+    // Serial.print("ay_coeff: ");
+    // Serial.print(config.imu.ay_coeff[0], 4); Serial.print(" ");
+    // Serial.print(config.imu.ay_coeff[1], 4); Serial.print(" ");
+    // Serial.println(config.imu.ay_coeff[2], 4);
+    // Serial.print("az_coeff: ");
+    // Serial.print(config.imu.az_coeff[0], 4); Serial.print(" ");
+    // Serial.print(config.imu.az_coeff[1], 4); Serial.print(" ");
+    // Serial.println(config.imu.az_coeff[2], 4);
     Serial.println("Magnetometer calibration matrix:");
     for ( int i = 0; i < 4; i++ ) {
         for ( int j = 0; j < 4; j++ ) {
@@ -143,29 +174,29 @@ void imu_t::update() {
                     &gx_raw, &gy_raw, &gz_raw,
                     &hx_raw, &hy_raw, &hz_raw, &tempC);
     
-    Vector3f accels_raw;
-    Vector3f gyros_raw;
-    Vector3f mags_raw;
-    accels_raw << ax_raw, ay_raw, az_raw;
-    gyros_raw << gx_raw, gy_raw, gz_raw;
-    mags_raw << hx_raw, hy_raw, hz_raw;
+    //Vector4f accels_raw;
+    //Vector3f gyros_raw;
+    //Vector4f mags_raw;
+    accels_raw << ax_raw, ay_raw, az_raw, 1.0;
+    gyros_raw << gx_raw, gy_raw, gz_raw, 1.0;
+    mags_raw << hx_raw, hy_raw, hz_raw, 1.0;
     
-    accels_nocal = R * accels_raw;
-    gyros_nocal = R * gyros_raw;
-    mags_nocal = R * mags_raw;
+    accels_cal = accel_affine * accels_raw;
+    gyros_cal = strapdown * gyros_raw;
+    /* FIXME!!!! */ //mags_cal = strapdown * mags_raw;
 
-    accels_cal(0) = ax_cal.calibrate(accels_nocal(0), tempC);
-    accels_cal(1) = ay_cal.calibrate(accels_nocal(1), tempC);
-    accels_cal(2) = az_cal.calibrate(accels_nocal(2), tempC);
+    //accels_cal(0) = ax_cal.calibrate(accels_nocal(0), tempC);
+    //accels_cal(1) = ay_cal.calibrate(accels_nocal(1), tempC);
+    //accels_cal(2) = az_cal.calibrate(accels_nocal(2), tempC);
         
     Vector4f hs;
-    hs << mags_nocal(0), mags_nocal(1), mags_nocal(2), 1.0;
+    /* FIXME!!! */ hs << mags_raw(0), mags_raw(1), mags_raw(2), 1.0;
     mags_cal = mag_affine * hs;
     
     if ( gyros_calibrated < 2 ) {
         calibrate_gyros();
     } else {
-        gyros_cal = gyros_nocal - gyro_startup_bias;
+        gyros_cal.segment(0,3) = gyros_raw.segment(0,3) - gyro_startup_bias;
     }
 }
 
@@ -178,16 +209,16 @@ void imu_t::update() {
 void imu_t::calibrate_gyros() {
     if ( gyros_calibrated == 0 ) {
         Serial.print("Initialize gyro calibration: ");
-        slow = gyros_nocal;
-        fast = gyros_nocal;
+        slow = gyros_raw.segment(0,3);
+        fast = gyros_raw.segment(0,3);
         total_timer = 0;
         good_timer = 0;
         output_timer = 0;
         gyros_calibrated = 1;
     }
 
-    fast = 0.95 * fast + 0.05 * gyros_nocal;
-    slow = 0.995 * fast + 0.005 * gyros_nocal;
+    fast = 0.95 * fast + 0.05 * gyros_raw.segment(0,3);
+    slow = 0.995 * fast + 0.005 * gyros_raw.segment(0,3);
     // use 'slow' filter value for calibration while calibrating
     gyro_startup_bias << slow;
 

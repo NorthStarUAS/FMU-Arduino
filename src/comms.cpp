@@ -73,8 +73,7 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
         config.imu.unpack(buf, message_size);
         if ( message_size == config.imu.len ) {
             Serial.println("received imu config");
-            imu.set_orientation(); // update R matrix
-            imu.set_accel_calibration(); // update R matrix
+            imu.set_strapdown_calibration(); // update accel_affine matrix
             imu.set_mag_calibration(); // update mag_affine matrix
             config.write_eeprom();
             write_ack_bin( id, 0 );
@@ -223,12 +222,12 @@ int comms_t::write_imu_bin()
     
     static message::imu_t imu1;
     imu1.millis = imu.imu_millis;
-    imu1.nocal[0] = imu.get_ax_nocal() / accelScale;
-    imu1.nocal[1] = imu.get_ay_nocal() / accelScale;
-    imu1.nocal[2] = imu.get_az_nocal() / accelScale;
-    imu1.nocal[3] = imu.get_hx_nocal() / magScale;
-    imu1.nocal[4] = imu.get_hy_nocal() / magScale;
-    imu1.nocal[5] = imu.get_hz_nocal() / magScale;
+    imu1.raw[0] = imu.get_ax_raw() / accelScale;
+    imu1.raw[1] = imu.get_ay_raw() / accelScale;
+    imu1.raw[2] = imu.get_az_raw() / accelScale;
+    imu1.raw[3] = imu.get_hx_raw() / magScale;
+    imu1.raw[4] = imu.get_hy_raw() / magScale;
+    imu1.raw[5] = imu.get_hz_raw() / magScale;
     imu1.cal[0] = imu.get_ax_cal() / accelScale;
     imu1.cal[1] = imu.get_ay_cal() / accelScale;
     imu1.cal[2] = imu.get_az_cal() / accelScale;

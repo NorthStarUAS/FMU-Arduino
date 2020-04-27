@@ -104,9 +104,8 @@ void setup() {
     // force_config_aura3();
     // force_config_goldy3();
     
-    // update imu R and mag_affine matrices from config
-    imu.set_orientation();
-    imu.set_accel_calibration();
+    // update imu strapdown and mag_affine matrices from config
+    imu.set_strapdown_calibration();
     imu.set_mag_calibration();
     
     // initialize the IMU

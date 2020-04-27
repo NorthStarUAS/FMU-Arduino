@@ -12,11 +12,9 @@ using namespace Eigen;
 
 class imu_t {
 private:
-    Matrix3f R = Matrix3f::Identity();
+    Matrix4f strapdown = Matrix4f::Identity();
+    Matrix4f accel_affine = Matrix4f::Identity();
     Matrix4f mag_affine = Matrix4f::Identity();
-    //Vector3f accels_raw = Vector3f::Zero();
-    //Vector3f gyros_raw = Vector3f::Zero();
-    //Vector3f mags_raw = Vector3f::Zero();
     // gyro zero'ing stuff
     const float cutoff = 0.005;
     elapsedMillis total_timer = 0;
@@ -34,30 +32,37 @@ public:
     // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished
     int gyros_calibrated = 0;
     unsigned long imu_millis = 0;
+    // raw/uncorrected sensor values
+    Vector4f accels_raw = Vector4f::Zero();
+    Vector4f gyros_raw = Vector4f::Zero();
+    Vector4f mags_raw = Vector4f::Zero();
     // rotation corrected sensor values
-    Vector3f accels_nocal = Vector3f::Zero();
-    Vector3f gyros_nocal = Vector3f::Zero();
-    Vector3f mags_nocal = Vector3f::Zero();
-    Vector3f accels_cal = Vector3f::Zero();
-    Vector3f gyros_cal = Vector3f::Zero();
+    //Vector3f accels_nocal = Vector3f::Zero();
+    //Vector3f gyros_nocal = Vector3f::Zero();
+    //Vector3f mags_nocal = Vector3f::Zero();
+    Vector4f accels_cal = Vector4f::Zero();
+    Vector4f gyros_cal = Vector4f::Zero();
     Vector4f mags_cal = Vector4f::Zero();
     float tempC = 0.0;
     
     void defaults_goldy3();
     void defaults_aura3();
     void defaults_common();
-    void set_orientation();
-    void set_accel_calibration();
+    void set_strapdown_calibration();
+    // void set_accel_calibration();
     void set_mag_calibration();
     void setup();
     void update();
     // notational convenience/clarity
-    inline float get_ax_nocal() { return accels_nocal(0); }
-    inline float get_ay_nocal() { return accels_nocal(1); }
-    inline float get_az_nocal() { return accels_nocal(2); }
-    inline float get_hx_nocal() { return mags_nocal(0); }
-    inline float get_hy_nocal() { return mags_nocal(1); }
-    inline float get_hz_nocal() { return mags_nocal(2); }
+    inline float get_ax_raw() { return accels_raw(0); }
+    inline float get_ay_raw() { return accels_raw(1); }
+    inline float get_az_raw() { return accels_raw(2); }
+    inline float get_p_raw() { return gyros_raw(0); }
+    inline float get_q_raw() { return gyros_raw(1); }
+    inline float get_r_raw() { return gyros_raw(2); }
+    inline float get_hx_raw() { return mags_raw(0); }
+    inline float get_hy_raw() { return mags_raw(1); }
+    inline float get_hz_raw() { return mags_raw(2); }
     inline float get_ax_cal() { return accels_cal(0); }
     inline float get_ay_cal() { return accels_cal(1); }
     inline float get_az_cal() { return accels_cal(2); }
