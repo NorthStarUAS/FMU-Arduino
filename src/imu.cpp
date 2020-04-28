@@ -109,11 +109,22 @@ void imu_t::set_mag_calibration() {
     Matrix4f T = Matrix4f::Identity();
     for (int i = 0; i < 3; i++ ) {
         // column major
-        T(i,3) = config.imu.mag_b[i];
+        T(i,3) = -config.imu.mag_b[i];
     }
     Matrix4f A_1 = Matrix4f::Identity();
     A_1.block(0,0,3,3) = Matrix<float, 3, 3, RowMajor>(config.imu.mag_A_1);
+    // build the mag affine matrix (and include the strapdown transformation)
     mag_affine = A_1 * T * strapdown;
+    
+    Serial.println("Magnetometer affine matrix:");
+    for ( int i = 0; i < 4; i++ ) {
+        Serial.print("  ");
+        for ( int j = 0; j < 4; j++ ) {
+            Serial.print(mag_affine(i,j), 4);
+            Serial.print(" ");
+        }
+        Serial.println();
+    }
 }
 
 // configure the IMU settings and setup the ISR to aquire the data
@@ -150,32 +161,6 @@ void imu_t::setup() {
     }
 
     Serial.println("MPU-9250 ready.");
-
-    // Serial.print("Accel calibration temp range: ");
-    // Serial.print(config.imu.min_temp, 1);
-    // Serial.print(" - ");
-    // Serial.println(config.imu.max_temp, 1);
-    // Serial.print("ax_coeff: ");
-    // Serial.print(config.imu.ax_coeff[0], 4); Serial.print(" ");
-    // Serial.print(config.imu.ax_coeff[1], 4); Serial.print(" ");
-    // Serial.println(config.imu.ax_coeff[2], 4);
-    // Serial.print("ay_coeff: ");
-    // Serial.print(config.imu.ay_coeff[0], 4); Serial.print(" ");
-    // Serial.print(config.imu.ay_coeff[1], 4); Serial.print(" ");
-    // Serial.println(config.imu.ay_coeff[2], 4);
-    // Serial.print("az_coeff: ");
-    // Serial.print(config.imu.az_coeff[0], 4); Serial.print(" ");
-    // Serial.print(config.imu.az_coeff[1], 4); Serial.print(" ");
-    // Serial.println(config.imu.az_coeff[2], 4);
-    Serial.println("Magnetometer calibration matrix:");
-    for ( int i = 0; i < 4; i++ ) {
-        Serial.print("  ");
-        for ( int j = 0; j < 4; j++ ) {
-            Serial.print(mag_affine(i,j), 4);
-            Serial.print(" ");
-        }
-        Serial.println();
-    }
 }
 
 // query the imu and update the structures
