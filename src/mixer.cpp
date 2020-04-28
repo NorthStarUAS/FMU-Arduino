@@ -104,6 +104,7 @@ void mixer_t::update_matrix(message::config_mixer_t *mix_config ) {
 void mixer_t::print_mixer_matrix() {
     Serial.println("Mixer Matrix:");
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
+        Serial.print("  ");
         for ( int j = 0; j < PWM_CHANNELS; j++ ) {
             if ( M(i,j) >= 0 ) {
                 Serial.print(" ");

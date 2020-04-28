@@ -62,6 +62,7 @@ void imu_t::set_strapdown_calibration() {
     // config.imu.orientation is row major, but internally Eigen defaults
     // to column major.
     Matrix3f strapdown3x3 = Matrix<float, 3, 3, RowMajor>(config.imu.strapdown_calib);
+    strapdown = Matrix4f::Identity();
     strapdown.block(0,0,3,3) = strapdown3x3;
     Matrix4f scale = Matrix4f::Identity();
     for (int i = 0; i < 3; i++ ) {
@@ -75,16 +76,18 @@ void imu_t::set_strapdown_calibration() {
     accel_affine = translate * strapdown * scale;
     Serial.println("Accel affine calibration matrix:");
     for ( int i = 0; i < 4; i++ ) {
+        Serial.print("  ");
         for ( int j = 0; j < 4; j++ ) {
-            Serial.print(accel_affine(i,j), 2);
+            Serial.print(accel_affine(i,j), 4);
             Serial.print(" ");
         }
         Serial.println();
     }
     Serial.println("IMU strapdown calibration matrix:");
-    for ( int i = 0; i < 3; i++ ) {
-        for ( int j = 0; j < 3; j++ ) {
-            Serial.print(strapdown(i,j), 2);
+    for ( int i = 0; i < 4; i++ ) {
+        Serial.print("  ");
+        for ( int j = 0; j < 4; j++ ) {
+            Serial.print(strapdown(i,j), 4);
             Serial.print(" ");
         }
         Serial.println();
@@ -156,6 +159,7 @@ void imu_t::setup() {
     // Serial.println(config.imu.az_coeff[2], 4);
     Serial.println("Magnetometer calibration matrix:");
     for ( int i = 0; i < 4; i++ ) {
+        Serial.print("  ");
         for ( int j = 0; j < 4; j++ ) {
             Serial.print(mag_affine(i,j), 4);
             Serial.print(" ");
@@ -196,7 +200,7 @@ void imu_t::update() {
     if ( gyros_calibrated < 2 ) {
         calibrate_gyros();
     } else {
-        gyros_cal.segment(0,3) = gyros_raw.segment(0,3) - gyro_startup_bias;
+        gyros_cal.segment(0,3) -= gyro_startup_bias;
     }
 }
 
@@ -209,16 +213,16 @@ void imu_t::update() {
 void imu_t::calibrate_gyros() {
     if ( gyros_calibrated == 0 ) {
         Serial.print("Initialize gyro calibration: ");
-        slow = gyros_raw.segment(0,3);
-        fast = gyros_raw.segment(0,3);
+        slow = gyros_cal.segment(0,3);
+        fast = gyros_cal.segment(0,3);
         total_timer = 0;
         good_timer = 0;
         output_timer = 0;
         gyros_calibrated = 1;
     }
 
-    fast = 0.95 * fast + 0.05 * gyros_raw.segment(0,3);
-    slow = 0.995 * fast + 0.005 * gyros_raw.segment(0,3);
+    fast = 0.95 * fast + 0.05 * gyros_cal.segment(0,3);
+    slow = 0.995 * fast + 0.005 * gyros_cal.segment(0,3);
     // use 'slow' filter value for calibration while calibrating
     gyro_startup_bias << slow;
 
