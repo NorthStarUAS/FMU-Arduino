@@ -50,10 +50,13 @@ void imu_t::defaults_common() {
     //    config.imu.ay_coeff[i] = 0.0;
     //    config.imu.az_coeff[i] = 0.0;
     //}
-    mag_affine = Matrix4f::Identity();
-    for ( int i = 0; i < 16; i++ ) {
+    for ( int i = 0; i < 3; i++ ) {
+        config.imu.mag_b[i] = 0.0;
+    }
+    Matrix3f mag_A_1 = Matrix3f::Identity();
+    for ( int i = 0; i < 9; i++ ) {
         // no need to worry about row vs. column major here (symmetrical ident)
-        config.imu.mag_affine[i] = mag_affine.data()[i];
+        config.imu.mag_A_1[i] = mag_A_1.data()[i];
     }
 }
 
@@ -103,7 +106,14 @@ void imu_t::set_strapdown_calibration() {
 
 // update the mag calibration matrix from the config structur
 void imu_t::set_mag_calibration() {
-    mag_affine = Matrix<float, 4, 4, RowMajor>(config.imu.mag_affine);
+    Matrix4f T = Matrix4f::Identity();
+    for (int i = 0; i < 3; i++ ) {
+        // column major
+        T(i,3) = config.imu.mag_b[i];
+    }
+    Matrix4f A_1 = Matrix4f::Identity();
+    A_1.block(0,0,3,3) = Matrix<float, 3, 3, RowMajor>(config.imu.mag_A_1);
+    mag_affine = A_1 * T * strapdown;
 }
 
 // configure the IMU settings and setup the ISR to aquire the data
