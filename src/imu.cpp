@@ -43,20 +43,10 @@ void imu_t::defaults_common() {
     }
     accel_affine = Matrix4f::Identity();
     
-    //config.imu.min_temp = 27.0;
-    //config.imu.max_temp = 27.0;
-    // for ( int i = 0; i < 3; i++ ) {
-    //    config.imu.ax_coeff[i] = 0.0;
-    //    config.imu.ay_coeff[i] = 0.0;
-    //    config.imu.az_coeff[i] = 0.0;
-    //}
-    for ( int i = 0; i < 3; i++ ) {
-        config.imu.mag_b[i] = 0.0;
-    }
-    Matrix3f mag_A_1 = Matrix3f::Identity();
-    for ( int i = 0; i < 9; i++ ) {
+    mag_affine = Matrix4f::Identity();
+    for ( int i = 0; i < 16; i++ ) {
         // no need to worry about row vs. column major here (symmetrical ident)
-        config.imu.mag_A_1[i] = mag_A_1.data()[i];
+        config.imu.mag_affine[i] = mag_affine.data()[i];
     }
 }
 
@@ -106,15 +96,8 @@ void imu_t::set_strapdown_calibration() {
 
 // update the mag calibration matrix from the config structur
 void imu_t::set_mag_calibration() {
-    Matrix4f T = Matrix4f::Identity();
-    for (int i = 0; i < 3; i++ ) {
-        // column major
-        T(i,3) = -config.imu.mag_b[i];
-    }
-    Matrix4f A_1 = Matrix4f::Identity();
-    A_1.block(0,0,3,3) = Matrix<float, 3, 3, RowMajor>(config.imu.mag_A_1);
-    // build the mag affine matrix (and include the strapdown transformation)
-    mag_affine = A_1 * T * strapdown;
+    mag_affine = Matrix4f::Identity();
+    mag_affine = Matrix<float, 4, 4, RowMajor>(config.imu.mag_affine);
     
     Serial.println("Magnetometer affine matrix:");
     for ( int i = 0; i < 4; i++ ) {
@@ -172,25 +155,22 @@ void imu_t::update() {
     IMU.getMotion10(&ax_raw, &ay_raw, &az_raw,
                     &gx_raw, &gy_raw, &gz_raw,
                     &hx_raw, &hy_raw, &hz_raw, &tempC);
-    
-    //Vector4f accels_raw;
-    //Vector3f gyros_raw;
-    //Vector4f mags_raw;
+
     accels_raw << ax_raw, ay_raw, az_raw, 1.0;
     gyros_raw << gx_raw, gy_raw, gz_raw, 1.0;
-    mags_raw << hx_raw, hy_raw, hz_raw, 1.0;
+
+    Vector4f mags_precal;
+    mags_precal << hx_raw, hy_raw, hz_raw, 1.0;
+    mags_raw = strapdown * mags_precal;
     
     accels_cal = accel_affine * accels_raw;
     gyros_cal = strapdown * gyros_raw;
-    /* FIXME!!!! */ //mags_cal = strapdown * mags_raw;
 
     //accels_cal(0) = ax_cal.calibrate(accels_nocal(0), tempC);
     //accels_cal(1) = ay_cal.calibrate(accels_nocal(1), tempC);
     //accels_cal(2) = az_cal.calibrate(accels_nocal(2), tempC);
         
-    Vector4f hs;
-    /* FIXME!!! */ hs << mags_raw(0), mags_raw(1), mags_raw(2), 1.0;
-    mags_cal = mag_affine * hs;
+    mags_cal = mag_affine * mags_raw;
     
     if ( gyros_calibrated < 2 ) {
         calibrate_gyros();
