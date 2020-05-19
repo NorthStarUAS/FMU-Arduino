@@ -23,13 +23,13 @@ AuraUAS is a high quality autopilot system that ephasizes high
 reliability and simple code.  It offers many advanced capabilities at
 a very inexpensive price point.
 
-# Features/support
+# Features
 
 * MPU9250 via spi or i2c.
 * MPU9250 DMP, interrupt generatation, scaling
 * Gyro zeroing (calibration) automatically on startup if unit is still enough.
 * UBLOX8 support
-* 15-State EKF (kalman filter)
+* 15-State EKF (kalman filter), 2 variants: (1) ins/gns, (2) ins/gns/mag
 * SBUS input (direct) with support for 16 channels.
 * BME280/BMP280 support
 * Eeprom support for saving/loading config as well as assigning a serial #.
@@ -66,8 +66,9 @@ a very inexpensive price point.
   system.  The mixes can be setup logically by function, or by
   defining the matrix directly.
 
-* I have added support for on-board accelerometer temperature
-  calibration and onboard magenetometer calibration functions.
+* I have added support for an on-board strapdown error calibration
+  matrix, on-board accelerometer calibration and onboard magenetometer
+  calibration.
 
 * I have added two variants of the UMN AEM ins/gns kalman filter.
 
@@ -81,12 +82,13 @@ a very inexpensive price point.
      calibration system that I am considering adapting for
      onboard/automatic calibration.
 
-# What is next?
+* A subset of the covariances are reported to the host: (1) the
+  maximum of the 3 position errors, (2) the max of the 3 velocity
+  errors, (3) the max of the 3 attitude errors.  These are statistical
+  estimates, but can be useful for monitoring the health of the ekf
+  solution.
 
-* I would like to look into exporting the covariance matrix from the
-  onboard ekf so the host can do quality/performance monitoring or
-  redflag bad peformance so the operator has early notice of a
-  problem.
+# What is next?
 
 * I would like to investigate running inner loop PID control onboard
   the teensy (offloaded from the host.)  This would lead to an
