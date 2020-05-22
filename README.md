@@ -1,10 +1,10 @@
-# Aura Sensors
+# Rice Creek FMU
 
 This is an Arduino (Teensyduino) sketch for building the heart of a
-UAV autopilot.  Aura-sensors turns an inexpensive teensy board into a
-sensor collector, attitude determination system, communications hub,
-and servo controller.  It is not yet a full fledged autopilot itself,
-but designed to pair with a host linux board (such as a beaglebone or
+UAV autopilot.  Rc-fmu turns an inexpensive teensy board into a sensor
+collector, attitude determination system, communications hub, and
+servo controller.  It is not yet a full fledged autopilot itself, but
+designed to pair with a host linux board (such as a beaglebone or
 raspberry pi) for all the higher level autopilot functions.  It
 supports the mpu9250 imu, ublox8 gps, bme280/bmp280 pressure sensors,
 sbus receiver, and attopilot volt/amp sensor.  It also supports an
@@ -17,11 +17,11 @@ precision attitude and lcoation estimate. It is designed to work
 exceptionally well for outdoor dynamic systems such as fixed wing
 aircraft.
 
-Aura Sensors is one component of a research grade autopilot system
-that anyone can assemble with basic soldering skills.  Altogether,
-AuraUAS is a high quality autopilot system that ephasizes high
-reliability and simple code.  It offers many advanced capabilities at
-a very inexpensive price point.
+Rc-fmu is one component of a research grade autopilot system that
+anyone can assemble with basic soldering skills.  Altogether, the Rice
+Creek UAS ecosystem provides a high quality autopilot system that
+ephasizes high reliability and simple code.  It offers many advanced
+capabilities at a very inexpensive price point.
 
 # Features
 
