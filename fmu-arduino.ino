@@ -82,12 +82,12 @@ void setup() {
     Serial.print("Sensor/config communication is on Serial1 @ ");
     Serial.print(DEFAULT_BAUD);
     Serial.println(" baud (N81) no flow control.");
-    
+
     // The following code (when enabled) will force setting a specific
     // device serial number when the device boots:
     // config.set_serial_number(116);
     config.read_serial_number();
-    
+
     Serial.print("Serial Number: ");
     Serial.println(config.read_serial_number());
     delay(100);
@@ -99,15 +99,15 @@ void setup() {
     } else {
         Serial.println("Successfully loaded eeprom config.");
     }
-    
+
     // force/hard-code a specific board config if desired
     // force_config_aura3();
     // force_config_goldy3();
-    
+
     // update imu strapdown and mag_affine matrices from config
     imu.set_strapdown_calibration();
     imu.set_mag_calibration();
-    
+
     // initialize the IMU
     imu.setup();
     delay(100);
@@ -117,7 +117,7 @@ void setup() {
 
     // initialize mixer (before actuators/pwm)
     mixer.setup();
-    
+
     // initialize PWM output
     pwm.setup(config.board.board);
 
@@ -126,17 +126,17 @@ void setup() {
 
     // initialize air data (marmot v1)
     airdata.setup();
-    
+
     // power sensing
     analogReadResolution(16);   // set up ADC0
     power.setup(config.board.board);
-    
+
     // led for status blinking if defined
     led.setup();
 
     // ekf init (just prints availability status)
     ekf.setup();
-    
+
     Serial.println("Ready and transmitting...");
 }
 
@@ -145,7 +145,7 @@ void loop() {
     static elapsedMillis mainTimer = 0;
     static elapsedMillis hbTimer = 0;
     static elapsedMillis debugTimer = 0;
-       
+
     // When new IMU data is ready (new pulse from IMU), go out and grab the IMU data
     // and output fresh IMU message plus the most recent data from everything else.
     if ( mainTimer >= DT_MILLIS ) {
@@ -157,14 +157,14 @@ void loop() {
                 Serial.println("WARNING: main loop is not completing on time!");
             }
         }
-        
+
         // top priority, used for timing sync downstream.
         imu.update();
 
         if ( config.ekf.select != message::enum_nav::none ) {
             ekf.update();
         }
-        
+
         // output keyed off new IMU data
         comms.output_counter += comms.write_pilot_in_bin();
         comms.output_counter += comms.write_gps_bin();
@@ -219,7 +219,7 @@ void loop() {
         // suck in any available gps messages
         gps.update();
     }
-    
+
     // keep processing while there is data in the uart buffer
     while ( sbus.process() ) {
         static bool last_ap_state = pilot.ap_enabled();
