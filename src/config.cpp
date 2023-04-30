@@ -36,6 +36,27 @@ uint16_t config_t::set_serial_number(uint16_t value) {
     return serial_number;
 };
 
+void config_t::init() {
+    config_node = PropertyNode("/config");
+}
+
+bool config_t::load_json_config() {
+    const char *file_path = "config.json";
+    if ( !config_node.load(file_path) ) {
+        printf("Config file loading failed: %s\n", file_path);
+        return false;
+    }
+    // config_node.pretty_print();
+    return true;
+}
+
+void config_t::reset_defaults() {
+    printf("Setting default config ...\n");
+    // imu_mgr.defaults();
+    // pilot.mixer.init();
+    // pilot.mixer.sas_defaults();
+}
+
 int extract_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
     for ( int i = 0; i < len; i++ ) {
         buf[i] = config_buf[pos + i];
@@ -52,7 +73,7 @@ static int mycopy(uint8_t *src, uint8_t *dst, int len) {
 
 int config_t::read_eeprom() {
     // call pack to initialize internal stucture len
-    airdata.pack(); 
+    airdata.pack();
     board.pack();
     ekf.pack();
     imu.pack();
@@ -60,7 +81,7 @@ int config_t::read_eeprom() {
     power.pack();
     pwm.pack();
     stab.pack();
-    
+
     packed_config_t packed;
     uint8_t *buf = (uint8_t *)&packed;
     int status = 0;
@@ -117,7 +138,7 @@ int config_t::write_eeprom() {
 
     // copy the packed config structures to the save buffer
     packed_config_t packed;
-    mycopy(airdata.payload, (uint8_t *)&packed.airdata, airdata.len); 
+    mycopy(airdata.payload, (uint8_t *)&packed.airdata, airdata.len);
     mycopy(board.payload, (uint8_t *)&packed.board, board.len);
     mycopy(ekf.payload, (uint8_t *)&packed.ekf, ekf.len);
     mycopy(imu.payload, (uint8_t *)&packed.imu, imu.len);
@@ -125,7 +146,7 @@ int config_t::write_eeprom() {
     mycopy(power.payload, (uint8_t *)&packed.power, power.len);
     mycopy(pwm.payload, (uint8_t *)&packed.pwm, pwm.len);
     mycopy(stab.payload, (uint8_t *)&packed.stab, stab.len);
-    
+
     Serial.print("Write EEPROM (any changed bytes.)  Size: ");
     Serial.println(sizeof(packed));
     int status = 0;
