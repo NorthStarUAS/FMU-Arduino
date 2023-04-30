@@ -18,11 +18,15 @@
 
 #include <math.h>
 #if defined(ARDUINO)
-# include <Eigen.h>
+# include <eigen.h>
+# include <Eigen/Core>
+# include <Eigen/Geometry>
+# include <Eigen/LU>
+#else
+# include <Eigen3/Eigen/Core>
+# include <Eigen3/Eigen/Geometry>
+# include <Eigen3/Eigen/LU>
 #endif
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-#include <Eigen/LU>
 using namespace Eigen;
 
 #include "../nav_common/constants.h"
@@ -56,9 +60,9 @@ public:
     void init(IMUdata imu, GPSdata gps);
     void time_update(IMUdata imu);
     void measurement_update(GPSdata gps);
-    
+
     NAVdata get_nav();
-    
+
 private:
 
     Matrix15f F, PHI, P, Qw, Q, ImKH, KRKt, I15 /* identity */;

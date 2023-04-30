@@ -4,8 +4,8 @@
 
 #include <Arduino.h>
 
-#include <Eigen.h>
-#include <Eigen/Core>
+#include <eigen.h>
+// #include <Eigen/Core>
 using namespace Eigen;
 
 #include "util/cal_temp.h"
@@ -44,7 +44,7 @@ public:
     Vector4f gyros_cal = Vector4f::Zero();
     Vector4f mags_cal = Vector4f::Zero();
     float tempC = 0.0;
-    
+
     void defaults_goldy3();
     void defaults_aura3();
     void defaults_common();

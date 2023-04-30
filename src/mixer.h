@@ -2,7 +2,7 @@
 
 #include <math.h>
 #if defined(ARDUINO)
-# include <Eigen.h>
+# include <eigen.h>
 #endif
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -16,7 +16,7 @@ class mixer_t {
 private:
     Matrix<float, PWM_CHANNELS, PWM_CHANNELS> M;
     Matrix<float, PWM_CHANNELS, 1> inputs;
-    
+
     void sas_update();
     void mixing_update();
 

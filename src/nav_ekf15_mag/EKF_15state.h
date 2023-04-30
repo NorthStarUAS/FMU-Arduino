@@ -18,7 +18,7 @@
 
 #include <math.h>
 #if defined(ARDUINO)
-# include <Eigen.h>
+# include <eigen.h>
 #endif
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -56,9 +56,9 @@ public:
     void set_ideal_mag_vector_ned(Vector3f v);
     void time_update(IMUdata imu);
     void measurement_update(IMUdata imu, GPSdata gps);
-    
+
     NAVdata get_nav();
-    
+
 private:
 
     Matrix15f F, PHI, P, Qw, Q, ImKH, KRKt, I15 /* identity */;

@@ -6,7 +6,7 @@
 
 #include <math.h>
 #if defined(ARDUINO)
-# include <Eigen.h>
+# include <eigen.h>
 #endif
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -26,7 +26,7 @@ public:
     void setup();
     void update();
     bool settle();
-    
+
 private:
     void update_unix_sec();
     void update_magvar();
