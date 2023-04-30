@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <SD.h>
 #include <HardwareSerial.h>
 
 #include "setup_board.h"        // #include this early
@@ -70,26 +71,34 @@ void reset_config_defaults() {
 }
 
 void setup() {
-    // put your setup code here, to run once:
-
-    Serial.begin(DEFAULT_BAUD);
+    Serial.begin(115200);
     delay(1000);  // hopefully long enough for serial to come alive
 
     comms.setup();
 
-    Serial.print("\nAura Sensors: Rev "); Serial.println(FIRMWARE_REV);
-    Serial.println("You are seeing this message on the usb interface.");
-    Serial.print("Sensor/config communication is on Serial1 @ ");
-    Serial.print(DEFAULT_BAUD);
-    Serial.println(" baud (N81) no flow control.");
+    printf("\nNorthStar FMU: Rev %d\n", FIRMWARE_REV);
+    printf("You are seeing this message on the usb interface.\n");
+    printf("Sensor/config communication is on Serial1 @ %d baud (N81) no flow control.\n", DEFAULT_BAUD);
+
+    // load config from SD card
+    if ( !SD.begin(BUILTIN_SDCARD)) {
+        printf("Problem initializing builtin SD card ... failed.");
+    } else {
+        printf("SD card initialized.");
+    }
+
+    config.init();
+    if ( !config.load_json_config() ) {
+        config.reset_defaults();
+    }
 
     // The following code (when enabled) will force setting a specific
     // device serial number when the device boots:
-    // config.set_serial_number(116);
+    if ( false ) {
+        config.set_serial_number(118);
+    }
     config.read_serial_number();
-
-    Serial.print("Serial Number: ");
-    Serial.println(config.read_serial_number());
+    printf("Serial Number: %d\n", config.read_serial_number());
     delay(100);
 
     if ( !config.read_eeprom() ) {
