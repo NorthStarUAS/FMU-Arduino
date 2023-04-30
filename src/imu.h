@@ -5,7 +5,6 @@
 #include <Arduino.h>
 
 #include <eigen.h>
-// #include <Eigen/Core>
 using namespace Eigen;
 
 #include "util/cal_temp.h"
