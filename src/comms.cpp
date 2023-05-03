@@ -12,7 +12,7 @@
 #include "config.h"
 #include "ekf.h"
 #include "gps.h"
-#include "imu.h"
+#include "imu_mgr.h"
 #include "led.h"
 #include "mixer.h"
 #include "pilot.h"
@@ -27,7 +27,7 @@
 #include "comms.h"
 
 void comms_t::setup() {
-    serial.open(DEFAULT_BAUD, &Serial1);
+    serial.open(HOST_BAUD, &Serial1);
 }
 
 bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
@@ -35,7 +35,7 @@ bool comms_t::parse_message_bin( byte id, byte *buf, byte message_size )
     bool result = false;
 
     // Serial.print("message id = "); Serial.print(id); Serial.print(" len = "); Serial.println(message_size);
-    
+
     if ( id == message::command_inceptors_id ) {
         static message::command_inceptors_t inceptors;
         inceptors.unpack(buf, message_size);
@@ -157,7 +157,7 @@ int comms_t::write_pilot_in_bin()
     if (message::sbus_channels > SBUS_CHANNELS) {
         return 0;
     }
-    
+
     // receiver data
     for ( int i = 0; i < message::sbus_channels; i++ ) {
         pilot1.channel[i] = pilot.manual_inputs[i];
@@ -165,7 +165,7 @@ int comms_t::write_pilot_in_bin()
 
     // flags
     pilot1.flags = sbus.receiver_flags;
-    
+
     pilot1.pack();
     return serial.write_packet( pilot1.id, pilot1.payload, pilot1.len);
 }
@@ -210,16 +210,16 @@ int comms_t::write_imu_bin()
     const float _pi = 3.14159265358979323846;
     const float _g = 9.807;
     const float _d2r = _pi / 180.0;
-    
+
     const float _gyro_lsb_per_dps = 32767.5 / 500;  // -500 to +500 spread across 65535
     const float gyroScale = _d2r / _gyro_lsb_per_dps;
-    
+
     const float _accel_lsb_per_dps = 32767.5 / 8;   // -4g to +4g spread across 65535
     const float accelScale = _g / _accel_lsb_per_dps;
 
     const float magScale = 0.01;
     const float tempScale = 0.01;
-    
+
     static message::imu_t imu1;
     imu1.millis = imu.imu_millis;
     imu1.raw[0] = imu.get_ax_raw() / accelScale;
@@ -453,13 +453,13 @@ int comms_t::write_status_info_bin()
         counter--;
         return 0;
     } else {
-        counter = MASTER_HZ * 1 - 1; // a message every 1 seconds (-1 so we aren't off by one frame) 
+        counter = MASTER_HZ * 1 - 1; // a message every 1 seconds (-1 so we aren't off by one frame)
     }
 
     status.serial_number = serial_number;
     status.firmware_rev = FIRMWARE_REV;
     status.master_hz = MASTER_HZ;
-    status.baud = DEFAULT_BAUD;
+    status.baud = HOST_BAUD;
 
     // estimate sensor output byte rate
     unsigned long current_time = millis();
@@ -485,7 +485,7 @@ void comms_t::write_status_info_ascii()
     Serial.print(" Main loop hz: ");
     Serial.print( MASTER_HZ);
     Serial.print(" Baud: ");
-    Serial.println(DEFAULT_BAUD);
+    Serial.println(HOST_BAUD);
 }
 
 void comms_t::read_commands() {

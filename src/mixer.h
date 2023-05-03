@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Arduino.h>
+
 #include <math.h>
 #if defined(ARDUINO)
 # include <eigen.h>
@@ -9,25 +11,31 @@
 #include <Eigen/LU>
 using namespace Eigen;
 
-#include "pwm.h"
-#include "sensors/sbus/sbus.h"
+#include "props2.h"
 
 class mixer_t {
+
 private:
-    Matrix<float, PWM_CHANNELS, PWM_CHANNELS> M;
-    Matrix<float, PWM_CHANNELS, 1> inputs;
+    Eigen::MatrixXf M;
+    Eigen::VectorXf inputs, outputs;
 
     void sas_update();
     void mixing_update();
 
+    PropertyNode effectors_node;
+    PropertyNode imu_node;
+    PropertyNode pilot_node;
+    PropertyNode stab_roll_node;
+    PropertyNode stab_pitch_node;
+    PropertyNode stab_yaw_node;
+    PropertyNode stab_tune_node;
+    PropertyNode switches_node;
+
 public:
-    Matrix<float, PWM_CHANNELS, 1> outputs;
 
     void print_mixer_matrix();
     void setup();
     void sas_defaults();
-    void update_matrix(message::config_mixer_t *mix_config );
-    void update( float control_norm[SBUS_CHANNELS] );
+    void update_matrix();
+    void update();
 };
-
-extern mixer_t mixer;

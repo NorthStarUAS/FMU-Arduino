@@ -31,7 +31,7 @@ using std::string;
 #if defined(ARDUPILOT_BUILD)
 #  include "util/strutils.h"
 #else
-#  include "strutils.h"
+#  include "util/strutils.h"
 #endif
 
 #include "props2.h"

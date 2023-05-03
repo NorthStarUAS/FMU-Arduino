@@ -3,17 +3,18 @@
 #include <Arduino.h>
 
 const int SBUS_CHANNELS = 16;
-static const uint8_t SBUS_FRAMELOST = (1 << 2);
-static const uint8_t SBUS_FAILSAFE = (1 << 3);
 
-// define if an sbus input channel is symmetrical or not (i.e. mapped
-// to [0,1] for throttle, flaps, spoilers; [-1,1] for aileron,
-// elevator, rudder
+// define if an sbus input channel is symmetrical or not (i.e. mapped to
+// [0,1] for throttle, flaps, spoilers; [-1,1] for aileron, elevator, rudder
 static const bool sbus_symmetrical[SBUS_CHANNELS] = {1, 1, 0, 1, 1, 1, 1, 0, 0};
-    
+
 class sbus_t {
+
 private:
+
     static const uint8_t SBUS_PAYLOAD_LEN = 23;
+    static const uint8_t SBUS_FRAMELOST = (1 << 2);
+    static const uint8_t SBUS_FAILSAFE = (1 << 3);
 
     typedef union {
         uint8_t buf[SBUS_PAYLOAD_LEN];
@@ -55,14 +56,17 @@ private:
         };
     } SBUS_DATA_U;
     SBUS_DATA_U sbus_data;
-    uint16_t sbus_raw[SBUS_CHANNELS];
+    uint16_t raw_val[SBUS_CHANNELS];
 
 public:
+
     uint8_t receiver_flags = 0x00;
     void setup();
     void parse();
     bool process();
-    void raw2norm( float norm[SBUS_CHANNELS] );
+
+    float norm_val[SBUS_CHANNELS];    // normalized value (range of -1 to 1, or 0 to 1)
+    uint16_t pwm_val[SBUS_CHANNELS];  // equivalent-ish PWM value (range of 1000-2000)
 };
 
 extern sbus_t sbus;

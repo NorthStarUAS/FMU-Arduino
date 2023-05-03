@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <SD.h>
-#include <HardwareSerial.h>
+// #include <HardwareSerial.h>
 
 #include "setup_board.h"        // #include this early
 
@@ -9,11 +9,11 @@
 #include "src/config.h"
 #include "src/ekf.h"
 #include "src/gps.h"
-#include "src/imu.h"
+#include "src/imu_mgr.h"
 #include "src/led.h"
-#include "src/mixer.h"
 #include "src/pilot.h"
 #include "src/power.h"
+#include "src/props2.h"
 #include "src/pwm.h"
 #include "src/sensors/sbus/sbus.h"
 
@@ -30,7 +30,7 @@ void force_config_aura3() {
     led.defaults_aura3();
     config.power.have_attopilot = true;
     pwm.act_gain_defaults();
-    mixer.setup();
+    pilot.init();
     config.stab.sas_rollaxis = true;
     config.stab.sas_pitchaxis = true;
     config.stab.sas_yawaxis = true;
@@ -49,7 +49,7 @@ void force_config_goldy3() {
     airdata.defaults_goldy3();
     led.defaults_goldy3();
     pwm.act_gain_defaults();
-    mixer.setup();
+    pilot.init();
     config.stab.sas_rollaxis = true;
     config.stab.sas_pitchaxis = true;
     config.stab.sas_yawaxis = true;
@@ -65,10 +65,14 @@ void reset_config_defaults() {
     imu.defaults_goldy3();
     led.defaults_goldy3();
     pwm.act_gain_defaults();
-    mixer.sas_defaults();
-    mixer.setup();
+    pilot.init();
     config.power.have_attopilot = false;
 }
+
+static PropertyNode config_node;
+static PropertyNode config_nav_node;
+static PropertyNode pilot_node;
+static PropertyNode status_node;
 
 void setup() {
     Serial.begin(115200);
@@ -78,7 +82,7 @@ void setup() {
 
     printf("\nNorthStar FMU: Rev %d\n", FIRMWARE_REV);
     printf("You are seeing this message on the usb interface.\n");
-    printf("Sensor/config communication is on Serial1 @ %d baud (N81) no flow control.\n", DEFAULT_BAUD);
+    printf("Sensor/config communication is on Serial1 @ %d baud (N81) no flow control.\n", HOST_BAUD);
 
     // load config from SD card
     if ( !SD.begin(BUILTIN_SDCARD)) {
@@ -109,6 +113,17 @@ void setup() {
         Serial.println("Successfully loaded eeprom config.");
     }
 
+    // after config.init()
+    config_node = PropertyNode("/config");
+    config_nav_node = PropertyNode("/config/nav");
+    pilot_node = PropertyNode("/pilot");
+    status_node = PropertyNode("/status");
+
+    status_node.setUInt("firmware_rev", FIRMWARE_REV);
+    status_node.setUInt("master_hz", MASTER_HZ);
+    status_node.setUInt("baud", TELEMETRY_BAUD);
+    status_node.setUInt("serial_number", config_node.getUInt("serial_number"));
+
     // force/hard-code a specific board config if desired
     // force_config_aura3();
     // force_config_goldy3();
@@ -124,11 +139,8 @@ void setup() {
     // initialize the SBUS receiver
     sbus.setup();
 
-    // initialize mixer (before actuators/pwm)
-    mixer.setup();
-
-    // initialize PWM output
-    pwm.setup(config.board.board);
+    // initialize the pilot interface (RC in, out & mixer)
+    pilot.init();
 
     // initialize the gps receiver
     gps.setup();
@@ -169,6 +181,9 @@ void loop() {
 
         // top priority, used for timing sync downstream.
         imu.update();
+
+        // suck in any available gps messages
+        gps.update();
 
         if ( config.ekf.select != message::enum_nav::none ) {
             ekf.update();
@@ -225,24 +240,35 @@ void loop() {
         // read power values
         power.update();
 
-        // suck in any available gps messages
-        gps.update();
+        if ( pilot.read() ) {
+            bool ap_state = pilot_node.getBool("ap_enabled");
+            static bool last_ap_state = ap_state;
+            if ( ap_state and !last_ap_state ) {
+                printf("ap enabled\n");
+            } else if ( !ap_state and last_ap_state ) {
+                printf("ap disabled (manaul flight)\n");
+            }
+            last_ap_state = ap_state;
+        }
+
+        pilot.write();
+
     }
 
     // keep processing while there is data in the uart buffer
-    while ( sbus.process() ) {
-        static bool last_ap_state = pilot.ap_enabled();
-        pilot.update_manual();
-        if ( pilot.ap_enabled() ) {
-            if ( !last_ap_state ) { Serial.println("ap enabled"); }
-            mixer.update( pilot.ap_inputs );
-        } else {
-            if ( last_ap_state ) { Serial.println("ap disabled (manaul flight)"); }
-            mixer.update( pilot.manual_inputs );
-        }
-        pwm.update();
-        last_ap_state = pilot.ap_enabled();
-    }
+    // while ( sbus.process() ) {
+    //     static bool last_ap_state = pilot.ap_enabled();
+    //     pilot.update_manual();
+    //     if ( pilot.ap_enabled() ) {
+    //         if ( !last_ap_state ) { Serial.println("ap enabled"); }
+    //         mixer.update( pilot.ap_inputs );
+    //     } else {
+    //         if ( last_ap_state ) { Serial.println("ap disabled (manaul flight)"); }
+    //         mixer.update( pilot.manual_inputs );
+    //     }
+    //     pwm.update();
+    //     last_ap_state = pilot.ap_enabled();
+    // }
 
     // suck in any host commmands (flight control updates, etc.)
     comms.read_commands();

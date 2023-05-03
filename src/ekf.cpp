@@ -2,7 +2,7 @@
 
 #include "config.h"
 #include "gps.h"
-#include "imu.h"
+#include "imu_mgr.h"
 
 #include "ekf.h"
 
@@ -36,7 +36,7 @@ void ekf_t::update() {
     imu1.hx = imu.get_hx_cal();
     imu1.hy = imu.get_hy_cal();
     imu1.hz = imu.get_hz_cal();
-    
+
     GPSdata gps1;
     gps1.time = imu.imu_millis / 1000.0;
     gps1.unix_sec = gps1.time;
@@ -47,7 +47,7 @@ void ekf_t::update() {
     gps1.ve = gps.gps_data.velE / 1000.0;
     gps1.vd = gps.gps_data.velD / 1000.0;
     gps1.unix_sec = gps.unix_sec;
-    
+
     if ( !ekf_inited and gps.settle() ) {
         if ( config.ekf.select == message::enum_nav::nav15 ) {
             ekf.init(imu1, gps1);

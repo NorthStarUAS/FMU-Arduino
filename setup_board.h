@@ -22,7 +22,13 @@
 #endif
 
 // Firmware rev (needs to be updated here manually to match release number)
-const int FIRMWARE_REV = 400;
+const int FIRMWARE_REV = 410;
+
+// it would be nice if these were dynamically detected, but they drive
+// structure allocations and I need to think through that part of it
+// carefully.
+const uint8_t MAX_RCIN_CHANNELS = 16;
+const uint8_t MAX_RCOUT_CHANNELS = 8;
 
 // this is the master loop update rate.
 const int MASTER_HZ = 100;
@@ -30,7 +36,8 @@ const int DT_MILLIS = (1000 / MASTER_HZ);
 
 // Please read the important notes in the source tree about Teensy
 // baud rates vs. host baud rates.
-const int DEFAULT_BAUD = 500000;
+const int HOST_BAUD = 500000;
+const int TELEMETRY_BAUD = 115200;
 
-extern uint16_t serial_number;
+// extern uint16_t serial_number;
 

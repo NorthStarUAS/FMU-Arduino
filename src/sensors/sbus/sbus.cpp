@@ -23,38 +23,51 @@ void sbus_t::parse() {
     if ( sbus_data.frame_lost ) {
         // Serial1.println("SBUS: frame lost");
     }
-    sbus_raw[  0 ] = sbus_data.ch1;
-    sbus_raw[  1 ] = sbus_data.ch2;
-    sbus_raw[  2 ] = ( sbus_data.ch3_hi << 10 ) | sbus_data.ch3_lo;
-    sbus_raw[  3 ] = sbus_data.ch4;
-    sbus_raw[  4 ] = sbus_data.ch5;
-    sbus_raw[  5 ] = ( sbus_data.ch6_hi <<  9 ) | sbus_data.ch6_lo;
-    sbus_raw[  6 ] = sbus_data.ch7;
-    sbus_raw[  7 ] = sbus_data.ch8;
-    sbus_raw[  8 ] = ( sbus_data.ch9_hi <<  8 ) | sbus_data.ch9_lo;
-    sbus_raw[  9 ] = sbus_data.ch10;
-    sbus_raw[ 10 ] = sbus_data.ch11;
-    sbus_raw[ 11 ] = ( sbus_data.ch12_hi << 7 ) | sbus_data.ch12_lo;
-    sbus_raw[ 12 ] = sbus_data.ch13;
-    sbus_raw[ 13 ] = sbus_data.ch14;
-    sbus_raw[ 14 ] = ( sbus_data.ch15_hi << 6 ) | sbus_data.ch15_lo;
-    sbus_raw[ 15 ] = sbus_data.ch16;
+    raw_val[  0 ] = sbus_data.ch1;
+    raw_val[  1 ] = sbus_data.ch2;
+    raw_val[  2 ] = ( sbus_data.ch3_hi << 10 ) | sbus_data.ch3_lo;
+    raw_val[  3 ] = sbus_data.ch4;
+    raw_val[  4 ] = sbus_data.ch5;
+    raw_val[  5 ] = ( sbus_data.ch6_hi <<  9 ) | sbus_data.ch6_lo;
+    raw_val[  6 ] = sbus_data.ch7;
+    raw_val[  7 ] = sbus_data.ch8;
+    raw_val[  8 ] = ( sbus_data.ch9_hi <<  8 ) | sbus_data.ch9_lo;
+    raw_val[  9 ] = sbus_data.ch10;
+    raw_val[ 10 ] = sbus_data.ch11;
+    raw_val[ 11 ] = ( sbus_data.ch12_hi << 7 ) | sbus_data.ch12_lo;
+    raw_val[ 12 ] = sbus_data.ch13;
+    raw_val[ 13 ] = sbus_data.ch14;
+    raw_val[ 14 ] = ( sbus_data.ch15_hi << 6 ) | sbus_data.ch15_lo;
+    raw_val[ 15 ] = sbus_data.ch16;
 
     uint8_t sbus_flags = 0x00;
     sbus_flags |= sbus_data.ch17;
     sbus_flags |= sbus_data.ch18 << 1;
     sbus_flags |= sbus_data.frame_lost << 2;
     sbus_flags |= sbus_data.failsafe_act << 3;
-    
-#if 0    
+
+    for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
+        // convert to normalized form
+        if ( sbus_symmetrical[i] ) {
+            // i.e. aileron, rudder, elevator
+            norm_val[i] = (float)((int)raw_val[i] - SBUS_CENTER_VALUE) / SBUS_HALF_RANGE;
+            pwm_val[i] = (norm_val[i] + 1) * 500 + 1000;
+        } else {
+            // i.e. throttle, flaps
+            norm_val[i] = (float)((int)raw_val[i] - SBUS_MIN_VALUE) / SBUS_RANGE;
+            pwm_val[i] = norm_val[i] * 1000 + 1000;
+        }
+    }
+
+#if 0
     Serial1.print(" ");
-    Serial1.print(sbus_raw[0]);
+    Serial1.print(raw_val[0]);
     Serial1.print(" ");
-    Serial1.print(sbus_raw[1]);
+    Serial1.print(raw_val[1]);
     Serial1.print(" ");
-    Serial1.print(sbus_raw[2]);
+    Serial1.print(raw_val[2]);
     Serial1.print(" ");
-    Serial1.print(sbus_raw[3]);
+    Serial1.print(raw_val[3]);
     for ( int i = 0; i < SBUS_PAYLOAD_LEN; i++ ) {
         Serial1.print(" ");
         Serial1.print(sbus_data.buf[i], DEC);
@@ -62,7 +75,7 @@ void sbus_t::parse() {
     Serial1.println();
 #endif
 
-#if 0    
+#if 0
     for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
         if ( ch_data[i] < SBUS_MIN_VALUE || ch_data[i] > SBUS_MAX_VALUE ) {
             Serial1.print("Warning detected a problem with sbus packet data, skipping frame, ch = ");
@@ -71,7 +84,7 @@ void sbus_t::parse() {
         }
     }
 #endif
-    
+
     receiver_flags = sbus_flags;
 }
 
@@ -79,6 +92,21 @@ void sbus_t::parse() {
 void sbus_t::setup() {
     Serial2.begin(100000,SERIAL_8E1_RXINV_TXINV); // newer teensies should use SERIAL_8E2_RXINV_TXINV
     Serial.println("SBUS on Serial2 (SERIAL_8E2)");
+    // initialize to zero position
+    for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
+        if ( sbus_symmetrical[i] ) {
+            // i.e. aileron, rudder, elevator
+            norm_val[i] = 0.0;
+            pwm_val[i] = (norm_val[i] + 1) * 500 + 1000;
+        } else {
+            // i.e. throttle, flaps
+            norm_val[i] = 0.0;
+            pwm_val[i] = norm_val[i] * 1000 + 1000;
+        }
+    }
+    // special case channels 0 (master autopilot enable) and 1 (throttle safety) to full off
+    norm_val[0] = -1; pwm_val[0] = 1000;
+    norm_val[1] = -1; pwm_val[1] = 1000;
 }
 
 // read available bytes on the sbus uart and return true if any new
@@ -87,7 +115,7 @@ bool sbus_t::process() {
     static byte state = 0;
     byte input;
     bool new_data = false;
-    
+
     //Serial1.print("state = ");
     //Serial1.println(state);
     if ( state == 0 ) {
@@ -113,7 +141,7 @@ bool sbus_t::process() {
             }
             //Serial1.println();
             state = 2;
-        }   
+        }
     }
     if  ( state == 2 ) {
         //Serial1.println("here in state = 2");
@@ -124,7 +152,7 @@ bool sbus_t::process() {
             input = Serial2.read();
             if ( input == SBUS_FOOTER_VALUE ) {
                 parse();
-                state = 0; 
+                state = 0;
             } else {
                 //Serial1.println("wrong sbus footer value, skipping ahead to next footer byte");
                 input = Serial2.read();
@@ -139,22 +167,8 @@ bool sbus_t::process() {
             }
         }
     }
-    
-    return new_data;
-}
 
-// compute normalized command values from the raw sbus values
-void sbus_t::raw2norm( float norm[SBUS_CHANNELS] ) {
-    for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
-        // convert to normalized form
-        if ( sbus_symmetrical[i] ) {
-            // i.e. aileron, rudder, elevator
-            norm[i] = (float)((int)sbus_raw[i] - SBUS_CENTER_VALUE) / SBUS_HALF_RANGE;
-        } else {
-            // i.e. throttle, flaps
-            norm[i] = (float)((int)sbus_raw[i] - SBUS_MIN_VALUE) / SBUS_RANGE;
-        }
-    }
+    return new_data;
 }
 
 // global shared instance

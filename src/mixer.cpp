@@ -1,148 +1,140 @@
 // Module to handle actuator input/output and mixing.
 
-#include "config.h"
-#include "imu.h"
-#include "pilot.h"
+#include "../setup_board.h"
+#include "props2.h"
 
 #include "mixer.h"
 
 // reset sas parameters to startup defaults
 void mixer_t::sas_defaults() {
-    config.stab.sas_rollaxis = false;
-    config.stab.sas_pitchaxis = false;
-    config.stab.sas_yawaxis = false;
-    config.stab.sas_tune = false;
-
-    config.stab.sas_rollgain = 0.0;
-    config.stab.sas_pitchgain = 0.0;
-    config.stab.sas_yawgain = 0.0;
-    config.stab.sas_max_gain = 2.0;
+    stab_roll_node.setBool("enable", true);
+    stab_pitch_node.setBool("enable", true);
+    stab_yaw_node.setBool("enable", true);
+    stab_tune_node.setBool("false", true);
+    stab_roll_node.setDouble("gain", 0.2);
+    stab_pitch_node.setDouble("gain", 0.2);
+    stab_yaw_node.setDouble("gain", 0.2);
 };
 
 
-// // reset mixing parameters to startup defaults
-// void mixer_t::mixing_defaults() {
-//     config.actuators.mix_autocoord = false;
-//     config.actuators.mix_throttle_trim = false;
-//     config.actuators.mix_flap_trim = false;
-//     config.actuators.mix_elevon = false;
-//     config.actuators.mix_flaperon = false;
-//     config.actuators.mix_vtail = false;
-//     config.actuators.mix_diff_thrust = false;
-
-//     config.actuators.mix_Gac = 0.5;       // aileron gain for autocoordination
-//     config.actuators.mix_Get = -0.1;      // elevator trim w/ throttle gain
-//     config.actuators.mix_Gef = 0.1;       // elevator trim w/ flap gain
-
-//     config.actuators.mix_Gea = 1.0;       // aileron gain for elevons
-//     config.actuators.mix_Gee = 1.0;       // elevator gain for elevons
-//     config.actuators.mix_Gfa = 1.0;       // aileron gain for flaperons
-//     config.actuators.mix_Gff = 1.0;       // flaps gain for flaperons
-//     config.actuators.mix_Gve = 1.0;       // elevator gain for vtail
-//     config.actuators.mix_Gvr = 1.0;       // rudder gain for vtail
-//     config.actuators.mix_Gtt = 1.0;       // throttle gain for diff thrust
-//     config.actuators.mix_Gtr = 0.1;       // rudder gain for diff thrust
-// };
-
-
-void mixer_t::update_matrix(message::config_mixer_t *mix_config ) {
+void mixer_t::update_matrix() {
     M.setIdentity();            // straight pass through default
 
     // note: M(output_channel, input_channel)
     // note: elevon and flaperon mixing are mutually exclusive
-    
-    if ( mix_config->mix_autocoord ) {
-        M(3,1) = -mix_config->mix_Gac;
-        if ( mix_config->mix_vtail && !mix_config->mix_elevon) {
-            M(2,1) = mix_config->mix_Gac;
+
+    PropertyNode autocoord_node = PropertyNode("/config/mixer/auto_coordination");
+    PropertyNode throttletrim_node = PropertyNode("/config/mixer/throttle_trim");
+    PropertyNode flaptrim_node = PropertyNode("/config/mixer/flap_trim");
+    PropertyNode elevon_node = PropertyNode("/config/mixer/elevon");
+    PropertyNode flaperon_node = PropertyNode("/config/mixer/flaperon");
+    PropertyNode vtail_node = PropertyNode("/config/mixer/vtail");
+    PropertyNode diffthrust_node = PropertyNode("/config/mixer/diff_thrust");
+    delay(100);
+
+    if ( autocoord_node.getBool("enable") ) {
+        M(3,1) = autocoord_node.getDouble("gain1");
+        if (vtail_node.getBool("enable") && !elevon_node.getBool("enable")) {
+            M(2,1) = -autocoord_node.getDouble("gain1");
         }
     }
-    if ( mix_config->mix_throttle_trim ) {
-        M(2,0) = mix_config->mix_Get;
+    if ( throttletrim_node.getBool("enable") ) {
+        M(2,0) = throttletrim_node.getDouble("gain1");
     }
-    if ( mix_config->mix_flap_trim ) {
-        M(2,4) = mix_config->mix_Gef;
-        if ( mix_config->mix_vtail && !mix_config->mix_elevon) {
-            M(3,4) = mix_config->mix_Gef;
+    if ( flaptrim_node.getBool("enable") ) {
+        M(2,4) = flaptrim_node.getDouble("gain1");
+        if ( vtail_node.getBool("enable") && !elevon_node.getBool("enable")) {
+            M(3,4) = flaptrim_node.getDouble("gain1");
         }
     }
-    if ( mix_config->mix_elevon ) {
-        M(1,1) = mix_config->mix_Gea;
-        M(1,2) = mix_config->mix_Gee;
-        M(2,1) = mix_config->mix_Gea;
-        M(2,2) = -mix_config->mix_Gee;
-    } else if ( mix_config->mix_flaperon ) {
-        M(1,1) = mix_config->mix_Gfa;
-        M(1,4) = mix_config->mix_Gff;
-        M(4,1) = -mix_config->mix_Gfa;
-        M(4,4) = mix_config->mix_Gff;
+    if ( elevon_node.getBool("enable") ) {
+        M(1,1) = elevon_node.getDouble("gain1");
+        M(1,2) = elevon_node.getDouble("gain2");
+        M(2,1) = elevon_node.getDouble("gain1");
+        M(2,2) = -elevon_node.getDouble("gain2");
+    } else if ( flaperon_node.getBool("enable") ) {
+        M(1,1) = flaperon_node.getDouble("gain1");
+        M(1,4) = flaperon_node.getDouble("gain2");
+        M(4,1) = -flaperon_node.getDouble("gain1");
+        M(4,4) = flaperon_node.getDouble("gain2");
     }
     // vtail mixing can't work with elevon mixing
-    if ( mix_config->mix_vtail && !mix_config->mix_elevon) {
-        M(2,2) = mix_config->mix_Gve;
-        M(2,3) = mix_config->mix_Gvr;
-        M(3,2) = mix_config->mix_Gve;
-        M(3,3) = -mix_config->mix_Gvr;
+    if ( vtail_node.getBool("enable") && !elevon_node.getBool("enable") ) {
+        M(2,2) = vtail_node.getDouble("gain1");
+        M(2,3) = vtail_node.getDouble("gain2");
+        M(3,2) = vtail_node.getDouble("gain1");
+        M(3,3) = -vtail_node.getDouble("gain2");
     }
-    if ( mix_config->mix_diff_thrust ) {
+    if ( diffthrust_node.getBool("eanbled") ) {
         // fixme: never tested in the wild (need to think through channel assignments)
-        // outputs[0] = mix_config->mix_Gtt * throttle_cmd + mix_config->mix_Gtr * rudder_cmd;
-        // outputs[5] = mix_config->mix_Gtt * throttle_cmd - mix_config->mix_Gtr * rudder_cmd;
+        // outputs[0] = mix_config.mix_Gtt * throttle_cmd + mix_config.mix_Gtr * rudder_cmd;
+        // outputs[5] = mix_config.mix_Gtt * throttle_cmd - mix_config.mix_Gtr * rudder_cmd;
     }
-
-    // updating the mixer_matrix config message so we can save it in eeeprom
-    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-        for ( int j = 0; j < PWM_CHANNELS; j++ ) {
-            //Serial.println(j*PWM_CHANNELS+i);
-            config.mixer_matrix.matrix[i*PWM_CHANNELS+j] = M(i,j);
-        }
-    }
-
-    print_mixer_matrix();
 }
 
 void mixer_t::print_mixer_matrix() {
-    Serial.println("Mixer Matrix:");
-    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-        Serial.print("  ");
-        for ( int j = 0; j < PWM_CHANNELS; j++ ) {
+    printf("Mixer Matrix:\n");
+    for ( int i = 0; i < MAX_RCOUT_CHANNELS; i++ ) {
+        printf("  ");
+        for ( int j = 0; j < MAX_RCOUT_CHANNELS; j++ ) {
             if ( M(i,j) >= 0 ) {
-                Serial.print(" ");
+                printf(" ");
             }
-            Serial.print(M(i,j), 2);
-            Serial.print(" ");
+            printf("%.2f ", M(i,j));
         }
-        Serial.println();
+        printf("\n");
     }
 }
+
 void mixer_t::setup() {
-    outputs.setZero();
-    pwm.norm2pwm( outputs.data() );
-    M = Matrix<float, PWM_CHANNELS, PWM_CHANNELS, RowMajor>(config.mixer_matrix.matrix);
+    effectors_node = PropertyNode("/effectors");
+    imu_node = PropertyNode("/sensors/imu");
+    pilot_node = PropertyNode("/pilot");
+    stab_roll_node = PropertyNode("/config/stability_damper/roll");
+    stab_pitch_node = PropertyNode("/config/stability_damper/pitch");
+    stab_yaw_node = PropertyNode("/config/stability_damper/yaw");
+    stab_tune_node = PropertyNode("/config/stability_damper/pilot_tune");
+    switches_node = PropertyNode("/switches");
+
+    M.resize(MAX_RCOUT_CHANNELS, MAX_RCOUT_CHANNELS);
+    M.setIdentity();
+    update_matrix();
     print_mixer_matrix();
+
+    inputs.resize(MAX_RCOUT_CHANNELS);
+    outputs.resize(MAX_RCOUT_CHANNELS);
+
+    inputs.setZero();
+    outputs.setZero();
+
+    delay(100);
 }
 
 // compute the stability damping in normalized command/input space
 // which simplifies mixing later
 void mixer_t::sas_update() {
     float tune = 1.0;
-    if ( config.stab.sas_tune ) {
-        tune = config.stab.sas_max_gain * pilot.manual_inputs[7];
+    float max_tune = 2.0;
+    if ( stab_tune_node.getBool("enable") ) {
+        tune = max_tune * pilot_node.getDouble("channel", 7);
         if ( tune < 0.0 ) {
             tune = 0.0;
-        } else if ( tune > 2.0 ) {
-            tune = 2.0;
+        } else if ( tune > max_tune ) {
+            tune = max_tune;
         }
     }
 
-    if ( config.stab.sas_rollaxis ) {
-        inputs[1] -= tune * config.stab.sas_rollgain * imu.get_p_cal();
+    if ( stab_roll_node.getBool("enable") ) {
+        inputs[1] -= tune * stab_roll_node.getDouble("gain")
+            * imu_node.getDouble("p_rps");
     }
-    if ( config.stab.sas_pitchaxis ) {
-        inputs[2] += tune * config.stab.sas_pitchgain * imu.get_q_cal();
+    if ( stab_pitch_node.getBool("enable") ) {
+        inputs[2] += tune * stab_pitch_node.getDouble("gain")
+            * imu_node.getDouble("q_rps");
     }
-    if ( config.stab.sas_yawaxis ) {
-        inputs[3] += tune * config.stab.sas_yawgain * imu.get_r_cal();
+    if ( stab_yaw_node.getBool("enable") ) {
+        inputs[3] -= tune * stab_yaw_node.getDouble("gain")
+            * imu_node.getDouble("r_rps");
     }
 }
 
@@ -150,24 +142,26 @@ void mixer_t::sas_update() {
 // the requested mixing modes here.
 void mixer_t::mixing_update() {
     outputs = M * inputs;
-    
-    if ( pilot.throttle_safety() ) {
+
+    if ( switches_node.getBool("throttle_safety") == false ) {
         outputs[0] = 0.0;
+    }
+
+    // publish
+    effectors_node.setUInt("millis", millis());
+    for ( int i = 0; i < MAX_RCOUT_CHANNELS; i++ ) {
+        effectors_node.setDouble("channel", outputs[i], i);
     }
 }
 
-void mixer_t::update( float control_norm[SBUS_CHANNELS] ) {
-    // initialize commands
-    inputs << pilot.get_throttle(), pilot.get_aileron(), pilot.get_elevator(),
-        pilot.get_rudder(), pilot.get_flap(), pilot.get_gear(),
-        pilot.get_ch7(), pilot.get_ch8();
-    
+void mixer_t::update() {
+    // the pilot.get_* interface is smart to return manual
+    // vs. autopilot depending on switch state.
+    inputs << pilot_node.getDouble("throttle"), pilot_node.getDouble("aileron"),
+        pilot_node.getDouble("elevator"), pilot_node.getDouble("rudder"),
+        pilot_node.getDouble("flaps"), pilot_node.getDouble("gear"),
+        pilot_node.getDouble("aux1"), pilot_node.getDouble("aux2");
+
     sas_update();
     mixing_update();
-
-    // compute pwm actuator output values from the normalized values
-    pwm.norm2pwm( outputs.data() );
 }
-
-// global shared instance
-mixer_t mixer;

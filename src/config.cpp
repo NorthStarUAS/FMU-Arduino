@@ -4,7 +4,7 @@
 #include "airdata.h"
 #include "comms.h"
 #include "config.h"
-#include "imu.h"
+#include "imu_mgr.h"
 #include "led.h"
 #include "mixer.h"
 #include "power.h"

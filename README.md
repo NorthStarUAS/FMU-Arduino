@@ -1,4 +1,4 @@
-# Rice Creek FMU
+# NorthStar FMU (for Teensy/Arduino)
 
 This is an Arduino (Teensyduino) sketch for building the heart of a
 UAV autopilot.  Rc-fmu turns an inexpensive teensy board into a sensor
@@ -23,7 +23,7 @@ Creek UAS ecosystem provides a high quality autopilot system that
 ephasizes high reliability and simple code.  It offers many advanced
 capabilities at a very inexpensive price point.
 
-# Features
+## Features
 
 * MPU9250 via spi or i2c.
 * MPU9250 DMP, interrupt generatation, scaling
@@ -38,12 +38,18 @@ capabilities at a very inexpensive price point.
 * "Smart reciever" capability.  Handles major mixing and modes on the
   airplane side allowing flight with a 'dumb' radio.
 * i2c airdata system (BFS, mRobotics, 3dr)
-* Full 2-way serial communication with any host computer enabling a 
+* Full 2-way serial communication with any host computer enabling a
   "big processor/little processor" architecture.  Hard real time tasks run on
   the "little" processor.  High level functions run on the big processor (like
   EKF, PID's, navigation, logging, communication, mission, etc.)
 
-# Flight Testing
+## Installation
+
+* vscode arduino extension, bundled cli
+* arduino extension manager -> eigen boulder flight eigen 3.0.2
+* Download the zip file: <https://github.com/bolderflight/eigen/archive/refs/heads/main.zip>
+
+## Flight Testing
 
 * This system originated in the late 2000's and has been evolving as
   DIY haredware has improved.  The APM2 version of the firmware flew
@@ -51,7 +57,7 @@ capabilities at a very inexpensive price point.
   and a Xbow MNAV version even earlier.  The PJRC-teensy version of
   this system has been flying since February 2018.
 
-# What's new in 2020?
+## What's new in 2020?
 
 * 2020 brought us the Teensy 4.0 (yeah!) with crazy fast CPU speeds
   and more memory.  This allows us to imagine doing more of the flight
@@ -88,7 +94,7 @@ capabilities at a very inexpensive price point.
   estimates, but can be useful for monitoring the health of the ekf
   solution.
 
-# What is next?
+## What is next?
 
 * I would like to investigate running inner loop PID control onboard
   the teensy (offloaded from the host.)  This would lead to an
