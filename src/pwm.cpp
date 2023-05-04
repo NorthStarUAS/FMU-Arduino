@@ -19,7 +19,8 @@ static uint8_t servoPins[PWM_CHANNELS];
 
 // define if a channel is symmetrical or not (i.e. mapped to [0,1] for
 // throttle, flaps, spoilers; [-1,1] for aileron, elevator, rudder
-static bool pwm_symmetrical[PWM_CHANNELS] = {0, 1, 1, 1, 1, 0, 0, 0};
+// static bool pwm_symmetrical[PWM_CHANNELS] = {0, 1, 1, 1, 1, 0, 0, 0};
+static const uint16_t pwm_symmetrical = ~(1 << 0 | 1 << 4 | 1 << 5);
 
 // This is the hardware PWM generation rate note the default is 50hz
 // and this is the max we can drive analog servos.  Digital servos
@@ -60,7 +61,7 @@ void pwm_t::setup(int board) {
         analogWrite(servoPins[i], 0); // zero signal to avoid surprises
         analogWriteFrequency(servoPins[i], servoFreq_hz);
     }
-    
+
     // set default safe values for actuator outputs (should already at
     // a higher level, but this is important enough to do it again
     // just in case someone changed the higher level and messed up the
@@ -69,12 +70,40 @@ void pwm_t::setup(int board) {
     // update();
 }
 
+// float pilot_t::rcin2norm(uint16_t pwm_val, uint8_t channel) {
+//     float norm = 0.0;
+//     if ( rcin_symmetrical & (1<<channel) ) {
+//         // i.e. aileron, rudder, elevator
+//         norm = (float)((int)pwm_val - PWM_CENTER) / PWM_HALF_RANGE;
+//     } else {
+//         // i.e. throttle, flaps, etc.
+//         norm = (float)((int)pwm_val - PWM_MIN) / PWM_RANGE;
+//     }
+//     return norm;
+// }
+
+uint16_t pwm_t::norm2pwm(float norm_val, uint8_t channel) {
+    uint16_t output = PWM_CENTER;
+    if ( pwm_symmetrical & (1<<channel) ) {
+        output = PWM_CENTER + (int)(PWM_HALF_RANGE * norm_val); // * config.pwm_cfg.act_gain[i]);
+    } else {
+        output = PWM_MIN + (int)(PWM_RANGE * norm_val); // * config.pwm_cfg.act_gain[i]);
+    }
+    if ( output < PWM_MIN ) {
+        output = PWM_MIN;
+    }
+    if ( output > PWM_MAX ) {
+        output = PWM_MAX;
+    }
+    return output;
+}
+
 // compute raw pwm values from normalized command values.  (handle
 // actuator reversing here.)
-void pwm_t::norm2pwm( float *norm ) {
+void pwm_t::norm2pwm_batch( float *norm ) {
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         // convert to pulse length (special case ch6 when in flaperon mode)
-        if ( pwm_symmetrical[i] /* FIXME: flaperon? */ ) {
+        if ( pwm_symmetrical & (1<<i) ) /* FIXME: flaperon? */ {
             // i.e. aileron, rudder, elevator
             // Serial1.println(i);
             // Serial1.println(config_actuators.act_rev[i]);
@@ -98,7 +127,7 @@ void pwm_t::norm2pwm( float *norm ) {
 
 
 // write the raw actuator values to the RC system
-void pwm_t::update(uint8_t test_pwm_channel) {
+void pwm_t::write(uint8_t test_pwm_channel) {
     // hook for testing servos
     if ( test_pwm_channel >= 0 && test_pwm_channel < PWM_CHANNELS ) {
         output_pwm[test_pwm_channel] = gen_pwm_test_value();

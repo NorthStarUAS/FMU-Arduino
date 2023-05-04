@@ -14,12 +14,12 @@
 #include "src/pilot.h"
 #include "src/power.h"
 #include "src/props2.h"
-#include "src/pwm.h"
+// #include "src/pwm.h"
 #include "src/sensors/sbus/sbus.h"
 
 
 // Controls and Actuators
-uint8_t test_pwm_channel = -1;
+// uint8_t test_pwm_channel = -1; fixme not needed here?
 
 // force/hard-code a specific board config if desired
 void force_config_aura3() {
@@ -29,7 +29,7 @@ void force_config_aura3() {
     airdata.defaults_aura3();
     led.defaults_aura3();
     config.power.have_attopilot = true;
-    pwm.act_gain_defaults();
+    // pwm.act_gain_defaults();  fixme?
     pilot.init();
     config.stab.sas_rollaxis = true;
     config.stab.sas_pitchaxis = true;
@@ -48,7 +48,7 @@ void force_config_goldy3() {
     imu.defaults_goldy3();
     airdata.defaults_goldy3();
     led.defaults_goldy3();
-    pwm.act_gain_defaults();
+    // pwm.act_gain_defaults();  fixme?
     pilot.init();
     config.stab.sas_rollaxis = true;
     config.stab.sas_pitchaxis = true;
@@ -64,7 +64,7 @@ void reset_config_defaults() {
     config.board.board = 0;
     imu.defaults_goldy3();
     led.defaults_goldy3();
-    pwm.act_gain_defaults();
+    // pwm.act_gain_defaults();  fixme?
     pilot.init();
     config.power.have_attopilot = false;
 }
@@ -161,7 +161,7 @@ void setup() {
     Serial.println("Ready and transmitting...");
 }
 
-// main arduino loop
+// main arduino loop -- Fixme: set this up on a hardware timer so the main loop can do non-time sensitive stuff, but caution on race conditions
 void loop() {
     static elapsedMillis mainTimer = 0;
     static elapsedMillis hbTimer = 0;
@@ -227,12 +227,13 @@ void loop() {
             // write_imu_ascii();
         }
 
+        // FIXME: move this functionality to pilot.cpp?
         // uncomment this next line to test drive individual servo channels
         // (for debugging or validation.)
-        test_pwm_channel = -1;  // zero is throttle so be careful!
-        if ( test_pwm_channel >= 0 ) {
-            pwm.update(test_pwm_channel);
-        }
+        // test_pwm_channel = -1;  // zero is throttle so be careful!
+        // if ( test_pwm_channel >= 0 ) {
+        //     pwm.write(test_pwm_channel);
+        // }
 
         // poll the pressure sensors
         airdata.update();
@@ -251,8 +252,11 @@ void loop() {
             last_ap_state = ap_state;
         }
 
-        pilot.write();
+        // fixme: think about order here, if we are generating all pilot commands onboard, then this should move after.
+        // suck in any host commmands (flight control updates, etc.)
+        comms.read_commands();
 
+        pilot.write();
     }
 
     // keep processing while there is data in the uart buffer
@@ -269,9 +273,6 @@ void loop() {
     //     pwm.update();
     //     last_ap_state = pilot.ap_enabled();
     // }
-
-    // suck in any host commmands (flight control updates, etc.)
-    comms.read_commands();
 
     // blink the led on boards that support it
     led.update(imu.gyros_calibrated, gps.gps_data.fixType);

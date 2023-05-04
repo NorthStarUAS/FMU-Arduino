@@ -11,11 +11,11 @@ class pilot_t {
 private:
     // define if a channel is symmetrical or not (i.e. mapped to [0,1] for
     // everything but throttle, flaps, gear
-    static const uint16_t rcin_symmetrical = ~(1 << 2 | 1 << 6 | 1 << 7);
-    static const uint16_t rcout_symmetrical = ~(1 << 0 | 1 << 4 | 1 << 5);
+    // static const uint16_t rcin_symmetrical = ~(1 << 2 | 1 << 6 | 1 << 7);
+    // static const uint16_t rcout_symmetrical = ~(1 << 0 | 1 << 4 | 1 << 5);
 
-    float rcin2norm(uint16_t pwm_val, uint8_t channel);
-    uint16_t norm2rcout(float norm_val, uint8_t channel);
+    // float rcin2norm(uint16_t pwm_val, uint8_t channel);
+    // uint16_t norm2rcout(float norm_val, uint8_t channel);
 
     uint32_t last_input = 0;
 

@@ -1,40 +1,13 @@
+#include "pwm.h"
 #include "sensors/sbus/sbus.h"
 #include "pilot.h"
 
 // 982 - 2006 (frsky) / 1496
-static const uint16_t PWM_MIN = 982;
-static const uint16_t PWM_MAX = 2006;
-static const uint16_t PWM_CENTER = (PWM_MIN + PWM_MAX) / 2;
-static const uint16_t PWM_HALF_RANGE = PWM_MAX - PWM_CENTER;
-static const uint16_t PWM_RANGE = PWM_MAX - PWM_MIN;
-
-// float pilot_t::rcin2norm(uint16_t pwm_val, uint8_t channel) {
-//     float norm = 0.0;
-//     if ( rcin_symmetrical & (1<<channel) ) {
-//         // i.e. aileron, rudder, elevator
-//         norm = (float)((int)pwm_val - PWM_CENTER) / PWM_HALF_RANGE;
-//     } else {
-//         // i.e. throttle, flaps, etc.
-//         norm = (float)((int)pwm_val - PWM_MIN) / PWM_RANGE;
-//     }
-//     return norm;
-// }
-
-uint16_t pilot_t::norm2rcout(float norm_val, uint8_t channel) {
-    uint16_t output = PWM_CENTER;
-    if ( rcout_symmetrical & (1<<channel) ) {
-        output = PWM_CENTER + (int)(PWM_HALF_RANGE * norm_val); // * config.pwm_cfg.act_gain[i]);
-    } else {
-        output = PWM_MIN + (int)(PWM_RANGE * norm_val); // * config.pwm_cfg.act_gain[i]);
-    }
-    if ( output < PWM_MIN ) {
-        output = PWM_MIN;
-    }
-    if ( output > PWM_MAX ) {
-        output = PWM_MAX;
-    }
-    return output;
-}
+// static const uint16_t PWM_MIN = 982;
+// static const uint16_t PWM_MAX = 2006;
+// static const uint16_t PWM_CENTER = (PWM_MIN + PWM_MAX) / 2;
+// static const uint16_t PWM_HALF_RANGE = PWM_MAX - PWM_CENTER;
+// static const uint16_t PWM_RANGE = PWM_MAX - PWM_MIN;
 
 void pilot_t::init() {
     config_eff_gains = PropertyNode("/config/pwm");
@@ -50,7 +23,8 @@ void pilot_t::init() {
         config_eff_gains.setDouble("gains", 1.0, i);
     }
 
-    // enable sbus inputs
+    // setup the hardware inputs and outputs
+    pwm.setup(-1); // fixme need to specify board from config file (which may not have it since we are porting from ardupilot devel environment)
     sbus.setup();
 
     mixer.setup();
@@ -104,10 +78,12 @@ void pilot_t::write() {
         // float norm_val = mixer.outputs[i] * config.pwm_cfg.act_gain[i];
         float norm_val = effector_node.getDouble("channel", i)
             * config_eff_gains.getDouble("gains", i);
-        uint16_t pwm_val = norm2rcout(norm_val, i);
+        uint16_t pwm_val = pwm.norm2pwm(norm_val, i);
+        pwm.output_pwm[i] = pwm_val;
         // printf("%d ", pwm_val);
-        hal.rcout->write(i, pwm_val);
+        // hal.rcout->write(i, pwm_val);
     }
+    pwm.write();
     // printf("\n");
     // pwm_test = 1000 + (AP_HAL::millis() % 5000) / 5;
     // for ( uint8_t i = MAX_RCOUT_CHANNELS; i < 14; i++ ) {
