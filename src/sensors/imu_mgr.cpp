@@ -1,10 +1,10 @@
 #include <Arduino.h>
 
-#include "config.h" // fixme remove
+#include "../config.h" // fixme remove
 
 #include "imu_mgr.h"
 
-#include "sensors/MPU9250/MPU9250.h"
+#include "MPU9250/MPU9250.h"
 
 // IMU full scale ranges, DLPF bandwidth, interrupt SRD, and interrupt pin
 const uint8_t MPU9250_SRD = 9;  // Data Output Rate = 1000 / (1 + SRD)

@@ -1,5 +1,5 @@
 #include "pwm.h"
-#include "sensors/sbus/sbus.h"
+#include "sbus/sbus.h"
 #include "pilot.h"
 
 // 982 - 2006 (frsky) / 1496

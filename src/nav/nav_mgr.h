@@ -2,31 +2,30 @@
 
 #pragma once
 
-#include <Arduino.h>
+#include "../props2.h"
+#include "nav_structs.h"
+#include "ekf15.h"
+#include "ekf15_mag.h"
 
-#include "../setup_board.h"
-#include "nav_common/structs.h"
+class nav_mgr_t {
 
-#if defined(AURA_ONBOARD_EKF)
-#include "nav_ekf15/EKF_15state.h"
-#include "nav_ekf15_mag/EKF_15state.h"
-#endif
-
-class ekf_t {
 private:
     bool ekf_inited = false;
     unsigned long int gps_last_millis = 0;
-#if defined(AURA_ONBOARD_EKF)
     EKF15 ekf;
     EKF15_mag ekf_mag;
-#endif
-    
+    PropertyNode config_nav_node;
+    PropertyNode gps_node;
+    PropertyNode imu_node;
+    PropertyNode nav_node;
+
 public:
-    NAVdata nav;
+    NAVdata data;
     uint8_t status;             // 0 = uninitted, 1 = no gps, 2 = 0k
-    void setup();
+    void init();
+    void configure();
     void update();
     void reinit();              // request the filter reinit itself
 };
 
-extern ekf_t ekf;
+extern nav_mgr_t nav_mgr;

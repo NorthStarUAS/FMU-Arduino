@@ -5,18 +5,16 @@
 #include "setup_board.h"        // #include this early
 
 #include "src/airdata.h"
-#include "src/comms.h"
+#include "src/comms/comms_mgr.h"
 #include "src/config.h"
-#include "src/ekf.h"
 #include "src/gps.h"
-#include "src/imu_mgr.h"
+#include "src/sensors/imu_mgr.h"
 #include "src/led.h"
-#include "src/pilot.h"
+#include "src/nav/nav_mgr.h"
+#include "src/sensors/pilot.h"
 #include "src/power.h"
 #include "src/props2.h"
-// #include "src/pwm.h"
 #include "src/sensors/sbus/sbus.h"
-
 
 // Controls and Actuators
 // uint8_t test_pwm_channel = -1; fixme not needed here?
@@ -74,9 +72,14 @@ static PropertyNode config_nav_node;
 static PropertyNode pilot_node;
 static PropertyNode status_node;
 
+static comms_mgr_t comms_mgr;
+
 void setup() {
     Serial.begin(115200);
     delay(1000);  // hopefully long enough for serial to come alive
+
+    // make it different random each time
+    randomSeed(analogRead(0));
 
     comms.setup();
 
@@ -157,6 +160,8 @@ void setup() {
 
     // ekf init (just prints availability status)
     ekf.setup();
+
+    comms_mgr.init();
 
     Serial.println("Ready and transmitting...");
 }
@@ -252,11 +257,10 @@ void loop() {
             last_ap_state = ap_state;
         }
 
-        // fixme: think about order here, if we are generating all pilot commands onboard, then this should move after.
-        // suck in any host commmands (flight control updates, etc.)
-        comms.read_commands();
-
+        // fixme think about order and timing, but inner loop commands aren't comming from host any more so maybe less important?
         pilot.write();
+
+        comms_mgr.update();
     }
 
     // keep processing while there is data in the uart buffer

@@ -1,4 +1,4 @@
-#include "config.h"
+#include "../config.h" // fixme remove?
 #include "pwm.h"
 
 // For a Futaba T6EX 2.4Ghz FASST system:

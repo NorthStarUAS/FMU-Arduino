@@ -1,4 +1,4 @@
-#include "serial_link.h"
+#include "serial.h"
 
 SerialLink::SerialLink() {
 }
@@ -64,7 +64,7 @@ bool SerialLink::update() {
             if ( input == START_OF_MSG1 ) {
                 // Serial.println("start of msg1");
                 state = 2;
-            } 
+            }
             else if ( input == START_OF_MSG0 ) {
                 // no change
             } else {
@@ -145,13 +145,13 @@ int SerialLink::write_packet(uint8_t packet_id, uint8_t *payload, uint8_t len) {
 
     // packet id (1 byte)
     _port->write(packet_id);
-    
+
     // packet length (1 byte)
     _port->write(len);
 
     // write payload
     _port->write( payload, len );
-    
+
     // check sum (2 bytes)
     uint8_t cksum0, cksum1;
     checksum( packet_id, len, payload, len, &cksum0, &cksum1 );

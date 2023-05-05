@@ -7,9 +7,9 @@
 #include <eigen.h>
 using namespace Eigen;
 
-#include "props2.h"
-#include "calibration/calib_accels.h"
-#include "util/cal_temp.h"
+#include "../props2.h"
+#include "../calibration/calib_accels.h"
+#include "../util/cal_temp.h"
 
 class imu_mgr_t {
 

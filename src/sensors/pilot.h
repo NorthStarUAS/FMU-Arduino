@@ -1,10 +1,10 @@
 #pragma once
 
-#include "mixer.h"
-#include "props2.h"
-#include "rc_messages.h"
-#include "sensors/sbus/sbus.h"
-#include "../setup_board.h"
+#include "../mixer.h"
+#include "../props2.h"
+#include "../rc_messages.h"
+#include "../sensors/sbus/sbus.h"
+#include "../../setup_board.h"
 
 class pilot_t {
 
