@@ -81,8 +81,6 @@ void setup() {
     // make it different random each time
     randomSeed(analogRead(0));
 
-    comms.setup();
-
     printf("\nNorthStar FMU: Rev %d\n", FIRMWARE_REV);
     printf("You are seeing this message on the usb interface.\n");
     printf("Sensor/config communication is on Serial1 @ %d baud (N81) no flow control.\n", HOST_BAUD);
@@ -159,7 +157,7 @@ void setup() {
     led.setup();
 
     // ekf init (just prints availability status)
-    ekf.setup();
+    nav_mgr.init();
 
     comms_mgr.init();
 
@@ -177,12 +175,15 @@ void loop() {
     if ( mainTimer >= DT_MILLIS ) {
         mainTimer -= DT_MILLIS;
 
-        if ( mainTimer > 0 ) {
-            comms.main_loop_timer_misses++;
-            if ( comms.main_loop_timer_misses % 25 == 0 ) {
-                Serial.println("WARNING: main loop is not completing on time!");
-            }
-        }
+        // fixme: add back counter for main loop timer misses ... one of those
+        // things that should never happen, but if it does we want to know right
+        // away.
+        // if ( mainTimer > 0 ) {
+        //     comms.main_loop_timer_misses++;
+        //     if ( comms.main_loop_timer_misses % 25 == 0 ) {
+        //         Serial.println("WARNING: main loop is not completing on time!");
+        //     }
+        // }
 
         // top priority, used for timing sync downstream.
         imu.update();
@@ -190,47 +191,50 @@ void loop() {
         // suck in any available gps messages
         gps.update();
 
-        if ( config.ekf.select != message::enum_nav::none ) {
-            ekf.update();
+        // 3. Estimate location and attitude
+        if ( config_nav_node.getString("selected") != "none" ) {
+            nav_mgr.update();
         }
 
-        // output keyed off new IMU data
-        comms.output_counter += comms.write_pilot_in_bin();
-        comms.output_counter += comms.write_gps_bin();
-        comms.output_counter += comms.write_airdata_bin();
-        comms.output_counter += comms.write_power_bin();
-        // do a little extra dance with the return value because
-        // write_status_info_bin() can reset comms.output_counter (but
-        // that gets ignored if we do the math in one step)
-        uint8_t result = comms.write_status_info_bin();
-        comms.output_counter += result;
-        if ( config.ekf.select != message::enum_nav::none ) {
-            comms.output_counter += comms.write_nav_bin();
-        }
-        // write imu message last: used as an implicit end of data
-        // frame marker.
-        comms.output_counter += comms.write_imu_bin();
+        // fixme: check, but this should be handled down in the comms level code now.
+        // // output keyed off new IMU data
+        // comms.output_counter += comms.write_pilot_in_bin();
+        // comms.output_counter += comms.write_gps_bin();
+        // comms.output_counter += comms.write_airdata_bin();
+        // comms.output_counter += comms.write_power_bin();
+        // // do a little extra dance with the return value because
+        // // write_status_info_bin() can reset comms.output_counter (but
+        // // that gets ignored if we do the math in one step)
+        // uint8_t result = comms.write_status_info_bin();
+        // comms.output_counter += result;
+        // if ( config.ekf.select != message::enum_nav::none ) {
+        //     comms.output_counter += comms.write_nav_bin();
+        // }
+        // // write imu message last: used as an implicit end of data
+        // // frame marker.
+        // comms.output_counter += comms.write_imu_bin();
 
+        // fixme: also check this is moved to comms_mgr
         // one minute heartbeat output
-        if ( hbTimer >= 60000 && imu.gyros_calibrated == 2) {
-            hbTimer = 0;
-            comms.write_status_info_ascii();
-            comms.write_power_ascii();
-            Serial.println();
-        }
-        // 10hz human debugging output, but only after gyros finish calibrating
-        if ( debugTimer >= 100 && imu.gyros_calibrated == 2) {
-            debugTimer = 0;
-            // write_pilot_in_ascii();
-            // write_actuator_out_ascii();
-            // comms.write_gps_ascii();
-            // if ( config.ekf.select != message::enum_nav::none ) {
-            //     comms.write_nav_ascii();
-            // }
-            // comms.write_airdata_ascii();
-            // write_status_info_ascii();
-            // write_imu_ascii();
-        }
+        // if ( hbTimer >= 60000 && imu.gyros_calibrated == 2) {
+        //     hbTimer = 0;
+        //     comms.write_status_info_ascii();
+        //     comms.write_power_ascii();
+        //     Serial.println();
+        // }
+        // // 10hz human debugging output, but only after gyros finish calibrating
+        // if ( debugTimer >= 100 && imu.gyros_calibrated == 2) {
+        //     debugTimer = 0;
+        //     // write_pilot_in_ascii();
+        //     // write_actuator_out_ascii();
+        //     // comms.write_gps_ascii();
+        //     // if ( config.ekf.select != message::enum_nav::none ) {
+        //     //     comms.write_nav_ascii();
+        //     // }
+        //     // comms.write_airdata_ascii();
+        //     // write_status_info_ascii();
+        //     // write_imu_ascii();
+        // }
 
         // FIXME: move this functionality to pilot.cpp?
         // uncomment this next line to test drive individual servo channels
