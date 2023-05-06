@@ -29,7 +29,7 @@ bool RateLimiter::update( bool verbose ) {
         }
     }
     if ( verbose ) {
-        printf("millis: %d  timer: %d  dt: %d\n", millis(), timer, dt_millis);
+        printf("millis: %ld  timer: %ld  dt: %ld\n", millis(), timer, dt_millis);
     }
     if ( (dt_millis > 0) and (millis() >= timer + dt_millis) ) {
         if ( millis() > timer + dt_millis ) {

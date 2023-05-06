@@ -6,7 +6,7 @@
 #include "sensors/imu_mgr.h"
 #include "led.h"
 #include "mixer.h"
-#include "power.h"
+#include "sensors/power.h"
 
 // starting point for writing big eeprom struct
 static const int CONFIG_OFFSET = 2;
@@ -62,13 +62,6 @@ void config_t::reset_defaults() {
 int extract_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
     for ( int i = 0; i < len; i++ ) {
         buf[i] = config_buf[pos + i];
-    }
-    return len;
-}
-
-static int mycopy(uint8_t *src, uint8_t *dst, int len) {
-    for ( int i = 0; i < len; i++ ) {
-        dst[i] = src[i];
     }
     return len;
 }

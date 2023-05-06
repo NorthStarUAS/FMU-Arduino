@@ -55,7 +55,7 @@ void airdata_t::setup() {
             bme280.configure(0x76, &Wire);
         }
         bme280_status = bme280.begin();
-        if ( bme280_status < 0 ) {
+        if ( !bme280_status ) {
             Serial.println("BME280 barometer initialization unsuccessful");
             Serial.println("Check wiring or try cycling power");
             delay(1000);
@@ -85,7 +85,7 @@ void airdata_t::setup() {
             Serial.println("BMP180 barometer ready.");
         }
     }
-    if ( bme280_status < 0 ) {
+    if ( !bme280_status ) {
         Serial.println("Onboard barometer initialization unsuccessful");
         Serial.println("Check wiring or try cycling power");
         delay(1000);

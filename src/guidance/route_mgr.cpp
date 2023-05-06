@@ -63,7 +63,7 @@ bool route_mgr_t::build_str( string request ) {
         return false;
     }
     standby_route.clear();
-    int i = 0;
+    unsigned int i = 0;
     while ( i + 4 <= tokens.size() ) {
         int mode = std::stoi(tokens[i]);
         waypoint_t wp(mode, std::stod(tokens[i+1]), std::stod(tokens[i+2]));
@@ -93,7 +93,7 @@ waypoint_t route_mgr_t::get_previous_wp() {
     if ( prev < 0 ) {
         prev = active_route.size() - 1;
     }
-    if ( prev >= 0 and prev < active_route.size() ) {
+    if ( prev >= 0 and prev < (int)active_route.size() ) {
         return active_route[prev];
     } else {
         return waypoint_t();

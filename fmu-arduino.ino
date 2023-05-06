@@ -12,7 +12,7 @@
 #include "src/led.h"
 #include "src/nav/nav_mgr.h"
 #include "src/sensors/pilot.h"
-#include "src/power.h"
+#include "src/sensors/power.h"
 #include "src/props2.h"
 #include "src/sensors/sbus/sbus.h"
 
@@ -138,7 +138,7 @@ void setup() {
 
     // power sensing
     analogReadResolution(16);   // set up ADC0
-    power.setup(config.board.board);
+    power.setup();
 
     // led for status blinking if defined
     led.setup();

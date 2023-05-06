@@ -56,7 +56,6 @@ bool SerialLink::update() {
     // 5 = looking for checksum_lo
     // 6 = looking for checksum_l=hi
     uint8_t input;
-    static int buf_counter = 0;
     bool new_data = false;
     // Serial.print("start read_commands(): "); Serial.println(state);
 
