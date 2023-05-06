@@ -1,14 +1,19 @@
 # NorthStar FMU (for Teensy/Arduino)
 
-This is an Arduino (Teensyduino) sketch for building the heart of a
-UAV autopilot.  Rc-fmu turns an inexpensive teensy board into a sensor
-collector, attitude determination system, communications hub, and
-servo controller.  It is not yet a full fledged autopilot itself, but
-designed to pair with a host linux board (such as a beaglebone or
-raspberry pi) for all the higher level autopilot functions.  It
-supports the mpu9250 imu, ublox8 gps, bme280/bmp280 pressure sensors,
-sbus receiver, and attopilot volt/amp sensor.  It also supports an
+This is an Arduino (Teensyduino) sketch for building the heart of a UAV
+autopilot.  The fmu-arduino sketch is intended to create a full fledged
+autopilot from an inexpensive teensy board and a collection of inexpensive
+sensors from the DIY autopilot world.  It can also pair with a host linux
+computer (like a beaglebone or raspberry pi) for additional high level
+functionality.  It supports the mpu9250 imu, ublox8 gps, bme280/bmp280 pressure
+sensors, sbus receiver, and attopilot volt/amp sensor. It also supports an
 external airdata systems via the i2c bus.
+
+Please note: this project is not intended to support every sensor, every
+processor board, every vehicle type, and every use case.  Please see ardupilot
+and px4 for that approach.  I know this code is not "simple" anymore, but the
+intention is for it to be far simpler than these much larger "big tent"
+projects.
 
 ![prototype](images/IMG_20191118_064616925.jpg "Prototype board")
 
@@ -17,11 +22,11 @@ precision attitude and lcoation estimate. It is designed to work
 exceptionally well for outdoor dynamic systems such as fixed wing
 aircraft.
 
-Rc-fmu is one component of a research grade autopilot system that
-anyone can assemble with basic soldering skills.  Altogether, the Rice
-Creek UAS ecosystem provides a high quality autopilot system that
-ephasizes high reliability and simple code.  It offers many advanced
-capabilities at a very inexpensive price point.
+fmu-arduino is one component of a research grade autopilot system that anyone
+can assemble with basic soldering skills.  Altogether, the NorthStar UAS
+ecosystem provides a high quality autopilot system that ephasizes high
+reliability and simple code design.  It offers many advanced capabilities that
+anyone can study and include in their own projects.
 
 ## Features
 
@@ -56,6 +61,32 @@ capabilities at a very inexpensive price point.
   at least as early as 2012.  There was an APM1 version prior to that
   and a Xbow MNAV version even earlier.  The PJRC-teensy version of
   this system has been flying since February 2018.
+
+## What's new in 2023?
+
+* I am bringing more of the high level (linux) functionality down to the teensy
+  level.  This requires a teensy with an SD card (ex: teensy 3.6 or 4.1)
+* The autopilot and aircraft config is now stored in a set of configuration json
+  files on the SD card.
+* I am planning to port data logging functionality over to the teensy (was on
+  the beaglebone.)
+* The telemetry iterface is now handled directly on the teensy (was on the
+  beaglebone.)
+* Innerloop autopilot functionality and controllers are now on the teensy (was on the beaglebone.)
+* Intermediate guidance functions are in progress (circle hold and route
+  following).  The port compiles but it nees testing.
+* High level guidance functions (such as auto launch and land, survey route
+  planning, ...) remain on the host computer for now.
+* I have experimented with a simple simulator that is light weight enough to run onboard the teensy.
+  * This could be used for HIL testing.
+  * This could also be used to predict the next state of the system and compare
+    to the actual measured next state and flag performance anomalies for early
+    fault detection.
+  * The simulator can be generated (fit) from actual flight test data using a
+    process I jokingly call Aero-DMD (because the math setup resembles the setup
+    for dynamic mode decomposition from the fluids field.)  I'm told I'm just
+    doing least squares and to not over-hype it. :-)
+* On-board accelerometer (strapdown) calibration on the teensy.
 
 ## What's new in 2020?
 
@@ -96,9 +127,10 @@ capabilities at a very inexpensive price point.
 
 ## What is next?
 
-* I would like to investigate running inner loop PID control onboard
-  the teensy (offloaded from the host.)  This would lead to an
-  extremely tight inner main loop: sense -> state estimator -> pid
-  control -> effector output.  The higher level navigation would
-  remain on the host computer as well as other functions like logging
-  and communication with the ground station.
+* Written in May, 2023 ...
+  * continue porting the my ardupilot-based version of the flight controller to
+    arduino/teensy and continue testing and validating each major module or
+    feature as I go.
+  * as the port stabilizes, I need to put together some updated hardware so I
+    can flight test (probably in my venerable skywalker platform.)
+  * then flight test and refine as I go ...
