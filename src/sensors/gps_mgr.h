@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "sensors/UBLOX8/UBLOX8.h"
+#include "UBLOX8/UBLOX8.h"
 
 #include <math.h>
 #if defined(ARDUINO)
@@ -13,23 +13,30 @@
 //#include <Eigen/LU>
 using namespace Eigen;
 
-class gps_t {
+#include "../props2.h"
+
+class gps_mgr_t {
+
 public:
+
     unsigned long gps_millis = 0;
     bool gps_acquired = false;
+    bool gps_settled = false;
     elapsedMillis gps_settle_timer = 0;
-    ublox8_nav_pvt_t gps_data;
-    double unix_sec;
+    uint64_t unix_usec;
     float magvar_rad;
     Vector3f mag_ned;
 
     void setup();
     void update();
-    bool settle();
 
 private:
-    void update_unix_sec();
+
+    PropertyNode gps_node;
+    ublox8_nav_pvt_t gps_data;
+
+    void update_unix_usec();
     void update_magvar();
 };
 
-extern gps_t gps;
+extern gps_mgr_t gps_mgr;

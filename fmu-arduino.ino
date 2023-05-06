@@ -7,7 +7,7 @@
 #include "src/airdata.h"
 #include "src/comms/comms_mgr.h"
 #include "src/config.h"
-#include "src/gps.h"
+#include "src/sensors/gps_mgr.h"
 #include "src/sensors/imu_mgr.h"
 #include "src/led.h"
 #include "src/nav/nav_mgr.h"
@@ -131,7 +131,7 @@ void setup() {
     pilot.init();
 
     // initialize the gps receiver
-    gps.setup();
+    gps_mgr.setup();
 
     // initialize air data (marmot v1)
     airdata.setup();
@@ -172,8 +172,8 @@ int freeMemory() {
 // main arduino loop -- Fixme: set this up on a hardware timer so the main loop can do non-time sensitive stuff, but caution on race conditions
 void loop() {
     static elapsedMillis mainTimer = 0;
-    static elapsedMillis hbTimer = 0;
-    static elapsedMillis debugTimer = 0;
+    // static elapsedMillis hbTimer = 0;
+    // static elapsedMillis debugTimer = 0;
 
     // When new IMU data is ready (new pulse from IMU), go out and grab the IMU data
     // and output fresh IMU message plus the most recent data from everything else.
@@ -190,11 +190,11 @@ void loop() {
         //     }
         // }
 
-        // top priority, used for timing sync downstream.
+        // 1. Sense motion (top priority, used for timing sync downstream.)
         imu_mgr.update();
 
-        // suck in any available gps messages
-        gps.update();
+        // 2. Check for gps updates
+        gps_mgr.update();
 
         // 3. Estimate location and attitude
         if ( config_nav_node.getString("selected") != "none" ) {
@@ -225,7 +225,7 @@ void loop() {
         status_node.setUInt("available_memory", freeMemory());
 
         // blink the led on boards that support it
-        led.update(imu_mgr.gyros_calibrated, gps.gps_data.fixType);
+        led.update(imu_mgr.gyros_calibrated);
 
         comms_mgr.update();
     }

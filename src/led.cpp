@@ -11,6 +11,8 @@ void led_t::defaults_aura3() {
 }
 
 void led_t::setup() {
+    gps_node = PropertyNode("/sensors/gps");
+
     if ( config.board.led_pin > 0 ) {
         pinMode(config.board.led_pin, OUTPUT);
         digitalWrite(config.board.led_pin, HIGH);
@@ -20,12 +22,12 @@ void led_t::setup() {
     }
 }
 
-void led_t::update(int gyros_calibrated, int gps_fix) {
+void led_t::update(int gyros_calibrated) {
     if ( config.board.led_pin > 0 ) {
 
         if ( gyros_calibrated < 2 ) {
             blink_rate = 50;
-        } else if ( gps_fix < 3 ) {
+        } else if ( gps_node.getInt("status") < 3 ) {
             blink_rate = 200;
         } else {
             blink_rate = 800;
@@ -37,6 +39,6 @@ void led_t::update(int gyros_calibrated, int gps_fix) {
         }
     }
 }
-        
+
 // global shared instance
 led_t led;
