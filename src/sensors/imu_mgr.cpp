@@ -220,7 +220,7 @@ void imu_mgr_t::update() {
 // calibration fails and we run with raw gyro values.
 void imu_mgr_t::calibrate_gyros() {
     if ( gyros_calibrated == 0 ) {
-        printf("Initialize gyro calibration: ");
+        Serial.print("Initialize gyro calibration: ");
         slow = gyros_cal.segment(0,3);
         fast = gyros_cal.segment(0,3);
         total_timer = 0;
@@ -241,13 +241,13 @@ void imu_mgr_t::calibrate_gyros() {
     if ( output_timer >= 1000 ) {
         output_timer = 0;
         if ( good_timer < 1000 ) {
-            printf("x");
+            Serial.print("x");
         } else {
-            printf("*");
+            Serial.print("*");
         }
     }
     if ( good_timer > 4100 || total_timer > 15000 ) {
-        printf("\n");
+        Serial.println();
         // set gyro zero points from the 'slow' filter.
         gyro_startup_bias = slow;
         gyros_calibrated = 2;
