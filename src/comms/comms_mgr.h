@@ -18,7 +18,7 @@ private:
 
     RateLimiter info_timer;
     RateLimiter heartbeat;
-    uint32_t tempTimer;
+    uint32_t tempTimer;  // fixme use elapsedmillis?
     uint32_t counter;
 
     PropertyNode config_node;

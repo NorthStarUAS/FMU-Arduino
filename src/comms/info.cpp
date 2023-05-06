@@ -7,6 +7,7 @@
  */
 
 #include "../nav/nav_constants.h"
+#include "../sensors/pwm.h"
 
 #include "info.h"
 
@@ -26,82 +27,82 @@ void info_t::write_pilot_in_ascii()
 {
     // pilot (receiver) input data
     if ( pilot_node.getBool("failsafe") ) {
-        console->printf("FAILSAFE! ");
+        printf("FAILSAFE! ");
     }
     if ( switches_node.getBool("master_switch") ) {
-        console->printf("(Auto) ");
+        printf("(Auto) ");
     } else {
-        console->printf("(Manual) ");
+        printf("(Manual) ");
     }
     if ( switches_node.getBool("throttle_safety") ) {
-        console->printf("(Throttle enable) ");
+        printf("(Throttle enable) ");
     } else {
-        console->printf("(Throttle safe) ");
+        printf("(Throttle safe) ");
     }
     for ( int i = 0; i < 8; i++ ) {
-        console->printf("%.3f ", pilot_node.getDouble("channel", i));
+        printf("%.3f ", pilot_node.getDouble("channel", i));
     }
-    console->printf("\n");
+    printf("\n");
 }
 
 void info_t::write_actuator_out_ascii()
 {
     // actuator output
-    console->printf("RCOUT:");
-    for ( int i = 0; i < MAX_RCOUT_CHANNELS; i++ ) {
-        console->printf("%.2f ", effector_node.getDouble("channel", i));
+    printf("RCOUT:");
+    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
+        printf("%.2f ", effector_node.getDouble("channel", i));
     }
-    console->printf("\n");
+    printf("\n");
 }
 
 void info_t::write_imu_ascii()
 {
     // output imu data
-    console->printf("IMU: ");
-    console->printf("%.3f ", imu_node.getDouble("timestamp"));
-    console->printf("%.2f ", imu_node.getDouble("p_rps"));
-    console->printf("%.2f ", imu_node.getDouble("q_rps"));
-    console->printf("%.2f ", imu_node.getDouble("r_rps"));
-    console->printf("%.2f ", imu_node.getDouble("ax_mps2"));
-    console->printf("%.2f ", imu_node.getDouble("ay_mps2"));
-    console->printf("%.2f ", imu_node.getDouble("az_mps2"));
-    console->printf("%.2f ", imu_node.getDouble("temp_C"));
-    console->printf("\n");
+    printf("IMU: ");
+    printf("%.3f ", imu_node.getDouble("timestamp"));
+    printf("%.2f ", imu_node.getDouble("p_rps"));
+    printf("%.2f ", imu_node.getDouble("q_rps"));
+    printf("%.2f ", imu_node.getDouble("r_rps"));
+    printf("%.2f ", imu_node.getDouble("ax_mps2"));
+    printf("%.2f ", imu_node.getDouble("ay_mps2"));
+    printf("%.2f ", imu_node.getDouble("az_mps2"));
+    printf("%.2f ", imu_node.getDouble("temp_C"));
+    printf("\n");
 }
 
 void info_t::write_gps_ascii() {
-    console->printf("GPS:");
-    console->printf(" Lat: %.7f", gps_node.getDouble("latitude_deg"));
-    console->printf(" Lon: %.7f", gps_node.getDouble("longitude_deg"));
-    console->printf(" Alt: %.1f", gps_node.getDouble("altitude_m"));
-    console->printf(" Vel: %.1f %.1f %.1f",
+    printf("GPS:");
+    printf(" Lat: %.7f", gps_node.getDouble("latitude_deg"));
+    printf(" Lon: %.7f", gps_node.getDouble("longitude_deg"));
+    printf(" Alt: %.1f", gps_node.getDouble("altitude_m"));
+    printf(" Vel: %.1f %.1f %.1f",
                     gps_node.getDouble("vn_mps"),
                     gps_node.getDouble("ve_mps"),
                     gps_node.getDouble("vd_mps"));
-    console->printf(" Sat: %d", gps_node.getInt("num_sats"));
-    console->printf(" Fix: %d", gps_node.getInt("status"));
-    console->printf(" Time: %02d:%02d:%02d ",
+    printf(" Sat: %d", gps_node.getInt("num_sats"));
+    printf(" Fix: %d", gps_node.getInt("status"));
+    printf(" Time: %02d:%02d:%02d ",
                     gps_node.getInt("hour"),
                     gps_node.getInt("min"),
                     gps_node.getInt("sec"));
-    console->printf(" Date: %02d/%02d/%04d",
+    printf(" Date: %02d/%02d/%04d",
                     gps_node.getInt("month"),
                     gps_node.getInt("day"),
                     gps_node.getInt("year"));
-    console->printf("\n");
+    printf("\n");
 }
 
 void info_t::write_nav_ascii() {
     // values
-    console->printf("Pos: %.7f, %.7f, %.2f",
+    printf("Pos: %.7f, %.7f, %.2f",
                     nav_node.getDouble("latitude_deg"),
                     nav_node.getDouble("longitude_deg"),
                     nav_node.getDouble("altitude_m"));
-    console->printf(" Vel: %.2f, %.2f, %.2f",
+    printf(" Vel: %.2f, %.2f, %.2f",
                     nav_node.getDouble("vn_mps"),
                     nav_node.getDouble("ve_mps"),
                     nav_node.getDouble("vd_mps"));
-    console->printf(" Att: %.2f, %.2f, %.2f\n",
+    printf(" Att: %.2f, %.2f, %.2f\n",
                     nav_node.getDouble("phi_rad")*R2D,
                     nav_node.getDouble("the_rad")*R2D,
                     nav_node.getDouble("psi_rad")*R2D);
@@ -109,24 +110,24 @@ void info_t::write_nav_ascii() {
 
 void info_t::write_nav_stats_ascii() {
     // covariances
-    console->printf("gxb: %.2f %.2f %.2f",
+    printf("gxb: %.2f %.2f %.2f",
                     nav_node.getDouble("p_bias"),
                     nav_node.getDouble("q_bias"),
                     nav_node.getDouble("r_bias"));
-    console->printf(" axb: %.2f %.2f %.2f",
+    printf(" axb: %.2f %.2f %.2f",
                     nav_node.getDouble("ax_bias"),
                     nav_node.getDouble("ay_bias"),
                     nav_node.getDouble("az_bias"));
     float num = 3.0;            // how many standard deviations
-    console->printf(" cov pos: %.2f %.2f %.2f",
+    printf(" cov pos: %.2f %.2f %.2f",
                     num * nav_node.getDouble("Pp0"),
                     num * nav_node.getDouble("Pp1"),
                     num * nav_node.getDouble("Pp2"));
-    console->printf(" vel: %.2f %.2f %.2f",
+    printf(" vel: %.2f %.2f %.2f",
                     num * nav_node.getDouble("Pv0"),
                     num * nav_node.getDouble("Pv1"),
                     num * nav_node.getDouble("Pv2"));
-    console->printf(" att: %.2f %.2f %.2f\n",
+    printf(" att: %.2f %.2f %.2f\n",
                     num * nav_node.getDouble("Pa0")*R2D,
                     num * nav_node.getDouble("Pa1")*R2D,
                     num * nav_node.getDouble("Pa2")*R2D);
@@ -137,10 +138,10 @@ void info_t::write_nav_stats_ascii() {
 
 void info_t::write_airdata_ascii()
 {
-    console->printf("Baro: %.2fpa %.1fC ",
+    printf("Baro: %.2fpa %.1fC ",
                     airdata_node.getDouble("baro_press_pa"),
                     airdata_node.getDouble("baro_temp_C"));
-    console->printf("Pitot: %.4f mps (%.1f pa) %.1f C %d errors\n",
+    printf("Pitot: %.4f mps (%.1f pa) %.1f C %d errors\n",
                     airdata_node.getDouble("airspeed_mps"),
 		    airdata_node.getDouble("diffPress_pa"),
                     airdata_node.getDouble("air_temp_C"),

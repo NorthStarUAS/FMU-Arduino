@@ -3,39 +3,39 @@
 #include "menu.h"
 
 void menu_t::display() {
-    console->printf("%s\n",
-                    "  1) Pilot input\n"
-                    "  2) GPS\n"
-                    "  3) Airdata\n"
-                    "  4) IMU\n"
-                    "  5) Nav/EKF\n"
-                    "  6) EKF biases/covariances\n"
-                    "  7) Actuator output\n"
-                    "  8) Calibrate IMU strapdown\n"
-                    "  9) Pretty print property tree\n"
-                    "  Reboot: type \"reboot\"\n");
+    printf("%s\n",
+            "  1) Pilot input\n"
+            "  2) GPS\n"
+            "  3) Airdata\n"
+            "  4) IMU\n"
+            "  5) Nav/EKF\n"
+            "  6) EKF biases/covariances\n"
+            "  7) Actuator output\n"
+            "  8) Calibrate IMU strapdown\n"
+            "  9) Pretty print property tree\n"
+            "  Reboot: type \"reboot\"\n");
 }
 
 void menu_t::init() {
     imu_node = PropertyNode("/sensors/imu");
     // flush input buffer
-    while ( console->available() ) {
-        console->read();
+    while ( Serial.available() ) {
+        Serial.read();
     }
 }
 
 void menu_t::update() {
     // discard non-user input (but watch for the reboot command)
     int16_t user_input = 0;
-    if ( console->available() > 1 ) {
-        while ( console->available() ) {
-            user_input = console->read();
+    if ( Serial.available() > 1 ) {
+        while ( Serial.available() ) {
+            user_input = Serial.read();
             if ( user_input == reboot_cmd[reboot_count] ) {
                 reboot_count++;
                 if ( reboot_count == strlen(reboot_cmd) ) {
-                    console->printf("rebooting by external request ...\n");
-                    hal.scheduler->delay(250);
-                    hal.scheduler->reboot(false);
+                    printf("rebooting by external request ...\n");
+                    delay(250);
+                    _reboot_Teensyduino_();
                 }
             } else if ( user_input == reboot_cmd[0] ) {
                 // allow immediate restart of a failed or partial command
@@ -45,8 +45,8 @@ void menu_t::update() {
             }
         }
     }
-    if ( console->available() ) {
-        user_input = console->read();
+    if ( Serial.available() ) {
+        user_input = Serial.read();
         printf("read character: %c\n", (char)user_input);
         if ( user_input == '1' ) {
             display_pilot = !display_pilot;
@@ -64,15 +64,15 @@ void menu_t::update() {
             display_act = !display_act;
         } else if ( user_input == '8' ) {
             imu_node.setString("request", "calibrate-accels");
-            console->printf("request: %s\n", imu_node.getString("request").c_str());
+            printf("request: %s\n", imu_node.getString("request").c_str());
         } else if ( user_input == '9' ) {
             PropertyNode("/").pretty_print();
         } else if ( user_input == reboot_cmd[reboot_count] ) {
             reboot_count++;
             if ( reboot_count == strlen(reboot_cmd) ) {
-                console->printf("rebooting by user request ...\n");
-                hal.scheduler->delay(250);
-                hal.scheduler->reboot(false);
+                printf("rebooting by user request ...\n");
+                delay(250);
+                _reboot_Teensyduino_();
             }
         } else if ( user_input == reboot_cmd[0] ) {
             // allow immediate restart of a failed or partial command

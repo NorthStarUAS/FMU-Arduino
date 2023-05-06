@@ -1,13 +1,15 @@
+#include <Arduino.h>
+
 #include "comms_mgr.h"
 
 void comms_mgr_t::init() {
     config_node = PropertyNode("/config/comms");
     imu_node = PropertyNode("/sensors/imu");
     status_node = PropertyNode("/status");
-    
+
     info_timer = RateLimiter(10);
     heartbeat = RateLimiter(0.1);
-    tempTimer = AP_HAL::millis();
+    tempTimer = millis(); // fixme use ellapsedmillis?
     counter = 0;
 
     if ( config_node.hasChild("gcs") ) {
@@ -18,7 +20,7 @@ void comms_mgr_t::init() {
             gcs_link.init(port, baud, "gcs");
         } else {
             printf("comms config error in gcs link section!\n");
-            hal.scheduler->delay(500);
+            delay(500);
         }
     } else {
         printf("No gcs comms link configured.\n");
@@ -31,17 +33,17 @@ void comms_mgr_t::init() {
             host_link.init(port, baud, "host");
         } else {
             printf("comms config error in host link section!\n");
-            hal.scheduler->delay(500);
+            delay(500);
         }
     } else {
         printf("No host comms link configured.\n");
     }
-    
+
     info.init();
 
     menu.init();
-    
-    hal.scheduler->delay(100);
+
+    delay(100);
 }
 
 void comms_mgr_t::update() {
@@ -56,7 +58,7 @@ void comms_mgr_t::update() {
         host_link.read_commands();
 	host_link.update();
     }
-    
+
     // human console interaction begins when gyros finish calibrating
     if ( imu_node.getUInt("gyros_calibrated") != 2 ) {
         return;
@@ -77,7 +79,7 @@ void comms_mgr_t::update() {
     if ( heartbeat.update() ) {
         info.write_status_info_ascii();
         info.write_power_ascii();
-        float elapsed_sec = (AP_HAL::millis() - tempTimer) / 1000.0;
+        float elapsed_sec = (millis() - tempTimer) / 1000.0;
         printf("Available mem: %d bytes\n",
                status_node.getUInt("available_memory"));
         printf("Performance = %.1f hz\n", counter/elapsed_sec);

@@ -27,8 +27,9 @@ const int FIRMWARE_REV = 410;
 // it would be nice if these were dynamically detected, but they drive
 // structure allocations and I need to think through that part of it
 // carefully.
-const uint8_t MAX_RCIN_CHANNELS = 16;
-const uint8_t MAX_RCOUT_CHANNELS = 8;
+// fixme these should come out of sbus and pwm modules
+// const uint8_t MAX_RCIN_CHANNELS = 16;
+// const uint8_t MAX_RCOUT_CHANNELS = 8;
 
 // this is the master loop update rate.
 const int MASTER_HZ = 100;
