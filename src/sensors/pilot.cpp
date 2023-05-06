@@ -19,7 +19,7 @@ void pilot_t::init() {
     // extend gain array with default value (1.0) if not provided in
     // config file
     uint8_t size = config_eff_gains.getLen("gains");
-    for ( uint8_t i = size; i < MAX_RCOUT_CHANNELS; i++ ) {
+    for ( uint8_t i = size; i < PWM_CHANNELS; i++ ) {
         config_eff_gains.setDouble("gains", 1.0, i);
     }
 
@@ -37,7 +37,7 @@ bool pilot_t::read() {
     }
 
     if ( new_input ) {
-        for ( uint8_t i = 0; i < MAX_RCIN_CHANNELS; i++ ) {
+        for ( uint8_t i = 0; i < SBUS_CHANNELS; i++ ) {
             rcin_node.setUInt("channel", sbus.pwm_val[i], i);
             pilot_node.setDouble("channel", sbus.norm_val[i], i);
         }
@@ -74,7 +74,7 @@ void pilot_t::write() {
 
     /*printf("safety: %d armed: %d\n", hal.util->safety_switch_state(), hal.util->get_soft_armed());*/
 
-    for ( uint8_t i = 0; i < MAX_RCOUT_CHANNELS; i++ ) {
+    for ( uint8_t i = 0; i < PWM_CHANNELS; i++ ) {
         // float norm_val = mixer.outputs[i] * config.pwm_cfg.act_gain[i];
         float norm_val = effector_node.getDouble("channel", i)
             * config_eff_gains.getDouble("gains", i);
@@ -102,7 +102,7 @@ void pilot_t::update_ap( rc_message::inceptors_v1_t *inceptors ) {
     ap_inputs[5] = inceptors->channel[3]; // rudder
     ap_inputs[6] = inceptors->channel[4]; // flap
     ap_inputs[7] = inceptors->channel[5]; // gear
-    for ( int i = 0; i < MAX_RCIN_CHANNELS; i++ ) {
+    for ( int i = 0; i < SBUS_CHANNELS; i++ ) {
         pilot_node.setDouble("auto", ap_inputs[i], i);
     }
 }

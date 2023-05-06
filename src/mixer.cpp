@@ -2,6 +2,7 @@
 
 #include "../setup_board.h"
 #include "props2.h"
+#include "sensors/pwm.h"
 
 #include "mixer.h"
 
@@ -74,9 +75,9 @@ void mixer_t::update_matrix() {
 
 void mixer_t::print_mixer_matrix() {
     printf("Mixer Matrix:\n");
-    for ( int i = 0; i < MAX_RCOUT_CHANNELS; i++ ) {
+    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         printf("  ");
-        for ( int j = 0; j < MAX_RCOUT_CHANNELS; j++ ) {
+        for ( int j = 0; j < PWM_CHANNELS; j++ ) {
             if ( M(i,j) >= 0 ) {
                 printf(" ");
             }
@@ -96,13 +97,13 @@ void mixer_t::setup() {
     stab_tune_node = PropertyNode("/config/stability_damper/pilot_tune");
     switches_node = PropertyNode("/switches");
 
-    M.resize(MAX_RCOUT_CHANNELS, MAX_RCOUT_CHANNELS);
+    M.resize(PWM_CHANNELS, PWM_CHANNELS);
     M.setIdentity();
     update_matrix();
     print_mixer_matrix();
 
-    inputs.resize(MAX_RCOUT_CHANNELS);
-    outputs.resize(MAX_RCOUT_CHANNELS);
+    inputs.resize(PWM_CHANNELS);
+    outputs.resize(PWM_CHANNELS);
 
     inputs.setZero();
     outputs.setZero();
@@ -149,7 +150,7 @@ void mixer_t::mixing_update() {
 
     // publish
     effectors_node.setUInt("millis", millis());
-    for ( int i = 0; i < MAX_RCOUT_CHANNELS; i++ ) {
+    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         effectors_node.setDouble("channel", outputs[i], i);
     }
 }

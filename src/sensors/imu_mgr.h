@@ -85,4 +85,4 @@ public:
     // inline float get_tempC() { return tempC; }
 };
 
-extern imu_mgr_t imu;
+extern imu_mgr_t imu_mgr;

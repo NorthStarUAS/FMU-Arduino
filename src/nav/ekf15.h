@@ -17,7 +17,8 @@
 #pragma once
 
 #include <math.h>
-#include "eigen.h"
+#include <eigen.h>
+#include <Eigen/Geometry>
 // #include "eigen3/Eigen/Core"
 // #include "eigen3/Eigen/Geometry"
 // #include "eigen3/Eigen/LU"

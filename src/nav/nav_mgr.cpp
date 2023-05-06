@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <math.h>
 
 #include "nav_mgr.h"
@@ -17,9 +18,9 @@ void nav_mgr_t::init() {
     } else {
         selected = "nav15";         // force (fixme)
     }
-    console->printf("EKF: selected: %s\n", selected.c_str());
+    printf("EKF: selected: %s\n", selected.c_str());
     configure();
-    console->printf("configured ekf:\n");
+    printf("configured ekf:\n");
     config_nav_node.pretty_print();
 }
 
@@ -110,7 +111,7 @@ void nav_mgr_t::update() {
             ekf_mag.init(imu1, gps1);
         }
         ekf_inited = true;
-        console->printf("EKF: initialized\n");
+        printf("EKF: initialized\n");
     } else if ( ekf_inited ) {
         if ( selected == "nav15" ) {
             ekf.time_update(imu1);
@@ -138,11 +139,11 @@ void nav_mgr_t::update() {
         if ( std::isnan(data.Pp0) or std::isnan(data.Pv0)
              or std::isnan(data.Pa0) or (data.Pp0 < -0.1)
              or (data.Pv0 < -0.1) or (data.Pa0 < -0.1) ) {
-            console->printf("filter blew up...\n");
+            printf("filter blew up...\n");
             status = 0;
             reinit();
         }
-        if ( AP_HAL::millis() - gps_last_millis >= 2000 ) {
+        if ( millis() - gps_last_millis >= 2000 ) {
             // last gps message > 2 seconds ago
             status = 1;         // no gps
         }

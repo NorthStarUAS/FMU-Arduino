@@ -123,7 +123,7 @@ void message_link_t::update() {
 bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_size )
 {
     bool result = false;
-    //console->printf("message id: %d  len: %d\n", id, message_size);
+    //printf("message id: %d  len: %d\n", id, message_size);
     if ( id == rc_message::inceptors_v1_id ) {
         static rc_message::inceptors_v1_t inceptors;
         inceptors.unpack(buf, message_size);
@@ -134,7 +134,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
     } else if ( id == rc_message::command_v1_id ) {
         rc_message::command_v1_t msg;
         msg.unpack(buf, message_size);
-        console->printf("received command: %s %d\n",
+        printf("received command: %s %d\n",
                         msg.message.c_str(), msg.sequence_num);
         uint8_t command_result = 0;
         if ( last_command_seq_num != msg.sequence_num ) {
@@ -166,7 +166,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
                 command_result = 1;
             }
         } else {
-            console->printf("ignoring duplicate command\n");
+            printf("ignoring duplicate command\n");
             command_result = 1;
         }
         write_ack( msg.sequence_num, command_result );
@@ -213,7 +213,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
             result = true;
         }
     } else {
-        console->printf("unknown message id: %d len: %d\n", id, message_size);
+        printf("unknown message id: %d len: %d\n", id, message_size);
     }
     return result;
 }
@@ -321,7 +321,7 @@ int message_link_t::write_status()
     static rc_message::status_v7_t status_msg;
 
     // estimate output byte rate
-    uint32_t current_time = AP_HAL::millis();
+    uint32_t current_time = millis(); // fixme use elapsedmillis(), not a variable called that...
     uint32_t elapsed_millis = current_time - bytes_last_millis;
     bytes_last_millis = current_time;
     uint32_t byte_rate = output_counter * 1000 / elapsed_millis;

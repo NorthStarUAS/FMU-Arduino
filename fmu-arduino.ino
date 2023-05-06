@@ -23,7 +23,7 @@
 void force_config_aura3() {
     Serial.println("Forcing an aura v2 eeprom config");
     config.board.board = 1;    // 0 = marmot v1, 1 = aura v2
-    imu.defaults_aura3();
+    imu_mgr.defaults_aura3();
     airdata.defaults_aura3();
     led.defaults_aura3();
     config.power.have_attopilot = true;
@@ -43,7 +43,7 @@ void force_config_aura3() {
 void force_config_goldy3() {
     Serial.println("Forcing a bfs/marmot eeprom config");
     config.board.board = 0;    // 0 = marmot v1, 1 = aura v2
-    imu.defaults_goldy3();
+    imu_mgr.defaults_goldy3();
     airdata.defaults_goldy3();
     led.defaults_goldy3();
     // pwm.act_gain_defaults();  fixme?
@@ -60,7 +60,7 @@ void force_config_goldy3() {
 void reset_config_defaults() {
     Serial.println("Setting default config ...");
     config.board.board = 0;
-    imu.defaults_goldy3();
+    imu_mgr.defaults_goldy3();
     led.defaults_goldy3();
     // pwm.act_gain_defaults();  fixme?
     pilot.init();
@@ -130,11 +130,11 @@ void setup() {
     // force_config_goldy3();
 
     // update imu strapdown and mag_affine matrices from config
-    imu.set_strapdown_calibration();
-    imu.set_mag_calibration();
+    imu_mgr.set_strapdown_calibration();
+    imu_mgr.set_mag_calibration();
 
     // initialize the IMU
-    imu.setup();
+    imu_mgr.setup();
     delay(100);
 
     // initialize the SBUS receiver
@@ -186,7 +186,7 @@ void loop() {
         // }
 
         // top priority, used for timing sync downstream.
-        imu.update();
+        imu_mgr.update();
 
         // suck in any available gps messages
         gps.update();
@@ -216,14 +216,14 @@ void loop() {
 
         // fixme: also check this is moved to comms_mgr
         // one minute heartbeat output
-        // if ( hbTimer >= 60000 && imu.gyros_calibrated == 2) {
+        // if ( hbTimer >= 60000 && imu_mgr.gyros_calibrated == 2) {
         //     hbTimer = 0;
         //     comms.write_status_info_ascii();
         //     comms.write_power_ascii();
         //     Serial.println();
         // }
         // // 10hz human debugging output, but only after gyros finish calibrating
-        // if ( debugTimer >= 100 && imu.gyros_calibrated == 2) {
+        // if ( debugTimer >= 100 && imu_mgr.gyros_calibrated == 2) {
         //     debugTimer = 0;
         //     // write_pilot_in_ascii();
         //     // write_actuator_out_ascii();
@@ -283,5 +283,5 @@ void loop() {
     // }
 
     // blink the led on boards that support it
-    led.update(imu.gyros_calibrated, gps.gps_data.fixType);
+    led.update(imu_mgr.gyros_calibrated, gps.gps_data.fixType);
 }

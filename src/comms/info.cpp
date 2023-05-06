@@ -6,6 +6,7 @@
  * Following that is a two byte check sum.  The check sum includes the packet id and size as well as the data.
  */
 
+#include "../../setup_board.h"
 #include "../nav/nav_constants.h"
 #include "../sensors/pwm.h"
 
@@ -160,7 +161,7 @@ void info_t::write_status_info_ascii()
 {
     // This info is static so we don't need to send it at a high rate ... once every 10 seconds (?)
     // with an immediate message at the start.
-    printf("Uptime: %d(sec)", (unsigned int)(AP_HAL::millis() / 1000));
+    printf("Uptime: %d(sec)", (unsigned int)(millis() / 1000));
     printf(" SN: %d", config_node.getInt("serial_number"));
     printf(" Firmware: %d", FIRMWARE_REV);
     printf(" Main loop hz: %d", MASTER_HZ);

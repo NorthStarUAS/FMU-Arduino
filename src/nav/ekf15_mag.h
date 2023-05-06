@@ -16,13 +16,16 @@
 
 #pragma once
 
+#include <Arduino.h>
 #include <math.h>
-#include "eigen.h"
+#include <eigen.h>
 // #include "eigen3/Eigen/Core"
 // #include "eigen3/Eigen/Geometry"
 // #include "eigen3/Eigen/LU"
 
 #include "nav_structs.h"
+
+#undef F
 
 // define some types for notational convenience and consistency
 //typedef Eigen::Matrix<float,9,9>   Matrix9f;

@@ -2,9 +2,11 @@
 
 #include "../mixer.h"
 #include "../props2.h"
-#include "../rc_messages.h"
+#include "../comms/rc_messages.h"
 #include "../sensors/sbus/sbus.h"
 #include "../../setup_board.h"
+#include "pwm.h"
+#include "sbus/sbus.h"
 
 class pilot_t {
 
@@ -82,10 +84,10 @@ private:
     }
 
 public:
-    uint16_t pwm_inputs[MAX_RCIN_CHANNELS];
-    float manual_inputs[MAX_RCIN_CHANNELS]; // normalized
-    float ap_inputs[MAX_RCIN_CHANNELS];     // normalized
-    uint16_t pwm_outputs[MAX_RCOUT_CHANNELS];
+    uint16_t pwm_inputs[SBUS_CHANNELS];
+    float manual_inputs[SBUS_CHANNELS]; // normalized
+    float ap_inputs[SBUS_CHANNELS];     // normalized
+    uint16_t pwm_outputs[PWM_CHANNELS];
 
     mixer_t mixer;
 

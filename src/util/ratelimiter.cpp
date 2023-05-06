@@ -20,23 +20,23 @@ RateLimiter::RateLimiter( float hz ) {
 }
 
 bool RateLimiter::update( bool verbose ) {
-    uint32_t millis = AP_HAL::millis();
+    // fixme: use elapsedmillis()?
     if ( timer == 0 ) {
         if ( dt_millis > 1 ) {
-            timer = millis + (random(dt_millis));
+            timer = millis() + (random(dt_millis));
         } else {
-            timer = millis;
+            timer = millis();
         }
     }
     if ( verbose ) {
-        printf("millis: %d  timer: %d  dt: %d\n", millis, timer, dt_millis);
+        printf("millis: %d  timer: %d  dt: %d\n", millis(), timer, dt_millis);
     }
-    if ( (dt_millis > 0) and (millis >= timer + dt_millis) ) {
-        if ( millis > timer + dt_millis ) {
+    if ( (dt_millis > 0) and (millis() >= timer + dt_millis) ) {
+        if ( millis() > timer + dt_millis ) {
             if ( dt_millis > 1 ) {
                 misses++;             // oops
             }
-            timer = millis;           // catchup
+            timer = millis();           // catchup
         } else {
             timer += dt_millis;       // advance timer
         }
