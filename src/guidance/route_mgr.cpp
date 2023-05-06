@@ -153,7 +153,7 @@ void route_mgr_t::reposition( bool force ) {
     if ( force or fabs(home_lon - last_lon) > 0.000001 or
          fabs(home_lat - last_lat) > 0.000001 or
          fabs(home_az - last_az) > 0.001 ) {
-        for ( int i = 0; i < active_route.size(); i++ ) {
+        for ( unsigned int i = 0; i < active_route.size(); i++ ) {
             waypoint_t wp = active_route[i];
             if ( !wp.absolute ) {
                 wp.update_relative_pos(home_lon, home_lat, home_az);
@@ -172,7 +172,7 @@ void route_mgr_t::reposition( bool force ) {
 
 float route_mgr_t::get_remaining_distance_from_next_waypoint() {
     float result = 0.0;
-    for ( int i = current_wp; i < active_route.size(); i++ ) {
+    for ( unsigned int i = current_wp; i < active_route.size(); i++ ) {
         waypoint_t wp = active_route[i];
         result += wp.leg_dist_m;
     }

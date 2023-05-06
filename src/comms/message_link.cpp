@@ -44,10 +44,10 @@ void message_link_t::init(uint8_t port, uint32_t baud, string relay_name) {
     // telemetry baud = 57600 (or 115200), host baud = 500,000
     saved_port = port;
     if ( serial.open(baud, port) ) {
-        printf("opened rc_link port: %d @ %d baud\n", port, baud);
+        printf("opened rc_link port: %d @ %ld baud\n", port, baud);
         delay(100);
     } else {
-        printf("ERROR opening rc_link port: %d @ %d baud\n", port, baud);
+        printf("ERROR opening rc_link port: %d @ %ld baud\n", port, baud);
         delay(1000);
     }
     relay_id = relay_name;

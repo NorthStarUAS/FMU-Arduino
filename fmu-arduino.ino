@@ -15,6 +15,7 @@
 #include "src/sensors/power.h"
 #include "src/props2.h"
 #include "src/sensors/sbus/sbus.h"
+#include "src/state/state_mgr.h"
 
 // Controls and Actuators
 // uint8_t test_pwm_channel = -1; fixme not needed here?
@@ -146,6 +147,9 @@ void setup() {
     // ekf init (just prints availability status)
     nav_mgr.init();
 
+    // additional derived/computed/estimated values
+    state_mgr.init();
+
     comms_mgr.init();
 
     Serial.println("Ready and transmitting...");
@@ -203,6 +207,8 @@ void loop() {
 
         // poll the pressure sensors
         airdata.update();
+
+        state_mgr.update(1.0 / MASTER_HZ);
 
         // read power values
         power.update();
