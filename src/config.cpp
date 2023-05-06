@@ -22,6 +22,9 @@ uint16_t config_t::read_serial_number() {
     uint8_t hi = EEPROM.read(1);
     // Serial.printf(" raw serial number read %d %d\n", hi, lo);
     serial_number = hi * 256 + lo;
+    if ( !config_node.isNull() ) {
+        config_node.setInt("serial_number", serial_number);
+    }
     return serial_number;
 };
 

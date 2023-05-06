@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
-#include "../config.h" // fixme remove
+#include "../../setup_board.h"
+// #include "../config.h" // fixme remove
 
 #include "imu_mgr.h"
 
@@ -11,21 +12,21 @@ const uint8_t MPU9250_SRD = 9;  // Data Output Rate = 1000 / (1 + SRD)
 
 MPU9250 IMU;
 
-// Setup imu defaults:
+// Setup imu defaults for Goldy3 / Marmot v1:
 // Goldy3 has mpu9250 on SPI CS line 24
-void imu_mgr_t::defaults_goldy3() {
-    config.imu.interface = 0;       // SPI
-    config.imu.pin_or_address = 24; // CS pin
-    defaults_common();
-}
+// void imu_mgr_t::defaults_goldy3() {
+//     config.imu.interface = 0;       // SPI
+//     config.imu.pin_or_address = 24; // CS pin
+//     defaults_common();
+// }
 
 // Setup imu defaults:
 // Aura3 has mpu9250 on I2C Addr 0x68
-void imu_mgr_t::defaults_aura3() {
-    config.imu.interface = 1;       // i2c
-    config.imu.pin_or_address = 0x68; // mpu9250 i2c addr
-    defaults_common();
-}
+// void imu_mgr_t::defaults_aura3() {
+//     config.imu.interface = 1;       // i2c
+//     config.imu.pin_or_address = 0x68; // mpu9250 i2c addr
+//     defaults_common();
+// }
 
 // Setup imu common defaults:
 void imu_mgr_t::defaults_common() {
@@ -111,16 +112,19 @@ void imu_mgr_t::setup() {
     imu_calib_node = PropertyNode("/config/imu/calibration");
     sim_node = PropertyNode("/sim");
 
-    if ( config.imu.interface == 0 ) {
-        // SPI
-        printf("MPU9250 @ SPI pin: %d\n", config.imu.pin_or_address);
-        IMU.configure(config.imu.pin_or_address);
-    } else if ( config.imu.interface == 1 ) {
-        printf("MPU9250 @ I2C Addr: 0x%02X\n", config.imu.pin_or_address);
-        IMU.configure(config.imu.pin_or_address, &Wire);
-    } else {
-        printf("Error: problem with MPU9250 (IMU) configuration.\n");
-    }
+#if defined(MARMOT_V1)
+    // Goldy3 has an mpu9250 on SPI CS line 24
+    int pin = 24;
+    printf("MPU9250 @ SPI pin: %d\n", pin);
+    IMU.configure(pin);
+#elif defined(AURA_V2)
+    // Aura3 has an mpu9250 on I2C Addr 0x68
+    int address = 0x68
+    printf("MPU9250 @ I2C Addr: 0x%02X\n", address);
+    IMU.configure(address, &Wire);
+#else
+    printf("Error: problem with board configuration and MPU9250 (IMU) configuration.\n");
+#endif
 
     // initialize the IMU, specify accelerometer and gyro ranges
     int beginStatus = IMU.begin(ACCEL_RANGE_4G, GYRO_RANGE_500DPS);

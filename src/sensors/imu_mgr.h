@@ -54,8 +54,8 @@ public:
     Vector4f mags_cal = Vector4f::Zero();
     float temp_C = 0.0;
 
-    void defaults_goldy3();
-    void defaults_aura3();
+    // void defaults_goldy3();
+    // void defaults_aura3();
     void defaults_common();
     void set_strapdown_calibration();
     void set_accel_calibration();

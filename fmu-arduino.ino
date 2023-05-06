@@ -23,7 +23,7 @@
 void force_config_aura3() {
     Serial.println("Forcing an aura v2 eeprom config");
     config.board.board = 1;    // 0 = marmot v1, 1 = aura v2
-    imu_mgr.defaults_aura3();
+    // imu_mgr.defaults_aura3();
     airdata.defaults_aura3();
     led.defaults_aura3();
     config.power.have_attopilot = true;
@@ -43,7 +43,7 @@ void force_config_aura3() {
 void force_config_goldy3() {
     Serial.println("Forcing a bfs/marmot eeprom config");
     config.board.board = 0;    // 0 = marmot v1, 1 = aura v2
-    imu_mgr.defaults_goldy3();
+    // imu_mgr.defaults_goldy3();
     airdata.defaults_goldy3();
     led.defaults_goldy3();
     // pwm.act_gain_defaults();  fixme?
@@ -60,7 +60,7 @@ void force_config_goldy3() {
 void reset_config_defaults() {
     Serial.println("Setting default config ...");
     config.board.board = 0;
-    imu_mgr.defaults_goldy3();
+    // imu_mgr.defaults_goldy3();
     led.defaults_goldy3();
     // pwm.act_gain_defaults();  fixme?
     pilot.init();
@@ -129,12 +129,11 @@ void setup() {
     // force_config_aura3();
     // force_config_goldy3();
 
-    // update imu strapdown and mag_affine matrices from config
-    imu_mgr.set_strapdown_calibration();
-    imu_mgr.set_mag_calibration();
-
-    // initialize the IMU
+    // initialize the IMU and calibration matrices
     imu_mgr.setup();
+    imu_mgr.set_strapdown_calibration();
+    imu_mgr.set_accel_calibration();
+    imu_mgr.set_mag_calibration();
     delay(100);
 
     // initialize the SBUS receiver
