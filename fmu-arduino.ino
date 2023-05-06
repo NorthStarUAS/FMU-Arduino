@@ -36,7 +36,7 @@ void force_config_aura3() {
     config.stab.sas_pitchgain = 0.2;
     config.stab.sas_yawgain = 0.2;
     config.ekf.select = message::enum_nav::none;
-    config.write_eeprom();
+    // config.write_eeprom();
 }
 
 // force/hard-code a specific board config if desired
@@ -106,13 +106,13 @@ void setup() {
     printf("Serial Number: %d\n", config.read_serial_number());
     delay(100);
 
-    if ( !config.read_eeprom() ) {
-        Serial.println("Resetting eeprom to default values.");
-        reset_config_defaults();
-        config.write_eeprom();
-    } else {
-        Serial.println("Successfully loaded eeprom config.");
-    }
+    // if ( !config.read_eeprom() ) {
+    //     Serial.println("Resetting eeprom to default values.");
+    //     reset_config_defaults();
+    //     config.write_eeprom();
+    // } else {
+    //     Serial.println("Successfully loaded eeprom config.");
+    // }
 
     // after config.init()
     config_node = PropertyNode("/config");

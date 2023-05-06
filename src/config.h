@@ -33,8 +33,8 @@ public:
     bool load_json_config();
     void reset_defaults();
 
-    int read_eeprom();
-    int write_eeprom();
+    // int read_eeprom();
+    // int write_eeprom();
 
     message::config_airdata_t airdata;
     message::config_board_t board;

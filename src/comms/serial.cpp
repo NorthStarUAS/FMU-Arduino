@@ -26,9 +26,24 @@ void SerialLink::checksum( uint8_t hdr1, uint8_t hdr2, uint8_t *buf, uint8_t siz
     *cksum1 = c1;
 }
 
-bool SerialLink::open( int baud, HardwareSerial *port ) {
-    _port = port;
-    _port->begin(baud);
+bool SerialLink::open( int baud, int port ) {
+    if ( port == 0 ) {
+        Serial.begin(baud);
+        _port = &Serial;
+    } else if ( port == 1 ) {
+        Serial1.begin(baud);
+        _port = &Serial1;
+    } else if ( port == 2 ) {
+        Serial2.begin(baud);
+        _port = &Serial2;
+    } else if ( port == 3 ) {
+        Serial3.begin(baud);
+        _port = &Serial3;
+    } else {
+        printf("unsupported port number: %d, defaulting to Serial, will probably clash with the console.", port);
+        Serial.begin(baud);
+        _port = &Serial;
+    }
     return true;
 }
 
@@ -162,6 +177,7 @@ int SerialLink::write_packet(uint8_t packet_id, uint8_t *payload, uint8_t len) {
 }
 
 bool SerialLink::close() {
-    _port->end();
+    // fixme: do we ever need to close the serial port or is this just for show?
+    // _port->end();
     return true;
 }

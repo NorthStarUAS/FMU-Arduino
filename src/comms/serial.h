@@ -7,7 +7,7 @@ class SerialLink {
 private:
 
     // port
-    HardwareSerial *_port;
+    Stream *_port;
 
     // parser
     int state = 0;
@@ -29,7 +29,7 @@ public:
     SerialLink();
     ~SerialLink();
 
-    bool open( int baud, HardwareSerial *port );
+    bool open( int baud, int port );
     bool update();
     int bytes_available();
     int write_packet(uint8_t packet_id, uint8_t *payload, uint8_t len);

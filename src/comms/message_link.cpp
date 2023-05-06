@@ -43,9 +43,13 @@ void message_link_t::init(uint8_t port, uint32_t baud, string relay_name) {
     // port: 0 = usb/console, 1 = telem 1 (host), 2 = telem 2 (gcs)
     // telemetry baud = 57600 (or 115200), host baud = 500,000
     saved_port = port;
-    serial.open(baud, hal.serial(port));
-    printf("opened rc_link port: %d @ %d baud\n", port, baud);
-    hal.scheduler->delay(100);
+    if ( serial.open(baud, port) ) {
+        printf("opened rc_link port: %d @ %d baud\n", port, baud);
+        delay(100);
+    } else {
+        printf("ERROR opening rc_link port: %d @ %d baud\n", port, baud);
+        delay(1000);
+    }
     relay_id = relay_name;
     if ( relay_id == "host" ) {
         relay.set_host_link(&serial);

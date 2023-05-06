@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include <TimeLib.h>
 
-#include "nav_common/constants.h"
-#include "nav_common/coremag.h"
+#include "nav/nav_constants.h"
+#include "nav/coremag.h"
 #include "gps.h"
 
 #include "sensors/UBLOX8/UBLOX8.h"
