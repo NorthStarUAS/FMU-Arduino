@@ -85,21 +85,5 @@ void comms_mgr_t::update() {
         printf("Performance = %.1f hz\n", counter/elapsed_sec);
         //PropertyNode("/").pretty_print();
         printf("\n");
-
-#if 0
-        // system info
-        ExpandingString dma_info {};
-        ExpandingString mem_info {};
-        ExpandingString uart_info {};
-        ExpandingString thread_info {};
-        hal.util->dma_info(dma_info);
-        hal.util->mem_info(mem_info);
-        hal.util->uart_info(uart_info);
-        hal.util->thread_info(thread_info);
-        console->printf("dma info:\n%s\n", dma_info.get_string());
-        console->printf("mem info:\n%s\n", mem_info.get_string());
-        console->printf("uart info:\n%s\n", uart_info.get_string());
-        // console->printf("thread info:\n%s\n", thread_info.get_string());
-#endif
     }
 }

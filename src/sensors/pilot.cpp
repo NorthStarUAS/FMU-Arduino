@@ -55,11 +55,11 @@ bool pilot_t::read() {
         pilot_node.setDouble("gear", get_gear());
         pilot_node.setDouble("aux1", get_aux1());
         pilot_node.setDouble("aux2", get_aux2());
-        // console->printf("%d ", nchannels);
+        // printf("%d ", nchannels);
         // for ( uint8_t i = 0; i < 8; i++ ) {
-        //     console->printf("%.2f ", sbus.pwm_val[i]);
+        //     printf("%.2f ", sbus.pwm_val[i]);
         // }
-        // console->printf("\n");
+        // printf("\n");
     } else if ( millis() - last_input > 500 and !pilot_node.getBool("failsafe") ) {
         pilot_node.setBool("failsafe", true); // bad
         // printf("failsafe!\n");
