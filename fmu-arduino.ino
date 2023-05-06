@@ -7,6 +7,7 @@
 #include "src/airdata.h"
 #include "src/comms/comms_mgr.h"
 #include "src/config.h"
+#include "src/control/control_mgr.h"
 #include "src/sensors/gps_mgr.h"
 #include "src/sensors/imu_mgr.h"
 #include "src/led.h"
