@@ -78,7 +78,7 @@ void setup() {
     Serial.begin(115200);
     delay(1000);  // hopefully long enough for serial to come alive
 
-    // make it different random each time
+    // different random each run
     randomSeed(analogRead(0));
 
     printf("\nNorthStar FMU: Rev %d\n", FIRMWARE_REV);
@@ -106,14 +106,6 @@ void setup() {
     printf("Serial Number: %d\n", config.read_serial_number());
     delay(100);
 
-    // if ( !config.read_eeprom() ) {
-    //     Serial.println("Resetting eeprom to default values.");
-    //     reset_config_defaults();
-    //     config.write_eeprom();
-    // } else {
-    //     Serial.println("Successfully loaded eeprom config.");
-    // }
-
     // after config.init()
     config_node = PropertyNode("/config");
     config_nav_node = PropertyNode("/config/nav");
@@ -124,10 +116,6 @@ void setup() {
     status_node.setUInt("master_hz", MASTER_HZ);
     status_node.setUInt("baud", TELEMETRY_BAUD);
     status_node.setUInt("serial_number", config_node.getUInt("serial_number"));
-
-    // force/hard-code a specific board config if desired
-    // force_config_aura3();
-    // force_config_goldy3();
 
     // initialize the IMU and calibration matrices
     imu_mgr.setup();
@@ -163,6 +151,24 @@ void setup() {
     Serial.println("Ready and transmitting...");
 }
 
+#ifdef __arm__
+// should use uinstd.h to define sbrk but Due causes a conflict
+extern "C" char* sbrk(int incr);
+#else  // __ARM__
+extern char *__brkval;
+#endif  // __arm__
+
+int freeMemory() {
+  char top;
+#ifdef __arm__
+  return &top - reinterpret_cast<char*>(sbrk(0));
+#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
+  return &top - __brkval;
+#else  // __arm__
+  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
+#endif  // __arm__
+}
+
 // main arduino loop -- Fixme: set this up on a hardware timer so the main loop can do non-time sensitive stuff, but caution on race conditions
 void loop() {
     static elapsedMillis mainTimer = 0;
@@ -195,54 +201,6 @@ void loop() {
             nav_mgr.update();
         }
 
-        // fixme: check, but this should be handled down in the comms level code now.
-        // // output keyed off new IMU data
-        // comms.output_counter += comms.write_pilot_in_bin();
-        // comms.output_counter += comms.write_gps_bin();
-        // comms.output_counter += comms.write_airdata_bin();
-        // comms.output_counter += comms.write_power_bin();
-        // // do a little extra dance with the return value because
-        // // write_status_info_bin() can reset comms.output_counter (but
-        // // that gets ignored if we do the math in one step)
-        // uint8_t result = comms.write_status_info_bin();
-        // comms.output_counter += result;
-        // if ( config.ekf.select != message::enum_nav::none ) {
-        //     comms.output_counter += comms.write_nav_bin();
-        // }
-        // // write imu message last: used as an implicit end of data
-        // // frame marker.
-        // comms.output_counter += comms.write_imu_bin();
-
-        // fixme: also check this is moved to comms_mgr
-        // one minute heartbeat output
-        // if ( hbTimer >= 60000 && imu_mgr.gyros_calibrated == 2) {
-        //     hbTimer = 0;
-        //     comms.write_status_info_ascii();
-        //     comms.write_power_ascii();
-        //     Serial.println();
-        // }
-        // // 10hz human debugging output, but only after gyros finish calibrating
-        // if ( debugTimer >= 100 && imu_mgr.gyros_calibrated == 2) {
-        //     debugTimer = 0;
-        //     // write_pilot_in_ascii();
-        //     // write_actuator_out_ascii();
-        //     // comms.write_gps_ascii();
-        //     // if ( config.ekf.select != message::enum_nav::none ) {
-        //     //     comms.write_nav_ascii();
-        //     // }
-        //     // comms.write_airdata_ascii();
-        //     // write_status_info_ascii();
-        //     // write_imu_ascii();
-        // }
-
-        // FIXME: move this functionality to pilot.cpp?
-        // uncomment this next line to test drive individual servo channels
-        // (for debugging or validation.)
-        // test_pwm_channel = -1;  // zero is throttle so be careful!
-        // if ( test_pwm_channel >= 0 ) {
-        //     pwm.write(test_pwm_channel);
-        // }
-
         // poll the pressure sensors
         airdata.update();
 
@@ -263,24 +221,13 @@ void loop() {
         // fixme think about order and timing, but inner loop commands aren't comming from host any more so maybe less important?
         pilot.write();
 
+        // status
+        status_node.setUInt("available_memory", freeMemory());
+
+        // blink the led on boards that support it
+        led.update(imu_mgr.gyros_calibrated, gps.gps_data.fixType);
+
         comms_mgr.update();
     }
 
-    // keep processing while there is data in the uart buffer
-    // while ( sbus.process() ) {
-    //     static bool last_ap_state = pilot.ap_enabled();
-    //     pilot.update_manual();
-    //     if ( pilot.ap_enabled() ) {
-    //         if ( !last_ap_state ) { Serial.println("ap enabled"); }
-    //         mixer.update( pilot.ap_inputs );
-    //     } else {
-    //         if ( last_ap_state ) { Serial.println("ap disabled (manaul flight)"); }
-    //         mixer.update( pilot.manual_inputs );
-    //     }
-    //     pwm.update();
-    //     last_ap_state = pilot.ap_enabled();
-    // }
-
-    // blink the led on boards that support it
-    led.update(imu_mgr.gyros_calibrated, gps.gps_data.fixType);
 }
