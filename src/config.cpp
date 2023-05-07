@@ -1,12 +1,12 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 
-#include "airdata.h"
+// #include "airdata.h"
 #include "config.h"
-#include "sensors/imu_mgr.h"
-#include "led.h"
-#include "mixer.h"
-#include "sensors/power.h"
+// #include "sensors/imu_mgr.h"
+// #include "led.h"
+// #include "mixer.h"
+// #include "sensors/power.h"
 
 // starting point for writing big eeprom struct
 static const int CONFIG_OFFSET = 2;

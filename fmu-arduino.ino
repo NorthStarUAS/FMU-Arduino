@@ -4,7 +4,7 @@
 
 #include "setup_board.h"        // #include this early
 
-#include "src/airdata.h"
+#include "src/sensors/airdata_mgr.h"
 #include "src/comms/comms_mgr.h"
 #include "src/config.h"
 #include "src/control/control_mgr.h"
@@ -24,49 +24,49 @@
 // force/hard-code a specific board config if desired
 void force_config_aura3() {
     Serial.println("Forcing an aura v2 eeprom config");
-    config.board.board = 1;    // 0 = marmot v1, 1 = aura v2
+    // config.board.board = 1;    // 0 = marmot v1, 1 = aura v2
     // imu_mgr.defaults_aura3();
-    airdata.defaults_aura3();
-    led.defaults_aura3();
-    config.power.have_attopilot = true;
+    // airdata.defaults_aura3();
+    // led.defaults_aura3();
+    // config.power.have_attopilot = true;
     // pwm.act_gain_defaults();  fixme?
     pilot.init();
-    config.stab.sas_rollaxis = true;
-    config.stab.sas_pitchaxis = true;
-    config.stab.sas_yawaxis = true;
-    config.stab.sas_rollgain = 0.2;
-    config.stab.sas_pitchgain = 0.2;
-    config.stab.sas_yawgain = 0.2;
-    config.ekf.select = message::enum_nav::none;
+    // config.stab.sas_rollaxis = true;
+    // config.stab.sas_pitchaxis = true;
+    // config.stab.sas_yawaxis = true;
+    // config.stab.sas_rollgain = 0.2;
+    // config.stab.sas_pitchgain = 0.2;
+    // config.stab.sas_yawgain = 0.2;
+    // config.ekf.select = message::enum_nav::none;
     // config.write_eeprom();
 }
 
 // force/hard-code a specific board config if desired
 void force_config_goldy3() {
     Serial.println("Forcing a bfs/marmot eeprom config");
-    config.board.board = 0;    // 0 = marmot v1, 1 = aura v2
+    // config.board.board = 0;    // 0 = marmot v1, 1 = aura v2
     // imu_mgr.defaults_goldy3();
-    airdata.defaults_goldy3();
-    led.defaults_goldy3();
+    // airdata.defaults_goldy3();
+    // led.defaults_goldy3();
     // pwm.act_gain_defaults();  fixme?
     pilot.init();
-    config.stab.sas_rollaxis = true;
-    config.stab.sas_pitchaxis = true;
-    config.stab.sas_yawaxis = true;
-    config.stab.sas_rollgain = 0.2;
-    config.stab.sas_pitchgain = 0.2;
-    config.stab.sas_yawgain = 0.2;
-    config.ekf.select = message::enum_nav::none;
+    // config.stab.sas_rollaxis = true;
+    // config.stab.sas_pitchaxis = true;
+    // config.stab.sas_yawaxis = true;
+    // config.stab.sas_rollgain = 0.2;
+    // config.stab.sas_pitchgain = 0.2;
+    // config.stab.sas_yawgain = 0.2;
+    // config.ekf.select = message::enum_nav::none;
 }
 
 void reset_config_defaults() {
     Serial.println("Setting default config ...");
-    config.board.board = 0;
+    // config.board.board = 0;
     // imu_mgr.defaults_goldy3();
-    led.defaults_goldy3();
+    // led.defaults_goldy3();
     // pwm.act_gain_defaults();  fixme?
     pilot.init();
-    config.power.have_attopilot = false;
+    // config.power.have_attopilot = false;
 }
 
 static PropertyNode config_node;
@@ -136,7 +136,7 @@ void setup() {
     gps_mgr.setup();
 
     // initialize air data (marmot v1)
-    airdata.setup();
+    airdata_mgr.setup();
 
     // power sensing
     analogReadResolution(16);   // set up ADC0
@@ -207,7 +207,7 @@ void loop() {
         }
 
         // poll the pressure sensors
-        airdata.update();
+        airdata_mgr.update();
 
         state_mgr.update(1.0 / MASTER_HZ);
 

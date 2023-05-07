@@ -2,14 +2,24 @@
 
 #pragma once
 
-#include "aura4_messages.h"
+// #include "aura4_messages.h"
 
-class airdata_t {
+#include "../props2.h"
+
+class airdata_mgr_t {
+
  private:
+
+    PropertyNode airdata_node;
+    PropertyNode config_node;
+
+    uint8_t barometer = 0;
+    uint8_t pitot = 0;
     bool pitot_found = false;
     bool ams_baro_found = false;
-    
+
  public:
+
     float baro_press = 0.0;
     float baro_temp = 0.0;
     float baro_hum = 0.0;
@@ -24,4 +34,4 @@ class airdata_t {
     void update();
 };
 
-extern airdata_t airdata;
+extern airdata_mgr_t airdata_mgr;
