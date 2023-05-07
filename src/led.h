@@ -18,8 +18,6 @@ private:
 
 public:
 
-    // void defaults_goldy3();
-    // void defaults_aura3();
     void setup();
     void update(int gyros_calibrated); // fixme: this should really be added and taken from the property tree
 };
