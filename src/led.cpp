@@ -2,29 +2,26 @@
 
 #include "led.h"
 
-void led_t::defaults_goldy3() {
-    config.board.led_pin = 0;
-}
-
-void led_t::defaults_aura3() {
-    config.board.led_pin = 13;
-}
-
 void led_t::setup() {
     gps_node = PropertyNode("/sensors/gps");
 
-    if ( config.board.led_pin > 0 ) {
-        pinMode(config.board.led_pin, OUTPUT);
-        digitalWrite(config.board.led_pin, HIGH);
-        Serial.print("LED on pin: "); Serial.println(config.board.led_pin);
+#if defined(MARMOT_V1)
+    led_pin = 0;
+#elif defined(AURA_V2)
+    led_pin = 13;
+#endif
+
+    if ( led_pin > 0 ) {
+        pinMode(led_pin, OUTPUT);
+        digitalWrite(led_pin, HIGH);
+        printf("LED on pin: %d\n", led_pin);
     } else {
-        Serial.println("No LED defined.");
+        printf("No LED defined.");
     }
 }
 
 void led_t::update(int gyros_calibrated) {
-    if ( config.board.led_pin > 0 ) {
-
+    if ( led_pin > 0 ) {
         if ( gyros_calibrated < 2 ) {
             blink_rate = 50;
         } else if ( gps_node.getInt("status") < 3 ) {
@@ -35,7 +32,7 @@ void led_t::update(int gyros_calibrated) {
         if ( blinkTimer >= blink_rate ) {
             blinkTimer = 0;
             blink_state = !blink_state;
-            digitalWrite(config.board.led_pin, blink_state);
+            digitalWrite(led_pin, blink_state);
         }
     }
 }
