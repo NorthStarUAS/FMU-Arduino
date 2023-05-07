@@ -34,11 +34,11 @@ static const uint16_t pwm_symmetrical = ~(1 << 0 | 1 << 4 | 1 << 5);
 static const int servoFreq_hz = 50; // servo pwm update rate
 
 // reset actuator gains (reversing) to startup defaults
-void pwm_t::act_gain_defaults() {
-    for ( int i = 0; i < message::pwm_channels; i++ ) {
-        config.pwm.act_gain[i] = 1.0;
-    }
-}
+// void pwm_t::act_gain_defaults() {
+//     for ( int i = 0; i < message::pwm_channels; i++ ) {
+//         config.pwm.act_gain[i] = 1.0;
+//     }
+// }
 
 void pwm_t::setup(int board) {
     Serial.print("PWM: ");
@@ -100,30 +100,30 @@ uint16_t pwm_t::norm2pwm(float norm_val, uint8_t channel) {
 
 // compute raw pwm values from normalized command values.  (handle
 // actuator reversing here.)
-void pwm_t::norm2pwm_batch( float *norm ) {
-    for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-        // convert to pulse length (special case ch6 when in flaperon mode)
-        if ( pwm_symmetrical & (1<<i) ) /* FIXME: flaperon? */ {
-            // i.e. aileron, rudder, elevator
-            // Serial1.println(i);
-            // Serial1.println(config_actuators.act_rev[i]);
-            output_pwm[i] = PWM_CENTER + (int)(PWM_HALF_RANGE * norm[i] * config.pwm.act_gain[i]);
-        } else {
-            // i.e. throttle, flaps
-            if ( config.pwm.act_gain[i] > 0.0 ) {
-                output_pwm[i] = PWM_MIN + (int)(PWM_RANGE * norm[i] * config.pwm.act_gain[i]);
-            } else {
-                output_pwm[i] = PWM_MAX + (int)(PWM_RANGE * norm[i] * config.pwm.act_gain[i]);
-            }
-        }
-        if ( output_pwm[i] < PWM_MIN ) {
-            output_pwm[i] = PWM_MIN;
-        }
-        if ( output_pwm[i] > PWM_MAX ) {
-            output_pwm[i] = PWM_MAX;
-        }
-    }
-}
+// void pwm_t::norm2pwm_batch( float *norm ) {
+//     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
+//         // convert to pulse length (special case ch6 when in flaperon mode)
+//         if ( pwm_symmetrical & (1<<i) ) /* FIXME: flaperon? */ {
+//             // i.e. aileron, rudder, elevator
+//             // Serial1.println(i);
+//             // Serial1.println(config_actuators.act_rev[i]);
+//             output_pwm[i] = PWM_CENTER + (int)(PWM_HALF_RANGE * norm[i] * config.pwm.act_gain[i]);
+//         } else {
+//             // i.e. throttle, flaps
+//             if ( config.pwm.act_gain[i] > 0.0 ) {
+//                 output_pwm[i] = PWM_MIN + (int)(PWM_RANGE * norm[i] * config.pwm.act_gain[i]);
+//             } else {
+//                 output_pwm[i] = PWM_MAX + (int)(PWM_RANGE * norm[i] * config.pwm.act_gain[i]);
+//             }
+//         }
+//         if ( output_pwm[i] < PWM_MIN ) {
+//             output_pwm[i] = PWM_MIN;
+//         }
+//         if ( output_pwm[i] > PWM_MAX ) {
+//             output_pwm[i] = PWM_MAX;
+//         }
+//     }
+// }
 
 
 // write the raw actuator values to the RC system

@@ -15,7 +15,7 @@ public:
     void setup(int board);
     void write(uint8_t test_pwm_channel = -1);
     uint16_t norm2pwm(float norm_val, uint8_t channel);
-    void norm2pwm_batch( float *norm );
+    // void norm2pwm_batch( float *norm );
 };
 
 // a global instance is available for use
