@@ -40,7 +40,7 @@ AuraPIDVel::AuraPIDVel( string config_path ):
     // enable
     PropertyNode node = component_node.getChild( "enable" );
     children = node.getChildren();
-    printf("enables: %ld prop(s)\n", children.size());
+    printf("enables: %u prop(s)\n", children.size());
     for ( unsigned int i = 0; i < children.size(); ++i ) {
 	if ( children[i].substr(0,4) == "prop" ) {
 	    string enable_prop = node.getString(children[i].c_str());

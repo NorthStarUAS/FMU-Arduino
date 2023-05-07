@@ -44,8 +44,8 @@ AuraPID::AuraPID( string config_path ):
     // enable
     PropertyNode node = component_node.getChild( "enable" );
     children = node.getChildren();
-    printf("enables: %d prop(s)\n", children.size());
-    for ( unsigned int i = 0; i < node.getLen("prop"); i++ ) {
+    printf("enables: %u prop(s)\n", children.size());
+    for ( int i = 0; i < node.getLen("prop"); i++ ) {
         string enable_prop = node.getString("prop", i);
         printf("  %s\n", enable_prop.c_str());
         pos = enable_prop.rfind("/");
