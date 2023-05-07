@@ -18,10 +18,10 @@ void sbus_t::parse() {
     // we don't need to return from these, these are just notifying us
     // of receiver state
     if ( sbus_data.failsafe_act ) {
-        // Serial1.println("SBUS: failsafe activated!");
+        // printf("SBUS: failsafe activated!\n");
     }
     if ( sbus_data.frame_lost ) {
-        // Serial1.println("SBUS: frame lost");
+        // printf("SBUS: frame lost.\n");
     }
     raw_val[  0 ] = sbus_data.ch1;
     raw_val[  1 ] = sbus_data.ch2;

@@ -2,8 +2,6 @@
 
 #pragma once
 
-// #include "aura4_messages.h"
-
 #include "../props2.h"
 
 class airdata_mgr_t {

@@ -36,33 +36,40 @@ bool pilot_t::read() {
     }
 
     if ( new_input ) {
-        for ( uint8_t i = 0; i < SBUS_CHANNELS; i++ ) {
-            rcin_node.setUInt("channel", sbus.pwm_val[i], i);
-            pilot_node.setDouble("channel", sbus.norm_val[i], i);
-            manual_inputs[i] = sbus.norm_val[i];
+        // sbus is expected to continue outputing data after transmitter signal
+        // is lost.
+        if ( sbus.receiver_flags & 1 << 3 ) {
+            // fixme: consider forcing at least some simple reversionary mode
+            // such as power off, wings level (or a few degrees for gentle
+            // turning to avoid flyaway too far) and pitch to zero degrees or
+            // something safe/slow or tecs to minimum speed with throttle off?
+            pilot_node.setBool("failsafe", true); // bad situation
+        } else {
+            for ( uint8_t i = 0; i < SBUS_CHANNELS; i++ ) {
+                rcin_node.setUInt("channel", sbus.pwm_val[i], i);
+                pilot_node.setDouble("channel", sbus.norm_val[i], i);
+                manual_inputs[i] = sbus.norm_val[i];
+            }
+            last_input = millis();
+            pilot_node.setUInt("millis", last_input);
+            // logical values
+            pilot_node.setBool("failsafe", false); // good
+            // pilot_node.setBool("ap_enabled", ap_enabled());
+            // pilot_node.setBool("throttle_safety", throttle_safety());
+            pilot_node.setDouble("aileron", get_aileron());
+            pilot_node.setDouble("elevator", get_elevator());
+            pilot_node.setDouble("throttle", get_throttle());
+            pilot_node.setDouble("rudder", get_rudder());
+            pilot_node.setDouble("flaps", get_flap());
+            pilot_node.setDouble("gear", get_gear());
+            pilot_node.setDouble("aux1", get_aux1());
+            pilot_node.setDouble("aux2", get_aux2());
+            // printf("%d ", nchannels);
+            // for ( uint8_t i = 0; i < 8; i++ ) {
+            //     printf("%.2f ", sbus.pwm_val[i]);
+            // }
+            // printf("\n");
         }
-        last_input = millis();
-        pilot_node.setUInt("millis", last_input);
-        // logical values
-        pilot_node.setBool("failsafe", false); // good
-        // pilot_node.setBool("ap_enabled", ap_enabled());
-        // pilot_node.setBool("throttle_safety", throttle_safety());
-        pilot_node.setDouble("aileron", get_aileron());
-        pilot_node.setDouble("elevator", get_elevator());
-        pilot_node.setDouble("throttle", get_throttle());
-        pilot_node.setDouble("rudder", get_rudder());
-        pilot_node.setDouble("flaps", get_flap());
-        pilot_node.setDouble("gear", get_gear());
-        pilot_node.setDouble("aux1", get_aux1());
-        pilot_node.setDouble("aux2", get_aux2());
-        // printf("%d ", nchannels);
-        // for ( uint8_t i = 0; i < 8; i++ ) {
-        //     printf("%.2f ", sbus.pwm_val[i]);
-        // }
-        // printf("\n");
-    } else if ( millis() - last_input > 500 and !pilot_node.getBool("failsafe") ) {
-        pilot_node.setBool("failsafe", true); // bad
-        // printf("failsafe!\n");
     }
     return new_input;
 }
