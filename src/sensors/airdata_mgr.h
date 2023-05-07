@@ -27,10 +27,7 @@ class airdata_mgr_t {
     float diffPress_pa = 0.0;
     float temp_C = 0.0;
 
-    void defaults_none();
-    void defaults_goldy3();
-    void defaults_aura3();
-    void setup();
+    void init();
     void update();
 };
 

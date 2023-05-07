@@ -61,7 +61,7 @@ private:
 public:
 
     uint8_t receiver_flags = 0x00;
-    void setup();
+    void init();
     void parse();
     bool process();
 

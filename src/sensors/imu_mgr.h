@@ -60,7 +60,7 @@ public:
     void set_strapdown_calibration();
     void set_accel_calibration();
     void set_mag_calibration();
-    void setup();
+    void init();
     void update();
 
     // notational convenience/clarity

@@ -73,30 +73,30 @@ void setup() {
     status_node.setUInt("serial_number", config_node.getUInt("serial_number"));
 
     // initialize the IMU and calibration matrices
-    imu_mgr.setup();
+    imu_mgr.init();
     imu_mgr.set_strapdown_calibration();
     imu_mgr.set_accel_calibration();
     imu_mgr.set_mag_calibration();
     delay(100);
 
     // initialize the SBUS receiver
-    sbus.setup();
+    sbus.init();
 
     // initialize the pilot interface (RC in, out & mixer)
     pilot.init();
 
     // initialize the gps receiver
-    gps_mgr.setup();
+    gps_mgr.init();
 
     // initialize air data (marmot v1)
-    airdata_mgr.setup();
+    airdata_mgr.init();
 
     // power sensing
     analogReadResolution(16);   // set up ADC0
-    power.setup();
+    power.init();
 
     // led for status blinking if defined
-    led.setup();
+    led.init();
 
     // ekf init (just prints availability status)
     nav_mgr.init();

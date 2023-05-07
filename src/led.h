@@ -18,7 +18,7 @@ private:
 
 public:
 
-    void setup();
+    void init();
     void update(int gyros_calibrated); // fixme: this should really be added and taken from the property tree
 };
 

@@ -87,7 +87,7 @@ void mixer_t::print_mixer_matrix() {
     }
 }
 
-void mixer_t::setup() {
+void mixer_t::init() {
     effectors_node = PropertyNode("/effectors");
     imu_node = PropertyNode("/sensors/imu");
     pilot_node = PropertyNode("/pilot");

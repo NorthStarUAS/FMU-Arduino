@@ -34,7 +34,7 @@ private:
 public:
 
     void print_mixer_matrix();
-    void setup();
+    void init();
     void sas_defaults();
     void update_matrix();
     void update();

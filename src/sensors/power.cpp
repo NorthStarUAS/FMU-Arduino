@@ -4,7 +4,7 @@
 
 #include "power.h"
 
-void power_t::setup() {
+void power_t::init() {
     config_node = PropertyNode("/config/power");
     power_node = PropertyNode("/sensors/power");
 

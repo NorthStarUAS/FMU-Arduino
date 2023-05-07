@@ -22,28 +22,7 @@ static MS4525DO ms45_pitot;
 #include "MS5525DO/MS5525DO.h"
 static MS5525DO ms55_pitot;
 
-// void airdata_mgr_t::defaults_none() {
-//     config.airdata.barometer = 0;
-//     config.airdata.pitot = 0;
-//     config.airdata.swift_baro_addr = 0;
-//     config.airdata.swift_pitot_addr = 0;
-// }
-
-// void airdata_mgr_t::defaults_goldy3() {
-//     config.airdata.barometer = 0; // 0 = onboard bmp280
-//     config.airdata.pitot = 2;     // 2 = swift
-//     config.airdata.swift_baro_addr = 0x24;
-//     config.airdata.swift_pitot_addr = 0x25;
-// }
-
-// void airdata_mgr_t::defaults_aura3() {
-//     config.airdata.barometer = 1; // 1 = bmp280/i2c
-//     config.airdata.pitot = 0;     // 0 = ms4525
-//     config.airdata.swift_baro_addr = 0;
-//     config.airdata.swift_pitot_addr = 0;
-// }
-
-void airdata_mgr_t::setup() {
+void airdata_mgr_t::init() {
     airdata_node = PropertyNode("/sensors/airdata");
     config_node = PropertyNode("/config/airdata");
 

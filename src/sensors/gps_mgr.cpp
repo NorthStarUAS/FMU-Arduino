@@ -8,7 +8,7 @@
 #include "../sensors/UBLOX8/UBLOX8.h"
 static UBLOX8 m8n(&Serial3); // ublox m8n
 
-void gps_mgr_t::setup() {
+void gps_mgr_t::init() {
     gps_node = PropertyNode("/sensors/gps");
     gps_node.setBool("settle", false);
 

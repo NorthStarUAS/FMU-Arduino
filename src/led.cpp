@@ -2,7 +2,7 @@
 
 #include "led.h"
 
-void led_t::setup() {
+void led_t::init() {
     gps_node = PropertyNode("/sensors/gps");
 
 #if defined(MARMOT_V1)

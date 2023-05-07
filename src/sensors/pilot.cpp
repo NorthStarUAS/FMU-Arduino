@@ -24,10 +24,9 @@ void pilot_t::init() {
     }
 
     // setup the hardware inputs and outputs
-    pwm.setup(-1); // fixme need to specify board from config file (which may not have it since we are porting from ardupilot devel environment)
-    sbus.setup();
-
-    mixer.setup();
+    pwm.init(-1); // fixme need to specify board from config file (which may not have it since we are porting from ardupilot devel environment)
+    sbus.init();
+    mixer.init();
 }
 
 bool pilot_t::read() {

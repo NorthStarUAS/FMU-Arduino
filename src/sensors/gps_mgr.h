@@ -27,7 +27,7 @@ public:
     float magvar_rad;
     Vector3f mag_ned;
 
-    void setup();
+    void init();
     void update();
 
 private:

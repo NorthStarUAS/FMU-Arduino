@@ -107,7 +107,7 @@ void imu_mgr_t::set_mag_calibration() {
 }
 
 // configure the IMU settings and setup the ISR to aquire the data
-void imu_mgr_t::setup() {
+void imu_mgr_t::init() {
     imu_node = PropertyNode("/sensors/imu");
     imu_calib_node = PropertyNode("/config/imu/calibration");
     sim_node = PropertyNode("/sim");
