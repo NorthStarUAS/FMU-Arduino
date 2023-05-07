@@ -1,18 +1,7 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 
-// #include "airdata.h"
 #include "config.h"
-// #include "sensors/imu_mgr.h"
-// #include "led.h"
-// #include "mixer.h"
-// #include "sensors/power.h"
-
-// starting point for writing big eeprom struct
-static const int CONFIG_OFFSET = 2;
-
-static const uint8_t START_OF_CFG0 = 147;
-static const uint8_t START_OF_CFG1 = 224;
 
 // global definitions
 uint16_t serial_number;
@@ -50,20 +39,6 @@ bool config_t::load_json_config() {
     }
     // config_node.pretty_print();
     return true;
-}
-
-void config_t::reset_defaults() {
-    printf("Setting default config ...\n");
-    // imu_mgr.defaults();
-    // pilot.mixer.init();
-    // pilot.mixer.sas_defaults();
-}
-
-int extract_config_buf(uint8_t config_buf[], int pos, uint8_t *buf, int len) {
-    for ( int i = 0; i < len; i++ ) {
-        buf[i] = config_buf[pos + i];
-    }
-    return len;
 }
 
 // global shared instance
