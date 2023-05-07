@@ -40,6 +40,7 @@ bool pilot_t::read() {
         for ( uint8_t i = 0; i < SBUS_CHANNELS; i++ ) {
             rcin_node.setUInt("channel", sbus.pwm_val[i], i);
             pilot_node.setDouble("channel", sbus.norm_val[i], i);
+            manual_inputs[i] = sbus.norm_val[i];
         }
         last_input = millis();
         pilot_node.setUInt("millis", last_input);
@@ -81,7 +82,6 @@ void pilot_t::write() {
         uint16_t pwm_val = pwm.norm2pwm(norm_val, i);
         pwm.output_pwm[i] = pwm_val;
         // printf("%d ", pwm_val);
-        // hal.rcout->write(i, pwm_val);
     }
     pwm.write();
     // printf("\n");
