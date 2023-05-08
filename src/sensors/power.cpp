@@ -50,9 +50,9 @@ void power_t::update() {
 
     if ( config_node.getBool("have_attopilot") ) {
         ain = analogRead(atto_volts_pin);
-        // Serial.print("atto volts: ");
-        // Serial.println( ((float)ain) * 3.3 / analogResolution );
-        // fixme: don't have a system currently with attopilot-based power so
+        // printf("atto volts: %.2f\n", ((float)ain) * 3.3 / analogResolution );
+        // fixme: don't have a system currently with attopilot-based power to
+        // test with
     }
 }
 

@@ -3,18 +3,18 @@
 // #include <HardwareSerial.h>
 
 #include "setup_board.h"        // #include this early
+#include "src/props2.h"
 
-#include "src/sensors/airdata_mgr.h"
 #include "src/comms/comms_mgr.h"
 #include "src/config.h"
 #include "src/control/control_mgr.h"
-#include "src/sensors/gps_mgr.h"
-#include "src/sensors/imu_mgr.h"
 #include "src/led.h"
 #include "src/nav/nav_mgr.h"
+#include "src/sensors/airdata_mgr.h"
+#include "src/sensors/gps_mgr.h"
+#include "src/sensors/imu_mgr.h"
 #include "src/sensors/pilot.h"
 #include "src/sensors/power.h"
-#include "src/props2.h"
 #include "src/sensors/sbus/sbus.h"
 #include "src/state/state_mgr.h"
 

@@ -141,8 +141,7 @@ void EKF15_mag::init(IMUdata imu, GPSdata gps) {
     nav.vd = gps.vd;
 
     // ideal magnetic vector
-    //Serial.print("EKF: unix_sec = ");
-    //Serial.println(gps.unix_sec, 0);
+    //printf("EKF: unix_sec = %d\n", gps.unix_sec);
     long int jd = unixdate_to_julian_days(gps.unix_sec);
     double field[6];
     calc_magvar( nav.lat, nav.lon,
@@ -151,13 +150,8 @@ void EKF15_mag::init(IMUdata imu, GPSdata gps) {
     mag_ned(1) = field[4];
     mag_ned(2) = field[5];
     mag_ned.normalize();
-    // Serial.print(field[0]); Serial.print(" ");
-    // Serial.print(field[1]); Serial.print(" ");
-    // Serial.print(field[2]); Serial.println();
-    // Serial.print("Ideal mag vector (ned): ");
-    // Serial.print(mag_ned(0)); Serial.print(" ");
-    // Serial.print(mag_ned(1)); Serial.print(" ");
-    // Serial.print(mag_ned(2)); Serial.println();
+    // printf("%.2f %.2f %.2f\n", field[0], field[1], field[2]);
+    // printf("Ideal mag vector (ned): %.2f %.2f %.2f\n", mag_ned(0), mag_ned(1), mag_ned(2));
     // // initial heading
     // double init_psi_rad = 90.0*D2R;
     // if ( fabs(mag_ned[0][0]) > 0.0001 || fabs(mag_ned[0][1]) > 0.0001 ) {
@@ -184,8 +178,7 @@ void EKF15_mag::init(IMUdata imu, GPSdata gps) {
 
     // tilt compensated heading
     nav.psi = atan2(imu.hz*sin(nav.phi)-imu.hy*cos(nav.phi),imu.hx*cos(nav.the)+imu.hy*sin(nav.the)*sin(nav.phi)+imu.hz*sin(nav.the)*cos(nav.phi));
-    //Serial.print("tilt compensated psi: ");
-    //Serial.println(nav.psi*R2D);
+    printf("tilt compensated psi: %.2f\n", nav.psi*R2D);
 
     quat = eul2quat(nav.phi, nav.the, nav.psi);
 
