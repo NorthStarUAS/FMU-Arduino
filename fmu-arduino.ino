@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <SD.h>
-// #include <HardwareSerial.h>
 
 #include "setup_board.h"        // #include this early
 #include "src/props2.h"
@@ -32,7 +31,7 @@ void setup() {
     Serial.begin(115200);
     delay(1000);  // hopefully long enough for serial to come alive
 
-    // different random each run
+    // different random seed each run
     randomSeed(analogRead(0));
 
     printf("\nNorthStar FMU: Rev %d\n", FIRMWARE_REV);
