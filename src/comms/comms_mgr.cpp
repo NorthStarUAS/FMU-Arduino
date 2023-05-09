@@ -56,7 +56,7 @@ void comms_mgr_t::update() {
 
     if ( host_link.is_inited() ) {
         host_link.read_commands();
-	host_link.update();
+	    host_link.update();
     }
 
     // human console interaction begins when gyros finish calibrating

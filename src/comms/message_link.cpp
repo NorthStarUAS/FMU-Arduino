@@ -124,8 +124,7 @@ void message_link_t::update() {
     }
 }
 
-bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_size )
-{
+bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_size ) {
     bool result = false;
     //printf("message id: %d  len: %d\n", id, message_size);
     if ( id == rc_message::inceptors_v1_id ) {
