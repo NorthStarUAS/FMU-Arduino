@@ -16,9 +16,9 @@
 // teensy32 can barely run the ekf at 50hz so only enable this feature
 // for the newer processors.
 #if defined(ARDUINO_TEENSY32)
-#undef AURA_ONBOARD_EKF
+ #undef AURA_ONBOARD_EKF
 #else
-#define AURA_ONBOARD_EKF
+ #define AURA_ONBOARD_EKF
 #endif
 
 // Firmware rev (needs to be updated here manually to match release number)
