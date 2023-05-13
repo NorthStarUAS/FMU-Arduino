@@ -13,7 +13,7 @@ void led_t::init() {
         digitalWrite(led_pin, HIGH);
         printf("LED on pin: %d\n", led_pin);
     } else {
-        printf("No LED defined.");
+        printf("No LED defined.\n");
     }
 }
 

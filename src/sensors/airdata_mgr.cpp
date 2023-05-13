@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 
+#include "../../setup_board.h"
 #include "../nodes.h"
 
 #include "airdata_mgr.h"
@@ -12,7 +13,7 @@ static bool bmp180_status = false;
 
 #include "BME280/BME280.h"
 static BME280 bme280;
-static bool bme280_status = false;
+static int bme280_status = -1;
 
 #include "AMS5915/AMS5915.h"
 static AMS5915 ams_barometer;
@@ -28,7 +29,7 @@ void airdata_mgr_t::init() {
     airdata_node = PropertyNode("/sensors/airdata");
     PropertyNode config_airdata_node = PropertyNode("/config/airdata");
 
-#if defined(MARMOT_V2)
+#if defined(MARMOT_V1)
     barometer = 1;
 #elif defined(AURA_V2)
     barometer = 2;
@@ -51,7 +52,7 @@ void airdata_mgr_t::init() {
             bme280.configure(0x76, &Wire);
         }
         bme280_status = bme280.begin();
-        if ( !bme280_status ) {
+        if ( bme280_status < 0 ) {
             printf("BME280 barometer initialization unsuccessful\n");
             printf("Check wiring or try cycling power\n");
             delay(1000);
@@ -111,7 +112,7 @@ void airdata_mgr_t::update() {
 
     // read barometer (static pressure sensor)
     if ( barometer == 1 || barometer == 2 ) {
-        if ( bme280_status ) {
+        if ( bme280_status == 0 ) {
             bme280.getData(&baro_press, &baro_temp, &baro_hum);
         }
     } else if ( barometer == 3 ) {
