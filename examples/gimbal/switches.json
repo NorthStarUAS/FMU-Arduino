@@ -1,0 +1,10 @@
+{
+    "master_switch": {
+        "rc-channel": 0,
+        "states": 2
+    },
+    "throttle_safety": {
+        "rc-channel": 1,
+        "states": 2
+    }
+}

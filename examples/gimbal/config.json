@@ -1,0 +1,108 @@
+{
+    "identity": {
+        "call_sign": "Gimbal 1",
+        "make": "Gremsy",
+        "model": "Pixy U",
+        "serial_number": "01"
+    },
+    "specs": {
+        "vehicle_class": "gimbal",
+        "cruise_kt": "100",
+        "display_units": "kts"
+    },
+    "autopilot": {
+        "include": "autopilot.json"
+    },
+    "airdata": {
+        "pitot_calibrate_factor": 1.0
+    },
+    "comms": {
+	"include": "comms.json"
+    },
+    "imu": {
+	"calibration": {
+	    "include": "imu-calibration.json"
+	}
+    },
+    "nav": {
+        "include": "nav.json"
+    },
+    "pilot_input": {
+        "channel": [
+            "master-switch",
+	        "throttle-safety",
+	        "throttle",
+            "aileron",
+            "elevator",
+            "rudder",
+            "flaps",
+            "gear"
+        ],
+        "enable": "True"
+    },
+    "power": {
+        "battery_cells": 4,
+        "battery_mah": 6600,
+        "external_amp_offset": 0.0,
+        "external_amp_ratio": 15.00,
+        "batt_volt_divider": 10.278
+    },
+    "pwm": {
+        "pwm_hz": 50,
+        "gains": [ 1.0, 1.0, -1.0, -1.0, -1.0 ]
+    },
+    "mixer": {
+        "auto_coordination": {
+            "enable": "False",
+            "gain1": "0.3"
+        },
+        "throttle_trim": {
+            "enable": "False",
+            "gain1": "-0.4"
+        },
+        "flap_trim": {
+            "enable": "False",
+            "gain1": "0.0"
+        },
+        "elevon": {
+            "enable": "False",
+            "gain1": "1.0",
+            "gain2": "1.0"
+        },
+        "flaperon": {
+            "enable": "False",
+            "gain1": "1.0",
+            "gain2": "1.0"
+        },
+        "vtail": {
+            "enable": "False",
+            "gain1": "1.0",
+            "gain2": "1.0"
+        },
+        "diff_thrust": {
+            "enable": "False",
+            "gain1": "1.0",
+            "gain2": "0.1"
+        }
+    },
+    "stability_damper": {
+        "roll": {
+            "enable": "False",
+            "gain": "0.15"
+        },
+        "pitch": {
+            "enable": "False",
+            "gain": "0.25"
+        },
+        "yaw": {
+            "enable": "False",
+            "gain": "0.15"
+        },
+        "pilot_tune": {
+            "enable": "False"
+        }
+    },
+    "switches": {
+        "include": "switches.json"
+    }
+}
