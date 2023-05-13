@@ -26,8 +26,7 @@ static MS4525DO ms45_pitot;
 static MS5525DO ms55_pitot;
 
 void airdata_mgr_t::init() {
-    airdata_node = PropertyNode("/sensors/airdata");
-    PropertyNode config_airdata_node = PropertyNode("/config/airdata");
+    config_airdata_node = PropertyNode("/config/airdata");
 
 #if defined(MARMOT_V1)
     barometer = 1;
@@ -107,8 +106,62 @@ void airdata_mgr_t::init() {
     }
 }
 
+void airdata_mgr_t::compute_altitude() {
+    // Compute altitude from airdata barometer
+
+    // Forumula taken from:
+    //   http://keisan.casio.com/exec/system/1224585971
+    // or possibly:
+    //   http://keisan.casio.com/has10/SpecExec.cgi?path=06000000%2eScience%2f02100100%2eEarth%20science%2f12000300%2eAltitude%20from%20atmospheric%20pressure%2fdefault%2exml&charset=utf-8
+    //
+    // h = (((P0/P)^(1/5.257) - 1) * (T+273.15)) / 0.0065
+    // T = h*0.0065 / ((P0/P)^(1/5.257) - 1) - 273.15
+    //
+    // This formula tracks pretty well < 10k but starts to diverge at the higher altitudes.
+
+    const float P0 = 1013.25;	// standard sea level pressure (mbar)
+    float P = airdata_node.getDouble("baro_press_pa") * 0.01; // baro (converted from Pa to mbar)
+    if ( P < 0.1 ) {
+        P = P0;
+    }
+
+    // Typically the onboard pressure sensor reports board/electronics
+    // temperature or at best, cabin temp.  This formula wants outside air temp.
+    // We probably do not have that so just pick the standard temp and live with
+    // a consistent error that doesn't drift with board or aircraft cabin temp
+    // changes. Later we have a later system that estimates the error between
+    // gps altitude and pressure altitude so we can auto correct these errors
+    // anyway.
+    const float T = 15.0;	// standard temp
+
+    // Compute altitude on a standard day
+    float tmp1 = pow((P0/P), 1.0/5.257) - 1.0;
+    float alt_m = (tmp1 * (T + 273.15)) / 0.0065;
+    airdata_node.setDouble( "altitude_m", alt_m );
+}
+
+void airdata_mgr_t::compute_airspeed() {
+    // basic pressure to airspeed formula: v = sqrt((2/p) * q)
+    // where v = velocity, q = dynamic pressure (pitot tube sensor
+    // value), and p = air density.
+
+    // if p is specified in kg/m^3 (value = 1.225) and if q is
+    // specified in Pa (N/m^2) where 1 psi == 6900 Pa, then the
+    // velocity will be in meters per second.
+
+    float pitot_butter = pitot_filter.update(airdata_node.getDouble("diff_press_pa"));
+    float pitot_cal = config_airdata_node.getDouble("pitot_calibrate");
+    if ( pitot_cal < 0.5 or pitot_cal > 1.5 ) {
+        pitot_cal = 1.0;
+    }
+    float Pa = fabs(pitot_butter); // allow inverted plumbing and prevent negative differential pressures.
+    float airspeed_mps = sqrt( 2*Pa / 1.225 ) * pitot_cal;
+    float airspeed_kt = airspeed_mps * mps2kts;
+    airdata_node.setDouble( "airspeed_mps", airspeed_mps );
+    airdata_node.setDouble( "airspeed_kt", airspeed_kt );
+}
+
 void airdata_mgr_t::update() {
-    bool result;
 
     // read barometer (static pressure sensor)
     if ( barometer == 1 || barometer == 2 ) {
@@ -163,6 +216,9 @@ void airdata_mgr_t::update() {
         }
     }
 
+    compute_altitude();
+
+    bool result = false;
     if ( pitot == 1 ) {
         result = ms45_pitot.getData(&diffPress_pa, &temp_C);
     } else if ( pitot == 2 ) {
@@ -179,7 +235,12 @@ void airdata_mgr_t::update() {
         }
     } else {
         pitot_found = true;
+        airdata_node.setDouble("diff_press_pa", diffPress_pa);
+        airdata_node.setDouble("air_temp_C", temp_C);
     }
+
+    airdata_node.setDouble("diff_press_pa", 819.2); // should be a little over 70 kts
+    compute_airspeed();
 }
 
 // shared global instance

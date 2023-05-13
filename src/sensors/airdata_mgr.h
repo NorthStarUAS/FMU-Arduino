@@ -2,16 +2,31 @@
 
 #pragma once
 
+#include "../nodes.h"
+#include "../util/butter.h"
+
 class airdata_mgr_t {
 
- private:
+private:
+
+    static const float mps2kts = 1.9438444924406046432;
+
+    PropertyNode config_airdata_node;
 
     uint8_t barometer = 0;
     uint8_t pitot = 0;
     bool pitot_found = false;
     bool ams_baro_found = false;
 
- public:
+    // 2nd order filter, 100hz sample rate expected, 3rd field is
+    // cutoff freq.  higher freq value == noisier, a value near 1 hz
+    // should work well for airspeed.
+    ButterworthFilter pitot_filter = ButterworthFilter(2, 100, 0.8);
+
+    void compute_altitude();
+    void compute_airspeed();
+
+public:
 
     float baro_press = 0.0;
     float baro_temp = 0.0;
