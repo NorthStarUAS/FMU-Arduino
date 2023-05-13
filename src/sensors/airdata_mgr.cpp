@@ -114,10 +114,14 @@ void airdata_mgr_t::update() {
     if ( barometer == 1 || barometer == 2 ) {
         if ( bme280_status == 0 ) {
             bme280.getData(&baro_press, &baro_temp, &baro_hum);
+            airdata_node.setDouble("baro_press_pa", baro_press);
+            airdata_node.setDouble("baro_temp_C", baro_temp);
         }
     } else if ( barometer == 3 ) {
         if ( ams_barometer.getData(&baro_press, &baro_temp) ) {
             ams_baro_found = true;
+            airdata_node.setDouble("baro_press_pa", baro_press);
+            airdata_node.setDouble("baro_temp_C", baro_temp);
         } else {
             if ( ams_baro_found ) {
                 // Serial.println("Error while reading sPress sensor.");
@@ -139,6 +143,7 @@ void airdata_mgr_t::update() {
                 if ( millis() > wait_until ) {
                     if ( bmp180.getTemperature(tmp_temp) ) {
                         baro_temp = tmp_temp;
+                        airdata_node.setDouble("baro_temp_C", baro_temp);
                     }
                     bmp180_state += 1;
                 }
@@ -150,6 +155,7 @@ void airdata_mgr_t::update() {
                     double tmp;
                     if ( bmp180.getPressure(tmp, tmp_temp) ) {
                         baro_press = tmp;
+                        airdata_node.setDouble("baro_press_pa", baro_press);
                     }
                     bmp180_state = 0;
                 }

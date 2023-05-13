@@ -125,12 +125,12 @@ void info_t::write_nav_stats_ascii() {
 }
 
 void info_t::write_airdata_ascii() {
-    printf("Baro: %.2fpa %.1fC ",
+    printf("Baro: %.0f pa %.1f C ",
                     airdata_node.getDouble("baro_press_pa"),
                     airdata_node.getDouble("baro_temp_C"));
     printf("Pitot: %.4f mps (%.1f pa) %.1f C %d errors\n",
                     airdata_node.getDouble("airspeed_mps"),
-		    airdata_node.getDouble("diffPress_pa"),
+		            airdata_node.getDouble("diffPress_pa"),
                     airdata_node.getDouble("air_temp_C"),
                     airdata_node.getUInt("error_count"));
 }
