@@ -10,7 +10,7 @@ class route_mgr_t {
 public:
 
     void init();
-    bool build( PropertyNode config_node );
+    bool build( PropertyNode config_route_node );
     bool build_str( string request );
     void swap();
     int get_active_size() { return active_route.size(); }

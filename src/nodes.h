@@ -40,11 +40,8 @@
 
 // Configuration
 extern PropertyNode config_node;
-extern PropertyNode config_nav_node;
-extern PropertyNode config_power_node;
-extern PropertyNode config_eff_gains_node;
-extern PropertyNode config_L1_node;
-extern PropertyNode config_tecs_node;
+extern PropertyNode config_L1_node;   // used in circle and route mgrs
+extern PropertyNode config_tecs_node; // only used in tecs.cpp but useful info? fixme: convert tecs to a class for namespace protection
 extern PropertyNode imu_calib_node;
 
 // Sensors

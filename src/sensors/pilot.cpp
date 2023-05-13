@@ -12,6 +12,8 @@
 // static const uint16_t PWM_RANGE = PWM_MAX - PWM_MIN;
 
 void pilot_t::init() {
+    config_eff_gains_node = PropertyNode("/config/pwm");
+
     // extend gain array with default value (1.0) if not provided in
     // config file
     uint8_t size = config_eff_gains_node.getLen("gains");

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../props2.h"
 #include "../nodes.h"
 #include "../mixer.h"
 #include "../comms/rc_messages.h"
@@ -11,6 +12,9 @@
 class pilot_t {
 
 private:
+
+    PropertyNode config_eff_gains_node;
+
     // define if a channel is symmetrical or not (i.e. mapped to [0,1] for
     // everything but throttle, flaps, gear
     // static const uint16_t rcin_symmetrical = ~(1 << 2 | 1 << 6 | 1 << 7);

@@ -6,6 +6,8 @@
 #include "power.h"
 
 void power_t::init() {
+    config_power_node = PropertyNode("/config/power");
+
     if ( config_power_node.hasChild("battery_cells") ) {
         cells = config_power_node.getDouble("battery_cells");
     }

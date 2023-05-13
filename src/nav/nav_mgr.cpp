@@ -10,6 +10,8 @@
 using std::string;
 
 void nav_mgr_t::init() {
+    config_nav_node = PropertyNode("/config/nav");
+
     string selected = config_nav_node.getString("select");
     // fix me ...
     if ( selected == ""  ) {

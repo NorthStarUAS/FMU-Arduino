@@ -2,9 +2,6 @@
 
 // Configuration
 PropertyNode config_node;
-PropertyNode config_nav_node;
-PropertyNode config_power_node;
-PropertyNode config_eff_gains_node;
 PropertyNode config_L1_node;
 PropertyNode config_tecs_node;
 PropertyNode imu_calib_node;
@@ -53,9 +50,6 @@ PropertyNode sim_node;
 void PropertyNodes_init() {
     // Configuration
     config_node = PropertyNode("/config");
-    config_nav_node = PropertyNode("/config/nav");
-    config_power_node = PropertyNode("/config/power");
-    config_eff_gains_node = PropertyNode("/config/pwm");
     config_L1_node = PropertyNode("/config/autopilot/L1_controller");
     config_tecs_node = PropertyNode("/config/autopilot/TECS");
     imu_calib_node = PropertyNode("/config/imu/calibration");

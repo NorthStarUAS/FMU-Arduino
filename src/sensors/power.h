@@ -1,8 +1,12 @@
 #pragma once
 
+#include "../props2.h"
+
 class power_t {
 
 private:
+
+    PropertyNode config_power_node;
 
     uint8_t cells = 1;
 

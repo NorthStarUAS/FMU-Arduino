@@ -33,11 +33,11 @@ void route_mgr_t::init() {
 }
 
 // build route from a property tree node
-bool route_mgr_t::build( PropertyNode config_node ) {
+bool route_mgr_t::build( PropertyNode config_route_node ) {
     standby_route.clear();
-    for ( int i = 0; i < config_node.getLen("wpt"); i++ ) {
+    for ( int i = 0; i < config_route_node.getLen("wpt"); i++ ) {
         string child_name = "wpt/" + std::to_string(i);
-        PropertyNode child = config_node.getChild(child_name.c_str());
+        PropertyNode child = config_route_node.getChild(child_name.c_str());
         waypoint_t wp;
         wp.build(child);
         standby_route.push_back(wp);

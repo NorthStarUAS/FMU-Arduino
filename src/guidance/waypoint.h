@@ -12,7 +12,7 @@ public:
 
     waypoint_t() {}
     waypoint_t( int mode, double coord1, double coord2 );
-    void build( PropertyNode config_node );
+    void build( PropertyNode config_waypoint_node );
     void update_relative_pos( double home_lon_deg, double home_lat_deg,
                               float ref_heading_deg );
 };

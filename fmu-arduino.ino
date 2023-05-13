@@ -146,9 +146,7 @@ void loop() {
         gps_mgr.update();
 
         // 3. Estimate location and attitude
-        if ( config_nav_node.getString("selected") != "none" ) {
-            nav_mgr.update();
-        }
+        nav_mgr.update();
 
         // poll the pressure sensors
         airdata_mgr.update();

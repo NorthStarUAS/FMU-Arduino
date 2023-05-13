@@ -14,22 +14,22 @@ waypoint_t::waypoint_t( int mode, double coord1, double coord2 ) {
     }
 }
 
-void waypoint_t::build( PropertyNode config_node ) {
-    if ( config_node.hasChild("lon_deg") and
-         config_node.hasChild("lat_deg") ) {
-        lon_deg = config_node.getDouble("lon_deg");
-        lat_deg = config_node.getDouble("lat_deg");
+void waypoint_t::build( PropertyNode config_waypoint_node ) {
+    if ( config_waypoint_node.hasChild("lon_deg") and
+         config_waypoint_node.hasChild("lat_deg") ) {
+        lon_deg = config_waypoint_node.getDouble("lon_deg");
+        lat_deg = config_waypoint_node.getDouble("lat_deg");
         absolute = true;
         printf("WPT: %.8f %.8f\n", lon_deg, lat_deg);
-    } else if ( config_node.hasChild("heading_deg") and
-                config_node.hasChild("dist_m") ) {
-        hdg_deg = config_node.getDouble("heading_deg");
-        dist_m = config_node.getDouble("dist_m");
+    } else if ( config_waypoint_node.hasChild("heading_deg") and
+                config_waypoint_node.hasChild("dist_m") ) {
+        hdg_deg = config_waypoint_node.getDouble("heading_deg");
+        dist_m = config_waypoint_node.getDouble("dist_m");
         absolute = false;
         printf("WPT: %4.0f deg %.0f m\n", hdg_deg, dist_m);
     } else {
-        printf("Error in route waypoint config_node logic:\n");
-        config_node.pretty_print();
+        printf("Error in route waypoint config_waypoint_node logic:\n");
+        config_waypoint_node.pretty_print();
     }
 }
 
