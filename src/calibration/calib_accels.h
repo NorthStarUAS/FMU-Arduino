@@ -3,8 +3,6 @@
 #include <math.h>
 #include "eigen.h"
 
-#include "../props2.h"
-
 #include "../util/lowpass.h"
 
 class calib_accels_t {
@@ -24,9 +22,6 @@ private:
     Eigen:: MatrixXf Ref;
     Eigen::MatrixXf Meas;
     bool checked[6] = {false};
-
-    PropertyNode imu_node;
-    PropertyNode imu_calib_node;
 
     int raw_up_axis( float ax, float ay, float az );
     inline bool new_axis(int axis) {

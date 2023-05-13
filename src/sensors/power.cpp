@@ -1,15 +1,13 @@
 #include <Arduino.h>
 
 #include "../../setup_board.h"
+#include "../nodes.h"
 
 #include "power.h"
 
 void power_t::init() {
-    config_node = PropertyNode("/config/power");
-    power_node = PropertyNode("/sensors/power");
-
-    if ( config_node.hasChild("battery_cells") ) {
-        cells = config_node.getDouble("battery_cells");
+    if ( config_power_node.hasChild("battery_cells") ) {
+        cells = config_power_node.getDouble("battery_cells");
     }
 
 #if defined(MARMOT_V1)
@@ -18,7 +16,7 @@ void power_t::init() {
 #elif defined(AURA_V2)
     avionics_pin = A1;
     source_volt_pin = A0;
-    if ( config_node.getBool("have_attopilot") ) {
+    if ( config_power_node.getBool("have_attopilot") ) {
         printf("Attopilot enabled.\n");
         atto_volts_pin = A2;
         atto_amps_pin = A3;
@@ -48,7 +46,7 @@ void power_t::update() {
 
     // fixme: what about amps
 
-    if ( config_node.getBool("have_attopilot") ) {
+    if ( config_power_node.getBool("have_attopilot") ) {
         ain = analogRead(atto_volts_pin);
         // printf("atto volts: %.2f\n", ((float)ain) * 3.3 / analogResolution );
         // fixme: don't have a system currently with attopilot-based power to

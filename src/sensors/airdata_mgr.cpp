@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 
+#include "../nodes.h"
+
 #include "airdata_mgr.h"
 
 #include "BMP180/SFE_BMP180.h"
@@ -24,7 +26,7 @@ static MS5525DO ms55_pitot;
 
 void airdata_mgr_t::init() {
     airdata_node = PropertyNode("/sensors/airdata");
-    config_node = PropertyNode("/config/airdata");
+    PropertyNode config_airdata_node = PropertyNode("/config/airdata");
 
 #if defined(MARMOT_V2)
     barometer = 1;
@@ -32,9 +34,9 @@ void airdata_mgr_t::init() {
     barometer = 2;
 #endif
 
-    if ( config_node.getString("barometer") == "swift" ) {
+    if ( config_airdata_node.getString("barometer") == "swift" ) {
         barometer = 3;
-    } else if ( config_node.getString("barometer") == "bmp180" ) {
+    } else if ( config_airdata_node.getString("barometer") == "bmp180" ) {
         barometer = 4;
     }
 
@@ -57,7 +59,7 @@ void airdata_mgr_t::init() {
             printf("BME280 barometer driver ready.\n");
         }
     } else if (barometer == 3 ) {
-        int baro_addr = config_node.getInt("swift_baro_addr_dec");
+        int baro_addr = config_airdata_node.getInt("swift_baro_addr_dec");
         if ( baro_addr > 0 ) {
             // BFS Swift
             printf("Swift barometer on I2C: 0x%02x\n", baro_addr);
@@ -82,17 +84,17 @@ void airdata_mgr_t::init() {
         printf("No barometer detected or configured.\n");
     }
 
-    if ( config_node.getString("pitot") == "ms45" ) {
+    if ( config_airdata_node.getString("pitot") == "ms45" ) {
         pitot = 1;
         ms45_pitot.configure(0x28, &Wire);
         ms45_pitot.begin();
-    } else if ( config_node.getString("pitot") == "ms55" ) {
+    } else if ( config_airdata_node.getString("pitot") == "ms55" ) {
         pitot = 2;
         ms55_pitot.configure(0x76, &Wire);
         ms55_pitot.begin();
-    } else if ( config_node.getString("pitot") == "swift" ) {
+    } else if ( config_airdata_node.getString("pitot") == "swift" ) {
         pitot = 3;
-        int pitot_addr = config_node.getInt("swift_pitot_addr_dec");
+        int pitot_addr = config_airdata_node.getInt("swift_pitot_addr_dec");
         if ( pitot_addr > 0 ) {
             printf("Swift pitot on I2C: 0x%02x\n", pitot_addr);
             ams_pitot.configure(pitot_addr, &Wire1, AMS5915_0020_D);

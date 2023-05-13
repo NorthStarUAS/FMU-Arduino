@@ -1,15 +1,15 @@
+#include "../nodes.h"
+
 #include "switches.h"
 
 void switches_t::init() {
     printf("setting up switch configuration:\n");
-    config_node = PropertyNode("/config/switches");
-    rcin_node = PropertyNode("/sensors/rc-input");
-    switches_node = PropertyNode("/switches");
+    PropertyNode config_switches_node = PropertyNode("/config/switches");
 
-    vector<string> name_list = config_node.getChildren();
+    vector<string> name_list = config_switches_node.getChildren();
     for ( unsigned int i = 0; i < name_list.size(); i++ ) {
         string name = name_list[i];
-        PropertyNode node = config_node.getChild(name.c_str());
+        PropertyNode node = config_switches_node.getChild(name.c_str());
         if ( node.isNull() ) {
             break;
         }

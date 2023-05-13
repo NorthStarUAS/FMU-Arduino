@@ -1,5 +1,6 @@
 #include <math.h>
 
+#include "../nodes.h"
 #include "../util/strutils.h"
 #include "../util/wgs84.h"
 #include "../util/windtri.h"
@@ -13,27 +14,16 @@ static const double sqrt_of_2 = sqrt(2.0);
 static const double gravity = 9.81;                 // m/sec^2
 
 void route_mgr_t::init() {
-    route_node = PropertyNode("/task/route");
-    pos_node = PropertyNode("/position");
-    vel_node = PropertyNode("/velocity");
-    orient_node = PropertyNode("/orientation");
-    home_node = PropertyNode("/task/home");
-    L1_node = PropertyNode("/config/autopilot/L1_controller");
-    targets_node = PropertyNode("/autopilot/targets");
-    gps_node = PropertyNode("/sensors/gps");
-    comms_node = PropertyNode("/comms");
-    wind_node = PropertyNode("/filters/wind");
-
     // sanity check, set some conservative values if none are
     // provided in the autopilot config
-    if ( L1_node.getDouble("bank_limit_deg") < 0.1 ) {
-        L1_node.setDouble("bank_limit_deg", 25.0);
+    if ( config_L1_node.getDouble("bank_limit_deg") < 0.1 ) {
+        config_L1_node.setDouble("bank_limit_deg", 25.0);
     }
-    if ( L1_node.getDouble("period") < 0.1 ) {
-        L1_node.setDouble("period", 25.0);
+    if ( config_L1_node.getDouble("period") < 0.1 ) {
+        config_L1_node.setDouble("period", 25.0);
     }
-    if ( L1_node.getDouble("damping") < 0.1 ) {
-        L1_node.setDouble("damping", 0.7);
+    if ( config_L1_node.getDouble("damping") < 0.1 ) {
+        config_L1_node.setDouble("damping", 0.7);
     }
 
     // defaults
@@ -279,8 +269,8 @@ void route_mgr_t::update( float dt ) {
                 }
             }
 
-            float L1_period = L1_node.getDouble("period");
-            float L1_damping = L1_node.getDouble("damping");
+            float L1_period = config_L1_node.getDouble("period");
+            float L1_damping = config_L1_node.getDouble("damping");
             float gs_mps = vel_node.getDouble("groundspeed_ms");
             float groundtrack_deg = orient_node.getDouble("groundtrack_deg");
             float tas_kt = wind_node.getDouble("true_airspeed_kt");
@@ -387,7 +377,7 @@ void route_mgr_t::update( float dt ) {
             // allow a crude fudge factor for non-straight airframes or
             // imu mounting errors.  This is essentially the bank angle
             // that yields zero turn rate
-            float bank_bias_deg = L1_node.getDouble("bank_bias_deg");
+            float bank_bias_deg = config_L1_node.getDouble("bank_bias_deg");
 
             // heading error is computed with wind triangles so this is
             // the actual body heading error, not the ground track
@@ -408,7 +398,7 @@ void route_mgr_t::update( float dt ) {
 
             float target_bank_deg = -atan(accel / gravity)*r2d + bank_bias_deg;
 
-            float bank_limit_deg = L1_node.getDouble("bank_limit_deg");
+            float bank_limit_deg = config_L1_node.getDouble("bank_limit_deg");
             if ( target_bank_deg < -bank_limit_deg + bank_bias_deg ) {
                 target_bank_deg = -bank_limit_deg + bank_bias_deg;
             }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../props2.h"
 #include "serial.h"
 #include "../util/ratelimiter.h"
 
@@ -23,24 +22,6 @@ public:
     bool is_inited() { return saved_port >= 0; }
 
 private:
-
-    PropertyNode config_nav_node;
-    PropertyNode nav_node;
-    PropertyNode airdata_node;
-    PropertyNode ap_node;
-    PropertyNode circle_node;
-    PropertyNode effectors_node;
-    PropertyNode gps_node;
-    PropertyNode home_node;
-    PropertyNode imu_node;
-    PropertyNode pilot_node;
-    PropertyNode pos_node;
-    PropertyNode power_node;
-    PropertyNode route_node;
-    PropertyNode status_node;
-    PropertyNode switches_node;
-    PropertyNode targets_node;
-    PropertyNode task_node;
 
     int saved_port = -1;
     uint32_t gps_last_millis = 0;

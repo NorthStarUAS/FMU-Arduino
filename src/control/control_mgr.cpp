@@ -21,20 +21,12 @@
 
 #include <stdio.h>
 
+#include "../nodes.h"
+
 #include "tecs.h"
 #include "control_mgr.h"
 
 void control_mgr_t::init() {
-    // initialize the autopilot class and build the structures from the
-    // configuration file values
-
-    status_node = PropertyNode( "/status" );
-    ap_node = PropertyNode( "/autopilot" );
-    pilot_node = PropertyNode( "/sensors/pilot_input" );
-    flight_node = PropertyNode( "/controls/flight" );
-    engine_node = PropertyNode( "/controls/engine" );
-    switches_node = PropertyNode( "/switches" );
-
     // initialize and build the autopilot controller from the property
     // tree config (/config/autopilot)
     ap.init();
@@ -55,7 +47,7 @@ void control_mgr_t::copy_pilot_inputs() {
     // outputs.  This creates a manual pass through mode.  Consider
     // that manaul pass-through is handled with less latency directly
     // on APM2/BFS/Aura3 hardware if available.
-    
+
     float aileron = pilot_node.getDouble("aileron");
     flight_node.setDouble( "aileron", aileron );
 
@@ -79,7 +71,7 @@ void control_mgr_t::update(float dt) {
     // sanity check
     if ( dt > 1.0 ) { dt = 0.01; }
     if ( dt < 0.00001 ) { dt = 0.01; }
-    
+
     // call for a global fcs component reset when activating ap master
     // switch
     static bool last_master_switch = false;
@@ -90,16 +82,16 @@ void control_mgr_t::update(float dt) {
 	}
 	last_master_switch = switches_node.getBool("master_switch");
     }
-    
+
     // update tecs (total energy) values and error metrics
     update_tecs();
-    
+
     // update the autopilot stages (even in manual flight mode.)  This
     // keeps the differential value up to date, tracks manual inputs,
     // and keeps more continuity in the flight when the mode is
     // switched to autopilot.
     ap.update( dt );
-    
+
     // copy pilot inputs to flight control outputs when not in
     // autopilot mode
     if ( !master_switch ) {

@@ -8,6 +8,7 @@ using std::vector;
 class route_mgr_t {
 
 public:
+
     void init();
     bool build( PropertyNode config_node );
     bool build_str( string request );
@@ -25,16 +26,6 @@ public:
     void update( float dt );
 
 private:
-    PropertyNode route_node;
-    PropertyNode pos_node;
-    PropertyNode vel_node;
-    PropertyNode orient_node;
-    PropertyNode home_node;
-    PropertyNode L1_node;
-    PropertyNode targets_node;
-    PropertyNode gps_node;
-    PropertyNode comms_node;
-    PropertyNode wind_node;
 
     vector<waypoint_t> active_route;
     vector<waypoint_t> standby_route;

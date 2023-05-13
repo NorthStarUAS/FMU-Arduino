@@ -4,13 +4,10 @@
 
 #include <Arduino.h>
 
-#include "props2.h"
-
 class led_t {
 
 private:
 
-    PropertyNode gps_node;
     uint8_t led_pin = 0;
     elapsedMillis blinkTimer = 0;
     unsigned int blink_rate = 100;

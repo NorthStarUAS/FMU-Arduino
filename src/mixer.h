@@ -22,14 +22,10 @@ private:
     void sas_update();
     void mixing_update();
 
-    PropertyNode effectors_node;
-    PropertyNode imu_node;
-    PropertyNode pilot_node;
     PropertyNode stab_roll_node;
     PropertyNode stab_pitch_node;
     PropertyNode stab_yaw_node;
     PropertyNode stab_tune_node;
-    PropertyNode switches_node;
 
 public:
 

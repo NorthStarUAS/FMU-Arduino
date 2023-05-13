@@ -1,19 +1,19 @@
 #include <Arduino.h>
 
+#include "../nodes.h"
+
 #include "comms_mgr.h"
 
 void comms_mgr_t::init() {
-    config_node = PropertyNode("/config/comms");
-    imu_node = PropertyNode("/sensors/imu");
-    status_node = PropertyNode("/status");
+    config_comms_node = PropertyNode("/config/comms");
 
     info_timer = RateLimiter(10);
     heartbeat = RateLimiter(0.1);
     tempTimer = millis(); // fixme use ellapsedmillis?
     counter = 0;
 
-    if ( config_node.hasChild("gcs") ) {
-        PropertyNode gcs_node = config_node.getChild("gcs");
+    if ( config_comms_node.hasChild("gcs") ) {
+        PropertyNode gcs_node = config_comms_node.getChild("gcs");
         int port = gcs_node.getUInt("port");
         int baud = gcs_node.getUInt("baud");
         if ( port > 0 and baud > 0 ) {
@@ -25,8 +25,8 @@ void comms_mgr_t::init() {
     } else {
         printf("No gcs comms link configured.\n");
     }
-    if ( config_node.hasChild("host") ) {
-        PropertyNode host_node = config_node.getChild("host");
+    if ( config_comms_node.hasChild("host") ) {
+        PropertyNode host_node = config_comms_node.getChild("host");
         int port = host_node.getUInt("port");
         int baud = host_node.getUInt("baud");
         if ( port > 0 and baud > 0 ) {
@@ -38,8 +38,6 @@ void comms_mgr_t::init() {
     } else {
         printf("No host comms link configured.\n");
     }
-
-    info.init();
 
     menu.init();
 

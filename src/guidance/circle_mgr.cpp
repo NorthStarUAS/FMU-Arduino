@@ -1,5 +1,6 @@
 #include <math.h>
 
+#include "../nodes.h"
 #include "../util/wgs84.h"
 
 #include "circle_mgr.h"
@@ -10,21 +11,13 @@ static const double sqrt_of_2 = sqrt(2.0);
 static const double gravity = 9.81;         // m/sec^2
 
 void circle_mgr_t::init() {
-    circle_node = PropertyNode("/task/circle/active");
-    pos_node = PropertyNode("/position");
-    vel_node = PropertyNode("/velocity");
-    orient_node = PropertyNode("/orientation");
-    route_node = PropertyNode("/task/route");
-    L1_node = PropertyNode("/config/autopilot/L1_controller");
-    targets_node = PropertyNode("/autopilot/targets");
-
     // sanity check, set some conservative values if none are provided
     // in the autopilot config
-    if ( L1_node.getDouble("bank_limit_deg") < 0.1 ) {
-        L1_node.setDouble("bank_limit_deg", 25.0);
+    if ( config_L1_node.getDouble("bank_limit_deg") < 0.1 ) {
+        config_L1_node.setDouble("bank_limit_deg", 25.0);
     }
-    if ( L1_node.getDouble("period") < 0.1 ) {
-        L1_node.setDouble("period", 25.0);
+    if ( config_L1_node.getDouble("period") < 0.1 ) {
+        config_L1_node.setDouble("period", 25.0);
     }
 }
 
@@ -108,7 +101,7 @@ void circle_mgr_t::update( float dt ) {
     targets_node.setDouble( "groundtrack_deg", target_crs );
 
     // L1 'mathematical' response to error
-    float L1_period = L1_node.getDouble("period");  // gain
+    float L1_period = config_L1_node.getDouble("period");  // gain
     float gs_mps = vel_node.getDouble("groundspeed_ms");
     float omegaA = sqrt_of_2 * M_PI / L1_period;
     float VomegaA = gs_mps * omegaA;
@@ -134,7 +127,7 @@ void circle_mgr_t::update( float dt ) {
     // allow a crude fudge factor for non-straight airframes or imu
     // mounting errors.  This is essentially the bank angle that
     // yields zero turn rate
-    float bank_bias_deg = L1_node.getDouble("bank_bias_deg");
+    float bank_bias_deg = config_L1_node.getDouble("bank_bias_deg");
 
     // compute desired acceleration = acceleration required for course
     // correction + acceleration required to maintain turn at current
@@ -144,7 +137,7 @@ void circle_mgr_t::update( float dt ) {
     float target_bank = -atan( total_accel / gravity );
     float target_bank_deg = target_bank * r2d + bank_bias_deg;
 
-    float bank_limit_deg = L1_node.getDouble("bank_limit_deg");
+    float bank_limit_deg = config_L1_node.getDouble("bank_limit_deg");
     if ( target_bank_deg < -bank_limit_deg + bank_bias_deg) {
         target_bank_deg = -bank_limit_deg + bank_bias_deg;
     }

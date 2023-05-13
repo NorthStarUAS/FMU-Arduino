@@ -1,3 +1,5 @@
+#include "../nodes.h"
+
 #include "pwm.h"
 #include "sbus/sbus.h"
 #include "pilot.h"
@@ -10,17 +12,11 @@
 // static const uint16_t PWM_RANGE = PWM_MAX - PWM_MIN;
 
 void pilot_t::init() {
-    config_eff_gains = PropertyNode("/config/pwm");
-    effector_node = PropertyNode("/effectors");
-    pilot_node = PropertyNode("/pilot");
-    rcin_node = PropertyNode("/sensors/rc-input");
-    switches_node = PropertyNode("/switches");
-
     // extend gain array with default value (1.0) if not provided in
     // config file
-    uint8_t size = config_eff_gains.getLen("gains");
+    uint8_t size = config_eff_gains_node.getLen("gains");
     for ( uint8_t i = size; i < PWM_CHANNELS; i++ ) {
-        config_eff_gains.setDouble("gains", 1.0, i);
+        config_eff_gains_node.setDouble("gains", 1.0, i);
     }
 
     // setup the hardware inputs and outputs
@@ -83,8 +79,8 @@ void pilot_t::write() {
 
     for ( uint8_t i = 0; i < PWM_CHANNELS; i++ ) {
         // float norm_val = mixer.outputs[i] * config.pwm_cfg.act_gain[i];
-        float norm_val = effector_node.getDouble("channel", i)
-            * config_eff_gains.getDouble("gains", i);
+        float norm_val = effectors_node.getDouble("channel", i)
+            * config_eff_gains_node.getDouble("gains", i);
         uint16_t pwm_val = pwm.norm2pwm(norm_val, i);
         pwm.output_pwm[i] = pwm_val;
         // printf("%d ", pwm_val);

@@ -9,11 +9,9 @@
 # include <eigen.h>
 #endif
 #include <Eigen/Core>
-#include <Eigen/Geometry>
+//#include <Eigen/Geometry>
 //#include <Eigen/LU>
 using namespace Eigen;
-
-#include "../props2.h"
 
 class gps_mgr_t {
 
@@ -32,7 +30,6 @@ public:
 
 private:
 
-    PropertyNode gps_node;
     ublox8_nav_pvt_t gps_data;
 
     void update_unix_usec();

@@ -2,14 +2,9 @@
 
 #pragma once
 
-#include "../props2.h"
-
 class airdata_mgr_t {
 
  private:
-
-    PropertyNode airdata_node;
-    PropertyNode config_node;
 
     uint8_t barometer = 0;
     uint8_t pitot = 0;

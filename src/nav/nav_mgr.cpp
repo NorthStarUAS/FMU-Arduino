@@ -1,15 +1,15 @@
 #include <Arduino.h>
 #include <math.h>
+#include <string>
+
+#include "../nodes.h"
 
 #include "nav_mgr.h"
 #include "nav_constants.h"  // R2D
 
-void nav_mgr_t::init() {
-    config_nav_node = PropertyNode("/config/nav");
-    gps_node = PropertyNode("/sensors/gps");
-    imu_node = PropertyNode("/sensors/imu");
-    nav_node = PropertyNode("/filters/nav");
+using std::string;
 
+void nav_mgr_t::init() {
     string selected = config_nav_node.getString("select");
     // fix me ...
     if ( selected == ""  ) {

@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 
+#include "nodes.h"
 #include "config.h"
 
 // global definitions
@@ -27,17 +28,14 @@ uint16_t config_t::set_serial_number(uint16_t value) {
     return serial_number;
 };
 
-void config_t::init() {
-    config_node = PropertyNode("/config");
-}
-
 bool config_t::load_json_config() {
+    PropertyNode local_config_node("/config");
     const char *file_path = "config.json";
-    if ( !config_node.load(file_path) ) {
+    if ( !local_config_node.load(file_path) ) {
         printf("Config file loading failed: %s\n", file_path);
         return false;
     }
-    // config_node.pretty_print();
+    // local_config_node.pretty_print();
     return true;
 }
 

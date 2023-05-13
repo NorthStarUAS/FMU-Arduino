@@ -1,10 +1,9 @@
+#include "../nodes.h"
+
 #include "ground.h"
 
 // initialize ground estimator variables
 void ground_est_t::init() {
-    airdata_node = PropertyNode( "/sensors/airdata" );
-    gps_node = PropertyNode( "/sensors/gps" );
-    pos_node = PropertyNode( "/position" );
     ground_alt_filt.set_time_factor(30.0);
     ground_alt_calibrated = false;
 }

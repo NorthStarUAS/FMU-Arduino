@@ -8,6 +8,8 @@
 
 #include <Arduino.h>
 
+#include "../nodes.h"
+
 #include "../guidance/route_mgr.h"
 #include "../nav/nav_mgr.h"                // reset ekf
 #include "../nav/nav_constants.h"
@@ -22,24 +24,6 @@ message_link_t::message_link_t() {}
 message_link_t::~message_link_t() {}
 
 void message_link_t::init(uint8_t port, uint32_t baud, string relay_name) {
-    config_nav_node = PropertyNode("/config/nav"); // after config.init()
-    effectors_node = PropertyNode("/effectors");
-    nav_node = PropertyNode("/filters/nav");
-    airdata_node = PropertyNode("/sensors/airdata");
-    ap_node = PropertyNode("/autopilot");
-    circle_node = PropertyNode("/task/circle/active");
-    gps_node = PropertyNode("/sensors/gps");
-    home_node = PropertyNode("/task/home");
-    imu_node = PropertyNode("/sensors/imu");
-    power_node = PropertyNode("/sensors/power");
-    pilot_node = PropertyNode("/pilot");
-    pos_node = PropertyNode("/position");
-    route_node = PropertyNode("/task/route");
-    status_node = PropertyNode("/status");
-    switches_node = PropertyNode("/switches");
-    targets_node = PropertyNode("/autopilot/targets");
-    task_node = PropertyNode("/task");
-
     // port: 0 = usb/console, 1 = telem 1 (host), 2 = telem 2 (gcs)
     // telemetry baud = 57600 (or 115200), host baud = 500,000
     saved_port = port;

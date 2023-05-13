@@ -30,17 +30,9 @@
 // combination of throttle positition and pitch angle that will force
 // those limits to be exceeded.
 
-#include "../props2.h"
+#include "../nodes.h"
 
 #include "tecs.h"
-
-// input/output nodes
-static PropertyNode pos_node;
-static PropertyNode airdata_node;
-static PropertyNode specs_node;
-static PropertyNode targets_node;
-static PropertyNode tecs_node;
-static PropertyNode tecs_config_node;
 
 static bool tecs_inited = false;
 
@@ -49,18 +41,12 @@ static const double F2M = 0.3048;
 static const double KT2MPS = 0.5144444444444444444;
 
 static void init_tecs() {
-    airdata_node = PropertyNode( "/sensors/airdata" );
-    pos_node = PropertyNode( "/position" );
-    targets_node = PropertyNode( "/autopilot/targets" );
-    tecs_node = PropertyNode( "/autopilot/tecs" );
-    tecs_config_node = PropertyNode( "/config/autopilot/TECS" );
-
     // quick sanity check
-    if ( tecs_config_node.getDouble("mass_kg") < 0.01 ) {
-        tecs_config_node.setDouble("mass_kg", 2.5);
+    if ( config_tecs_node.getDouble("mass_kg") < 0.01 ) {
+        config_tecs_node.setDouble("mass_kg", 2.5);
     }
-    if ( ! tecs_config_node.hasChild("weight_bal") ) {
-        tecs_config_node.setDouble("weight_bal", 1.0);
+    if ( ! config_tecs_node.hasChild("weight_bal") ) {
+        config_tecs_node.setDouble("weight_bal", 1.0);
     }
     tecs_inited = true;
 }
@@ -71,8 +57,8 @@ void update_tecs() {
         init_tecs();
     }
 
-    double mass_kg = tecs_config_node.getDouble("mass_kg");
-    double wb = tecs_config_node.getDouble("weight_bal");
+    double mass_kg = config_tecs_node.getDouble("mass_kg");
+    double wb = config_tecs_node.getDouble("weight_bal");
 
     // Current energy
     double alt_m = pos_node.getDouble("altitude_agl_m");
@@ -100,12 +86,12 @@ void update_tecs() {
 
     // Compute min & max kinetic energy allowed (based on configured
     // operational speed range)
-    double min_kt = tecs_config_node.getDouble("min_kt");
+    double min_kt = config_tecs_node.getDouble("min_kt");
     if ( min_kt < 15 ) { min_kt = 15;}
     double min_mps = min_kt * KT2MPS;
     double min_kinetic = 0.5 * mass_kg * min_mps * min_mps;
 
-    double max_kt = tecs_config_node.getDouble("max_kt");
+    double max_kt = config_tecs_node.getDouble("max_kt");
     if ( max_kt < 15 ) { max_kt = 2 * min_kt; }
     double max_mps = max_kt * KT2MPS;
     double max_kinetic = 0.5 * mass_kg * max_mps * max_mps;
@@ -143,23 +129,21 @@ void update_tecs() {
 
 // Further notes:
 
-// This module simply computes the energy error sum and difference
-// (clamped for speed range limiting.)  These values are published in
-// the public property tree.
+// This module simply computes the energy error sum and difference (clamped for
+// speed range limiting.)  These values are published in the public property
+// tree.
 
-// These values are then typicallly fed into the flight control
-// system.  The FCS definition for each aircraft is located in the
-// aura-config package.  Typically there would be 3 PID components
-// defined to complete the system:
+// These values are then typicallly fed into the flight control system.  The FCS
+// definition for each aircraft is located in the aura-config package.
+// Typically there would be 3 PID components defined to complete the system:
 
 // 1. Input: error_total; Reference: 0; Output: throttle command
 // 2a. Input: error_diff; Reference: 0; Output: theta command (pitch angle)
 // 2b. Input: theta command; Reference: aircraft theta; Ouput: elevator command
 
-// For each of these PID compoents, suitably tuned gain values can be
-// given, along with range limits on the outputs.  So for example, a
-// maximum throttle setting could be established for highly powered
-// aircraft.  Max and min pitch angles (and elevator posiitions) can
-// be established.  It may make sense to limit some of these outputs
-// to configure some natural stall resistance or prevent over driving
-// the system.
+// For each of these PID compoents, suitably tuned gain values can be given,
+// along with range limits on the outputs.  So for example, a maximum throttle
+// setting could be established for highly powered aircraft.  Max and min pitch
+// angles (and elevator posiitions) can be established.  It may make sense to
+// limit some of these outputs to configure some natural stall resistance or
+// prevent over driving the system.

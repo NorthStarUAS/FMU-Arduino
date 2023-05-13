@@ -1,7 +1,7 @@
 #pragma once
 
+#include "../nodes.h"
 #include "../mixer.h"
-#include "../props2.h"
 #include "../comms/rc_messages.h"
 #include "../sensors/sbus/sbus.h"
 #include "../../setup_board.h"
@@ -20,12 +20,6 @@ private:
     // uint16_t norm2rcout(float norm_val, uint8_t channel);
 
     uint32_t last_input = 0;
-
-    PropertyNode config_eff_gains;
-    PropertyNode effector_node;
-    PropertyNode pilot_node;
-    PropertyNode rcin_node;
-    PropertyNode switches_node;
 
     // convenience
     inline bool ap_enabled() {

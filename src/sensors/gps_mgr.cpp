@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <TimeLib.h>
 
+#include "../nodes.h"
+
 #include "../nav/nav_constants.h"
 #include "../nav/coremag.h"
 #include "gps_mgr.h"
@@ -9,7 +11,6 @@
 static UBLOX8 m8n(&Serial3); // ublox m8n
 
 void gps_mgr_t::init() {
-    gps_node = PropertyNode("/sensors/gps");
     gps_node.setBool("settle", false);
 
     // initialize the gps receiver

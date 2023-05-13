@@ -2,6 +2,7 @@
 
 #include "../setup_board.h"
 #include "props2.h"
+#include "nodes.h"
 #include "sensors/pwm.h"
 
 #include "mixer.h"
@@ -88,14 +89,10 @@ void mixer_t::print_mixer_matrix() {
 }
 
 void mixer_t::init() {
-    effectors_node = PropertyNode("/effectors");
-    imu_node = PropertyNode("/sensors/imu");
-    pilot_node = PropertyNode("/pilot");
     stab_roll_node = PropertyNode("/config/stability_damper/roll");
     stab_pitch_node = PropertyNode("/config/stability_damper/pitch");
     stab_yaw_node = PropertyNode("/config/stability_damper/yaw");
     stab_tune_node = PropertyNode("/config/stability_damper/pilot_tune");
-    switches_node = PropertyNode("/switches");
 
     M.resize(PWM_CHANNELS, PWM_CHANNELS);
     M.setIdentity();

@@ -1,5 +1,6 @@
 #include <Arduino.h>
 
+#include "../nodes.h"
 #include "../util/affine.h"
 
 #include "calib_accels.h"
@@ -18,8 +19,6 @@ int calib_accels_t::raw_up_axis( float ax, float ay, float az ) {
 }
 
 void calib_accels_t::init() {
-    imu_node = PropertyNode("/sensors/imu");
-    imu_calib_node = PropertyNode("/config/imu/calibration");
     state = 0;                  // active
     armed = false;
 

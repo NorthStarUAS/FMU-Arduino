@@ -1,5 +1,7 @@
 #include <Arduino.h>
 
+#include "../nodes.h"
+
 #include "menu.h"
 
 void menu_t::display() {
@@ -17,7 +19,6 @@ void menu_t::display() {
 }
 
 void menu_t::init() {
-    imu_node = PropertyNode("/sensors/imu");
     // flush input buffer
     while ( Serial.available() ) {
         Serial.read();

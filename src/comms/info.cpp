@@ -7,25 +7,14 @@
  */
 
 #include "../../setup_board.h"
+#include "../nodes.h"
+
 #include "../nav/nav_constants.h"
 #include "../sensors/pwm.h"
 
 #include "info.h"
 
-void info_t::init() {
-    config_node = PropertyNode("/config");
-    effector_node = PropertyNode("/effectors");
-    nav_node = PropertyNode("/filters/nav");
-    airdata_node = PropertyNode("/sensors/airdata");
-    gps_node = PropertyNode("/sensors/gps");
-    imu_node = PropertyNode("/sensors/imu");
-    pilot_node = PropertyNode("/pilot");
-    power_node = PropertyNode("/sensors/power");
-    switches_node = PropertyNode("/switches");
-}
-
-void info_t::write_pilot_in_ascii()
-{
+void info_t::write_pilot_in_ascii() {
     // pilot (receiver) input data
     if ( pilot_node.getBool("failsafe") ) {
         printf("FAILSAFE! ");
@@ -46,18 +35,16 @@ void info_t::write_pilot_in_ascii()
     printf("\n");
 }
 
-void info_t::write_actuator_out_ascii()
-{
+void info_t::write_actuator_out_ascii() {
     // actuator output
     printf("RCOUT:");
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-        printf("%.2f ", effector_node.getDouble("channel", i));
+        printf("%.2f ", effectors_node.getDouble("channel", i));
     }
     printf("\n");
 }
 
-void info_t::write_imu_ascii()
-{
+void info_t::write_imu_ascii() {
     // output imu data
     printf("IMU: ");
     printf("%.3f ", imu_node.getDouble("timestamp"));
@@ -137,8 +124,7 @@ void info_t::write_nav_stats_ascii() {
     }
 }
 
-void info_t::write_airdata_ascii()
-{
+void info_t::write_airdata_ascii() {
     printf("Baro: %.2fpa %.1fC ",
                     airdata_node.getDouble("baro_press_pa"),
                     airdata_node.getDouble("baro_temp_C"));
@@ -149,16 +135,14 @@ void info_t::write_airdata_ascii()
                     airdata_node.getUInt("error_count"));
 }
 
-void info_t::write_power_ascii()
-{
+void info_t::write_power_ascii() {
     printf("Avionics v: %.2f  Batt v: %.2f  Batt amp: %.2f\n",
            power_node.getDouble("avionics_vcc"),
            power_node.getDouble("main_vcc"),
            power_node.getDouble("main_amps"));
 }
 
-void info_t::write_status_info_ascii()
-{
+void info_t::write_status_info_ascii() {
     // This info is static so we don't need to send it at a high rate ... once every 10 seconds (?)
     // with an immediate message at the start.
     printf("Uptime: %d(sec)", (unsigned int)(millis() / 1000));

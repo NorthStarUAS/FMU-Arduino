@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 #include "../../setup_board.h"
-// #include "../config.h" // fixme remove
+#include "../nodes.h"
 
 #include "imu_mgr.h"
 
@@ -11,22 +11,6 @@
 const uint8_t MPU9250_SRD = 9;  // Data Output Rate = 1000 / (1 + SRD)
 
 MPU9250 IMU;
-
-// Setup imu defaults for Goldy3 / Marmot v1:
-// Goldy3 has mpu9250 on SPI CS line 24
-// void imu_mgr_t::defaults_goldy3() {
-//     config.imu.interface = 0;       // SPI
-//     config.imu.pin_or_address = 24; // CS pin
-//     defaults_common();
-// }
-
-// Setup imu defaults:
-// Aura3 has mpu9250 on I2C Addr 0x68
-// void imu_mgr_t::defaults_aura3() {
-//     config.imu.interface = 1;       // i2c
-//     config.imu.pin_or_address = 0x68; // mpu9250 i2c addr
-//     defaults_common();
-// }
 
 // Setup imu common defaults:
 void imu_mgr_t::defaults_common() {
@@ -108,10 +92,6 @@ void imu_mgr_t::set_mag_calibration() {
 
 // configure the IMU settings and setup the ISR to aquire the data
 void imu_mgr_t::init() {
-    imu_node = PropertyNode("/sensors/imu");
-    imu_calib_node = PropertyNode("/config/imu/calibration");
-    sim_node = PropertyNode("/sim");
-
 #if defined(MARMOT_V1)
     // Goldy3 has an mpu9250 on SPI CS line 24
     int pin = 24;

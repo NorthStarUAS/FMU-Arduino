@@ -27,10 +27,7 @@ using std::vector;
 
 #include "component.h"
 
-/**
- * Model an autopilot system.
- * 
- */
+// Model an autopilot system.
 
 class AuraAutopilot {
 

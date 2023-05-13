@@ -15,10 +15,6 @@ class switches_t {
 
 private:
 
-    PropertyNode config_node;
-    PropertyNode rcin_node;
-    PropertyNode switches_node;
-
     vector<switch_t> switch_list;
 
 public:

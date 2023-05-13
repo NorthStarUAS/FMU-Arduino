@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "../props2.h"
 #include "nav_structs.h"
 #include "ekf15.h"
 #include "ekf15_mag.h"
@@ -14,10 +13,6 @@ private:
     unsigned long int gps_last_millis = 0;
     EKF15 ekf;
     EKF15_mag ekf_mag;
-    PropertyNode config_nav_node;
-    PropertyNode gps_node;
-    PropertyNode imu_node;
-    PropertyNode nav_node;
 
 public:
     NAVdata data;

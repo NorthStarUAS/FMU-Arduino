@@ -7,7 +7,6 @@
 #include <eigen.h>
 using namespace Eigen;
 
-#include "../props2.h"
 #include "../calibration/calib_accels.h"
 #include "../util/cal_temp.h"
 
@@ -33,11 +32,8 @@ private:
 
     calib_accels_t calib_accels;
 
-    PropertyNode imu_node;
-    PropertyNode imu_calib_node;
-    PropertyNode sim_node;
-
 public:
+
     // 0 = uncalibrated, 1 = calibration in progress, 2 = calibration finished
     int gyros_calibrated = 0;
     unsigned long imu_millis = 0;
@@ -62,27 +58,6 @@ public:
     void set_mag_calibration();
     void init();
     void update();
-
-    // notational convenience/clarity
-    // inline float get_ax_raw() { return accels_raw(0); }
-    // inline float get_ay_raw() { return accels_raw(1); }
-    // inline float get_az_raw() { return accels_raw(2); }
-    // inline float get_p_raw() { return gyros_raw(0); }
-    // inline float get_q_raw() { return gyros_raw(1); }
-    // inline float get_r_raw() { return gyros_raw(2); }
-    // inline float get_hx_raw() { return mags_raw(0); }
-    // inline float get_hy_raw() { return mags_raw(1); }
-    // inline float get_hz_raw() { return mags_raw(2); }
-    // inline float get_ax_cal() { return accels_cal(0); }
-    // inline float get_ay_cal() { return accels_cal(1); }
-    // inline float get_az_cal() { return accels_cal(2); }
-    // inline float get_p_cal() { return gyros_cal(0); }
-    // inline float get_q_cal() { return gyros_cal(1); }
-    // inline float get_r_cal() { return gyros_cal(2); }
-    // inline float get_hx_cal() { return mags_cal(0); }
-    // inline float get_hy_cal() { return mags_cal(1); }
-    // inline float get_hz_cal() { return mags_cal(2); }
-    // inline float get_tempC() { return tempC; }
 };
 
 extern imu_mgr_t imu_mgr;

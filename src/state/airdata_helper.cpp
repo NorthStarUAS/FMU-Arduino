@@ -3,11 +3,11 @@
 
 #include <Arduino.h>
 
+#include "../nodes.h"
+
 #include "airdata_helper.h"
 
 void airdata_helper_t::init() {
-    airdata_node = PropertyNode("/sensors/airdata");
-
     float cruise_kt = PropertyNode("/config/specs").getDouble("cruise_kt");
     if ( cruise_kt > 1.0 ) {
         up_mps = cruise_kt * 0.6 * kt2mps;

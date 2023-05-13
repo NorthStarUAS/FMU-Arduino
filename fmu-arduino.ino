@@ -2,7 +2,7 @@
 #include <SD.h>
 
 #include "setup_board.h"        // #include this early
-#include "src/props2.h"
+#include "src/nodes.h"
 
 #include "src/comms/comms_mgr.h"
 #include "src/config.h"
@@ -19,11 +19,6 @@
 
 // Controls and Actuators
 // uint8_t test_pwm_channel = -1; fixme not needed here?
-
-static PropertyNode config_node;
-static PropertyNode config_nav_node;
-static PropertyNode pilot_node;
-static PropertyNode status_node;
 
 static comms_mgr_t comms_mgr;
 
@@ -45,11 +40,14 @@ void setup() {
         printf("SD card initialized.");
     }
 
-    config.init();
     if ( !config.load_json_config() ) {
         printf("No config file loaded, we cannot do much without it.");
         delay(5000);
     }
+
+    // call this very early (before any other property tree access), but after
+    // the config file is loaded.
+    PropertyNodes_init();
 
     // The following code (when enabled) will force setting a specific
     // device serial number when the device boots:
@@ -59,12 +57,6 @@ void setup() {
     config.read_serial_number();
     printf("Serial Number: %d\n", config.read_serial_number());
     delay(100);
-
-    // after config.init()
-    config_node = PropertyNode("/config");
-    config_nav_node = PropertyNode("/config/nav");
-    pilot_node = PropertyNode("/pilot");
-    status_node = PropertyNode("/status");
 
     status_node.setUInt("firmware_rev", FIRMWARE_REV);
     status_node.setUInt("master_hz", MASTER_HZ);

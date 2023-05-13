@@ -21,9 +21,7 @@ private:
     uint32_t tempTimer;  // fixme use elapsedmillis?
     uint32_t counter;
 
-    PropertyNode config_node;
-    PropertyNode imu_node;
-    PropertyNode status_node;
+    PropertyNode config_comms_node;
 
 public:
     void init();

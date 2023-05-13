@@ -1,12 +1,11 @@
 #include <math.h>
 
+#include "../nodes.h"
+
 #include "wind.h"
 
 // initialize wind estimator variables
 void wind_est_t::init() {
-    airdata_node = PropertyNode( "/sensors/airdata" );
-    nav_node = PropertyNode( "/filters/nav" );
-    
     airdata_node.setDouble( "pitot_scale_factor", 1.0 );
 
     we_filt.set_time_factor(60.0);
@@ -39,7 +38,7 @@ void wind_est_t::update( double dt ) {
 
     double we_filt_val = we_filt.get_value();
     double wn_filt_val = wn_filt.get_value();
-    
+
     double wind_deg = 90 - atan2( wn_filt_val, we_filt_val ) * r2d;
     if ( wind_deg < 0 ) {
         wind_deg += 360.0;
@@ -64,7 +63,7 @@ void wind_est_t::update( double dt ) {
 
     airdata_node.setDouble( "true_airspeed_mps", true_speed_mps );
     airdata_node.setDouble( "true_heading_deg", true_deg );
- 
+
     double ps = 1.0;
     if ( airspeed_mps > 1.0 ) {
 	ps = true_speed_mps / airspeed_mps;

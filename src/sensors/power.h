@@ -1,13 +1,9 @@
 #pragma once
 
-#include "../props2.h"
-
 class power_t {
 
 private:
 
-    PropertyNode config_node;
-    PropertyNode power_node;
     uint8_t cells = 1;
 
     const float analogResolution = 65535.0f;
