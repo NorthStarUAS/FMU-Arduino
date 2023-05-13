@@ -25,6 +25,8 @@ static MS4525DO ms45_pitot;
 #include "MS5525DO/MS5525DO.h"
 static MS5525DO ms55_pitot;
 
+static const float mps2kts = 1.9438444924406046432;
+
 void airdata_mgr_t::init() {
     config_airdata_node = PropertyNode("/config/airdata");
 

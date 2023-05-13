@@ -9,8 +9,6 @@ class airdata_mgr_t {
 
 private:
 
-    static const float mps2kts = 1.9438444924406046432;
-
     PropertyNode config_airdata_node;
 
     uint8_t barometer = 0;
