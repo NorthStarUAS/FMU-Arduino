@@ -241,7 +241,7 @@ void airdata_mgr_t::update() {
         airdata_node.setDouble("air_temp_C", temp_C);
     }
 
-    airdata_node.setDouble("diff_press_pa", 819.2); // should be a little over 70 kts
+    // airdata_node.setDouble("diff_press_pa", 819.2); // should be a little over 70 kts
     compute_airspeed();
 }
 
