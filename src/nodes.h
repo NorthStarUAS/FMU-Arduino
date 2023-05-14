@@ -56,6 +56,7 @@ extern PropertyNode switches_node;
 // INS/GNSS
 extern PropertyNode nav_node;
 
+// State
 extern PropertyNode orient_node;
 extern PropertyNode pos_node;
 extern PropertyNode vel_node;

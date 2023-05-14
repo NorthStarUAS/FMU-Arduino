@@ -18,6 +18,7 @@ PropertyNode switches_node;
 // INS/GNSS
 PropertyNode nav_node;
 
+// State
 PropertyNode orient_node;
 PropertyNode pos_node;
 PropertyNode vel_node;
@@ -66,6 +67,7 @@ void PropertyNodes_init() {
     // INS/GNSS
     nav_node = PropertyNode("/filters/nav");
 
+    // State
     orient_node = PropertyNode("/orientation");
     pos_node = PropertyNode("/position");
     vel_node = PropertyNode("/velocity");
