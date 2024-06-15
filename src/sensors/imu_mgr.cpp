@@ -104,6 +104,7 @@ void imu_mgr_t::init() {
     IMU.configure(address, &Wire);
 #else
     printf("Error: problem with board configuration and MPU9250 (IMU) configuration.\n");
+    return;
 #endif
 
     // initialize the IMU, specify accelerometer and gyro ranges
@@ -124,11 +125,15 @@ void imu_mgr_t::init() {
         return;
     }
 
+    inited = true;
     printf("MPU-9250 ready.\n");
 }
 
 // query the imu and update the structures
 void imu_mgr_t::update() {
+    if ( !inited ) {
+        return;
+    }
     string request = imu_node.getString("request");
     if ( request == "calibrate-accels" ) {
         imu_node.setString("request", "received: calibrate-accels");
