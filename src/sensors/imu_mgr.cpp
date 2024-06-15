@@ -131,9 +131,6 @@ void imu_mgr_t::init() {
 
 // query the imu and update the structures
 void imu_mgr_t::update() {
-    if ( !inited ) {
-        return;
-    }
     string request = imu_node.getString("request");
     if ( request == "calibrate-accels" ) {
         imu_node.setString("request", "received: calibrate-accels");
@@ -141,13 +138,14 @@ void imu_mgr_t::update() {
     }
 
     imu_millis = millis();
-    float ax_raw, ay_raw, az_raw;
-    float gx_raw, gy_raw, gz_raw;
-    float hx_raw, hy_raw, hz_raw;
-    IMU.getMotion10(&ax_raw, &ay_raw, &az_raw,
-                    &gx_raw, &gy_raw, &gz_raw,
-                    &hx_raw, &hy_raw, &hz_raw, &temp_C);
-
+    float ax_raw = 0.0, ay_raw = 0.0, az_raw = 0.0;
+    float gx_raw = 0.0, gy_raw = 0.0, gz_raw = 0.0;
+    float hx_raw = 0.0, hy_raw = 0.0, hz_raw = 0.0;
+    if ( inited ) {
+        IMU.getMotion10(&ax_raw, &ay_raw, &az_raw,
+                        &gx_raw, &gy_raw, &gz_raw,
+                        &hx_raw, &hy_raw, &hz_raw, &temp_C);
+    }
     accels_raw << ax_raw, ay_raw, az_raw, 1.0;
     gyros_raw << gx_raw, gy_raw, gz_raw;
 
