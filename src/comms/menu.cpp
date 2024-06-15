@@ -36,7 +36,8 @@ void menu_t::update() {
                 if ( reboot_count == strlen(reboot_cmd) ) {
                     printf("rebooting by external request ...\n");
                     delay(250);
-                    _reboot_Teensyduino_();
+                    // _reboot_Teensyduino_();  // reboot and reload firmware
+                    SCB_AIRCR = 0x05FA0004;     // simple reboot
                 }
             } else if ( user_input == reboot_cmd[0] ) {
                 // allow immediate restart of a failed or partial command
@@ -73,7 +74,8 @@ void menu_t::update() {
             if ( reboot_count == strlen(reboot_cmd) ) {
                 printf("rebooting by user request ...\n");
                 delay(250);
-                _reboot_Teensyduino_();
+                // _reboot_Teensyduino_();  // reboot and reload firmware
+                SCB_AIRCR = 0x05FA0004;     // simple reboot
             }
         } else if ( user_input == reboot_cmd[0] ) {
             // allow immediate restart of a failed or partial command
