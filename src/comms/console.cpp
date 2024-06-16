@@ -2,7 +2,7 @@
 
 #include "../nodes.h"
 
-#include "menu.h"
+#include "console.h"
 
 void menu_t::display() {
     printf("%s\n",

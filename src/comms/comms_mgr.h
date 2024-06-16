@@ -5,7 +5,7 @@
 #include "../props2.h"
 #include "../util/ratelimiter.h"
 
-#include "menu.h"
+#include "console.h"
 #include "message_link.h"
 
 class comms_mgr_t {
