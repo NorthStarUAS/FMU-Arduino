@@ -1,6 +1,6 @@
 #pragma once
 
-#include "serial.h"
+#include "serial_link.h"
 #include "../util/ratelimiter.h"
 
 class message_link_t {

@@ -1,6 +1,6 @@
 #include "../../setup_board.h"
 
-#include "serial.h"
+#include "serial_link.h"
 
 class relay_t {
 

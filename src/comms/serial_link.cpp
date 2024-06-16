@@ -1,4 +1,4 @@
-#include "serial.h"
+#include "serial_link.h"
 
 SerialLink::SerialLink() {
 }
