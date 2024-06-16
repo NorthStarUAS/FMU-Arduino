@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <SD.h>
+#include <LittleFS.h>
 
 #include "setup_board.h"        // #include this early
 #include "src/nodes.h"
@@ -20,6 +21,8 @@
 // Controls and Actuators
 // uint8_t test_pwm_channel = -1; fixme not needed here?
 
+LittleFS_Program progmfs;
+
 static comms_mgr_t comms_mgr;
 
 void setup() {
@@ -33,11 +36,19 @@ void setup() {
     printf("You are seeing this message on the usb interface.\n");
     printf("Sensor/config communication is on Serial1 @ %d baud (N81) no flow control.\n", HOST_BAUD);
 
-    // load config from SD card
+    // initialize SD card
     if ( !SD.begin(BUILTIN_SDCARD)) {
-        printf("Problem initializing builtin SD card ... failed.");
+        printf("Cannot initializing builtin SD card ... no card?\n");
     } else {
-        printf("SD card initialized.");
+        printf("SD card initialized.\n");
+    }
+
+    // initialize onboard flash file storage
+    uint32_t lfs_progm_bytes = 1024*1024;   // allocate 1Mb flash disk, doesn't seem to work if we try to allocate larger even though we should be able to do 7+ Mb
+    if ( !progmfs.begin(lfs_progm_bytes) ) {
+        printf("Problem initializing flash storage ... failed.\n");
+    } else {
+        printf("flash storage initialized: %ul bytes.\n", lfs_progm_bytes);
     }
 
     if ( !config.load_json_config() ) {
