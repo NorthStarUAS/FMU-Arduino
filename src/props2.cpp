@@ -28,12 +28,7 @@ using std::string;
 #include "rapidjson/error/en.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/prettywriter.h"
-
-#if defined(ARDUPILOT_BUILD)
-#  include "util/strutils.h"
-#else
-#  include "util/strutils.h"
-#endif
+#include "util/strutils.h"
 
 #include "props2.h"
 
