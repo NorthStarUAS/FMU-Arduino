@@ -14,7 +14,7 @@
 
 #include "info.h"
 
-void info_t::write_pilot_in_ascii() {
+void write_pilot_in_ascii() {
     // pilot (receiver) input data
     if ( pilot_node.getBool("failsafe") ) {
         printf("FAILSAFE! ");
@@ -35,7 +35,7 @@ void info_t::write_pilot_in_ascii() {
     printf("\n");
 }
 
-void info_t::write_actuator_out_ascii() {
+void write_actuator_out_ascii() {
     // actuator output
     printf("RCOUT:");
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
@@ -44,7 +44,7 @@ void info_t::write_actuator_out_ascii() {
     printf("\n");
 }
 
-void info_t::write_imu_ascii() {
+void write_imu_ascii() {
     // output imu data
     printf("IMU: ");
     printf("%.3f ", imu_node.getDouble("timestamp"));
@@ -58,7 +58,7 @@ void info_t::write_imu_ascii() {
     printf("\n");
 }
 
-void info_t::write_gps_ascii() {
+void write_gps_ascii() {
     printf("GPS:");
     printf(" Lat: %.7f", gps_node.getDouble("latitude_deg"));
     printf(" Lon: %.7f", gps_node.getDouble("longitude_deg"));
@@ -80,7 +80,7 @@ void info_t::write_gps_ascii() {
     printf("\n");
 }
 
-void info_t::write_nav_ascii() {
+void write_nav_ascii() {
     // values
     printf("Pos: %.7f, %.7f, %.2f",
                     nav_node.getDouble("latitude_deg"),
@@ -96,7 +96,7 @@ void info_t::write_nav_ascii() {
                     nav_node.getDouble("psi_rad")*R2D);
 }
 
-void info_t::write_nav_stats_ascii() {
+void write_nav_stats_ascii() {
     // covariances
     printf("gxb: %.2f %.2f %.2f",
                     nav_node.getDouble("p_bias"),
@@ -124,7 +124,7 @@ void info_t::write_nav_stats_ascii() {
     }
 }
 
-void info_t::write_airdata_ascii() {
+void write_airdata_ascii() {
     printf("Baro: %.0f pa %.1f C %.1f m ",
                     airdata_node.getDouble("baro_press_pa"),
                     airdata_node.getDouble("baro_temp_C"),
@@ -136,14 +136,14 @@ void info_t::write_airdata_ascii() {
                     airdata_node.getUInt("error_count"));
 }
 
-void info_t::write_power_ascii() {
+void write_power_ascii() {
     printf("Avionics v: %.2f  Batt v: %.2f  Batt amp: %.2f\n",
            power_node.getDouble("avionics_vcc"),
            power_node.getDouble("main_vcc"),
            power_node.getDouble("main_amps"));
 }
 
-void info_t::write_status_info_ascii() {
+void write_status_info_ascii() {
     // This info is static so we don't need to send it at a high rate ... once every 10 seconds (?)
     // with an immediate message at the start.
     printf("Uptime: %d(sec)", (unsigned int)(millis() / 1000));
