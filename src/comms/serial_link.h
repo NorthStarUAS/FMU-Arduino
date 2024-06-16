@@ -15,10 +15,11 @@ private:
     uint8_t cksum_lo = 0, cksum_hi = 0;
 
     static const uint16_t MAX_MESSAGE_LEN = 200;
-    static const uint8_t START_OF_MSG0 = 147;
-    static const uint8_t START_OF_MSG1 = 224;
 
 public:
+
+    static const uint8_t START_OF_MSG0 = 147;
+    static const uint8_t START_OF_MSG1 = 224;
 
     int pkt_id = 0;
     int pkt_len = 0;

@@ -1,12 +1,17 @@
 #pragma once
 
-class menu_t {
+#include "message_link.h"
+
+class console_t {
 
 private:
 
-    uint32_t reboot_count = 0;
+    uint8_t reboot_count = 0;
     const char *reboot_cmd = "reboot";
-    void display();
+    message_link_t console_link;
+    bool interactive = true;
+
+    void display_menu();
 
 public:
 

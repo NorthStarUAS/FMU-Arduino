@@ -12,7 +12,7 @@ class comms_mgr_t {
 private:
     message_link_t gcs_link;
     message_link_t host_link;
-    menu_t menu;
+    console_t console;
 
     RateLimiter info_timer;
     RateLimiter heartbeat;
