@@ -95,7 +95,7 @@ void pilot_t::write() {
     // }
 }
 
-void pilot_t::update_ap( rc_message::inceptors_v1_t *inceptors ) {
+void pilot_t::update_ap( ns_message::inceptors_v1_t *inceptors ) {
     // ap_inputs uses the same channel mapping as manual_inputs, so map
     // ap_tmp values to their correct places
     ap_inputs[0] = manual_inputs[0];      // auto/manual switch

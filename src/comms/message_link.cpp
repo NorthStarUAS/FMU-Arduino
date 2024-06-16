@@ -17,7 +17,7 @@
 #include "../sensors/pilot.h"              // update_ap()
 
 #include "relay.h"
-#include "rc_messages.h"
+#include "ns_messages.h"
 #include "message_link.h"
 
 message_link_t::message_link_t() {}
@@ -111,15 +111,15 @@ void message_link_t::update() {
 bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_size ) {
     bool result = false;
     //printf("message id: %d  len: %d\n", id, message_size);
-    if ( id == rc_message::inceptors_v1_id ) {
-        static rc_message::inceptors_v1_t inceptors;
+    if ( id == ns_message::inceptors_v1_id ) {
+        static ns_message::inceptors_v1_t inceptors;
         inceptors.unpack(buf, message_size);
         if ( message_size == inceptors.len ) {
             pilot.update_ap(&inceptors);
             result = true;
         }
-    } else if ( id == rc_message::command_v1_id ) {
-        rc_message::command_v1_t msg;
+    } else if ( id == ns_message::command_v1_id ) {
+        ns_message::command_v1_t msg;
         msg.unpack(buf, message_size);
         printf("received command: %s %d\n",
                         msg.message.c_str(), msg.sequence_num);
@@ -138,7 +138,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
                 string path = msg.message.substr(4);
                 // printf("cmd: get  node: %s\n", path.c_str());
                 PropertyNode node(path);
-                rc_message::command_v1_t reply;
+                ns_message::command_v1_t reply;
                 reply.sequence_num = 0;
                 reply.message = "set " + path + " " + node.get_json_string();
                 reply.pack();
@@ -158,18 +158,18 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
         }
         write_ack( msg.sequence_num, command_result );
         result = true;
-    } else if ( id == rc_message::ap_targets_v1_id ) {
-        rc_message::ap_targets_v1_t ap_msg;
+    } else if ( id == ns_message::ap_targets_v1_id ) {
+        ns_message::ap_targets_v1_t ap_msg;
         ap_msg.unpack(buf, message_size);
         ap_msg.msg2props(targets_node);
-    } else if ( id == rc_message::mission_v1_id ) {
+    } else if ( id == ns_message::mission_v1_id ) {
         // relay directly to gcs
         if ( relay_id == "host" ) {
             relay.forward_packet(relay_t::dest_enum::gcs_dest,
                                  id, buf, message_size);
         }
         // this is the messy message
-        rc_message::mission_v1_t mission;
+        ns_message::mission_v1_t mission;
         mission.unpack(buf, message_size);
         if ( message_size == mission.len ) {
             task_node.setDouble("flight_timer", mission.flight_timer);
@@ -208,7 +208,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
 // return an ack of a message received
 int message_link_t::write_ack( uint16_t sequence_num, uint8_t result )
 {
-    static rc_message::ack_v1_t ack;
+    static ns_message::ack_v1_t ack;
     ack.sequence_num = sequence_num;
     ack.result = result;
     ack.pack();
@@ -218,7 +218,7 @@ int message_link_t::write_ack( uint16_t sequence_num, uint8_t result )
 // final effector commands
 int message_link_t::write_effectors()
 {
-    static rc_message::effectors_v1_t eff_msg;
+    static ns_message::effectors_v1_t eff_msg;
     eff_msg.props2msg(effectors_node);
     eff_msg.pack();
     return serial.write_packet( eff_msg.id, eff_msg.payload, eff_msg.len);
@@ -227,7 +227,7 @@ int message_link_t::write_effectors()
 // pilot manual (rc receiver) data
 int message_link_t::write_pilot()
 {
-    static rc_message::pilot_v4_t pilot_msg;
+    static ns_message::pilot_v4_t pilot_msg;
     pilot_msg.props2msg(pilot_node);
     pilot_msg.master_switch = switches_node.getBool("master_switch");
     pilot_msg.throttle_safety = switches_node.getBool("throttle_safety");
@@ -237,7 +237,7 @@ int message_link_t::write_pilot()
 
 int message_link_t::write_imu()
 {
-    static rc_message::imu_v6_t imu_msg;
+    static ns_message::imu_v6_t imu_msg;
     imu_msg.props2msg(imu_node);
     imu_msg.pack();
     return serial.write_packet( imu_msg.id, imu_msg.payload, imu_msg.len );
@@ -245,7 +245,7 @@ int message_link_t::write_imu()
 
 int message_link_t::write_gps()
 {
-    static rc_message::gps_v5_t gps_msg;
+    static ns_message::gps_v5_t gps_msg;
     if ( gps_node.getUInt("millis") != gps_last_millis ) {
         gps_last_millis = gps_node.getUInt("millis");
         gps_msg.props2msg(gps_node);
@@ -259,7 +259,7 @@ int message_link_t::write_gps()
 // nav (ekf) data
 int message_link_t::write_nav()
 {
-    static rc_message::nav_v6_t nav_msg;
+    static ns_message::nav_v6_t nav_msg;
     nav_msg.props2msg(nav_node);
     nav_msg.pack();
     return serial.write_packet( nav_msg.id, nav_msg.payload, nav_msg.len );
@@ -268,7 +268,7 @@ int message_link_t::write_nav()
 // nav (ekf) metrics
 int message_link_t::write_nav_metrics()
 {
-    static rc_message::nav_metrics_v6_t metrics_msg;
+    static ns_message::nav_metrics_v6_t metrics_msg;
     metrics_msg.props2msg(nav_node);
     metrics_msg.metrics_millis = nav_node.getUInt("millis");
     metrics_msg.pack();
@@ -277,7 +277,7 @@ int message_link_t::write_nav_metrics()
 
 int message_link_t::write_airdata()
 {
-    static rc_message::airdata_v8_t air_msg;
+    static ns_message::airdata_v8_t air_msg;
     air_msg.props2msg(airdata_node);
     air_msg.altitude_ground_m = pos_node.getDouble("altitude_ground_m");
     air_msg.pack();
@@ -287,7 +287,7 @@ int message_link_t::write_airdata()
 // autopilot targets / status
 int message_link_t::write_ap()
 {
-    rc_message::ap_targets_v1_t ap_msg;
+    ns_message::ap_targets_v1_t ap_msg;
     ap_msg.props2msg(targets_node);
     ap_msg.millis = imu_node.getUInt("millis");
     ap_msg.pack();
@@ -296,7 +296,7 @@ int message_link_t::write_ap()
 
 int message_link_t::write_power()
 {
-    static rc_message::power_v1_t power_msg;
+    static ns_message::power_v1_t power_msg;
     power_msg.props2msg(power_node);
     power_msg.pack();
     return serial.write_packet( power_msg.id, power_msg.payload, power_msg.len );
@@ -305,7 +305,7 @@ int message_link_t::write_power()
 // system status
 int message_link_t::write_status()
 {
-    static rc_message::status_v7_t status_msg;
+    static ns_message::status_v7_t status_msg;
 
     // estimate output byte rate
     uint32_t current_time = millis(); // fixme use elapsedmillis(), not a variable called that...

@@ -3,7 +3,7 @@
 #include "../props2.h"
 #include "../nodes.h"
 #include "../mixer.h"
-#include "../comms/rc_messages.h"
+#include "../comms/ns_messages.h"
 #include "../sensors/sbus/sbus.h"
 #include "../../setup_board.h"
 #include "pwm.h"
@@ -93,7 +93,7 @@ public:
     bool read();
     void write();
 
-    void update_ap( rc_message::inceptors_v1_t *inceptors );
+    void update_ap( ns_message::inceptors_v1_t *inceptors );
 
 };
 
