@@ -22,6 +22,7 @@
 // Controls and Actuators
 // uint8_t test_pwm_channel = -1; fixme not needed here?
 
+FS *datafs = NULL;
 LittleFS_Program progmfs;
 
 static comms_mgr_t comms_mgr;
@@ -41,8 +42,9 @@ void setup() {
     if ( !SD.begin(BUILTIN_SDCARD)) {
         printf("Cannot initializing builtin SD card ... no card?\n");
     } else {
+        printf("SD card initialized for config and logging.\n");
+        datafs = &SD;
         MTP.addFilesystem(SD, "SD Card");
-        printf("SD card initialized.\n");
     }
 
     // initialize onboard flash file storage
@@ -50,8 +52,12 @@ void setup() {
     if ( !progmfs.begin(lfs_progm_bytes) ) {
         printf("Problem initializing flash storage ... failed.\n");
     } else {
+        printf("Program memory flash initialized: %lu bytes.\n", lfs_progm_bytes);
+        if ( datafs == NULL ) {
+            printf("Using progm for config and logging.\n");
+            datafs = &progmfs;
+        }
         MTP.addFilesystem(progmfs, "Program Memory Flash");
-        printf("flash storage initialized: %ul bytes.\n", lfs_progm_bytes);
     }
 
     MTP.begin();

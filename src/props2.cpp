@@ -1,12 +1,6 @@
 #if defined(ARDUINO)
-#  include <SD.h>
-#  include <LittleFS.h>
-extern LittleFS_Program progmfs;
-// const char *lfs_progm_str[]={"PROGM"};     // edit to reflect your configuration
-// const int lfs_progm_size[] = {1'000'000};  // edit to reflect your configuration
-// const int nfs_progm = sizeof(lfs_progm_str) / sizeof(const char *);
-// LittleFS_Program progmfs;
-// progmfs.begin(lfs_progm_size);
+#  include <FS.h>
+extern FS *datafs;  // SD or LittleFS_Program (or other) defined in the top level sketch
 #elif defined(ARDUPILOT_BUILD)
 #  include <AP_Filesystem/AP_Filesystem.h>
 #  undef _GLIBCXX_USE_C99_STDIO   // vsnprintf() not defined
@@ -752,21 +746,11 @@ bool PropertyNode::load_json( const char *file_path, Value *v ) {
 
     // open a file in read mode
 #if defined(ARDUINO)
-    // if ( ! SD.exists(file_path) ) {
-    //     printf("file does not exist: %s\n", file_path);
-    //     return false;
-    // }
-    // File open_fd = SD.open(file_path, FILE_READ);
-    // if ( !open_fd ) {
-    //     printf("file open failed: %s\n", file_path);
-    //     return false;
-    // }
-    // file_size = open_fd.size();
-    if ( ! progmfs.exists(file_path) ) {
+    if ( ! datafs->exists(file_path) ) {
         printf("file does not exist: %s\n", file_path);
         return false;
     }
-    File open_fd = progmfs.open(file_path, FILE_READ);
+    File open_fd = datafs->open(file_path, FILE_READ);
     if ( !open_fd ) {
         printf("file open failed: %s\n", file_path);
         return false;
@@ -924,7 +908,7 @@ static bool save_json( const char *file_path, Value *v ) {
     // SdFat sdcard;
     // long lFreeClusters = sdcard.vol()->freeClusterCount();
     // uint64_t free_bytes = lFreeClusters * 512;  // clusters are always 512k
-    uint64_t free_bytes = progmfs.totalSize() - progmfs.usedSize();
+    uint64_t free_bytes = datafs->totalSize() - datafs->usedSize();
 #elif defined(ARDUPILOT_BUILD)
     uint64_t free_bytes = AP::FS().disk_free("/");
 #else
@@ -947,8 +931,7 @@ static bool save_json( const char *file_path, Value *v ) {
 
     // open a file in write mode
 #if defined(ARDUINO)
-    // File open_fd = SD.open(file_path, FILE_WRITE);
-    File open_fd = progmfs.open(file_path, FILE_WRITE);
+    File open_fd = datafs->open(file_path, FILE_WRITE);
     if ( !open_fd ) {
         printf("file open failed: %s\n", file_path);
         return false;
