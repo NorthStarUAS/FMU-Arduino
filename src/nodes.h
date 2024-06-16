@@ -83,7 +83,4 @@ extern PropertyNode home_node;
 extern PropertyNode route_node;
 extern PropertyNode task_node;
 
-// FUTURE
-extern PropertyNode sim_node;
-
 extern void PropertyNodes_init();

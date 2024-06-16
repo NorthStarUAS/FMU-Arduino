@@ -169,28 +169,26 @@ void imu_mgr_t::update() {
         gyros_cal.segment(0,3) -= gyro_startup_bias;
     }
 
-    if ( ! sim_node.getBool("enable") ) {
-        // publish
-        imu_node.setUInt("millis", imu_millis);
-        imu_node.setDouble("timestamp", imu_millis / 1000.0);
-        imu_node.setDouble("ax_raw", accels_raw(0));
-        imu_node.setDouble("ay_raw", accels_raw(1));
-        imu_node.setDouble("az_raw", accels_raw(2));
-        imu_node.setDouble("hx_raw", mags_raw(0));
-        imu_node.setDouble("hy_raw", mags_raw(1));
-        imu_node.setDouble("hz_raw", mags_raw(2));
-        imu_node.setDouble("ax_mps2", accels_cal(0));
-        imu_node.setDouble("ay_mps2", accels_cal(1));
-        imu_node.setDouble("az_mps2", accels_cal(2));
-        imu_node.setDouble("p_rps", gyros_cal(0));
-        imu_node.setDouble("q_rps", gyros_cal(1));
-        imu_node.setDouble("r_rps", gyros_cal(2));
-        imu_node.setDouble("hx", mags_cal(0));
-        imu_node.setDouble("hy", mags_cal(1));
-        imu_node.setDouble("hz", mags_cal(2));
-        imu_node.setDouble("temp_C", temp_C);
-        imu_node.setUInt("gyros_calibrated", gyros_calibrated);
-    }
+    // publish
+    imu_node.setUInt("millis", imu_millis);
+    imu_node.setDouble("timestamp", imu_millis / 1000.0);
+    imu_node.setDouble("ax_raw", accels_raw(0));
+    imu_node.setDouble("ay_raw", accels_raw(1));
+    imu_node.setDouble("az_raw", accels_raw(2));
+    imu_node.setDouble("hx_raw", mags_raw(0));
+    imu_node.setDouble("hy_raw", mags_raw(1));
+    imu_node.setDouble("hz_raw", mags_raw(2));
+    imu_node.setDouble("ax_mps2", accels_cal(0));
+    imu_node.setDouble("ay_mps2", accels_cal(1));
+    imu_node.setDouble("az_mps2", accels_cal(2));
+    imu_node.setDouble("p_rps", gyros_cal(0));
+    imu_node.setDouble("q_rps", gyros_cal(1));
+    imu_node.setDouble("r_rps", gyros_cal(2));
+    imu_node.setDouble("hx", mags_cal(0));
+    imu_node.setDouble("hy", mags_cal(1));
+    imu_node.setDouble("hz", mags_cal(2));
+    imu_node.setDouble("temp_C", temp_C);
+    imu_node.setUInt("gyros_calibrated", gyros_calibrated);
 
     calib_accels.update();      // run if requested
 }
