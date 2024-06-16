@@ -100,22 +100,11 @@ void setup() {
     Serial.println("Ready and transmitting...");
 }
 
-#ifdef __arm__
-// should use uinstd.h to define sbrk but Due causes a conflict
-extern "C" char* sbrk(int incr);
-#else  // __ARM__
+extern unsigned long _heap_start;
+extern unsigned long _heap_end;
 extern char *__brkval;
-#endif  // __arm__
-
-int freeMemory() {
-  char top;
-#ifdef __arm__
-  return &top - reinterpret_cast<char*>(sbrk(0));
-#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
-  return &top - __brkval;
-#else  // __arm__
-  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
-#endif  // __arm__
+int freeram() {
+  return (char *)&_heap_end - __brkval;
 }
 
 // main arduino loop -- Fixme: set this up on a hardware timer so the main loop can do non-time sensitive stuff, but caution on race conditions
@@ -171,7 +160,7 @@ void loop() {
         pilot.write();
 
         // status
-        status_node.setUInt("available_memory", freeMemory());
+        status_node.setUInt("available_memory", freeram());
 
         // blink the led on boards that support it
         led.update(imu_mgr.gyros_calibrated);

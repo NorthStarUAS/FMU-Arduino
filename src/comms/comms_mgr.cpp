@@ -78,7 +78,7 @@ void comms_mgr_t::update() {
         info.write_status_info_ascii();
         info.write_power_ascii();
         float elapsed_sec = (millis() - tempTimer) / 1000.0;
-        printf("Available mem: %d bytes\n",
+        printf("Available mem: %u bytes\n",
                status_node.getUInt("available_memory"));
         printf("Performance = %.1f hz\n", counter/elapsed_sec);
         //PropertyNode("/").pretty_print();
