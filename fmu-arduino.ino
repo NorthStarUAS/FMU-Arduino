@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <SD.h>
 #include <LittleFS.h>
+#include <MTP_Teensy.h>
 
 #include "setup_board.h"        // #include this early
 #include "src/nodes.h"
@@ -40,6 +41,7 @@ void setup() {
     if ( !SD.begin(BUILTIN_SDCARD)) {
         printf("Cannot initializing builtin SD card ... no card?\n");
     } else {
+        MTP.addFilesystem(SD, "SD Card");
         printf("SD card initialized.\n");
     }
 
@@ -48,8 +50,11 @@ void setup() {
     if ( !progmfs.begin(lfs_progm_bytes) ) {
         printf("Problem initializing flash storage ... failed.\n");
     } else {
+        MTP.addFilesystem(progmfs, "Program Memory Flash");
         printf("flash storage initialized: %ul bytes.\n", lfs_progm_bytes);
     }
+
+    MTP.begin();
 
     if ( !config.load_json_config() ) {
         printf("No config file loaded, we cannot do much without it.");
@@ -177,6 +182,8 @@ void loop() {
         led.update(imu_mgr.gyros_calibrated);
 
         comms_mgr.update();
+
+        MTP.loop();
     }
 
 }
