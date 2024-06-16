@@ -1,7 +1,7 @@
-# NorthStar FMU (for Teensy/Arduino)
+# NorthStarUAS FMU (for Teensy/Arduino)
 
 This is an Arduino (Teensyduino) sketch for building the heart of a UAV
-autopilot.  The fmu-arduino sketch is intended to create a full fledged
+autopilot.  The FMU-Arduino sketch is intended to create a full fledged
 autopilot from an inexpensive teensy board and a collection of inexpensive
 sensors from the DIY autopilot world.  It can also pair with a host linux
 computer (like a beaglebone or raspberry pi) for additional high level
