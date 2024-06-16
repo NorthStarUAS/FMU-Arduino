@@ -11,9 +11,9 @@ external airdata systems via the i2c bus.
 
 Please note: this project is not intended to support every sensor, every
 processor board, every vehicle type, and every use case.  Please see ardupilot
-and px4 for that approach.  I know this code is not "simple" anymore, but the
-intention is for it to be far simpler than these much larger "big tent"
-projects.
+and px4 for two wonderful projects that take the big-tent approach.  The intent
+of this project is to keep things as simple as possible.  (And I know "simple"
+is a relative measure.)
 
 ![prototype](images/IMG_20191118_064616925.jpg "Prototype board")
 
@@ -62,7 +62,44 @@ anyone can study and include in their own projects.
   and a Xbow MNAV version even earlier.  The PJRC-teensy version of
   this system has been flying since February 2018.
 
-## What's new in 2023?
+## What is new and upcoming in 2024?
+
+* I have puzzled through the changes needed to use the extra onboard program
+  memory flash as file storage.  Config files and data logs can be stored here.
+* To make the onboard storage more useful, I have also puzzled through the code
+  to add MTP functionality.  This means we can plug the teensy into a host
+  computer via usb and the onboard flash (and SD card if plugged in) will show
+  up as disks on the host computer and you can copy/edit files back and forth.
+* Things still on my shortlist todo:
+  * HIL support: build a usb serial interface to a JSBSim simulation running in
+    real time on a host computer.  This will enable desktop testing and
+    validation of the onboard flight control laws.  And (someday) the higher
+    level mission management code.
+  * Move the flight critical main core loop functions to an interrupt driven
+    routine to run at a hard real-time update rate.
+  * Migrate data logging functions to the teensy (to run in the slack time.)
+* Things on the longer term wish list:
+  * High level guidance functions (such as auto launch and land, survey route
+    planning, ...) remain on the host computer for now.
+  * I have experimented with a simple simulator that is light weight enough to
+    run onboard the teensy.  The state transition is computed as a matrix and
+    derived directly from flight data logs.
+    * I have worked out a method to derive model-based flight control laws
+      directly from the flight data logs.
+    * This could be used for HIL testing without needing a host computer to run
+      the simulation.
+    * This could also be used to predict the next state of the system and compare
+      to the actual measured next state and flag performance anomalies for early
+      fault detection.
+    * The simulator can be generated (fit) from actual flight test data using a
+      process I jokingly call Aero-DMD (because the math setup resembles the setup
+      for dynamic mode decomposition from the fluids field.)  I'm told I'm just
+      doing least squares and to not over-hype it. :-)
+  * Do a respin of the DIY hardware board that presumably drops the host
+    computer requirement and has /everything/ running on the teensy in real
+    time.
+
+## What is new and upcoming in 2023?
 
 * I am bringing more of the high level (linux) functionality down to the teensy
   level.  This requires a teensy with an SD card (ex: teensy 3.6 or 4.1)
@@ -72,12 +109,14 @@ anyone can study and include in their own projects.
   the beaglebone.)
 * The telemetry iterface is now handled directly on the teensy (was on the
   beaglebone.)
-* Innerloop autopilot functionality and controllers are now on the teensy (was on the beaglebone.)
+* Innerloop autopilot functionality and controllers are now on the teensy (was
+  on the beaglebone.)
 * Intermediate guidance functions are in progress (circle hold and route
-  following).  The port compiles but it nees testing.
+  following).  The port compiles but it needs testing.
 * High level guidance functions (such as auto launch and land, survey route
   planning, ...) remain on the host computer for now.
-* I have experimented with a simple simulator that is light weight enough to run onboard the teensy.
+* I have experimented with a simple simulator that is light weight enough to run
+  onboard the teensy.
   * This could be used for HIL testing.
   * This could also be used to predict the next state of the system and compare
     to the actual measured next state and flag performance anomalies for early
@@ -87,6 +126,13 @@ anyone can study and include in their own projects.
     for dynamic mode decomposition from the fluids field.)  I'm told I'm just
     doing least squares and to not over-hype it. :-)
 * On-board accelerometer (strapdown) calibration on the teensy.
+* Written in May, 2023 ...
+  * continue porting the my ardupilot-based version of the flight controller to
+    arduino/teensy and continue testing and validating each major module or
+    feature as I go.
+  * as the port stabilizes, I need to put together some updated hardware so I
+    can flight test (probably in my venerable skywalker platform.)
+  * then flight test and refine as I go ...
 
 ## What's new in 2020?
 
@@ -124,13 +170,3 @@ anyone can study and include in their own projects.
   errors, (3) the max of the 3 attitude errors.  These are statistical
   estimates, but can be useful for monitoring the health of the ekf
   solution.
-
-## What is next?
-
-* Written in May, 2023 ...
-  * continue porting the my ardupilot-based version of the flight controller to
-    arduino/teensy and continue testing and validating each major module or
-    feature as I go.
-  * as the port stabilizes, I need to put together some updated hardware so I
-    can flight test (probably in my venerable skywalker platform.)
-  * then flight test and refine as I go ...
