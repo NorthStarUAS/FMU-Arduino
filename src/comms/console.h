@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../util/ratelimiter.h"
+
 #include "message_link.h"
 
 class console_t {
@@ -10,6 +12,7 @@ private:
     const char *reboot_cmd = "reboot";
     message_link_t console_link;
     bool interactive = true;
+    RateLimiter info_timer;
 
     void display_menu();
 

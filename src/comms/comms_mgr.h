@@ -14,7 +14,6 @@ private:
     message_link_t host_link;
     console_t console;
 
-    RateLimiter info_timer;
     RateLimiter heartbeat;
     uint32_t tempTimer;  // fixme use elapsedmillis?
     uint32_t counter;

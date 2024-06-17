@@ -7,7 +7,6 @@
 void comms_mgr_t::init() {
     config_comms_node = PropertyNode("/config/comms");
 
-    info_timer = RateLimiter(10);
     heartbeat = RateLimiter(0.1);
     tempTimer = millis(); // fixme use ellapsedmillis?
     counter = 0;
@@ -63,16 +62,7 @@ void comms_mgr_t::update() {
         return;
     }
 
-    if ( info_timer.update() ) {
-        console.update();
-        if ( console.display_pilot ) { write_pilot_in_ascii(); }
-        if ( console.display_gps ) { write_gps_ascii(); }
-        if ( console.display_airdata ) { write_airdata_ascii(); }
-        if ( console.display_imu ) { write_imu_ascii(); }
-        if ( console.display_nav ) { write_nav_ascii(); }
-        if ( console.display_nav_stats ) { write_nav_stats_ascii(); }
-        if ( console.display_act ) { write_actuator_out_ascii(); }
-    }
+    console.update();
 
     // 10 second heartbeat console output
     if ( heartbeat.update() ) {
