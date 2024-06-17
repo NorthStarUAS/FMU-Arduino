@@ -63,7 +63,7 @@ void setup() {
     MTP.begin();
 
     if ( !config.load_json_config() ) {
-        printf("No config file loaded, we cannot do much without it.");
+        printf("No config file loaded, we cannot do much without it.\n");
         delay(5000);
     }
 
