@@ -58,9 +58,9 @@ void comms_mgr_t::update() {
     }
 
     // human console interaction begins when gyros finish calibrating
-    if ( imu_node.getUInt("gyros_calibrated") != 2 ) {
-        return;
-    }
+    // if ( imu_node.getUInt("gyros_calibrated") != 2 ) {
+    //     return;
+    // }
 
     console.update();
 

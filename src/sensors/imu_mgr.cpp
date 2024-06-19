@@ -125,12 +125,16 @@ void imu_mgr_t::init() {
         return;
     }
 
-    inited = true;
+    hardware_inited = true;
     printf("MPU-9250 ready.\n");
 }
 
 // query the imu and update the structures
 void imu_mgr_t::update() {
+    if ( !hardware_inited ) {
+        return;
+    }
+
     string request = imu_node.getString("request");
     if ( request == "calibrate-accels" ) {
         imu_node.setString("request", "received: calibrate-accels");
@@ -141,11 +145,9 @@ void imu_mgr_t::update() {
     float ax_raw = 0.0, ay_raw = 0.0, az_raw = 0.0;
     float gx_raw = 0.0, gy_raw = 0.0, gz_raw = 0.0;
     float hx_raw = 0.0, hy_raw = 0.0, hz_raw = 0.0;
-    if ( inited ) {
-        IMU.getMotion10(&ax_raw, &ay_raw, &az_raw,
-                        &gx_raw, &gy_raw, &gz_raw,
-                        &hx_raw, &hy_raw, &hz_raw, &temp_C);
-    }
+    IMU.getMotion10(&ax_raw, &ay_raw, &az_raw,
+                    &gx_raw, &gy_raw, &gz_raw,
+                    &hx_raw, &hy_raw, &hz_raw, &temp_C);
     accels_raw << ax_raw, ay_raw, az_raw, 1.0;
     gyros_raw << gx_raw, gy_raw, gz_raw;
 

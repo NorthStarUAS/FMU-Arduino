@@ -14,7 +14,7 @@ class imu_mgr_t {
 
 private:
 
-    bool inited = false;
+    bool hardware_inited = false;
     Matrix3f strapdown = Matrix3f::Identity();
     Matrix4f accel_affine = Matrix4f::Identity();
     Matrix4f mag_affine = Matrix4f::Identity();
