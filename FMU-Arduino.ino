@@ -18,6 +18,9 @@
 #include "src/sensors/power.h"
 #include "src/sensors/sbus/sbus.h"
 #include "src/state/state_mgr.h"
+#include "src/util/myprof.h"
+
+myprofile main_prof;
 
 // Controls and Actuators
 // uint8_t test_pwm_channel = -1; fixme not needed here?
