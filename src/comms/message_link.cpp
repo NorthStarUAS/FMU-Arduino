@@ -204,13 +204,19 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
         msg.unpack(buf, message_size);
         msg.msg2props(gps_node);
         gps_node.setBool("settle", true);
+        // fixme? don't have a separate 'timestamp' field?
+        uint32_t gps_millis = gps_node.getDouble("millis");
+        gps_node.setDouble("timestamp", gps_millis / 1000.0);
         gps_node.setDouble("latitude_deg", (double)(gps_node.getInt("latitude_raw")) / 10000000.0l);
         gps_node.setDouble("longitude_deg", (double)(gps_node.getInt("longitude_raw")) / 10000000.0l);
-        gps_node.pretty_print();
+        // gps_node.pretty_print();
     } else if ( id == ns_message::imu_v6_id ) {
         ns_message::imu_v6_t msg;
         msg.unpack(buf, message_size);
         msg.msg2props(imu_node);
+        // fixme? don't have a separate 'timestamp' field?
+        uint32_t imu_millis = imu_node.getDouble("millis");
+        imu_node.setDouble("timestamp", imu_millis / 1000.0);
         imu_node.setUInt("gyros_calibrated", 2);  // flag gyros from external source as calibrated
         // imu_node.pretty_print();
     } else {
