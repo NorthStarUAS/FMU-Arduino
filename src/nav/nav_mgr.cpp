@@ -138,9 +138,9 @@ void nav_mgr_t::update() {
         // sanity checks in case degenerate input leads to the filter
         // blowing up.  look for nans (or even negative #'s) in the
         // covariance matrix.
-        if ( std::isnan(data.Pp0) or std::isnan(data.Pv0)
-             or std::isnan(data.Pa0) or (data.Pp0 < -0.1)
-             or (data.Pv0 < -0.1) or (data.Pa0 < -0.1) ) {
+        if ( std::isnan(data.Pp0) or std::isnan(data.Pv0) or std::isnan(data.Pa0)
+             or (data.Pp0 < -0.1) or (data.Pv0 < -0.1) or (data.Pa0 < -0.1)
+             or (data.Pp0 > 999999999.0) or (data.Pv0 > 999999999.0) or (data.Pa0 > 999999999.0) ) {
             printf("filter blew up...\n");
             status = 0;
             reinit();
