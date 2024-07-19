@@ -239,10 +239,10 @@ void airdata_mgr_t::update() {
         pitot_found = true;
         airdata_node.setDouble("diff_press_pa", diffPress_pa);
         airdata_node.setDouble("air_temp_C", temp_C);
-    }
 
-    // airdata_node.setDouble("diff_press_pa", 819.2); // should be a little over 70 kts
-    compute_airspeed();
+        // airdata_node.setDouble("diff_press_pa", 819.2); // should be a little over 70 kts
+        compute_airspeed();
+    }
 }
 
 // shared global instance
