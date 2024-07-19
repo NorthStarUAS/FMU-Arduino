@@ -199,6 +199,12 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
             }
             result = true;
         }
+    } else if ( id == ns_message::airdata_v8_id ) {
+        ns_message::airdata_v8_t msg;
+        msg.unpack(buf, message_size);
+        msg.msg2props(airdata_node);
+        uint32_t airdata_millis = airdata_node.getDouble("millis");
+        airdata_node.setDouble("timestamp", airdata_millis / 1000.0);
     } else if ( id == ns_message::gps_v5_id ) {
         ns_message::gps_v5_t msg;
         msg.unpack(buf, message_size);
