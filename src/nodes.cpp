@@ -56,7 +56,7 @@ void PropertyNodes_init() {
     airdata_node = PropertyNode("/sensors/airdata");
     gps_node = PropertyNode("/sensors/gps");
     imu_node = PropertyNode("/sensors/imu");
-    pilot_node = PropertyNode("/pilot");
+    pilot_node = PropertyNode("/sensors/pilot");
     power_node = PropertyNode("/sensors/power");
     rcin_node = PropertyNode("/sensors/rc-input");
     switches_node = PropertyNode("/switches");
