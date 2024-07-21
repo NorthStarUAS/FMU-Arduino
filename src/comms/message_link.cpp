@@ -200,48 +200,73 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
             result = true;
         }
     } else if ( id == ns_message::airdata_v8_id ) {
-        ns_message::airdata_v8_t msg;
-        msg.unpack(buf, message_size);
-        // don't autofill the property tree, just pick the values the flight
-        // computer needs so we can compute the rest ourselves as if we are
-        // running with real sensors
-        // msg.msg2props(airdata_node);
-        uint32_t airdata_millis = millis();  // force our own timestamp
-        airdata_node.setUInt("millis", airdata_millis);
-        airdata_node.setDouble("timestamp", airdata_millis / 1000.0);
-        airdata_node.setDouble("baro_press_pa", msg.baro_press_pa);
-        airdata_node.setDouble("diff_press_pa", msg.diff_press_pa);
-        airdata_node.setDouble("air_temp_C", msg.air_temp_C);
-        airdata_node.setDouble("airspeed_mps", msg.airspeed_mps);
-        airdata_node.setDouble("altitude_agl_m", msg.altitude_agl_m);
-        airdata_node.setDouble("altitude_true_m", msg.altitude_true_m);
-        airdata_node.setDouble("altitude_ground_m", msg.altitude_ground_m);
-        // node.setUInt("is_airborne", self.is_airborne)
-        // node.setUInt("flight_timer_millis", self.flight_timer_millis)
-        // node.setDouble("wind_dir_deg", self.wind_dir_deg)
-        // node.setDouble("wind_speed_mps", self.wind_speed_mps)
-        // node.setDouble("pitot_scale_factor", self.pitot_scale_factor)
-        airdata_node.setUInt("error_count", msg.error_count);
+        if ( status_node.getBool("HIL_mode") ) {
+            ns_message::airdata_v8_t msg;
+            msg.unpack(buf, message_size);
+            // don't autofill the property tree, just pick the values the flight
+            // computer needs so we can compute the rest ourselves as if we are
+            // running with real sensors
+            // msg.msg2props(airdata_node);
+            uint32_t airdata_millis = millis();  // force our own timestamp
+            airdata_node.setUInt("millis", airdata_millis);
+            airdata_node.setDouble("timestamp", airdata_millis / 1000.0);
+            airdata_node.setDouble("baro_press_pa", msg.baro_press_pa);
+            airdata_node.setDouble("diff_press_pa", msg.diff_press_pa);
+            airdata_node.setDouble("air_temp_C", msg.air_temp_C);
+            airdata_node.setDouble("airspeed_mps", msg.airspeed_mps);
+            airdata_node.setDouble("altitude_agl_m", msg.altitude_agl_m);
+            airdata_node.setDouble("altitude_true_m", msg.altitude_true_m);
+            airdata_node.setDouble("altitude_ground_m", msg.altitude_ground_m);
+            // node.setUInt("is_airborne", self.is_airborne)
+            // node.setUInt("flight_timer_millis", self.flight_timer_millis)
+            // node.setDouble("wind_dir_deg", self.wind_dir_deg)
+            // node.setDouble("wind_speed_mps", self.wind_speed_mps)
+            // node.setDouble("pitot_scale_factor", self.pitot_scale_factor)
+            airdata_node.setUInt("error_count", msg.error_count);
+        }
     } else if ( id == ns_message::gps_v5_id ) {
-        ns_message::gps_v5_t msg;
-        msg.unpack(buf, message_size);
-        msg.msg2props(gps_node);
-        uint32_t gps_millis = millis();  // force our own timestamp
-        gps_node.setUInt("millis", gps_millis);
-        gps_node.setBool("settle", true);
-        gps_node.setDouble("timestamp", gps_millis / 1000.0);
-        gps_node.setDouble("latitude_deg", (double)(gps_node.getInt("latitude_raw")) / 10000000.0l);
-        gps_node.setDouble("longitude_deg", (double)(gps_node.getInt("longitude_raw")) / 10000000.0l);
-        // gps_node.pretty_print();
+        if ( status_node.getBool("HIL_mode") ) {
+            ns_message::gps_v5_t msg;
+            msg.unpack(buf, message_size);
+            msg.msg2props(gps_node);
+            uint32_t gps_millis = millis();  // force our own timestamp
+            gps_node.setUInt("millis", gps_millis);
+            gps_node.setBool("settle", true);
+            gps_node.setDouble("timestamp", gps_millis / 1000.0);
+            gps_node.setDouble("latitude_deg", (double)(gps_node.getInt("latitude_raw")) / 10000000.0l);
+            gps_node.setDouble("longitude_deg", (double)(gps_node.getInt("longitude_raw")) / 10000000.0l);
+            // gps_node.pretty_print();
+        }
     } else if ( id == ns_message::imu_v6_id ) {
-        ns_message::imu_v6_t msg;
-        msg.unpack(buf, message_size);
-        msg.msg2props(imu_node);
-        uint32_t imu_millis = millis();  // force our own timestamp
-        imu_node.setUInt("millis", imu_millis); // force our own timestamp
-        imu_node.setDouble("timestamp", imu_millis / 1000.0);
-        imu_node.setUInt("gyros_calibrated", 2);  // flag gyros from external source as calibrated
-        // imu_node.pretty_print();
+        // special logic to switch system to HIL mode if we are receiving IMU
+        // data as external messages, but only if we aren't already flying
+        //
+        // FIXME: let's add extra protections here (somewhere?) against
+        // inadvertently switching to HIL or accepting external data while in
+        // flight.
+        if ( !airdata_node.getBool("is_airborne") ) {
+            status_node.setBool("HIL_mode", true);
+        }
+
+        if ( status_node.getBool("HIL_mode") ) {
+            ns_message::imu_v6_t msg;
+            msg.unpack(buf, message_size);
+            msg.msg2props(imu_node);
+            uint32_t imu_millis = millis();  // force our own timestamp
+            imu_node.setUInt("millis", imu_millis); // force our own timestamp
+            imu_node.setDouble("timestamp", imu_millis / 1000.0);
+            imu_node.setUInt("gyros_calibrated", 2);  // flag gyros from external source as calibrated
+            // imu_node.pretty_print();
+        }
+    } else if ( id == ns_message::power_v1_id ) {
+        if ( status_node.getBool("HIL_mode") ) {
+            ns_message::power_v1_t msg;
+            msg.unpack(buf, message_size);
+            msg.msg2props(power_node);
+            uint32_t power_millis = millis();  // force our own timestamp
+            power_node.setUInt("millis", power_millis); // force our own timestamp
+            power_node.setDouble("timestamp", power_millis / 1000.0);
+        }
     } else {
         printf("unknown message id: %d len: %d\n", id, message_size);
     }

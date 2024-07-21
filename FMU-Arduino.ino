@@ -167,8 +167,10 @@ void loop() {
 
         state_mgr.update(1.0 / MASTER_HZ);
 
-        // read power values
-        power.update();
+        if ( !status_node.getBool("HIL_mode") ) {
+            // read power values
+            power.update();
+        }
 
         if ( pilot.read() ) {
             bool ap_state = pilot_node.getBool("ap_enabled");
