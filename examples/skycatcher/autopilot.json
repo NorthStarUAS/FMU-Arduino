@@ -1,0 +1,128 @@
+{
+    "L1_controller": {
+        "bank_limit_deg": 30,
+        "bank_bias_deg": -5,
+        "damping": 1.5,
+        "period": 10
+    },
+    "TECS": {
+        "mass_kg": 3,
+        "weight_bal": 1.5,
+        "max_kt": 180,
+        "min_kt": 75
+    },
+    "component": [
+        {
+            "config": {
+                "Kp": 0.03,
+                "Td": 0.0,
+                "Ti": 3.0,
+                "u_trim": 0.0,
+                "u_max": 1.0,
+                "u_min": -1.0
+            },
+            "debug": "False",
+            "description": "Built in L1 controller sets target roll angle",
+            "enable": {
+                "prop": [
+                    "/autopilot/locks/roll"
+                ]
+            },
+            "input": {
+                "prop": "/orientation/roll_deg"
+            },
+            "module": "pid",
+            "name": "Roll angle hold",
+            "output": {
+                "prop": "/controls/flight/aileron"
+            },
+            "reference": {
+                "prop": "/autopilot/targets/roll_deg"
+            }
+        },
+        {
+            "config": {
+                "Kp": -0.0013,
+                "Td": 0.0,
+                "Ti": 4.0,
+                "u_trim": 0.5,
+                "u_max": 1.0,
+                "u_min": 0.0
+            },
+            "debug": "False",
+            "description": "Total energy (sum) based throttle control",
+            "enable": {
+                "prop": [
+                    "/autopilot/locks/tecs"
+                ]
+            },
+            "input": {
+                "prop": "/autopilot/tecs/error_total"
+            },
+            "module": "pid",
+            "name": "TECS Sum Hold",
+            "output": {
+                "prop": "/controls/engine/throttle"
+            },
+            "reference": {
+                "value": 0.0
+            }
+        },
+        {
+            "config": {
+                "Kp": 0.07,
+                "Td": 0.0,
+                "Ti": 4.0,
+                "u_trim": 2.0,
+                "u_max": 25.0,
+                "u_min": -15.0
+            },
+            "debug": "False",
+            "description": "Total energy (diff) based pitch control",
+            "enable": {
+                "prop": [
+                    "/autopilot/locks/tecs"
+                ]
+            },
+            "input": {
+                "prop": "/autopilot/tecs/error_diff"
+            },
+            "module": "pid",
+            "name": "Energy Distribition Hold",
+            "output": {
+                "prop": "/autopilot/targets/pitch_deg"
+            },
+            "reference": {
+                "value": 0.0
+            }
+        },
+        {
+            "config": {
+                "Kp": -0.06,
+                "Td": 0.0,
+                "Ti": 3.0,
+                "u_trim": 0.0,
+                "u_max": 1.0,
+                "u_min": -1.0
+            },
+            "debug": "False",
+            "description": "Stage #2, Drive elevator to hold target pitch angle",
+            "enable": {
+                "prop": [
+                    "/autopilot/locks/pitch"
+                ]
+            },
+            "input": {
+                "prop": "/orientation/pitch_deg"
+            },
+            "module": "pid",
+            "name": "Speed Hold 2",
+            "output": {
+                "prop": "/controls/flight/elevator"
+            },
+            "reference": {
+                "prop": "/autopilot/targets/pitch_deg"
+            }
+        }
+    ]
+}
