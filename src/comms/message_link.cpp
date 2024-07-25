@@ -258,6 +258,15 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
             imu_node.setUInt("gyros_calibrated", 2);  // flag gyros from external source as calibrated
             // imu_node.pretty_print();
         }
+    } else if ( id == ns_message::inceptors_v1_id ) {
+        if ( status_node.getBool("HIL_mode") ) {
+            ns_message::inceptors_v1_t msg;
+            msg.unpack(buf, message_size);
+            msg.msg2props(pilot_node);
+            uint32_t pilot_millis = millis();  // force our own timestamp
+            pilot_node.setUInt("millis", pilot_millis); // force our own timestamp
+            pilot_node.setDouble("timestamp", pilot_millis / 1000.0);
+        }
     } else if ( id == ns_message::power_v1_id ) {
         if ( status_node.getBool("HIL_mode") ) {
             ns_message::power_v1_t msg;
