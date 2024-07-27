@@ -173,7 +173,7 @@ void loop() {
         }
 
         if ( pilot.read() ) {
-            bool ap_state = pilot_node.getBool("ap_enabled");
+            bool ap_state = inceptors_node.getBool("ap_enabled");
             static bool last_ap_state = ap_state;
             if ( ap_state and !last_ap_state ) {
                 printf("ap enabled\n");

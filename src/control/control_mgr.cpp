@@ -48,23 +48,23 @@ void control_mgr_t::copy_pilot_inputs() {
     // that manaul pass-through is handled with less latency directly
     // on APM2/BFS/Aura3 hardware if available.
 
-    float aileron = pilot_node.getDouble("aileron");
-    flight_node.setDouble( "aileron", aileron );
+    float aileron = inceptors_node.getDouble("roll");
+    control_node.setDouble( "aileron", aileron );
 
-    float elevator = pilot_node.getDouble("elevator");
-    flight_node.setDouble( "elevator", elevator );
+    float elevator = inceptors_node.getDouble("pitch");
+    control_node.setDouble( "elevator", elevator );
 
-    float rudder = pilot_node.getDouble("rudder");
-    flight_node.setDouble( "rudder", rudder );
+    float rudder = inceptors_node.getDouble("yaw");
+    control_node.setDouble( "rudder", rudder );
 
-    double flaps = pilot_node.getDouble("flaps");
-    flight_node.setDouble("flaps", flaps );
+    double flaps = inceptors_node.getDouble("flaps");
+    control_node.setDouble("flaps", flaps );
 
-    double gear = pilot_node.getDouble("gear");
-    flight_node.setDouble("gear", gear );
+    double gear = inceptors_node.getDouble("gear");
+    control_node.setDouble("gear", gear );
 
-    double throttle = pilot_node.getDouble("throttle");
-    engine_node.setDouble("throttle", throttle );
+    double throttle = inceptors_node.getDouble("power");
+    control_node.setDouble("throttle", throttle );
 }
 
 void control_mgr_t::update(float dt) {
@@ -75,12 +75,12 @@ void control_mgr_t::update(float dt) {
     // call for a global fcs component reset when activating ap master
     // switch
     static bool last_master_switch = false;
-    bool master_switch = switches_node.getBool("master_switch");
+    bool master_switch = inceptors_node.getBool("master_switch");
     if ( master_switch != last_master_switch ) {
-	if ( switches_node.getBool("master_switch") ) {
+        if ( master_switch ) {
             reset();            // reset the ap; transient mitigation
-	}
-	last_master_switch = switches_node.getBool("master_switch");
+        }
+        last_master_switch = master_switch;
     }
 
     // update tecs (total energy) values and error metrics

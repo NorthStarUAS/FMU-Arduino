@@ -10,10 +10,8 @@ PropertyNode imu_calib_node;
 PropertyNode airdata_node;
 PropertyNode gps_node;
 PropertyNode imu_node;
-PropertyNode pilot_node;
 PropertyNode power_node;
 PropertyNode rcin_node;
-PropertyNode switches_node;
 
 // INS/GNSS
 PropertyNode nav_node;
@@ -25,9 +23,9 @@ PropertyNode vel_node;
 PropertyNode wind_node;
 
 // Inceptors and Effectors
+PropertyNode inceptors_node;
 PropertyNode effectors_node;
-PropertyNode engine_node;
-PropertyNode flight_node;
+PropertyNode control_node;
 
 // Status and Comms
 PropertyNode comms_node;
@@ -56,10 +54,8 @@ void PropertyNodes_init() {
     airdata_node = PropertyNode("/sensors/airdata");
     gps_node = PropertyNode("/sensors/gps");
     imu_node = PropertyNode("/sensors/imu");
-    pilot_node = PropertyNode("/sensors/pilot");
     power_node = PropertyNode("/sensors/power");
     rcin_node = PropertyNode("/sensors/rc-input");
-    switches_node = PropertyNode("/switches");
 
     // INS/GNSS
     nav_node = PropertyNode("/filters/nav");
@@ -71,9 +67,9 @@ void PropertyNodes_init() {
     wind_node = PropertyNode("/filters/wind");
 
     // Inceptors and Effectors
-    effectors_node = PropertyNode("/effectors");
-    engine_node = PropertyNode( "/controls/engine" );
-    flight_node = PropertyNode( "/controls/flight" );
+    inceptors_node = PropertyNode("/fcs/inceptors");
+    effectors_node = PropertyNode("/fcs/effectors");
+    control_node = PropertyNode("/fcs/control");
 
     // Status and Comms
     comms_node = PropertyNode("/comms");

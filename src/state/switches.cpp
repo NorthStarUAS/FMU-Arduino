@@ -26,7 +26,7 @@ void switches_t::init() {
         if ( sw.num_states < 2 ) { sw.num_states = 2; }
         if ( sw.num_states > 6 ) { sw.num_states = 6; }
         switch_list.push_back(sw);
-        switches_node.setInt(sw.name.c_str(), 0);
+        inceptors_node.setInt(sw.name.c_str(), 0);
     }
 }
 
@@ -58,7 +58,7 @@ void switches_t::update() {
             // we transitioned, update the switch value
                 switch_list[i].value = state;
                 printf("Switch: %s = %d\n", switch_list[i].name.c_str(), switch_list[i].value);
-                switches_node.setInt(switch_list[i].name.c_str(), switch_list[i].value);
+                inceptors_node.setInt(switch_list[i].name.c_str(), switch_list[i].value);
             }
         }
         switch_list[i].last_state = state;

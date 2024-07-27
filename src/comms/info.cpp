@@ -16,22 +16,22 @@
 
 void write_pilot_in_ascii() {
     // pilot (receiver) input data
-    if ( pilot_node.getBool("failsafe") ) {
+    if ( inceptors_node.getBool("failsafe") ) {
         printf("FAILSAFE! ");
     }
-    if ( switches_node.getBool("master_switch") ) {
+    if ( inceptors_node.getBool("master_switch") ) {
         printf("(Auto) ");
     } else {
         printf("(Manual) ");
     }
-    if ( switches_node.getBool("throttle_safety") ) {
+    if ( inceptors_node.getBool("throttle_safety") ) {
         printf("(Throttle enable) ");
     } else {
         printf("(Throttle safe) ");
     }
-    for ( int i = 0; i < 8; i++ ) {
-        printf("%.3f ", pilot_node.getDouble("channel", i));
-    }
+    printf("%.3f %.3f %.3f %.3f",
+           inceptors_node.getDouble("power"),
+           inceptors_node.getDouble("roll"), inceptors_node.getDouble("pitch"), inceptors_node.getDouble("yaw"));
     printf("\n");
 }
 

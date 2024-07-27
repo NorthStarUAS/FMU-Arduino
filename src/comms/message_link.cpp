@@ -14,7 +14,7 @@
 #include "../nav/nav_mgr.h"                // reset ekf
 #include "../nav/nav_constants.h"
 #include "../sensors/imu_mgr.h"            // reset gyros
-#include "../sensors/pilot.h"              // update_ap()
+// #include "../sensors/pilot.h"              // update_ap()
 
 #include "relay.h"
 #include "ns_messages.h"
@@ -46,26 +46,26 @@ void message_link_t::init(uint8_t port, uint32_t baud, string relay_name) {
         // setup rates for a slower telemetry connection
         airdata_limiter = RateLimiter(2);
         ap_limiter = RateLimiter(2);
+        inceptors_limiter = RateLimiter(4);
         eff_limiter = RateLimiter(4);
         gps_limiter = RateLimiter(2.5);
         imu_limiter = RateLimiter(4);
         mission_limiter = RateLimiter(2);
         nav_limiter = RateLimiter(10);
         nav_metrics_limiter = RateLimiter(0.5);
-        pilot_limiter = RateLimiter(4);
         power_limiter = RateLimiter(1);
         status_limiter = RateLimiter(0.1);
     } else {
         // setup rates for a full speed host connection
         airdata_limiter = RateLimiter(0);
         ap_limiter = RateLimiter(-1);  // don't send
+        inceptors_limiter = RateLimiter(0);
         eff_limiter = RateLimiter(-1); // don't send (maybe send for logging?)
         gps_limiter = RateLimiter(0);
         imu_limiter = RateLimiter(0);
         mission_limiter = RateLimiter(0);
         nav_limiter = RateLimiter(0);
         nav_metrics_limiter = RateLimiter(0.5);
-        pilot_limiter = RateLimiter(0);
         power_limiter = RateLimiter(0);
         status_limiter = RateLimiter(0.5);
     }
@@ -78,6 +78,9 @@ void message_link_t::update() {
     if ( ap_limiter.update() ) {
         output_counter += write_ap();
     }
+    if ( inceptors_limiter.update() ) {
+        output_counter += write_inceptors();
+    }
     if ( eff_limiter.update() ) {
         output_counter += write_effectors();
     }
@@ -89,9 +92,6 @@ void message_link_t::update() {
     }
     if ( nav_metrics_limiter.update() ) {
         output_counter += write_nav_metrics();
-    }
-    if ( pilot_limiter.update() ) {
-        output_counter += write_pilot();
     }
     if ( power_limiter.update() ) {
         output_counter += write_power();
@@ -111,14 +111,7 @@ void message_link_t::update() {
 bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_size ) {
     bool result = false;
     //printf("message id: %d  len: %d\n", id, message_size);
-    if ( id == ns_message::inceptors_v1_id ) {
-        static ns_message::inceptors_v1_t inceptors;
-        inceptors.unpack(buf, message_size);
-        if ( message_size == inceptors.len ) {
-            pilot.update_ap(&inceptors);
-            result = true;
-        }
-    } else if ( id == ns_message::command_v1_id ) {
+    if ( id == ns_message::command_v1_id ) {
         ns_message::command_v1_t msg;
         msg.unpack(buf, message_size);
         printf("received command: %s %d\n",
@@ -258,14 +251,17 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
             imu_node.setUInt("gyros_calibrated", 2);  // flag gyros from external source as calibrated
             // imu_node.pretty_print();
         }
-    } else if ( id == ns_message::inceptors_v1_id ) {
+    } else if ( id == ns_message::inceptors_v2_id ) {
         if ( status_node.getBool("HIL_mode") ) {
-            ns_message::inceptors_v1_t msg;
+            ns_message::inceptors_v2_t msg;
             msg.unpack(buf, message_size);
-            msg.msg2props(pilot_node);
-            uint32_t pilot_millis = millis();  // force our own timestamp
-            pilot_node.setUInt("millis", pilot_millis); // force our own timestamp
-            pilot_node.setDouble("timestamp", pilot_millis / 1000.0);
+            msg.msg2props(inceptors_node);
+            uint32_t inc_millis = millis();  // force our own timestamp
+            inceptors_node.setUInt("millis", inc_millis);
+            // if ( message_size == msg.len ) {
+            //     pilot.update_ap(&msg);
+            //     result = true;
+            // }
         }
     } else if ( id == ns_message::power_v1_id ) {
         if ( status_node.getBool("HIL_mode") ) {
@@ -292,6 +288,15 @@ int message_link_t::write_ack( uint16_t sequence_num, uint8_t result )
     return serial.write_packet( ack.id, ack.payload, ack.len);
 }
 
+// inceptors
+int message_link_t::write_inceptors()
+{
+    static ns_message::inceptors_v2_t inceptor_msg;
+    inceptor_msg.props2msg(inceptors_node);
+    inceptor_msg.pack();
+    return serial.write_packet( inceptor_msg.id, inceptor_msg.payload, inceptor_msg.len);
+}
+
 // final effector commands
 int message_link_t::write_effectors()
 {
@@ -299,17 +304,6 @@ int message_link_t::write_effectors()
     eff_msg.props2msg(effectors_node);
     eff_msg.pack();
     return serial.write_packet( eff_msg.id, eff_msg.payload, eff_msg.len);
-}
-
-// pilot manual (rc receiver) data
-int message_link_t::write_pilot()
-{
-    static ns_message::pilot_v4_t pilot_msg;
-    pilot_msg.props2msg(pilot_node);
-    pilot_msg.master_switch = switches_node.getBool("master_switch");
-    pilot_msg.throttle_safety = switches_node.getBool("throttle_safety");
-    pilot_msg.pack();
-    return serial.write_packet( pilot_msg.id, pilot_msg.payload, pilot_msg.len);
 }
 
 int message_link_t::write_imu()

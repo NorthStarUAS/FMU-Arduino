@@ -114,7 +114,7 @@ void mixer_t::sas_update() {
     float tune = 1.0;
     float max_tune = 2.0;
     if ( stab_tune_node.getBool("enable") ) {
-        tune = max_tune * pilot_node.getDouble("channel", 7);
+        tune = max_tune * inceptors_node.getDouble("aux2");
         if ( tune < 0.0 ) {
             tune = 0.0;
         } else if ( tune > max_tune ) {
@@ -141,7 +141,7 @@ void mixer_t::sas_update() {
 void mixer_t::mixing_update() {
     outputs = M * inputs;
 
-    if ( switches_node.getBool("throttle_safety") == false ) {
+    if ( inceptors_node.getBool("throttle_safety") == false ) {
         outputs[0] = 0.0;
     }
 
@@ -155,10 +155,10 @@ void mixer_t::mixing_update() {
 void mixer_t::update() {
     // the pilot.get_* interface is smart to return manual
     // vs. autopilot depending on switch state.
-    inputs << pilot_node.getDouble("throttle"), pilot_node.getDouble("aileron"),
-        pilot_node.getDouble("elevator"), pilot_node.getDouble("rudder"),
-        pilot_node.getDouble("flaps"), pilot_node.getDouble("gear"),
-        pilot_node.getDouble("aux1"), pilot_node.getDouble("aux2");
+    inputs << inceptors_node.getDouble("power"), inceptors_node.getDouble("roll"),
+        inceptors_node.getDouble("pitch"), inceptors_node.getDouble("yaw"),
+        inceptors_node.getDouble("flaps"), inceptors_node.getDouble("gear"),
+        inceptors_node.getDouble("aux1"), inceptors_node.getDouble("aux2");
 
     sas_update();
     mixing_update();

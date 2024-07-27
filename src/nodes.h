@@ -48,10 +48,8 @@ extern PropertyNode imu_calib_node;
 extern PropertyNode airdata_node;
 extern PropertyNode gps_node;
 extern PropertyNode imu_node;
-extern PropertyNode pilot_node;
 extern PropertyNode power_node;
 extern PropertyNode rcin_node;
-extern PropertyNode switches_node;
 
 // INS/GNSS
 extern PropertyNode nav_node;
@@ -62,10 +60,10 @@ extern PropertyNode pos_node;
 extern PropertyNode vel_node;
 extern PropertyNode wind_node;
 
-// Inceptors and Effectors
+// Inceptors, Effectors, Flight Control Commands
+extern PropertyNode inceptors_node;
 extern PropertyNode effectors_node;
-extern PropertyNode engine_node;
-extern PropertyNode flight_node;
+extern PropertyNode control_node;
 
 // Status and Comms
 extern PropertyNode comms_node;
