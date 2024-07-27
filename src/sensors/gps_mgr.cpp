@@ -8,7 +8,7 @@
 #include "gps_mgr.h"
 
 #include "../sensors/UBLOX8/UBLOX8.h"
-static UBLOX8 m8n(&Serial3); // ublox m8n
+UBLOX8 m8n(&Serial3); // ublox m8n
 
 void gps_mgr_t::init() {
     gps_node.setBool("settle", false);
@@ -105,6 +105,3 @@ void gps_mgr_t::update_magvar() {
     mag_ned.normalize();
     printf("GPS: ideal mag vector = %.3f %.3f %.3f\n", mag_ned(0), mag_ned(1), mag_ned(2));
 }
-
-// shared global instance
-gps_mgr_t gps_mgr;

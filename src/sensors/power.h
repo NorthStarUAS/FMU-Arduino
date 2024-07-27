@@ -27,5 +27,3 @@ public:
     void init();
     void update();
 };
-
-extern power_t power;

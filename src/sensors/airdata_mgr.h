@@ -36,5 +36,3 @@ public:
     void init();
     void update();
 };
-
-extern airdata_mgr_t airdata_mgr;

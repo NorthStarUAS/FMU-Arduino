@@ -8,27 +8,19 @@
 
 #include "src/comms/comms_mgr.h"
 #include "src/config.h"
-#include "src/fcs/fcs_mgr.h"
-#include "src/fcs/inceptors.h"
+// #include "src/fcs/fcs_mgr.h"
 #include "src/led.h"
 #include "src/nav/nav_mgr.h"
-#include "src/sensors/airdata_mgr.h"
-#include "src/sensors/gps_mgr.h"
-#include "src/sensors/imu_mgr.h"
-#include "src/sensors/power.h"
-#include "src/sensors/sbus/sbus.h"
+#include "src/sensors/sensor_mgr.h"
 #include "src/state/state_mgr.h"
 #include "src/util/myprof.h"
 
 myprofile main_prof;
 
-// Controls and Actuators
-// uint8_t test_pwm_channel = -1; fixme not needed here?
-
 FS *datafs = NULL;
 LittleFS_Program progmfs;
 
-static comms_mgr_t comms_mgr;
+comms_mgr_t *comms_mgr;
 
 void setup() {
     Serial.begin(115200);
@@ -88,39 +80,23 @@ void setup() {
     status_node.setUInt("baud", TELEMETRY_BAUD);
     status_node.setUInt("serial_number", config_node.getUInt("serial_number"));
 
-    // initialize the IMU and calibration matrices
-    imu_mgr.init();
-    imu_mgr.set_strapdown_calibration();
-    imu_mgr.set_accel_calibration();
-    imu_mgr.set_mag_calibration();
-    delay(100);
-
-    // initialize the SBUS receiver
-    sbus.init();
-
-    // initialize the pilot interface (RC in, out & mixer)
-    inceptors.init();
-
-    // initialize the gps receiver
-    gps_mgr.init();
-
-    // initialize air data (marmot v1)
-    airdata_mgr.init();
-
-    // power sensing
-    analogReadResolution(16);   // set up ADC0
-    power.init();
+    sensor_mgr->init();
 
     // led for status blinking if defined
     led.init();
 
     // ekf init (just prints availability status)
-    nav_mgr.init();
+    nav_mgr = new nav_mgr_t();
+    nav_mgr->init();
 
     // additional derived/computed/estimated values
     state_mgr.init();
 
-    comms_mgr.init();
+    // fcs_mgr = new fcs_mgr_t();
+    // fcs_mgr->init();
+
+    comms_mgr = new comms_mgr_t();
+    comms_mgr->init();
 
     Serial.println("Ready and transmitting...");
 }
@@ -153,47 +129,23 @@ void loop() {
         //     }
         // }
 
-        // 1. Sense motion (top priority, used for timing sync downstream.)
-        imu_mgr.update();
-
-        // 2. Check for gps updates
-        gps_mgr.update();
+        sensor_mgr->update();
 
         // 3. Estimate location and attitude
-        nav_mgr.update();
-
-        // poll the pressure sensors
-        airdata_mgr.update();
+        nav_mgr->update();
 
         state_mgr.update(1.0 / MASTER_HZ);
 
-        if ( !status_node.getBool("HIL_mode") ) {
-            // read power values
-            power.update();
-        }
-
-        if ( inceptors.read() ) {
-            bool ap_state = inceptors_node.getBool("ap_enabled");
-            static bool last_ap_state = ap_state;
-            if ( ap_state and !last_ap_state ) {
-                printf("ap enabled\n");
-            } else if ( !ap_state and last_ap_state ) {
-                printf("ap disabled (manaul flight)\n");
-            }
-            last_ap_state = ap_state;
-        }
-
-        inceptors.write(); // fixme: this should become effectors after we move switches to be owned by inceptors
+        // fcs_mgr->update(DT_MILLIS/1000.0);
 
         // status
         status_node.setUInt("available_memory", freeram());
 
         // blink the led on boards that support it
-        led.update(imu_mgr.gyros_calibrated);
+        led.update(sensor_mgr->imu_mgr.gyros_calibrated);
 
-        comms_mgr.update();
+        comms_mgr->update();
 
         MTP.loop();
     }
-
 }

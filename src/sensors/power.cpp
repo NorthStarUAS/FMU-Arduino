@@ -55,6 +55,3 @@ void power_t::update() {
         // test with
     }
 }
-
-// shared global instance
-power_t power;

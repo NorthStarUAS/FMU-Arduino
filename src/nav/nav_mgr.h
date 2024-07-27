@@ -28,4 +28,4 @@ public:
     void reinit();              // request the filter reinit itself
 };
 
-extern nav_mgr_t nav_mgr;
+extern nav_mgr_t *nav_mgr;

@@ -13,7 +13,7 @@
 #include "../guidance/route_mgr.h"
 #include "../nav/nav_mgr.h"                // reset ekf
 #include "../nav/nav_constants.h"
-#include "../sensors/imu_mgr.h"            // reset gyros
+#include "../sensors/sensor_mgr.h"            // reset gyros
 // #include "../sensors/pilot.h"              // update_ap()
 
 #include "relay.h"
@@ -114,18 +114,17 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
     if ( id == ns_message::command_v1_id ) {
         ns_message::command_v1_t msg;
         msg.unpack(buf, message_size);
-        printf("received command: %s %d\n",
-                        msg.message.c_str(), msg.sequence_num);
+        printf("received command: %s %d\n", msg.message.c_str(), msg.sequence_num);
         uint8_t command_result = 0;
         if ( last_command_seq_num != msg.sequence_num ) {
             last_command_seq_num = msg.sequence_num;
             if ( msg.message == "hb" ) {
                 command_result = 1;
             } else if ( msg.message == "zero_gyros" ) {
-                imu_mgr.gyros_calibrated = 0;   // start state
+                sensor_mgr->imu_mgr.gyros_calibrated = 0;   // start state
                 command_result = 1;
             } else if ( msg.message == "reset_ekf" ) {
-                nav_mgr.reinit();
+                nav_mgr->reinit();
                 command_result = 1;
             } else if ( msg.message.substr(0, 4) == "get " ) {
                 string path = msg.message.substr(4);
@@ -281,7 +280,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
 // return an ack of a message received
 int message_link_t::write_ack( uint16_t sequence_num, uint8_t result )
 {
-    static ns_message::ack_v1_t ack;
+    ns_message::ack_v1_t ack;
     ack.sequence_num = sequence_num;
     ack.result = result;
     ack.pack();
@@ -291,7 +290,7 @@ int message_link_t::write_ack( uint16_t sequence_num, uint8_t result )
 // inceptors
 int message_link_t::write_inceptors()
 {
-    static ns_message::inceptors_v2_t inceptor_msg;
+    ns_message::inceptors_v2_t inceptor_msg;
     inceptor_msg.props2msg(inceptors_node);
     inceptor_msg.pack();
     return serial.write_packet( inceptor_msg.id, inceptor_msg.payload, inceptor_msg.len);
@@ -300,7 +299,7 @@ int message_link_t::write_inceptors()
 // final effector commands
 int message_link_t::write_effectors()
 {
-    static ns_message::effectors_v1_t eff_msg;
+    ns_message::effectors_v1_t eff_msg;
     eff_msg.props2msg(effectors_node);
     eff_msg.pack();
     return serial.write_packet( eff_msg.id, eff_msg.payload, eff_msg.len);
@@ -308,7 +307,7 @@ int message_link_t::write_effectors()
 
 int message_link_t::write_imu()
 {
-    static ns_message::imu_v6_t imu_msg;
+    ns_message::imu_v6_t imu_msg;
     imu_msg.props2msg(imu_node);
     imu_msg.pack();
     return serial.write_packet( imu_msg.id, imu_msg.payload, imu_msg.len );
@@ -316,7 +315,7 @@ int message_link_t::write_imu()
 
 int message_link_t::write_gps()
 {
-    static ns_message::gps_v5_t gps_msg;
+    ns_message::gps_v5_t gps_msg;
     if ( gps_node.getUInt("millis") != gps_last_millis ) {
         gps_last_millis = gps_node.getUInt("millis");
         gps_msg.props2msg(gps_node);
@@ -330,7 +329,7 @@ int message_link_t::write_gps()
 // nav (ekf) data
 int message_link_t::write_nav()
 {
-    static ns_message::nav_v6_t nav_msg;
+    ns_message::nav_v6_t nav_msg;
     nav_msg.props2msg(nav_node);
     nav_msg.pack();
     return serial.write_packet( nav_msg.id, nav_msg.payload, nav_msg.len );
@@ -339,7 +338,7 @@ int message_link_t::write_nav()
 // nav (ekf) metrics
 int message_link_t::write_nav_metrics()
 {
-    static ns_message::nav_metrics_v6_t metrics_msg;
+    ns_message::nav_metrics_v6_t metrics_msg;
     metrics_msg.props2msg(nav_node);
     metrics_msg.metrics_millis = nav_node.getUInt("millis");
     metrics_msg.pack();
@@ -348,7 +347,7 @@ int message_link_t::write_nav_metrics()
 
 int message_link_t::write_airdata()
 {
-    static ns_message::airdata_v8_t air_msg;
+    ns_message::airdata_v8_t air_msg;
     air_msg.props2msg(airdata_node);
     air_msg.altitude_ground_m = pos_node.getDouble("altitude_ground_m");
     air_msg.pack();
@@ -367,7 +366,7 @@ int message_link_t::write_ap()
 
 int message_link_t::write_power()
 {
-    static ns_message::power_v1_t power_msg;
+    ns_message::power_v1_t power_msg;
     power_msg.props2msg(power_node);
     power_msg.pack();
     return serial.write_packet( power_msg.id, power_msg.payload, power_msg.len );
@@ -376,7 +375,7 @@ int message_link_t::write_power()
 // system status
 int message_link_t::write_status()
 {
-    static ns_message::status_v7_t status_msg;
+    ns_message::status_v7_t status_msg;
 
     // estimate output byte rate
     uint32_t current_time = millis(); // fixme use elapsedmillis(), not a variable called that...

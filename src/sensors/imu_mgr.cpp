@@ -243,6 +243,3 @@ void imu_mgr_t::calibrate_gyros() {
         }
     }
 }
-
-// global shared instance
-imu_mgr_t imu_mgr;

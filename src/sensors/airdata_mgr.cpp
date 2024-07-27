@@ -244,6 +244,3 @@ void airdata_mgr_t::update() {
         compute_airspeed();
     }
 }
-
-// shared global instance
-airdata_mgr_t airdata_mgr;

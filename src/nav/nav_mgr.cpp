@@ -192,4 +192,4 @@ void nav_mgr_t::reinit() {
 }
 
 // global shared instance
-nav_mgr_t nav_mgr;
+nav_mgr_t *nav_mgr;

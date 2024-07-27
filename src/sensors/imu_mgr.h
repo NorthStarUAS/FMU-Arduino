@@ -60,5 +60,3 @@ public:
     void init();
     void update();
 };
-
-extern imu_mgr_t imu_mgr;

@@ -35,5 +35,3 @@ private:
     void update_unix_usec();
     void update_magvar();
 };
-
-extern gps_mgr_t gps_mgr;
