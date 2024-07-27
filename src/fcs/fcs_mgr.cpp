@@ -27,6 +27,12 @@
 #include "fcs_mgr.h"
 
 void fcs_mgr_t::init() {
+    // initialize the SBUS receiver
+    sbus.init();
+
+    // initialize the pilot interface (RC in, out & mixer)
+    inceptors.init();
+
     // initialize and build the autopilot controller from the property
     // tree config (/config/autopilot)
     ap.init();
@@ -72,6 +78,17 @@ void fcs_mgr_t::update(float dt) {
     if ( dt > 1.0 ) { dt = 0.01; }
     if ( dt < 0.00001 ) { dt = 0.01; }
 
+    if ( inceptors.read() ) {
+        bool ap_state = inceptors_node.getBool("ap_enabled");
+        static bool last_ap_state = ap_state;
+        if ( ap_state and !last_ap_state ) {
+            printf("ap enabled\n");
+        } else if ( !ap_state and last_ap_state ) {
+            printf("ap disabled (manaul flight)\n");
+        }
+        last_ap_state = ap_state;
+    }
+
     // call for a global fcs component reset when activating ap master
     // switch
     static bool last_master_switch = false;
@@ -97,4 +114,9 @@ void fcs_mgr_t::update(float dt) {
     if ( !master_switch ) {
         copy_pilot_inputs();
     }
+
+    inceptors.write(); // fixme: this should become effectors after we move switches to be owned by inceptors
 }
+
+// global shared instance
+fcs_mgr_t *fcs_mgr = NULL;
