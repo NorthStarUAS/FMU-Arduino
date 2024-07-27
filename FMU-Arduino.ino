@@ -8,7 +8,7 @@
 
 #include "src/comms/comms_mgr.h"
 #include "src/config.h"
-#include "src/fcs/control_mgr.h"
+#include "src/fcs/fcs_mgr.h"
 #include "src/led.h"
 #include "src/nav/nav_mgr.h"
 #include "src/sensors/airdata_mgr.h"

@@ -24,9 +24,9 @@
 #include "../nodes.h"
 
 #include "tecs.h"
-#include "control_mgr.h"
+#include "fcs_mgr.h"
 
-void control_mgr_t::init() {
+void fcs_mgr_t::init() {
     // initialize and build the autopilot controller from the property
     // tree config (/config/autopilot)
     ap.init();
@@ -37,12 +37,12 @@ void control_mgr_t::init() {
 // send a reset signal to all ap modules that support it.  This gives each
 // component a chance to update it's state to reset for current conditions,
 // eliminate transients, etc.
-void control_mgr_t::reset() {
+void fcs_mgr_t::reset() {
     // FIXME: events->log("controls", "global reset called");
     ap.reset();
 }
 
-void control_mgr_t::copy_pilot_inputs() {
+void fcs_mgr_t::copy_pilot_inputs() {
     // This function copies the pilot inputs to the flight/engine
     // outputs.  This creates a manual pass through mode.  Consider
     // that manaul pass-through is handled with less latency directly
@@ -67,7 +67,7 @@ void control_mgr_t::copy_pilot_inputs() {
     control_node.setDouble("throttle", throttle );
 }
 
-void control_mgr_t::update(float dt) {
+void fcs_mgr_t::update(float dt) {
     // sanity check
     if ( dt > 1.0 ) { dt = 0.01; }
     if ( dt < 0.00001 ) { dt = 0.01; }
