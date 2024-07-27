@@ -99,7 +99,7 @@ void imu_mgr_t::init() {
     IMU.configure(pin);
 #elif defined(AURA_V2)
     // Aura3 has an mpu9250 on I2C Addr 0x68
-    int address = 0x68
+    int address = 0x68;
     printf("MPU9250 @ I2C Addr: 0x%02X\n", address);
     IMU.configure(address, &Wire);
 #else
