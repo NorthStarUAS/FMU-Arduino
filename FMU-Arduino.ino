@@ -9,12 +9,12 @@
 #include "src/comms/comms_mgr.h"
 #include "src/config.h"
 #include "src/fcs/fcs_mgr.h"
+#include "src/fcs/inceptors.h"
 #include "src/led.h"
 #include "src/nav/nav_mgr.h"
 #include "src/sensors/airdata_mgr.h"
 #include "src/sensors/gps_mgr.h"
 #include "src/sensors/imu_mgr.h"
-#include "src/sensors/pilot.h"
 #include "src/sensors/power.h"
 #include "src/sensors/sbus/sbus.h"
 #include "src/state/state_mgr.h"
@@ -99,7 +99,7 @@ void setup() {
     sbus.init();
 
     // initialize the pilot interface (RC in, out & mixer)
-    pilot.init();
+    inceptors.init();
 
     // initialize the gps receiver
     gps_mgr.init();
@@ -172,7 +172,7 @@ void loop() {
             power.update();
         }
 
-        if ( pilot.read() ) {
+        if ( inceptors.read() ) {
             bool ap_state = inceptors_node.getBool("ap_enabled");
             static bool last_ap_state = ap_state;
             if ( ap_state and !last_ap_state ) {
@@ -183,8 +183,7 @@ void loop() {
             last_ap_state = ap_state;
         }
 
-        // fixme think about order and timing, but inner loop commands aren't comming from host any more so maybe less important?
-        pilot.write();
+        inceptors.write(); // fixme: this should become effectors after we move switches to be owned by inceptors
 
         // status
         status_node.setUInt("available_memory", freeram());

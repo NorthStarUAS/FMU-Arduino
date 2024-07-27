@@ -6,10 +6,10 @@
 #include "../comms/ns_messages.h"
 #include "../sensors/sbus/sbus.h"
 #include "../../setup_board.h"
-#include "pwm.h"
-#include "sbus/sbus.h"
+#include "../sensors/pwm.h"
+#include "../sensors/sbus/sbus.h"
 
-class pilot_t {
+class inceptors_t {
 
 private:
 
@@ -26,4 +26,4 @@ public:
 
 };
 
-extern pilot_t pilot;
+extern inceptors_t inceptors;

@@ -1,8 +1,9 @@
 #include "../nodes.h"
 
-#include "pwm.h"
-#include "sbus/sbus.h"
-#include "pilot.h"
+#include "../sensors/pwm.h"
+#include "../sensors/sbus/sbus.h"
+
+#include "inceptors.h"
 
 // 982 - 2006 (frsky) / 1496
 // static const uint16_t PWM_MIN = 982;
@@ -11,7 +12,7 @@
 // static const uint16_t PWM_HALF_RANGE = PWM_MAX - PWM_CENTER;
 // static const uint16_t PWM_RANGE = PWM_MAX - PWM_MIN;
 
-void pilot_t::init() {
+void inceptors_t::init() {
     config_eff_gains_node = PropertyNode("/config/pwm");
 
     // extend gain array with default value (1.0) if not provided in config file
@@ -26,7 +27,7 @@ void pilot_t::init() {
     mixer.init();
 }
 
-bool pilot_t::read() {
+bool inceptors_t::read() {
     bool new_input = false;
     while ( sbus.process() ) {
         new_input = true;
@@ -73,7 +74,7 @@ bool pilot_t::read() {
     return new_input;
 }
 
-void pilot_t::write() {
+void inceptors_t::write() {
     // available inputs have been parsed/sorted so do the mixing right
     // before outputing the effector commands.
     mixer.update();
@@ -96,4 +97,4 @@ void pilot_t::write() {
 }
 
 // global shared instance
-pilot_t pilot;
+inceptors_t pilot;
