@@ -29,12 +29,12 @@ using std::vector;
 
 // Model an autopilot system.
 
-class AuraAutopilot {
+class AutoPilot {
 
 public:
 
-    AuraAutopilot() {}
-    ~AuraAutopilot() {}
+    AutoPilot() {}
+    ~AutoPilot() {}
 
     void init();
     void reset();

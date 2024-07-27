@@ -40,7 +40,7 @@ using std::ostringstream;
 #include "summer.h"
 
 
-void AuraAutopilot::init() {
+void AutoPilot::init() {
     if ( ! build() ) {
         printf("AP: Detected an internal inconsistency in the autopilot\n");
         printf("configuration.  See earlier errors for details.\n" );
@@ -49,14 +49,14 @@ void AuraAutopilot::init() {
 }
 
 
-void AuraAutopilot::reset() {
+void AutoPilot::reset() {
     for ( unsigned int i = 0; i < components.size(); ++i ) {
         components[i]->reset();
     }
 }
 
 
-bool AuraAutopilot::build() {
+bool AutoPilot::build() {
     PropertyNode config_node("/config/autopilot");
     for ( int i = 0; i < config_node.getLen("component"); i++ ) {
         printf("Number of components: %d (i: %d)\n", config_node.getLen("component"), i);
@@ -112,7 +112,7 @@ inline void SG_NORMALIZE_RANGE( T &val, const T min, const T max ) {
  * Update the list of autopilot components
  */
 
-void AuraAutopilot::update( double dt ) {
+void AutoPilot::update( double dt ) {
     for ( unsigned int i = 0; i < components.size(); ++i ) {
         components[i]->update( dt );
     }
