@@ -24,6 +24,7 @@ void inceptors_t::init() {
     // setup the hardware inputs and outputs
     pwm.init(-1); // fixme need to specify board from config file (which may not have it since we are porting from ardupilot devel environment)
     sbus.init();
+    switches.init();
     mixer.init();
 }
 
@@ -69,11 +70,14 @@ bool inceptors_t::read() {
             inceptors_node.setDouble("gear", sbus.norm_val[7]);
             inceptors_node.setDouble("aux1", sbus.norm_val[8]);
             inceptors_node.setDouble("aux2", sbus.norm_val[9]);
+
+            switches.update();
         }
     }
     return new_input;
 }
 
+// fixme should be effectors
 void inceptors_t::write() {
     // available inputs have been parsed/sorted so do the mixing right
     // before outputing the effector commands.
@@ -97,4 +101,4 @@ void inceptors_t::write() {
 }
 
 // global shared instance
-inceptors_t pilot;
+inceptors_t inceptors;

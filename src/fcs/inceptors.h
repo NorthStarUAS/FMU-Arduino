@@ -8,6 +8,7 @@
 #include "../../setup_board.h"
 #include "../sensors/pwm.h"
 #include "../sensors/sbus/sbus.h"
+#include "switches.h"
 
 class inceptors_t {
 
@@ -19,6 +20,7 @@ private:
 public:
 
     mixer_t mixer;
+    switches_t switches;
 
     void init();
     bool read();
