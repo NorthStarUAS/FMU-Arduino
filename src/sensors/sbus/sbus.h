@@ -68,5 +68,3 @@ public:
     float norm_val[SBUS_CHANNELS];    // normalized value (range of -1 to 1, or 0 to 1)
     uint16_t pwm_val[SBUS_CHANNELS];  // equivalent-ish PWM value (range of 1000-2000)
 };
-
-extern sbus_t sbus;

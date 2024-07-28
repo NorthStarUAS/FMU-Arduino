@@ -1,8 +1,5 @@
 #pragma once
 
-#include "../fcs/inceptors.h"
-#include "../sensors/sbus/sbus.h"
-
 #include "ap.h"
 
 class fcs_mgr_t {

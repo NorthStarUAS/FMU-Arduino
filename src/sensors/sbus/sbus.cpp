@@ -170,6 +170,3 @@ bool sbus_t::process() {
 
     return new_data;
 }
-
-// global shared instance
-sbus_t sbus;

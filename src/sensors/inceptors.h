@@ -4,10 +4,9 @@
 #include "../nodes.h"
 #include "../mixer.h"
 #include "../comms/ns_messages.h"
-#include "../sensors/sbus/sbus.h"
 #include "../../setup_board.h"
-#include "../sensors/pwm.h"
-#include "../sensors/sbus/sbus.h"
+#include "pwm.h"
+#include "sbus/sbus.h"
 #include "switches.h"
 
 class inceptors_t {
@@ -21,6 +20,7 @@ public:
 
     mixer_t mixer;
     switches_t switches;
+    sbus_t sbus;
 
     void init();
     bool read();

@@ -18,6 +18,8 @@ void sensor_mgr_t::init() {
     analogReadResolution(16);   // set up ADC0
     power.init();
 
+    // initialize the pilot interface (RC in, out & mixer)
+    inceptors.init();
 }
 
 void sensor_mgr_t::update() {
@@ -34,6 +36,8 @@ void sensor_mgr_t::update() {
         // read power values
         power.update();
     }
+
+    inceptors.read();
 }
 
 sensor_mgr_t *sensor_mgr;

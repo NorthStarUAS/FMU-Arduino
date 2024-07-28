@@ -3,6 +3,7 @@
 #include "airdata_mgr.h"
 #include "gps_mgr.h"
 #include "imu_mgr.h"
+#include "inceptors.h"
 #include "power.h"
 
 class sensor_mgr_t {

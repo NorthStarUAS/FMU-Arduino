@@ -1,8 +1,7 @@
 #include "../nodes.h"
 
-#include "../sensors/pwm.h"
-#include "../sensors/sbus/sbus.h"
-
+#include "pwm.h"
+#include "sbus/sbus.h"
 #include "inceptors.h"
 
 // 982 - 2006 (frsky) / 1496
