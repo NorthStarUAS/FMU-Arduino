@@ -9,7 +9,9 @@
 #include "message_link.h"
 
 class comms_mgr_t {
+
 private:
+
     message_link_t gcs_link;
     message_link_t host_link;
     console_t console;
@@ -21,6 +23,8 @@ private:
     PropertyNode config_comms_node;
 
 public:
+
     void init();
     void update();
+
 };
