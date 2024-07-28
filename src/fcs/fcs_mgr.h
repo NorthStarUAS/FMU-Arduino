@@ -15,6 +15,7 @@ public:
 private:
 
     AutoPilot ap;
+    bool last_master_switch = false;
 
     void copy_pilot_inputs();
 };

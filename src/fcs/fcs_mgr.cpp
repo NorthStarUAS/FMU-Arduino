@@ -72,25 +72,16 @@ void fcs_mgr_t::update(float dt) {
     if ( dt > 1.0 ) { dt = 0.01; }
     if ( dt < 0.00001 ) { dt = 0.01; }
 
-    bool ap_state = inceptors_node.getBool("ap_enabled");
-    static bool last_ap_state = ap_state;
-    if ( ap_state and !last_ap_state ) {
+    // call for a global fcs component reset when activating master switch
+    bool master_switch = inceptors_node.getBool("master_switch");
+    if ( master_switch and !last_master_switch ) {
+        // reset the ap; transient mitigation
+        reset();
         printf("ap enabled\n");
-    } else if ( !ap_state and last_ap_state ) {
+    } else if ( !master_switch and last_master_switch ) {
         printf("ap disabled (manaul flight)\n");
     }
-    last_ap_state = ap_state;
-
-    // call for a global fcs component reset when activating ap master
-    // switch
-    static bool last_master_switch = false;
-    bool master_switch = inceptors_node.getBool("master_switch");
-    if ( master_switch != last_master_switch ) {
-        if ( master_switch ) {
-            reset();            // reset the ap; transient mitigation
-        }
-        last_master_switch = master_switch;
-    }
+    last_master_switch = master_switch;
 
     // update tecs (total energy) values and error metrics
     update_tecs();
