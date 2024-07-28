@@ -8,7 +8,7 @@
 
 #include "src/comms/comms_mgr.h"
 #include "src/config.h"
-// #include "src/fcs/fcs_mgr.h"
+#include "src/fcs/fcs_mgr.h"
 #include "src/led.h"
 #include "src/nav/nav_mgr.h"
 #include "src/sensors/sensor_mgr.h"
@@ -57,7 +57,8 @@ void setup() {
 
     MTP.begin();
 
-    if ( !config.load_json_config() ) {
+    config = new config_t();
+    if ( !config->load_json_config() ) {
         printf("No config file loaded, we cannot do much without it.\n");
         delay(5000);
     }
@@ -69,10 +70,10 @@ void setup() {
     // The following code (when enabled) will force setting a specific
     // device serial number when the device boots:
     if ( false ) {
-        config.set_serial_number(124);
+        config->set_serial_number(124);
     }
-    config.read_serial_number();
-    printf("Serial Number: %d\n", config.read_serial_number());
+    config->read_serial_number();
+    printf("Serial Number: %d\n", config->read_serial_number());
     delay(100);
 
     status_node.setUInt("firmware_rev", FIRMWARE_REV);
@@ -93,8 +94,8 @@ void setup() {
     // additional derived/computed/estimated values
     state_mgr.init();
 
-    // fcs_mgr = new fcs_mgr_t();
-    // fcs_mgr->init();
+    fcs_mgr = new fcs_mgr_t();
+    fcs_mgr->init();
 
     comms_mgr = new comms_mgr_t();
     comms_mgr->init();
@@ -137,7 +138,7 @@ void loop() {
 
         state_mgr.update(1.0 / MASTER_HZ);
 
-        // fcs_mgr->update(DT_MILLIS/1000.0);
+        fcs_mgr->update(DT_MILLIS/1000.0);
 
         // status
         status_node.setUInt("available_memory", freeram());
