@@ -54,8 +54,9 @@ void PropertyNodes_init() {
     airdata_node = PropertyNode("/sensors/airdata");
     gps_node = PropertyNode("/sensors/gps");
     imu_node = PropertyNode("/sensors/imu");
+    inceptors_node = PropertyNode("/sensors/inceptors");
     power_node = PropertyNode("/sensors/power");
-    rcin_node = PropertyNode("/sensors/rc-input");
+    rcin_node = PropertyNode("/sensors/rc_input");
 
     // INS/GNSS
     nav_node = PropertyNode("/filters/nav");
@@ -67,7 +68,6 @@ void PropertyNodes_init() {
     wind_node = PropertyNode("/filters/wind");
 
     // Inceptors and Effectors
-    inceptors_node = PropertyNode("/fcs/inceptors");
     effectors_node = PropertyNode("/fcs/effectors");
     control_node = PropertyNode("/fcs/control");
 
