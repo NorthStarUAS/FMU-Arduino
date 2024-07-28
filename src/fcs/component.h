@@ -50,7 +50,7 @@ protected:
 
     PropertyNode ref_node;
     string ref_attr;
-    string ref_value;
+    double ref_value;
 
     vector <PropertyNode> output_node;
     vector <string> output_attr;
