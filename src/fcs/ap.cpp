@@ -66,28 +66,22 @@ bool AutoPilot::build() {
         string config_path = "/config/autopilot/" + child_name;
         string module = component.getString("module");
         if ( module == "pid" ) {
-            APComponent *c
-                = new AuraPID( config_path );
+            APComponent *c = new AuraPID( config_path );
             components.push_back( c );
         } else if ( module == "pid_velocity" ) {
-            APComponent *c
-                = new AuraPIDVel( config_path );
+            APComponent *c = new AuraPIDVel( config_path );
             components.push_back( c );
         } else if ( module == "dtss" ) {
-            APComponent *c
-                = new AuraDTSS( config_path );
+            APComponent *c = new AuraDTSS( config_path );
             components.push_back( c );
         } else if ( module == "predict_simple" ) {
-            APComponent *c
-                = new AuraPredictor( config_path );
+            APComponent *c = new AuraPredictor( config_path );
             components.push_back( c );
         } else if ( module == "filter" ) {
-            APComponent *c
-                = new AuraDigitalFilter( config_path );
+            APComponent *c = new AuraDigitalFilter( config_path );
             components.push_back( c );
         } else if ( module == "summer" ) {
-            APComponent *c
-                = new AuraSummer( config_path );
+            APComponent *c = new AuraSummer( config_path );
             components.push_back( c );
         } else {
             printf("Unknown AP module name: %s\n", module.c_str());
@@ -98,7 +92,6 @@ bool AutoPilot::build() {
     return true;
 }
 
-
 // normalize a value to lie between min and max
 template <class T>
 inline void SG_NORMALIZE_RANGE( T &val, const T min, const T max ) {
@@ -107,10 +100,7 @@ inline void SG_NORMALIZE_RANGE( T &val, const T min, const T max ) {
     while( val < min ) val += step;
 };
 
-
-/*
- * Update the list of autopilot components
- */
+// Update the list of autopilot components
 
 void AutoPilot::update( double dt ) {
     for ( unsigned int i = 0; i < components.size(); ++i ) {
