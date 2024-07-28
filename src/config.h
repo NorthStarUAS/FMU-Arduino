@@ -14,4 +14,4 @@ public:
     void reset_defaults();
 };
 
-extern config_t config;
+extern config_t *config;
