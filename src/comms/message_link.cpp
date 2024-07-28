@@ -390,6 +390,14 @@ int message_link_t::write_status()
     return serial.write_packet( status_msg.id, status_msg.payload, status_msg.len );
 }
 
+int message_link_t::write_event( string header, string message ) {
+    ns_message::event_v3_t event_msg;
+    event_msg.millis = millis();
+    event_msg.message = header + ": " + message;
+    event_msg.pack();
+    return serial.write_packet( event_msg.id, event_msg.payload, event_msg.len );
+}
+
 void message_link_t::read_commands() {
     while ( serial.update() ) {
         parse_message( serial.pkt_id, serial.payload, serial.pkt_len );
