@@ -18,6 +18,7 @@ public:
     airdata_mgr_t airdata_mgr;
     gps_mgr_t gps_mgr;
     imu_mgr_t imu_mgr;
+    inceptors_t inceptors;
     power_t power;
 
 private:

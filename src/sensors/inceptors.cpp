@@ -44,11 +44,13 @@ bool inceptors_t::read() {
         // printf("\n");
 
         if ( sbus.receiver_flags & 1 << 3 ) {
+            // super bad situation if this happens when AP not enabled!
+
             // fixme: consider forcing at least some simple reversionary mode
             // such as power off, wings level (or a few degrees for gentle
             // turning to avoid flyaway too far) and pitch to zero degrees or
             // something safe/slow or tecs to minimum speed with throttle off?
-            inceptors_node.setBool("failsafe", true); // bad situation when AP not enabled!
+            inceptors_node.setBool("failsafe", true);
         } else {
             for ( uint8_t i = 0; i < SBUS_CHANNELS; i++ ) {
                 rcin_node.setUInt("channel", sbus.pwm_val[i], i);
@@ -58,9 +60,6 @@ bool inceptors_t::read() {
 
             // logical values
             inceptors_node.setBool("failsafe", false); // good
-            // pilot_node.setBool("ap_enabled", ap_enabled());
-            // pilot_node.setBool("throttle_safety", throttle_safety());
-
             inceptors_node.setDouble("power", sbus.norm_val[2]);
             inceptors_node.setDouble("roll", sbus.norm_val[3]);
             inceptors_node.setDouble("pitch", sbus.norm_val[4]);
@@ -98,6 +97,3 @@ void inceptors_t::write() {
     //     hal.rcout->write(i, pwm_test);
     // }
 }
-
-// global shared instance
-inceptors_t inceptors;

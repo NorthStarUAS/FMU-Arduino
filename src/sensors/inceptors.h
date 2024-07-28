@@ -27,5 +27,3 @@ public:
     void write();
 
 };
-
-extern inceptors_t inceptors;
