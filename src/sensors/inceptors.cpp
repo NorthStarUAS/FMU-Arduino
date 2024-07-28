@@ -52,14 +52,14 @@ bool inceptors_t::read() {
             // something safe/slow or tecs to minimum speed with throttle off?
             inceptors_node.setBool("failsafe", true);
         } else {
+            // rcin_node is for switches and setup/debugging RC transmitter
             for ( uint8_t i = 0; i < SBUS_CHANNELS; i++ ) {
                 rcin_node.setUInt("channel", sbus.pwm_val[i], i);
             }
+
             last_input = millis();
             inceptors_node.setUInt("millis", last_input);
-
-            // logical values
-            inceptors_node.setBool("failsafe", false); // good
+            inceptors_node.setBool("failsafe", false); // i.e. good
             inceptors_node.setDouble("power", sbus.norm_val[2]);
             inceptors_node.setDouble("roll", sbus.norm_val[3]);
             inceptors_node.setDouble("pitch", sbus.norm_val[4]);
