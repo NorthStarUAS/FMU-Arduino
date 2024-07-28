@@ -49,6 +49,7 @@ const uint8_t mission_v1_id = 60;
 const uint8_t system_health_v6_id = 46;
 const uint8_t status_v7_id = 56;
 const uint8_t event_v2_id = 44;
+const uint8_t event_v3_id = 64;
 const uint8_t command_v1_id = 28;
 const uint8_t ack_v1_id = 57;
 
@@ -2686,6 +2687,81 @@ public:
     void props2msg(PropertyNode &node) {
         timestamp_sec = node.getDouble("timestamp_sec");
         sequence_num = node.getUInt("sequence_num");
+        message = node.getString("message");
+    }
+};
+
+// Message: event_v3 (id: 64)
+class event_v3_t {
+public:
+
+    uint32_t millis;
+    string message;
+
+    // internal structure for packing
+    #pragma pack(push, 1)
+    struct _compact_t {
+        uint32_t millis;
+        uint16_t message_len;
+    };
+    #pragma pack(pop)
+
+    // id, ptr to payload and len
+    static const uint8_t id = 64;
+    uint8_t *payload = nullptr;
+    int len = 0;
+
+    ~event_v3_t() {
+        free(payload);
+    }
+
+    bool pack() {
+        len = sizeof(_compact_t);
+        // compute dynamic packet size (if neede)
+        int size = len;
+        size += message.length();
+        payload = (uint8_t *)REALLOC(payload, size);
+        // copy values
+        _compact_t *_buf = (_compact_t *)payload;
+        _buf->millis = millis;
+        _buf->message_len = message.length();
+        memcpy(&(payload[len]), message.c_str(), message.length());
+        len += message.length();
+        return true;
+    }
+
+    bool unpack(uint8_t *external_message, int message_size) {
+        _compact_t *_buf = (_compact_t *)external_message;
+        len = sizeof(_compact_t);
+        millis = _buf->millis;
+        message = string((char *)&(external_message[len]), _buf->message_len);
+        len += _buf->message_len;
+        return true;
+    }
+
+    void msg2props(string _path, int _index = -1) {
+        if ( _index >= 0 ) {
+            _path += "/" + std::to_string(_index);
+        }
+        PropertyNode node(_path.c_str());
+        msg2props(node);
+    }
+
+    void msg2props(PropertyNode &node) {
+        node.setUInt("millis", millis);
+        node.setString("message", message);
+    }
+
+    void props2msg(string _path, int _index = -1) {
+        if ( _index >= 0 ) {
+            _path += "/" + std::to_string(_index);
+        }
+        PropertyNode node(_path.c_str());
+        props2msg(node);
+    }
+
+    void props2msg(PropertyNode &node) {
+        millis = node.getUInt("millis");
         message = node.getString("message");
     }
 };
