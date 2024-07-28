@@ -140,7 +140,7 @@ void loop() {
 
         fcs_mgr->update(DT_MILLIS/1000.0);
 
-        inceptors.write(); // fixme: this should become effectors after we move switches to be owned by inceptors
+        sensor_mgr->inceptors.write(); // fixme: this should become effectors/mixer
 
         // status
         status_node.setUInt("available_memory", freeram());
