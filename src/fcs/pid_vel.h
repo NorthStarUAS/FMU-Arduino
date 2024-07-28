@@ -26,7 +26,6 @@ using std::string;
 
 #include "component.h"
 
-
 class AuraPIDVel : public APComponent {
 
 private:

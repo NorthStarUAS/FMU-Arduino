@@ -19,7 +19,6 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
 
-
 #pragma once
 
 #include <string>
@@ -27,13 +26,12 @@ using std::string;
 
 #include "component.h"
 
-
 class AuraPID : public APComponent {
 
 private:
 
     bool do_reset;
-    
+
     bool proportional;		// proportional component data
     bool integral;		// integral component data
     double iterm;		// integral summer
@@ -51,5 +49,3 @@ public:
     void reset() override;
     void update( double dt ) override;
 };
-
-
