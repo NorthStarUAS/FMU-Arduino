@@ -110,7 +110,7 @@ private:
     string saved_path;
     int saved_realloc_counter;
 
-    inline void init_Document() {
+    void init_Document() {
         if ( doc == nullptr ) {
             doc = new Document;
         }
