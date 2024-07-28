@@ -80,6 +80,7 @@ void setup() {
     status_node.setUInt("baud", TELEMETRY_BAUD);
     status_node.setUInt("serial_number", config_node.getUInt("serial_number"));
 
+    sensor_mgr = new sensor_mgr_t();
     sensor_mgr->init();
 
     // led for status blinking if defined
