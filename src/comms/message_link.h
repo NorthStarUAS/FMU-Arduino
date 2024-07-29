@@ -39,7 +39,7 @@ private:
     int write_nav_metrics();
     int write_power();
     int write_status();
-    int write_event( string header, string message );
+    int write_events();
     bool parse_message( uint8_t id, uint8_t *buf, uint8_t message_size );
 
     RateLimiter airdata_limiter;

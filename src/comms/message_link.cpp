@@ -16,6 +16,7 @@
 #include "../sensors/sensor_mgr.h"            // reset gyros
 // #include "../sensors/pilot.h"              // update_ap()
 
+#include "events.h"
 #include "relay.h"
 #include "ns_messages.h"
 #include "message_link.h"
@@ -106,6 +107,7 @@ void message_link_t::update() {
     if ( imu_limiter.update() ) {
         output_counter += write_imu();
     }
+    output_counter += write_events();
 }
 
 bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_size ) {
@@ -390,12 +392,18 @@ int message_link_t::write_status()
     return serial.write_packet( status_msg.id, status_msg.payload, status_msg.len );
 }
 
-int message_link_t::write_event( string header, string message ) {
-    ns_message::event_v3_t event_msg;
-    event_msg.millis = millis();
-    event_msg.message = header + ": " + message;
-    event_msg.pack();
-    return serial.write_packet( event_msg.id, event_msg.payload, event_msg.len );
+int message_link_t::write_events() {
+    int count = 0;
+    if ( events != NULL ) {
+        for ( unsigned int i = 0; i < events->event_list.size(); i++ ) {
+            ns_message::event_v3_t event_msg;
+            event_msg.millis = millis();
+            event_msg.message = events->event_list[i];
+            event_msg.pack();
+            count += serial.write_packet( event_msg.id, event_msg.payload, event_msg.len );
+        }
+    }
+    return count;
 }
 
 void message_link_t::read_commands() {
