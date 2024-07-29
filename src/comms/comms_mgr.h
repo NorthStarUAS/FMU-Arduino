@@ -6,6 +6,7 @@
 #include "../util/ratelimiter.h"
 
 #include "console.h"
+#include "events.h"
 #include "message_link.h"
 
 class comms_mgr_t {
