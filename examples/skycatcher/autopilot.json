@@ -25,7 +25,7 @@
             "description": "Built in L1 controller sets target roll angle",
             "enable": {
                 "prop": [
-                    "/autopilot/locks/roll"
+                    "/fcs/locks/roll"
                 ]
             },
             "input": {
@@ -34,10 +34,10 @@
             "module": "pid",
             "name": "Roll angle hold",
             "output": {
-                "prop": "/controls/flight/aileron"
+                "prop": "/fcs/controls/aileron"
             },
             "reference": {
-                "prop": "/autopilot/targets/roll_deg"
+                "prop": "/fcs/targets/roll_deg"
             }
         },
         {
@@ -53,16 +53,16 @@
             "description": "Total energy (sum) based throttle control",
             "enable": {
                 "prop": [
-                    "/autopilot/locks/tecs"
+                    "/fcs/locks/tecs"
                 ]
             },
             "input": {
-                "prop": "/autopilot/tecs/error_total"
+                "prop": "/fcs/tecs/error_total"
             },
             "module": "pid",
             "name": "TECS Sum Hold",
             "output": {
-                "prop": "/controls/engine/throttle"
+                "prop": "/fcs/controls/throttle"
             },
             "reference": {
                 "value": 0.0
@@ -81,16 +81,16 @@
             "description": "Total energy (diff) based pitch control",
             "enable": {
                 "prop": [
-                    "/autopilot/locks/tecs"
+                    "/fcs/locks/tecs"
                 ]
             },
             "input": {
-                "prop": "/autopilot/tecs/error_diff"
+                "prop": "/fcs/tecs/error_diff"
             },
             "module": "pid",
             "name": "Energy Distribition Hold",
             "output": {
-                "prop": "/autopilot/targets/pitch_deg"
+                "prop": "/fcs/targets/pitch_deg"
             },
             "reference": {
                 "value": 0.0
@@ -109,7 +109,7 @@
             "description": "Stage #2, Drive elevator to hold target pitch angle",
             "enable": {
                 "prop": [
-                    "/autopilot/locks/pitch"
+                    "/fcs/locks/pitch"
                 ]
             },
             "input": {
@@ -118,10 +118,10 @@
             "module": "pid",
             "name": "Speed Hold 2",
             "output": {
-                "prop": "/controls/flight/elevator"
+                "prop": "/fcs/controls/elevator"
             },
             "reference": {
-                "prop": "/autopilot/targets/pitch_deg"
+                "prop": "/fcs/targets/pitch_deg"
             }
         }
     ]
