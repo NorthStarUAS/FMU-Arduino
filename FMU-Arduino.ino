@@ -10,6 +10,7 @@
 #include "src/config.h"
 #include "src/fcs/fcs_mgr.h"
 #include "src/led.h"
+#include "src/mission/mission_mgr.h"
 #include "src/nav/nav_mgr.h"
 #include "src/sensors/sensor_mgr.h"
 #include "src/state/state_mgr.h"
@@ -141,6 +142,8 @@ void loop() {
         fcs_mgr->update(DT_MILLIS/1000.0);
 
         sensor_mgr->inceptors.write(); // fixme: this should become effectors/mixer
+
+        mission_mgr->update();
 
         // status
         status_node.setUInt("available_memory", freeram());
