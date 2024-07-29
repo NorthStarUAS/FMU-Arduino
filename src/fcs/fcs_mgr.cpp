@@ -30,6 +30,7 @@ void fcs_mgr_t::init() {
     // initialize and build the autopilot controller from the property
     // tree config (/config/autopilot)
     ap.init();
+    set_mode("basic");
 
     printf("Autopilot initialized\n");
 }
@@ -49,22 +50,22 @@ void fcs_mgr_t::copy_pilot_inputs() {
     // on APM2/BFS/Aura3 hardware if available.
 
     float aileron = inceptors_node.getDouble("roll");
-    control_node.setDouble( "aileron", aileron );
+    controls_node.setDouble( "aileron", aileron );
 
     float elevator = inceptors_node.getDouble("pitch");
-    control_node.setDouble( "elevator", elevator );
+    controls_node.setDouble( "elevator", elevator );
 
     float rudder = inceptors_node.getDouble("yaw");
-    control_node.setDouble( "rudder", rudder );
+    controls_node.setDouble( "rudder", rudder );
 
     double flaps = inceptors_node.getDouble("flaps");
-    control_node.setDouble("flaps", flaps );
+    controls_node.setDouble( "flaps", flaps );
 
     double gear = inceptors_node.getDouble("gear");
-    control_node.setDouble("gear", gear );
+    controls_node.setDouble( "gear", gear );
 
     double throttle = inceptors_node.getDouble("power");
-    control_node.setDouble("throttle", throttle );
+    controls_node.setDouble( "throttle", throttle );
 }
 
 void fcs_mgr_t::update(float dt) {
@@ -96,6 +97,43 @@ void fcs_mgr_t::update(float dt) {
     // autopilot mode
     if ( !master_switch ) {
         copy_pilot_inputs();
+    }
+}
+
+string fcs_mgr_t::get_mode() {
+    return fcs_node.getString("mode");
+}
+
+// manage detailed enable switches from high level mode
+void fcs_mgr_t::set_mode( string fcs_mode ) {
+    fcs_node.setString("mode", fcs_mode);
+    // fixme: comms.events.log("control", "mode change: " + fcs_mode)
+    if ( fcs_mode == "basic" ) {
+        // set lock modes for "basic" inner loops only
+        locks_node.setBool( "roll", true );
+        locks_node.setBool( "yaw", true );
+        locks_node.setBool( "pitch", true );
+        locks_node.setBool( "tecs", false );
+    } else if ( fcs_mode == "roll" ) {
+        // set lock modes for roll only
+        locks_node.setBool( "roll", true );
+        locks_node.setBool( "yaw", false );
+        locks_node.setBool( "pitch", false );
+        locks_node.setBool( "tecs", false );
+    } else if ( fcs_mode == "roll+pitch" ) {
+        // set lock modes for roll and pitch
+        locks_node.setBool( "roll", true );
+        locks_node.setBool( "yaw", false );
+        locks_node.setBool( "pitch", true );
+        locks_node.setBool( "tecs", false );
+    } else if ( fcs_mode == "basic+tecs" ) {
+        // set lock modes for "basic" + alt hold + speed hold
+        locks_node.setBool( "roll", true );
+        locks_node.setBool( "yaw", true );
+        locks_node.setBool( "pitch", true );
+        locks_node.setBool( "tecs", true );
+    } else {
+        // fixme: comms.events.log("control", "unknown fcs mode attempted: " + fcs_mode)
     }
 }
 

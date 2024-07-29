@@ -11,6 +11,8 @@ public:
     void init();
     void reset();
     void update( float dt );
+    string get_mode();
+    void set_mode( string mode );
 
 private:
 
