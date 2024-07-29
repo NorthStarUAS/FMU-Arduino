@@ -63,14 +63,15 @@ extern PropertyNode wind_node;
 // Inceptors, Effectors, Flight Control Commands
 extern PropertyNode inceptors_node;
 extern PropertyNode effectors_node;
-extern PropertyNode control_node;
+extern PropertyNode controls_node;
 
 // Status and Comms
 extern PropertyNode comms_node;
 extern PropertyNode status_node;
 
 // Control Laws
-extern PropertyNode ap_node;
+extern PropertyNode fcs_node;
+extern PropertyNode locks_node;
 extern PropertyNode targets_node;
 extern PropertyNode tecs_node;
 

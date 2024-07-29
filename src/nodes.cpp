@@ -25,14 +25,15 @@ PropertyNode wind_node;
 // Inceptors and Effectors
 PropertyNode inceptors_node;
 PropertyNode effectors_node;
-PropertyNode control_node;
+PropertyNode controls_node;
 
 // Status and Comms
 PropertyNode comms_node;
 PropertyNode status_node;
 
 // Control Laws
-PropertyNode ap_node;
+PropertyNode fcs_node;
+PropertyNode locks_node;
 PropertyNode targets_node;
 PropertyNode tecs_node;
 
@@ -69,16 +70,17 @@ void PropertyNodes_init() {
 
     // Inceptors and Effectors
     effectors_node = PropertyNode("/fcs/effectors");
-    control_node = PropertyNode("/fcs/control");
+    controls_node = PropertyNode("/fcs/controls");
 
     // Status and Comms
     comms_node = PropertyNode("/comms");
     status_node = PropertyNode("/status");
 
     // Control Laws
-    ap_node = PropertyNode("/autopilot");
-    targets_node = PropertyNode("/autopilot/targets");
-    tecs_node = PropertyNode("/autopilot/tecs");
+    fcs_node = PropertyNode("/fcs");
+    locks_node = PropertyNode("/fcs/locks");
+    targets_node = PropertyNode("/fcs/targets");
+    tecs_node = PropertyNode("/fcs/tecs");
 
     // Mission and Tasks
     guidance_node = PropertyNode("/guidance");
