@@ -76,10 +76,10 @@ void comms_mgr_t::update() {
         write_status_info_ascii();
         write_power_ascii();
         float elapsed_sec = (millis() - tempTimer) / 1000.0;
-        printf("Available mem: %u bytes\n",
-               status_node.getUInt("available_memory"));
-        printf("Performance = %.1f hz\n", counter/elapsed_sec);
-        //PropertyNode("/").pretty_print();
+        printf("Available mem: %u bytes\n", status_node.getUInt("available_memory"));
+        Serial.print("Performance = ");
+        Serial.print(counter/elapsed_sec, 1);
+        Serial.println(" hz");
         printf("\n");
     }
 }

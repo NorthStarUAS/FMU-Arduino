@@ -137,10 +137,16 @@ void write_airdata_ascii() {
 }
 
 void write_power_ascii() {
-    printf("Avionics v: %.2f  Batt v: %.2f  Batt amp: %.2f\n",
-           power_node.getDouble("avionics_vcc"),
-           power_node.getDouble("main_vcc"),
-           power_node.getDouble("main_amps"));
+    // printf("Avionics v: %.2f  Batt v: %.2f  Batt amp: %.2f\n",
+    //        power_node.getDouble("avionics_vcc"),
+    //        power_node.getDouble("main_vcc"),
+    //        power_node.getDouble("main_amps"));
+    Serial.print("Avionics v: ");
+    Serial.print(power_node.getDouble("avionics_vcc"));
+    Serial.print(" Batt v: ");
+    Serial.print(power_node.getDouble("main_vcc"));
+    Serial.print(" Batt amp: ");
+    Serial.println(power_node.getDouble("main_amps"));
 }
 
 void write_status_info_ascii() {
