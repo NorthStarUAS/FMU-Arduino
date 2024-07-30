@@ -76,7 +76,7 @@ extern PropertyNode targets_node;
 extern PropertyNode tecs_node;
 
 // Mission and Tasks
-extern PropertyNode guidance_node;
+extern PropertyNode mission_node;
 extern PropertyNode circle_node;
 extern PropertyNode home_node;
 extern PropertyNode route_node;

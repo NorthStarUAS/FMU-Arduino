@@ -38,7 +38,7 @@ PropertyNode targets_node;
 PropertyNode tecs_node;
 
 // Mission and Tasks
-PropertyNode guidance_node;
+PropertyNode mission_node;
 PropertyNode circle_node;
 PropertyNode home_node;
 PropertyNode route_node;
@@ -83,7 +83,7 @@ void PropertyNodes_init() {
     tecs_node = PropertyNode("/fcs/tecs");
 
     // Mission and Tasks
-    guidance_node = PropertyNode("/guidance");
+    mission_node = PropertyNode("/mission");
     circle_node = PropertyNode("/task/circle/active");
     home_node = PropertyNode("/task/home");
     route_node = PropertyNode("/task/route");

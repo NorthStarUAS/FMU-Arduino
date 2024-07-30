@@ -226,7 +226,7 @@ float route_mgr_t::wind_heading_error( float current_crs_deg, float target_crs_d
     return hdg_error;
 }
 
-void route_mgr_t::update( float dt ) {
+void route_mgr_t::update() {
     reposition();  // check if home has changed and reposition if needed
 
     string request = route_node.getString("route_request");

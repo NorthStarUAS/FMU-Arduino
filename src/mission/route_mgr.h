@@ -23,7 +23,7 @@ public:
     void reposition( bool force=false );
     float get_remaining_distance_from_next_waypoint();
     float wind_heading_error( float current_crs_deg, float target_crs_deg );
-    void update( float dt );
+    void update();
 
 private:
 

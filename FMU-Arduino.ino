@@ -98,6 +98,9 @@ void setup() {
     fcs_mgr = new fcs_mgr_t();
     fcs_mgr->init();
 
+    mission_mgr = new mission_mgr_t();
+    mission_mgr->init();
+
     comms_mgr = new comms_mgr_t();
     comms_mgr->init();
 

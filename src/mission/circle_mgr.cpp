@@ -21,7 +21,7 @@ void circle_mgr_t::init() {
     }
 }
 
-void circle_mgr_t::update( float dt ) {
+void circle_mgr_t::update() {
     string direction_str = circle_node.getString("direction");
     float direction = 1.0;
     if ( direction_str == "right" ) {
@@ -154,6 +154,3 @@ void circle_mgr_t::update( float dt ) {
         route_node.setDouble( "wp_eta_sec", 0.0 );
     }
 }
-
-// single global instance of circle_mgr
-circle_mgr_t circle_mgr;
