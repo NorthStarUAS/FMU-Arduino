@@ -16,7 +16,7 @@ void comms_mgr_t::init() {
         int port = gcs_node.getUInt("port");
         int baud = gcs_node.getUInt("baud");
         if ( port > 0 and baud > 0 ) {
-            gcs_link.init(port, baud, "gcs");
+            gcs_link.init(port, baud /*, "gcs"*/);
         } else {
             printf("comms config error in gcs link section!\n");
             delay(500);
@@ -30,7 +30,7 @@ void comms_mgr_t::init() {
         int port = host_node.getUInt("port");
         int baud = host_node.getUInt("baud");
         if ( port > 0 and baud > 0 ) {
-            host_link.init(port, baud, "host");
+            host_link.init(port, baud /*, "host"*/);
         } else {
             printf("comms config error in host link section!\n");
             delay(500);

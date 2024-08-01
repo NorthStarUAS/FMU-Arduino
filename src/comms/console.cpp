@@ -62,7 +62,7 @@ void console_t::update() {
                         // looks like we are receiving a binary packet, switch console modes to binary
                         printf("Switching console to binary mode: %lu\n", millis());
                         interactive = false;
-                        console_link.init(0, 500000, "console");
+                        console_link.init(0, 500000/*, "console"*/);
                         break;
                     } else {
                         reboot_count = 0;
@@ -106,7 +106,7 @@ void console_t::update() {
                     // looks like we are receiving a binary packet, switch console modes to binary
                     printf("Switching console to binary mode: %lu\n", millis());
                     interactive = false;
-                    console_link.init(0, 500000, "console");
+                    console_link.init(0, 500000 /*, "console"*/);
                 } else {
                     reboot_count = 0;
                     display_menu();

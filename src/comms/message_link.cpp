@@ -10,21 +10,22 @@
 
 #include "../nodes.h"
 
-#include "../guidance/route_mgr.h"
+#include "../mission/route_mgr.h"
 #include "../nav/nav_mgr.h"                // reset ekf
 #include "../nav/nav_constants.h"
 #include "../sensors/sensor_mgr.h"            // reset gyros
 // #include "../sensors/pilot.h"              // update_ap()
 
 #include "events.h"
-#include "relay.h"
+// #include "relay.h"
+#include "remote_command.h"
 #include "ns_messages.h"
 #include "message_link.h"
 
 message_link_t::message_link_t() {}
 message_link_t::~message_link_t() {}
 
-void message_link_t::init(uint8_t port, uint32_t baud, string relay_name) {
+void message_link_t::init(uint8_t port, uint32_t baud /*, string relay_name*/ ) {
     // port: 0 = usb/console, 1 = telem 1 (host), 2 = telem 2 (gcs)
     // telemetry baud = 57600 (or 115200), host baud = 500,000
     saved_port = port;
@@ -35,12 +36,12 @@ void message_link_t::init(uint8_t port, uint32_t baud, string relay_name) {
         printf("ERROR opening message_link port: %d @ %ld baud\n", port, baud);
         delay(1000);
     }
-    relay_id = relay_name;
-    if ( relay_id == "host" ) {
-        relay.set_host_link(&serial);
-    } else if ( relay_id == "gcs" ) {
-        relay.set_gcs_link(&serial);
-    }
+    // relay_id = relay_name;
+    // if ( relay_id == "host" ) {
+    //     relay.set_host_link(&serial);
+    // } else if ( relay_id == "gcs" ) {
+    //     relay.set_gcs_link(&serial);
+    // }
 
     // fixme: make externally configurable?
     if ( baud <= 115200 ) {
@@ -120,32 +121,33 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
         uint8_t command_result = 0;
         if ( last_command_seq_num != msg.sequence_num ) {
             last_command_seq_num = msg.sequence_num;
-            if ( msg.message == "hb" ) {
-                command_result = 1;
-            } else if ( msg.message == "zero_gyros" ) {
-                sensor_mgr->imu_mgr.gyros_calibrated = 0;   // start state
-                command_result = 1;
-            } else if ( msg.message == "reset_ekf" ) {
-                nav_mgr->reinit();
-                command_result = 1;
-            } else if ( msg.message.substr(0, 4) == "get " ) {
-                string path = msg.message.substr(4);
-                // printf("cmd: get  node: %s\n", path.c_str());
-                PropertyNode node(path);
-                ns_message::command_v1_t reply;
-                reply.sequence_num = 0;
-                reply.message = "set " + path + " " + node.get_json_string();
-                reply.pack();
-                serial.write_packet( reply.id, reply.payload, reply.len);
-                command_result = 1;
-            } else {
-                // printf("unknown message: %s, relaying to host\n", msg.message.c_str());
-                if ( relay_id == "gcs" ) {
-                    relay.forward_packet(relay_t::dest_enum::host_dest,
-                                         id, buf, message_size);
-                }
-                command_result = 1;
-            }
+            execute_command(msg.message, &serial);
+            // if ( msg.message == "hb" ) {
+            //     command_result = 1;
+            // } else if ( msg.message == "zero_gyros" ) {
+            //     sensor_mgr->imu_mgr.gyros_calibrated = 0;   // start state
+            //     command_result = 1;
+            // } else if ( msg.message == "reset_ekf" ) {
+            //     nav_mgr->reinit();
+            //     command_result = 1;
+            // } else if ( msg.message.substr(0, 4) == "get " ) {
+            //     string path = msg.message.substr(4);
+            //     // printf("cmd: get  node: %s\n", path.c_str());
+            //     PropertyNode node(path);
+            //     ns_message::command_v1_t reply;
+            //     reply.sequence_num = 0;
+            //     reply.message = "set " + path + " " + node.get_json_string();
+            //     reply.pack();
+            //     serial.write_packet( reply.id, reply.payload, reply.len);
+            //     command_result = 1;
+            // } else {
+            //     // printf("unknown message: %s, relaying to host\n", msg.message.c_str());
+            //     if ( relay_id == "gcs" ) {
+            //         relay.forward_packet(relay_t::dest_enum::host_dest,
+            //                              id, buf, message_size);
+            //     }
+            //     command_result = 1;
+            // }
         } else {
             printf("ignoring duplicate command\n");
             command_result = 1;
@@ -158,10 +160,10 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
         ap_msg.msg2props(targets_node);
     } else if ( id == ns_message::mission_v1_id ) {
         // relay directly to gcs
-        if ( relay_id == "host" ) {
-            relay.forward_packet(relay_t::dest_enum::gcs_dest,
-                                 id, buf, message_size);
-        }
+        // if ( relay_id == "host" ) {
+        //     relay.forward_packet(relay_t::dest_enum::gcs_dest,
+        //                          id, buf, message_size);
+        // }
         // this is the messy message
         ns_message::mission_v1_t mission;
         mission.unpack(buf, message_size);
