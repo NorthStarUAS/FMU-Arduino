@@ -122,32 +122,6 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
         if ( last_command_seq_num != msg.sequence_num ) {
             last_command_seq_num = msg.sequence_num;
             execute_command(msg.message, &serial);
-            // if ( msg.message == "hb" ) {
-            //     command_result = 1;
-            // } else if ( msg.message == "zero_gyros" ) {
-            //     sensor_mgr->imu_mgr.gyros_calibrated = 0;   // start state
-            //     command_result = 1;
-            // } else if ( msg.message == "reset_ekf" ) {
-            //     nav_mgr->reinit();
-            //     command_result = 1;
-            // } else if ( msg.message.substr(0, 4) == "get " ) {
-            //     string path = msg.message.substr(4);
-            //     // printf("cmd: get  node: %s\n", path.c_str());
-            //     PropertyNode node(path);
-            //     ns_message::command_v1_t reply;
-            //     reply.sequence_num = 0;
-            //     reply.message = "set " + path + " " + node.get_json_string();
-            //     reply.pack();
-            //     serial.write_packet( reply.id, reply.payload, reply.len);
-            //     command_result = 1;
-            // } else {
-            //     // printf("unknown message: %s, relaying to host\n", msg.message.c_str());
-            //     if ( relay_id == "gcs" ) {
-            //         relay.forward_packet(relay_t::dest_enum::host_dest,
-            //                              id, buf, message_size);
-            //     }
-            //     command_result = 1;
-            // }
         } else {
             printf("ignoring duplicate command\n");
             command_result = 1;
