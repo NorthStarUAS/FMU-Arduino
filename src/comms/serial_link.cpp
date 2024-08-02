@@ -274,7 +274,7 @@ int SerialLink::bytes_available() {
     return _port->available();
 }
 
-int SerialLink::write_packet(uint8_t packet_id, uint8_t *payload, uint8_t len) {
+int SerialLink::write_packet(uint8_t packet_id, uint8_t *payload, uint16_t len) {
     // start of message sync (2) bytes
     _port->write(START_OF_MSG0);
     _port->write(START_OF_MSG1);

@@ -37,6 +37,6 @@ public:
     bool open( int baud, int port );
     bool update();
     int bytes_available();
-    int write_packet(uint8_t packet_id, uint8_t *payload, uint8_t len);
+    int write_packet(uint8_t packet_id, uint8_t *payload, uint16_t len);
     bool close();
 };
