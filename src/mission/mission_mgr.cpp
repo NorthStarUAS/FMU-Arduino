@@ -5,6 +5,7 @@
 void mission_mgr_t::init() {
     circle_mgr.init();
     route_mgr.init();
+    mission_node.setString("mode", "none");
 }
 
 void mission_mgr_t::update() {

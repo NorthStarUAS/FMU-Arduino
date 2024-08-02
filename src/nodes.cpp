@@ -34,7 +34,7 @@ PropertyNode status_node;
 // Control Laws
 PropertyNode fcs_node;
 PropertyNode locks_node;
-PropertyNode targets_node;
+PropertyNode refs_node;
 PropertyNode tecs_node;
 
 // Mission and Tasks
@@ -79,7 +79,7 @@ void PropertyNodes_init() {
     // Control Laws
     fcs_node = PropertyNode("/fcs");
     locks_node = PropertyNode("/fcs/locks");
-    targets_node = PropertyNode("/fcs/targets");
+    refs_node = PropertyNode("/fcs/refs");
     tecs_node = PropertyNode("/fcs/tecs");
 
     // Mission and Tasks

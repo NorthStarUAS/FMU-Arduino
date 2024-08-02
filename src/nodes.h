@@ -72,7 +72,7 @@ extern PropertyNode status_node;
 // Control Laws
 extern PropertyNode fcs_node;
 extern PropertyNode locks_node;
-extern PropertyNode targets_node;
+extern PropertyNode refs_node;
 extern PropertyNode tecs_node;
 
 // Mission and Tasks
