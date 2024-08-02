@@ -131,7 +131,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
     } else if ( id == ns_message::ap_targets_v1_id ) {
         ns_message::ap_targets_v1_t ap_msg;
         ap_msg.unpack(buf, message_size);
-        ap_msg.msg2props(targets_node);
+        ap_msg.msg2props(refs_node);
     } else if ( id == ns_message::mission_v1_id ) {
         // relay directly to gcs
         // if ( relay_id == "host" ) {
@@ -336,7 +336,7 @@ int message_link_t::write_airdata()
 int message_link_t::write_ap()
 {
     ns_message::ap_targets_v1_t ap_msg;
-    ap_msg.props2msg(targets_node);
+    ap_msg.props2msg(refs_node);
     ap_msg.millis = imu_node.getUInt("millis");
     ap_msg.pack();
     return serial.write_packet( ap_msg.id, ap_msg.payload, ap_msg.len );

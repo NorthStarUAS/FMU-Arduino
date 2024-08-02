@@ -372,7 +372,7 @@ void route_mgr_t::update() {
 
             if ( nav_course < 0.0 ) { nav_course += 360.0; }
             if ( nav_course > 360.0 ) { nav_course -= 360.0; }
-            targets_node.setDouble( "groundtrack_deg", nav_course );
+            refs_node.setDouble( "groundtrack_deg", nav_course );
 
             // allow a crude fudge factor for non-straight airframes or
             // imu mounting errors.  This is essentially the bank angle
@@ -391,7 +391,7 @@ void route_mgr_t::update() {
             // clamp to +/-90 so we still get max turn input when flying directly away from the heading.
             if ( hdg_error < -90.0 ) { hdg_error = -90.0; }
             if ( hdg_error > 90.0 ) { hdg_error = 90.0; }
-            targets_node.setDouble( "wind_heading_error_deg", hdg_error );
+            refs_node.setDouble( "wind_heading_error_deg", hdg_error );
 
             // target bank angle computed here
             float accel = 2.0 * sin(hdg_error * d2r) * VomegaA;
@@ -405,7 +405,7 @@ void route_mgr_t::update() {
             if ( target_bank_deg > bank_limit_deg + bank_bias_deg ) {
                 target_bank_deg = bank_limit_deg + bank_bias_deg;
             }
-            targets_node.setDouble( "roll_deg", target_bank_deg );
+            refs_node.setDouble( "roll_deg", target_bank_deg );
 
             // estimate distance remaining to completion of route
             if ( dist_valid ) {

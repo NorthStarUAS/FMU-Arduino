@@ -98,7 +98,7 @@ void circle_mgr_t::update() {
     }
     if ( target_crs > 360.0 ) { target_crs -= 360.0; }
     if ( target_crs < 0.0 ) { target_crs += 360.0; }
-    targets_node.setDouble( "groundtrack_deg", target_crs );
+    refs_node.setDouble( "groundtrack_deg", target_crs );
 
     // L1 'mathematical' response to error
     float L1_period = config_L1_node.getDouble("period");  // gain
@@ -112,7 +112,7 @@ void circle_mgr_t::update() {
     // clamp to +/-90
     if ( course_error < -90.0 ) { course_error = -90.0; }
     if ( course_error > 90.0 ) { course_error = 90.0; }
-    targets_node.setDouble( "course_error_deg", course_error );
+    refs_node.setDouble( "course_error_deg", course_error );
 
     // accel: is the lateral acceleration we need to compensate for
     // heading error
@@ -145,7 +145,7 @@ void circle_mgr_t::update() {
         target_bank_deg = bank_limit_deg + bank_bias_deg;
     }
 
-    targets_node.setDouble( "roll_deg", target_bank_deg );
+    refs_node.setDouble( "roll_deg", target_bank_deg );
 
     route_node.setDouble( "wp_dist_m", dist_m );
     if ( gs_mps > 0.1 ) {

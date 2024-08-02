@@ -1,25 +1,33 @@
 #include <string>
+#include <vector>
 using std::string;
+using std::vector;
 
 class MissionState {
 
-    MissionState(bool save_modes, bool save_circle, bool save_refs);
+public:
+
+    MissionState();
+
+    void save(bool modes=false, bool circle=false, bool refs=false);
     void restore();
 
 private:
 
-    string fcs_mode = "";
-    string nav_mode = "";
+    struct State {
+        string fcs_mode = "";
+        string mission_mode = "";
 
-    double circle_lon_deg = 0.0;
-    double circle_lat_deg = 0.0;
-    int circle_direction = 1;
-    float circle_radius_m = 100;
+        double circle_lon_deg = 0.0;
+        double circle_lat_deg = 0.0;
+        int circle_direction = 1;
+        float circle_radius_m = 100;
 
-    float ref_agl_m = 0.0;
-    float ref_speed_mps = 0.0;
+        float ref_agl_m = 0.0;
+        float ref_speed_mps = 0.0;
+    };
+
+    vector<State> state_stack;
 
 };
 
-void save_mission_state(bool modes=false, bool circle=false, bool refs=false);
-void restore_mission_state();

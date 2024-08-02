@@ -69,8 +69,8 @@ void update_tecs() {
     tecs_node.setDouble("energy_kin", energy_kin);
 
     // Target energy
-    double target_alt_m = targets_node.getDouble("altitude_agl_ft") * F2M;
-    double target_vel_mps = targets_node.getDouble("airspeed_kt") * KT2MPS;
+    double target_alt_m = refs_node.getDouble("altitude_agl_ft") * F2M;
+    double target_vel_mps = refs_node.getDouble("airspeed_kt") * KT2MPS;
     double target_pot = mass_kg * g * target_alt_m;
     double target_kin = 0.5 * mass_kg * target_vel_mps * target_vel_mps;
     double target_total = target_pot + target_kin;
