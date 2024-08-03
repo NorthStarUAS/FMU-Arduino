@@ -41,8 +41,8 @@ void comms_mgr_t::init() {
 
     console.init();
 
-    events = new events_t();
-    events->clear_events();
+    event_mgr = new events_t();
+    event_mgr->clear_events();
 
     delay(100);
 }
@@ -69,7 +69,7 @@ void comms_mgr_t::update() {
 
     // the link objects will each write all accumulated events each frame, so
     // then we clear them here after all the links have updated.
-    events->clear_events();
+    event_mgr->clear_events();
 
     // 10 second heartbeat console output
     if ( heartbeat.update() ) {

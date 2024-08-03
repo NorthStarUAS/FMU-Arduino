@@ -7,15 +7,16 @@ class task_t {
 
 protected:
 
+public:
+
     string name = "";
     bool active = false;
 
-public:
-
+    task_t() {}
     virtual ~task_t() {}
     virtual void activate() = 0;
-    virtual void update() = 0;
-    virtual void is_complete() = 0;
+    virtual void update(float dt) = 0;
+    virtual bool is_complete() = 0;
     virtual void close() = 0;
 
 };

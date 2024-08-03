@@ -13,4 +13,4 @@ public:
 
 };
 
-extern events_t *events;
+extern events_t *event_mgr;

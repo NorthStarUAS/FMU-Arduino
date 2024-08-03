@@ -40,4 +40,4 @@ void sensor_mgr_t::update() {
     inceptors.read();
 }
 
-sensor_mgr_t *sensor_mgr;
+sensor_mgr_t *sensor_mgr = nullptr;

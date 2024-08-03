@@ -8,4 +8,4 @@ void events_t::clear_events() {
     event_list.clear();
 }
 
-events_t *events = NULL;
+events_t *event_mgr = nullptr;

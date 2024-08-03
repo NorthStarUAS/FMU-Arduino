@@ -138,4 +138,4 @@ void fcs_mgr_t::set_mode( string fcs_mode ) {
 }
 
 // global shared instance
-fcs_mgr_t *fcs_mgr = NULL;
+fcs_mgr_t *fcs_mgr = nullptr;

@@ -18,10 +18,10 @@
 
 myprofile main_prof;
 
-FS *datafs = NULL;
+FS *datafs = nullptr;
 LittleFS_Program progmfs;
 
-comms_mgr_t *comms_mgr;
+comms_mgr_t *comms_mgr = nullptr;
 
 void setup() {
     Serial.begin(115200);
@@ -49,7 +49,7 @@ void setup() {
         printf("Problem initializing flash storage ... failed.\n");
     } else {
         printf("Program memory flash initialized: %lu bytes.\n", lfs_progm_bytes);
-        if ( datafs == NULL ) {
+        if ( datafs == nullptr ) {
             printf("Using progm for config and logging.\n");
             datafs = &progmfs;
         }

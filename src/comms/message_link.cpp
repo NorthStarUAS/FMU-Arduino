@@ -370,11 +370,11 @@ int message_link_t::write_status()
 
 int message_link_t::write_events() {
     int count = 0;
-    if ( events != NULL ) {
-        for ( unsigned int i = 0; i < events->event_list.size(); i++ ) {
+    if ( event_mgr != nullptr ) {
+        for ( unsigned int i = 0; i < event_mgr->event_list.size(); i++ ) {
             ns_message::event_v3_t event_msg;
             event_msg.millis = millis();
-            event_msg.message = events->event_list[i];
+            event_msg.message = event_mgr->event_list[i];
             event_msg.pack();
             count += serial.write_packet( event_msg.id, event_msg.payload, event_msg.len );
         }

@@ -40,4 +40,4 @@ bool config_t::load_json_config() {
 }
 
 // global shared instance
-config_t *config = NULL;
+config_t *config = nullptr;
