@@ -1,7 +1,7 @@
 #include "../../props2.h"
 #include "task.h"
 
-class circle_t : public task_t {
+class circle_task_t : public task_t {
 
 private:
 
@@ -10,8 +10,8 @@ private:
 
 public:
 
-    circle_t( PropertyNode config_node );
-    ~circle_t() {}
+    circle_task_t( PropertyNode config_node );
+    ~circle_task_t() {}
 
     void activate();
     // void update_parameters();

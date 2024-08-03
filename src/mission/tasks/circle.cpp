@@ -4,7 +4,7 @@
 #include "../mission_mgr.h"
 #include "circle.h"
 
-circle_t::circle_t(PropertyNode config_node) {
+circle_task_t::circle_task_t(PropertyNode config_node) {
     // name = config_node.getString("name");
     // if ( config_node.hasChild("direction") ) {
     //     // only override the default if a value is given
@@ -17,7 +17,7 @@ circle_t::circle_t(PropertyNode config_node) {
     name = "circle";
 }
 
-void circle_t::activate() {
+void circle_task_t::activate() {
     active = true;
 
     // save current state
@@ -31,16 +31,16 @@ void circle_t::activate() {
     event_mgr->add_event("mission", "circle");
 }
 
-void circle_t::update(float dt) {
+void circle_task_t::update(float dt) {
     // circle hold is one of the two fundamental modes so there is nothing to
     // update here once the task is setup and activated.
 }
 
-bool circle_t::is_complete() {
+bool circle_task_t::is_complete() {
     return false;
 }
 
-void circle_t::close() {
+void circle_task_t::close() {
     // restore previous state
     // mission_mgr->state.restore();
 

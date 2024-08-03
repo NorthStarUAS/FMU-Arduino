@@ -2,6 +2,7 @@
 #include "../comms/events.h"
 
 #include "tasks/circle.h"
+#include "tasks/idle.h"
 #include "mission_mgr.h"
 
 void mission_mgr_t::init() {
@@ -20,7 +21,7 @@ void mission_mgr_t::update() {
                 request_task_circle(lon_deg, lat_deg);
             }
         } else {
-            // fixme: create idle task
+            request_task_idle();
         }
     }
     if ( mission_node.getString("mode") == "circle" ) {
@@ -51,12 +52,22 @@ void mission_mgr_t::request_task_circle(double lon_deg, double lat_deg) {
     circle_node.setDouble( "latitude_deg", lat_deg );
 
     // sanity check, are we already running the requested task
-    if ( current_task->name == "circle" ) {
+    if ( current_task != nullptr and current_task->name == "circle" ) {
         event_mgr->add_event("mission", "updating circle location");
     } else {
         // create and activate task
-        circle_t *circle = new circle_t(circle_node);
+        circle_task_t *circle = new circle_task_t(circle_node);
         new_task(circle);
+    }
+}
+
+void mission_mgr_t::request_task_idle() {
+    if ( current_task != nullptr and current_task->name == "idle" ) {
+        // sanity check, are we already running the requested task
+    } else {
+        // create and activate task
+        idle_task_t *task = new idle_task_t(PropertyNode());
+        new_task(task);
     }
 }
 

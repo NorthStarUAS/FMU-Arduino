@@ -15,6 +15,7 @@ public:
 
     void new_task(task_t *task);
     void request_task_circle(double lon_deg, double lat_deg);
+    void request_task_idle();
 };
 
 extern mission_mgr_t *mission_mgr;
