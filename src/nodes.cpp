@@ -17,9 +17,6 @@ PropertyNode rcin_node;
 PropertyNode nav_node;
 
 // State
-PropertyNode orient_node;
-// PropertyNode pos_node;
-PropertyNode vel_node;
 PropertyNode wind_node;
 
 // Inceptors and Effectors
@@ -63,9 +60,6 @@ void PropertyNodes_init() {
     nav_node = PropertyNode("/filters/nav");
 
     // State
-    orient_node = PropertyNode("/orientation");
-    // pos_node = PropertyNode("/position");
-    vel_node = PropertyNode("/velocity");
     wind_node = PropertyNode("/filters/wind");
 
     // Inceptors and Effectors
