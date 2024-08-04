@@ -100,10 +100,11 @@ void circle_mgr_t::update() {
 
     // L1 'mathematical' response to error
     float L1_period = config_L1_node.getDouble("period");  // gain
-    float gs_mps = vel_node.getDouble("groundspeed_ms");
+    float gs_mps = nav_node.getDouble("groundspeed_mps");
     float omegaA = sqrt_of_2 * M_PI / L1_period;
     float VomegaA = gs_mps * omegaA;
-    float course_error = orient_node.getDouble("groundtrack_deg") - target_crs;
+    float course_error = nav_node.getDouble("groundtrack_deg") - target_crs;
+
     // wrap to +/- 180
     if ( course_error < -180.0 ) { course_error += 360.0; }
     if ( course_error >  180.0 ) { course_error -= 360.0; }

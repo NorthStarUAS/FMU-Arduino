@@ -213,11 +213,11 @@ float route_mgr_t::wind_heading_error( float current_crs_deg, float target_crs_d
 
         // point to next waypoint (probably less good than pointing into
         // the wind.)
-        // hdg_error = orient_node.getDouble("heading_deg") - target_crs_deg
+        // hdg_error = nav_node.getDouble("heading_deg") - target_crs_deg
 
         // point to wind (will probably slide laterally due to some
         // inevitable assymetries in bank angle verus turn rate):
-        hdg_error = orient_node.getDouble("heading_deg") - wd_deg;
+        hdg_error = nav_node.getDouble("heading_deg") - wd_deg;
     }
     if ( hdg_error < -180 ) { hdg_error += 360; }
     if ( hdg_error > 180 ) { hdg_error -= 360; }
@@ -271,8 +271,8 @@ void route_mgr_t::update() {
 
             float L1_period = config_L1_node.getDouble("period");
             float L1_damping = config_L1_node.getDouble("damping");
-            float gs_mps = vel_node.getDouble("groundspeed_ms");
-            float groundtrack_deg = orient_node.getDouble("groundtrack_deg");
+            float gs_mps = nav_node.getDouble("groundspeed_mps");
+            float groundtrack_deg = nav_node.getDouble("groundtrack_deg");
             float tas_kt = wind_node.getDouble("true_airspeed_kt");
             float tas_mps = tas_kt * kt2mps;
 
@@ -384,7 +384,7 @@ void route_mgr_t::update() {
             // error, thus Vomega is computed with tas_mps, not gs_mps
             float omegaA = sqrt_of_2 * M_PI / L1_period;
             //VomegaA = gs_mps * omegaA
-            //course_error = orient_node.getDouble("groundtrack_deg") - nav_course
+            //course_error = nav_node.getDouble("groundtrack_deg") - nav_course
             float VomegaA = tas_mps * omegaA;
             // print "gt:", groundtrack_deg, "nc:", nav_course, "error:", groundtrack_deg - nav_course
             float hdg_error = wind_heading_error(groundtrack_deg, nav_course);

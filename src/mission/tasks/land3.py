@@ -88,7 +88,7 @@ class Land(Task):
 
         # Save existing state
         mission.task.state.save(modes=True, circle=True, targets=True)
-        
+
         fcsmode.set("basic+tecs")
         self.nav_node.setString("mode", "circle")
         self.targets_node.setDouble("airspeed_kt",
@@ -216,7 +216,7 @@ class Land(Task):
 
         # compute time to touchdown at current ground speed (assuming the
         # navigation system has lined us up properly
-        ground_speed_ms = self.vel_node.getDouble("groundspeed_ms")
+        ground_speed_ms = self.vel_node.getDouble("groundspeed_mps")
         if ground_speed_ms > 0.01:
             seconds_to_touchdown = self.dist_rem_m / ground_speed_ms
         else:
@@ -288,7 +288,7 @@ class Land(Task):
         # restore the previous state
         mission.task.state.restore()
         self.flight_node.setDouble("flaps_setpoint", 0.0)
-        
+
         self.active = False
         return True
 
@@ -345,7 +345,7 @@ class Land(Task):
         hdg = (self.final_heading_deg + self.side * 90) % 360
         (cc_lat, cc_lon, az2) = \
             wgs84.geo_direct( tan_lat, tan_lon, hdg, self.turn_radius_m )
-        
+
         # configure circle task
         self.circle_node.setDouble('latitude_deg', cc_lat)
         self.circle_node.setDouble('longitude_deg', cc_lon)
@@ -353,7 +353,7 @@ class Land(Task):
         self.circle_node.setDouble('radius_m', self.turn_radius_m)
 
         # create and request approach route
-        
+
         # start of final leg point
         route_request = "1,%.10f,%.10f,-" % (tan_lon, tan_lat)
         # touchdown target point
