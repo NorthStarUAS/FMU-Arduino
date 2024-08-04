@@ -327,7 +327,7 @@ int message_link_t::write_airdata()
 {
     ns_message::airdata_v8_t air_msg;
     air_msg.props2msg(airdata_node);
-    air_msg.altitude_ground_m = pos_node.getDouble("altitude_ground_m");
+    air_msg.altitude_ground_m = nav_node.getDouble("altitude_ground_m");
     air_msg.pack();
     return serial.write_packet( air_msg.id, air_msg.payload, air_msg.len );
 }

@@ -54,7 +54,7 @@ void mission_mgr_t::new_task(task_t *task) {
 }
 
 void mission_mgr_t::start_circle_task(double lon_deg, double lat_deg) {
-    if ( fabs(lon_deg) < 0.1 or fabs(lat_deg) < 0.1 ) {
+    if ( fabs(lon_deg) < 0.1 and fabs(lat_deg) < 0.1 ) {
         // no valid coordinates specified
         return;
     }

@@ -18,7 +18,7 @@ PropertyNode nav_node;
 
 // State
 PropertyNode orient_node;
-PropertyNode pos_node;
+// PropertyNode pos_node;
 PropertyNode vel_node;
 PropertyNode wind_node;
 
@@ -64,7 +64,7 @@ void PropertyNodes_init() {
 
     // State
     orient_node = PropertyNode("/orientation");
-    pos_node = PropertyNode("/position");
+    // pos_node = PropertyNode("/position");
     vel_node = PropertyNode("/velocity");
     wind_node = PropertyNode("/filters/wind");
 

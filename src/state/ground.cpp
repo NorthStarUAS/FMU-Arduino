@@ -25,7 +25,7 @@ void ground_est_t::update(float dt) {
             // update ground altitude estimate while not airborne
             // fixme: create a settled (not moving) parameter and use that?
             ground_alt_filt.update( gps_node.getDouble("altitude_m"), dt );
-            pos_node.setDouble( "altitude_ground_m", ground_alt_filt.get_value() );
+            nav_node.setDouble( "altitude_ground_m", ground_alt_filt.get_value() );
         }
     }
 }

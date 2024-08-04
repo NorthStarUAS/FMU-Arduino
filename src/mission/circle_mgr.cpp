@@ -33,14 +33,12 @@ void circle_mgr_t::update() {
         direction = 1.0;
     }
 
-    if ( !pos_node.hasChild("longitude_deg") or
-         !pos_node.hasChild("latitude_deg") ) {
+    double lon_deg = nav_node.getDouble("longitude_deg");
+    double lat_deg = nav_node.getDouble("latitude_deg");
+    if ( fabs(lon_deg) < 0.1 and fabs(lat_deg) < 0.1 ) {
         // no valid current position, bail out.
         return;
     }
-
-    double pos_lon = pos_node.getDouble("longitude_deg");
-    double pos_lat = pos_node.getDouble("latitude_deg");
 
     double center_lon = 0.0;
     double center_lat = 0.0;
@@ -51,18 +49,18 @@ void circle_mgr_t::update() {
     } else {
         // we have a valid position, but no valid circle center, use
         // current position.  (sanity fallback)
-        circle_node.setDouble("longitude_deg", pos_lon);
-        circle_node.setDouble("latitude_deg", pos_lat);
+        circle_node.setDouble("longitude_deg", lon_deg);
+        circle_node.setDouble("latitude_deg", lat_deg);
         circle_node.setDouble("radius_m", 100.0);
         circle_node.setString("direction", "left");
-        center_lon = pos_lon;
-        center_lat = pos_lat;
+        center_lon = lon_deg;
+        center_lat = lat_deg;
     }
 
     // compute course and distance to center of target circle
     // fixme: should reverse this and direction sense to match 'land.py' and make more sense
     double course_deg, rev_deg, dist_m;
-    geo_inverse_wgs_84( pos_lat, pos_lon, center_lat, center_lon,
+    geo_inverse_wgs_84( lat_deg, lon_deg, center_lat, center_lon,
                         &course_deg, &rev_deg, &dist_m );
 
     // compute ideal ground course to be on the circle perimeter if at

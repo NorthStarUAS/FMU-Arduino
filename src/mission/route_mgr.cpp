@@ -280,8 +280,8 @@ void route_mgr_t::update() {
             waypoint_t wp = get_current_wp();
 
             // compute direct-to course and distance
-            double pos_lon = pos_node.getDouble("longitude_deg");
-            double pos_lat = pos_node.getDouble("latitude_deg");
+            double pos_lon = nav_node.getDouble("longitude_deg");
+            double pos_lat = nav_node.getDouble("latitude_deg");
             double direct_course = 0.0;
             double rev_course = 0.0;
             double direct_dist = 0.0;
