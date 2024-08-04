@@ -37,7 +37,7 @@
                 "prop": "/fcs/controls/aileron"
             },
             "reference": {
-                "prop": "/fcs/targets/roll_deg"
+                "prop": "/fcs/refs/roll_deg"
             }
         },
         {
@@ -90,7 +90,7 @@
             "module": "pid",
             "name": "Energy Distribition Hold",
             "output": {
-                "prop": "/fcs/targets/pitch_deg"
+                "prop": "/fcs/refs/pitch_deg"
             },
             "reference": {
                 "value": 0.0
@@ -121,7 +121,7 @@
                 "prop": "/fcs/controls/elevator"
             },
             "reference": {
-                "prop": "/fcs/targets/pitch_deg"
+                "prop": "/fcs/refs/pitch_deg"
             }
         }
     ]
