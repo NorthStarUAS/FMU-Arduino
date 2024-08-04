@@ -124,6 +124,7 @@ void loop() {
     // and output fresh IMU message plus the most recent data from everything else.
     if ( mainTimer >= DT_MILLIS ) {
         mainTimer -= DT_MILLIS;
+        float dt = DT_MILLIS/1000.0;
 
         // fixme: add back counter for main loop timer misses ... one of those
         // things that should never happen, but if it does we want to know right
@@ -140,13 +141,13 @@ void loop() {
         // 3. Estimate location and attitude
         nav_mgr->update();
 
-        state_mgr.update(1.0 / MASTER_HZ);
+        state_mgr.update(dt);
 
-        fcs_mgr->update(DT_MILLIS/1000.0);
+        fcs_mgr->update(dt);
 
         sensor_mgr->inceptors.write(); // fixme: this should become effectors/mixer
 
-        mission_mgr->update();
+        mission_mgr->update(dt);
 
         // status
         status_node.setUInt("available_memory", freeram());

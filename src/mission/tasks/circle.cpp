@@ -5,25 +5,11 @@
 #include "circle.h"
 
 circle_task_t::circle_task_t(PropertyNode config_node) {
-    // name = config_node.getString("name");
-    // if ( config_node.hasChild("direction") ) {
-    //     // only override the default if a value is given
-    //     direction = config_node.getString("direction");
-    // }
-    // if ( config_node.hasChild("radius_m") ) {
-    //     // only override the default if a value is given
-    //     radius_m = config_node.getDouble("radius_m");
-    // }
     name = "circle";
 }
 
 void circle_task_t::activate() {
     active = true;
-
-    // save current state
-    // mission_mgr->state.save(true, true, false);
-
-    // update_parameters();
 
     // set modes
     fcs_mgr->set_mode("basic+tecs");
@@ -41,8 +27,5 @@ bool circle_task_t::is_complete() {
 }
 
 void circle_task_t::close() {
-    // restore previous state
-    // mission_mgr->state.restore();
-
     active = false;
 }

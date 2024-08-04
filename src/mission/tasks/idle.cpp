@@ -1,3 +1,6 @@
+#include <string>
+using std::string;
+
 #include "../../nodes.h"
 #include "../../fcs/fcs_mgr.h"
 #include "idle.h"
@@ -18,8 +21,12 @@ void idle_task_t::activate() {
 }
 
 void idle_task_t::update(float dt) {
+    // if we find ourselves airborne and idle (and know our position) switch to
+    // a circle task
     if ( airdata_node.getBool("is_airborne") ) {
-        // fixme: schedule a circle hold if we are airborne
+        if ( gps_node.getInt("status") == 3 ) {
+            mission_node.setString("request", "circle_here");
+        }
     }
 }
 

@@ -430,7 +430,7 @@ void route_mgr_t::update() {
                     } else {
                         wp = get_current_wp();
                         // FIXME: NEED TO GO TO CIRCLE MODE HERE SOME HOW!!!
-                        // mission_mgr.request_task_circle(wp.get_target_lon(),
+                        // mission_mgr.start_circle_task(wp.get_target_lon(),
                         //   wp.get_target_lat(),
                         //   0.0, 0.0)
                     }
@@ -461,7 +461,7 @@ void route_mgr_t::update() {
         // of circle of our home position?
 
         // FIXME: need to go to circle mode somehow here!!!!
-        // mission_mgr.request_task_circle()
+        // mission_mgr.start_circle_task()
     }
 
     // dribble active route into property tree

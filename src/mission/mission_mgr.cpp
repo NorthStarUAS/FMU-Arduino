@@ -11,23 +11,34 @@ void mission_mgr_t::init() {
     mission_node.setString("mode", "none");
 }
 
-void mission_mgr_t::update() {
+void mission_mgr_t::update(float dt) {
     // sanity check create default task if nothing active
     if ( current_task == nullptr ) {
-        if ( airdata_node.getBool("is_airborne") ) {
-            if ( gps_node.getInt("status") == 3 ) {
-                double lon_deg = gps_node.getDouble("longitude_deg");
-                double lat_deg = gps_node.getDouble("latitude_deg");
-                request_task_circle(lon_deg, lat_deg);
-            }
-        } else {
-            request_task_idle();
-        }
+        start_idle_task();
     }
+    process_command_request();
+
+    // update the current task
+    current_task->update(dt);
+
+    // run the selected core flight mode
     if ( mission_node.getString("mode") == "circle" ) {
         circle_mgr.update();
     } else if (mission_node.getString("mode") == "route" ) {
         route_mgr.update();
+    }
+}
+
+void mission_mgr_t::process_command_request() {
+    string command = mission_node.getString("request");
+    mission_node.setString("request", "");
+    if ( command == "circle_here" ) {
+        if ( gps_node.getInt("status") == 3 ) {
+            double lon_deg = gps_node.getDouble("longitude_deg");
+            double lat_deg = gps_node.getDouble("latitude_deg");
+            start_circle_task(lon_deg, lat_deg);
+        }
+
     }
 }
 
@@ -38,10 +49,11 @@ void mission_mgr_t::new_task(task_t *task) {
     }
     current_task = task;
     current_task->activate();
+    mission_node.setString("task", current_task->name);
     event_mgr->add_event("mission", "new task: " + current_task->name);
 }
 
-void mission_mgr_t::request_task_circle(double lon_deg, double lat_deg) {
+void mission_mgr_t::start_circle_task(double lon_deg, double lat_deg) {
     if ( fabs(lon_deg) < 0.1 or fabs(lat_deg) < 0.1 ) {
         // no valid coordinates specified
         return;
@@ -61,7 +73,7 @@ void mission_mgr_t::request_task_circle(double lon_deg, double lat_deg) {
     }
 }
 
-void mission_mgr_t::request_task_idle() {
+void mission_mgr_t::start_idle_task() {
     if ( current_task != nullptr and current_task->name == "idle" ) {
         // sanity check, are we already running the requested task
     } else {
