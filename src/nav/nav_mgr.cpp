@@ -181,6 +181,13 @@ void nav_mgr_t::update() {
         nav_node.setDouble("Pa0", data.Pa0);
         nav_node.setDouble("Pa1", data.Pa1);
         nav_node.setDouble("Pa2", data.Pa2);
+
+        // compute ground speed and track
+        float hdg = (M_PI * 0.5 - atan2(data.vn, data.ve)) * R2D;
+        float vel_ms = sqrt(data.vn*data.vn + data.ve*data.ve);
+        nav_node.setDouble("groundtrack_deg", hdg);
+        nav_node.setDouble("groundspeed_mps", vel_ms);
+
     } else {
         status = 0;             // not initialized
     }
