@@ -4,6 +4,7 @@
 #include <Arduino.h>
 
 #include "../nodes.h"
+#include "../comms/events.h"
 
 #include "airdata_helper.h"
 
@@ -22,12 +23,12 @@ void airdata_helper_t::update() {
         // if all conditions over the threshold, we are airborne
         is_airborne = true;
         airdata_node.setBool("is_airborne", true);
-        // fixme! comms.events.log("mission", "airborne");
+        event_mgr->add_event("airdata", "airborne");
     } else if ( is_airborne and airdata_node.getDouble("altitude_agl_m") <= down_m and airdata_node.getDouble("airspeed_mps") <= down_mps ) {
         // if all conditions under their threshold, we are on the ground
         is_airborne = false;
         airdata_node.setBool("is_airborne", false);
-        // fixme! comms.events.log("mission", "on ground");
+        event_mgr->add_event("airdata", "on ground");
     }
 
     // compute total time aloft
