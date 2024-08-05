@@ -8,8 +8,8 @@ void comms_mgr_t::init() {
     config_comms_node = PropertyNode("/config/comms");
 
     heartbeat = RateLimiter(0.1);
-    tempTimer = millis(); // fixme use ellapsedmillis?
-    counter = 0;
+    // tempTimer = millis(); // fixme use ellapsedmillis?
+    // counter = 0;
 
     if ( config_comms_node.hasChild("gcs") ) {
         PropertyNode gcs_node = config_comms_node.getChild("gcs");
@@ -48,7 +48,7 @@ void comms_mgr_t::init() {
 }
 
 void comms_mgr_t::update() {
-    counter++;
+    // counter++;
 
     if ( gcs_link.is_inited() ) {
         gcs_link.read_commands();
@@ -75,11 +75,11 @@ void comms_mgr_t::update() {
     if ( heartbeat.update() ) {
         write_status_info_ascii();
         write_power_ascii();
-        float elapsed_sec = (millis() - tempTimer) / 1000.0;
+        // float elapsed_sec = (millis() - tempTimer) / 1000.0;
         printf("Available mem: %u bytes\n", status_node.getUInt("available_memory"));
-        Serial.print("Performance = ");
-        Serial.print(counter/elapsed_sec, 1);
-        Serial.println(" hz");
+        // Serial.print("Performance = ");
+        // Serial.print(counter/elapsed_sec, 1);
+        // Serial.println(" hz");
         printf("\n");
     }
 }

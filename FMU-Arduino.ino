@@ -16,6 +16,7 @@
 #include "src/state/state_mgr.h"
 #include "src/util/myprof.h"
 
+IntervalTimer main_timer;
 myprofile main_prof;
 
 FS *datafs = nullptr;
@@ -105,6 +106,11 @@ void setup() {
     comms_mgr->init();
 
     Serial.println("Ready and transmitting...");
+
+    main_prof.set_name("main loop");
+
+    // Start the main data collection loop on a hardware interval timer
+    main_timer.begin(main_loop, 1000000/MASTER_HZ);
 }
 
 extern unsigned long _heap_start;
@@ -115,48 +121,63 @@ int freeram() {
 }
 
 // main arduino loop -- Fixme: set this up on a hardware timer so the main loop can do non-time sensitive stuff, but caution on race conditions
-void loop() {
-    static elapsedMillis mainTimer = 0;
+void main_loop() {
+    // static elapsedMillis mainTimer = 0;
     // static elapsedMillis hbTimer = 0;
     // static elapsedMillis debugTimer = 0;
 
     // When new IMU data is ready (new pulse from IMU), go out and grab the IMU data
     // and output fresh IMU message plus the most recent data from everything else.
-    if ( mainTimer >= DT_MILLIS ) {
-        mainTimer -= DT_MILLIS;
-        float dt = DT_MILLIS/1000.0;
+    // if ( mainTimer >= DT_MILLIS ) {
+    //     mainTimer -= DT_MILLIS;
 
-        // fixme: add back counter for main loop timer misses ... one of those
-        // things that should never happen, but if it does we want to know right
-        // away.
-        // if ( mainTimer > 0 ) {
-        //     comms.main_loop_timer_misses++;
-        //     if ( comms.main_loop_timer_misses % 25 == 0 ) {
-        //         Serial.println("WARNING: main loop is not completing on time!");
-        //     }
-        // }
+    static const float dt = 1.0 / MASTER_HZ;
+    static int counter = 0;
 
-        sensor_mgr->update();
+    main_prof.start();
 
-        // 3. Estimate location and attitude
-        nav_mgr->update();
+    // fixme: add back counter for main loop timer misses ... one of those
+    // things that should never happen, but if it does we want to know right
+    // away.
+    // if ( mainTimer > 0 ) {
+    //     comms.main_loop_timer_misses++;
+    //     if ( comms.main_loop_timer_misses % 25 == 0 ) {
+    //         Serial.println("WARNING: main loop is not completing on time!");
+    //     }
+    // }
 
-        state_mgr.update(dt);
+    sensor_mgr->update();
 
-        fcs_mgr->update(dt);
+    // 3. Estimate location and attitude
+    nav_mgr->update();
 
-        sensor_mgr->inceptors.write(); // fixme: this should become effectors/mixer
+    state_mgr.update(dt);
 
-        mission_mgr->update(dt);
+    fcs_mgr->update(dt);
 
-        // status
-        status_node.setUInt("available_memory", freeram());
+    sensor_mgr->inceptors.write(); // fixme: this should become effectors/mixer
 
-        // blink the led on boards that support it
-        led.update(sensor_mgr->imu_mgr.gyros_calibrated);
+    mission_mgr->update(dt);
 
-        comms_mgr->update();
+    // status
+    status_node.setUInt("available_memory", freeram());
 
-        MTP.loop();
+    // blink the led on boards that support it
+    led.update(sensor_mgr->imu_mgr.gyros_calibrated);
+
+    comms_mgr->update();
+
+    MTP.loop();
+
+    main_prof.stop();
+
+    counter++;
+    if ( counter >= 1000 ) {
+        main_prof.stats("");
+        counter = 0;
     }
+}
+
+void loop() {
+    // pass
 }

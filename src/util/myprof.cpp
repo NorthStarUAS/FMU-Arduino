@@ -50,12 +50,12 @@ uint32_t myprofile::stop() {
     return elapsed;
 }
 
-void myprofile::stats() {
+void myprofile::stats( const char *preface ) {
     float avg_hz = 0.0;
     if ( total_millis > 1 ) {
     	avg_hz = (float)count * 1000 / total_millis;
     }
-    Serial.print("  ");
+    Serial.print(preface);
     Serial.print(name);
     Serial.print(" avg: ");
     Serial.print((sum_time/1000.0) / (float)count, 2);

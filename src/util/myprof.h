@@ -13,7 +13,7 @@ public:
     void set_name( const char *_name );
     void start();
     uint32_t stop();
-    void stats();
+    void stats( const char *preface );
     // inline uint32_t get_last_interval() { return last_interval; }
 
 private:
