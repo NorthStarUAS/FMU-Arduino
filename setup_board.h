@@ -7,7 +7,7 @@
 #include <Arduino.h>
 
 // automatic configuration
-#if defined(ARDUINO_TEENSY32) || defined(ARDUINO_TEENSY40)
+#if defined(ARDUINO_TEENSY32) || defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41)
  #define AURA_V2
 #elif defined(ARDUINO_TEENSY36)
  #define MARMOT_V1
