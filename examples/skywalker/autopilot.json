@@ -34,7 +34,7 @@
             "module": "pid",
             "name": "Roll angle hold",
             "output": {
-                "prop": "/fcs/controls/aileron"
+                "prop": "/fcs/controls/roll"
             },
             "reference": {
                 "prop": "/fcs/refs/roll_deg"
@@ -62,7 +62,7 @@
             "module": "pid",
             "name": "TECS Sum Hold",
             "output": {
-                "prop": "/fcs/controls/throttle"
+                "prop": "/fcs/controls/power"
             },
             "reference": {
                 "value": 0.0
@@ -118,7 +118,7 @@
             "module": "pid",
             "name": "Speed Hold 2",
             "output": {
-                "prop": "/fcs/controls/elevator"
+                "prop": "/fcs/controls/pitch"
             },
             "reference": {
                 "prop": "/fcs/refs/pitch_deg"
