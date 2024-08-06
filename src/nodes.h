@@ -48,6 +48,7 @@ extern PropertyNode imu_calib_node;
 extern PropertyNode airdata_node;
 extern PropertyNode gps_node;
 extern PropertyNode imu_node;
+extern PropertyNode inceptors_node;
 extern PropertyNode power_node;
 extern PropertyNode rcin_node;
 
@@ -57,20 +58,17 @@ extern PropertyNode nav_node;
 // State
 extern PropertyNode wind_node;
 
-// Inceptors, Effectors, Flight Control Commands
-extern PropertyNode inceptors_node;
-extern PropertyNode effectors_node;
-extern PropertyNode controls_node;
-
 // Status and Comms
 extern PropertyNode comms_node;
 extern PropertyNode status_node;
 
-// Control Laws
+// Flight Control System
 extern PropertyNode fcs_node;
 extern PropertyNode locks_node;
 extern PropertyNode refs_node;
 extern PropertyNode tecs_node;
+extern PropertyNode outputs_node;
+extern PropertyNode effectors_node;
 
 // Mission and Tasks
 extern PropertyNode mission_node;

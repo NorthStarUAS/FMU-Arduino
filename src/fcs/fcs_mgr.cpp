@@ -74,7 +74,7 @@ void fcs_mgr_t::update(float dt) {
     if ( !master_switch ) {
         eff.write(inceptors_node);
     } else {
-        eff.write(controls_node);
+        eff.write(outputs_node);
     }
 }
 
