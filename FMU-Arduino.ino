@@ -107,7 +107,7 @@ void setup() {
 
     Serial.println("Ready and transmitting...");
 
-    main_prof.set_name("main loop");
+    main_prof.set_name("main_loop");
 
     // Start the main data collection loop on a hardware interval timer
     main_timer.begin(main_loop, 1000000/MASTER_HZ);
@@ -156,11 +156,9 @@ void main_loop() {
     // 2. Navigate: These are the higher level tasks and objectives
     mission_mgr->update(dt);
 
-    // status
+    // 3. Communicate
     status_node.setUInt("available_memory", freeram());
     led.update(sensor_mgr->imu_mgr.gyros_calibrated);
-
-    // 3. Communicate
     comms_mgr->update();
 
     main_prof.stop();
