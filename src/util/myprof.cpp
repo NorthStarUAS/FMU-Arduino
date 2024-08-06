@@ -50,7 +50,7 @@ uint32_t myprofile::stop() {
     return elapsed;
 }
 
-void myprofile::stats( const char *preface ) {
+void myprofile::print_stats( const char *preface ) {
     float avg_hz = 0.0;
     if ( total_millis > 1 ) {
     	avg_hz = (float)count * 1000 / total_millis;
@@ -74,4 +74,16 @@ void myprofile::stats( const char *preface ) {
         Serial.print(overruns);
     }
     Serial.println();
+}
+
+void myprofile::to_props( PropertyNode node ) {
+    float avg_hz = 0.0;
+    if ( total_millis > 1 ) {
+    	avg_hz = (float)count * 1000 / total_millis;
+    }
+    node.setDouble("avg_us", (sum_time/1000.0) / (float)count);
+    node.setDouble("min_us", min_interval/1000.0);
+    node.setDouble("max_us", max_interval/1000.0);
+    node.setDouble("avg_hz", avg_hz);
+    node.setUInt("overruns", overruns);
 }
