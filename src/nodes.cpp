@@ -41,6 +41,9 @@ PropertyNode home_node;
 PropertyNode route_node;
 PropertyNode task_node;
 
+// Performance / debug
+PropertyNode profile_node;
+
 void PropertyNodes_init() {
     // Configuration
     config_node = PropertyNode("/config");
@@ -82,4 +85,7 @@ void PropertyNodes_init() {
     home_node = PropertyNode("/task/home");
     route_node = PropertyNode("/task/route");
     task_node = PropertyNode("/task");
+
+    // Performance / debug
+    profile_node = PropertyNode("/profile");
 }

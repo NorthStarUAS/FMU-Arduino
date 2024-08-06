@@ -1,3 +1,4 @@
+#include "../nodes.h"
 #include "myprof.h"
 
 #include <Arduino.h>
@@ -76,7 +77,8 @@ void myprofile::print_stats( const char *preface ) {
     Serial.println();
 }
 
-void myprofile::to_props( PropertyNode node ) {
+void myprofile::to_props() {
+    PropertyNode node = profile_node.getChild(name);
     float avg_hz = 0.0;
     if ( total_millis > 1 ) {
     	avg_hz = (float)count * 1000 / total_millis;

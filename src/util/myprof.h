@@ -2,8 +2,6 @@
 
 #include <Arduino.h>
 
-#include "../props2.h"
-
 class myprofile {
 
 public:
@@ -15,7 +13,7 @@ public:
     void start();
     uint32_t stop();
     void print_stats( const char *preface );
-    void to_props( PropertyNode node );
+    void to_props();
 
     uint32_t count;
     elapsedMillis total_millis;

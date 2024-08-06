@@ -168,7 +168,7 @@ void main_loop() {
     counter++;
     if ( counter >= 1000 ) {
         main_prof.print_stats("");
-        main_prof.to_props(main_prof_node);
+        main_prof.to_props();
         counter = 0;
     }
 }
