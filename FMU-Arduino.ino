@@ -167,8 +167,6 @@ void main_loop() {
 
     comms_mgr->update();
 
-    MTP.loop();
-
     main_prof.stop();
 
     counter++;
@@ -179,5 +177,6 @@ void main_loop() {
 }
 
 void loop() {
-    // pass
+    MTP.loop();
+    delay(10);
 }
