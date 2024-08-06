@@ -30,6 +30,7 @@ void fcs_mgr_t::init() {
     // initialize and build the autopilot controller from the property
     // tree config (/config/autopilot)
     ap.init();
+    eff.init();
     set_mode("basic");
 
     printf("Autopilot initialized\n");
@@ -41,31 +42,6 @@ void fcs_mgr_t::init() {
 void fcs_mgr_t::reset() {
     // FIXME: events->log("controls", "global reset called");
     ap.reset();
-}
-
-void fcs_mgr_t::copy_pilot_inputs() {
-    // This function copies the pilot inputs to the flight/engine
-    // outputs.  This creates a manual pass through mode.  Consider
-    // that manaul pass-through is handled with less latency directly
-    // on APM2/BFS/Aura3 hardware if available.
-
-    float aileron = inceptors_node.getDouble("roll");
-    controls_node.setDouble( "aileron", aileron );
-
-    float elevator = inceptors_node.getDouble("pitch");
-    controls_node.setDouble( "elevator", elevator );
-
-    float rudder = inceptors_node.getDouble("yaw");
-    controls_node.setDouble( "rudder", rudder );
-
-    double flaps = inceptors_node.getDouble("flaps");
-    controls_node.setDouble( "flaps", flaps );
-
-    double gear = inceptors_node.getDouble("gear");
-    controls_node.setDouble( "gear", gear );
-
-    double throttle = inceptors_node.getDouble("power");
-    controls_node.setDouble( "throttle", throttle );
 }
 
 void fcs_mgr_t::update(float dt) {
@@ -96,7 +72,9 @@ void fcs_mgr_t::update(float dt) {
     // copy pilot inputs to flight control outputs when not in
     // autopilot mode
     if ( !master_switch ) {
-        copy_pilot_inputs();
+        eff.write(inceptors_node);
+    } else {
+        eff.write(controls_node);
     }
 }
 

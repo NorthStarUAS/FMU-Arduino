@@ -11,7 +11,7 @@
 #include <Eigen/LU>
 using namespace Eigen;
 
-#include "props2.h"
+#include "../props2.h"
 
 class mixer_t {
 
@@ -33,5 +33,5 @@ public:
     void init();
     void sas_defaults();
     void update_matrix();
-    void update();
+    void update( PropertyNode input_node );
 };

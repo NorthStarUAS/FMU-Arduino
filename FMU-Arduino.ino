@@ -126,10 +126,9 @@ void main_loop() {
     // static elapsedMillis hbTimer = 0;
     // static elapsedMillis debugTimer = 0;
 
+    // Fixme: do we want to go back to IMU driven main loop timing?
     // When new IMU data is ready (new pulse from IMU), go out and grab the IMU data
     // and output fresh IMU message plus the most recent data from everything else.
-    // if ( mainTimer >= DT_MILLIS ) {
-    //     mainTimer -= DT_MILLIS;
 
     static const float dt = 1.0 / MASTER_HZ;
     static int counter = 0;
@@ -146,32 +145,30 @@ void main_loop() {
     //     }
     // }
 
+    // 1. Aviate: This is the core "sense, compute, response" block.  We want
+    //    this to run at a perfect update interval with the least possible
+    //    transport delay.
     sensor_mgr->update();
-
-    // 3. Estimate location and attitude
     nav_mgr->update();
-
     state_mgr.update(dt);
-
     fcs_mgr->update(dt);
 
-    sensor_mgr->inceptors.write(); // fixme: this should become effectors/mixer
-
+    // 2. Navigate: These are the higher level tasks and objectives
     mission_mgr->update(dt);
 
     // status
     status_node.setUInt("available_memory", freeram());
-
-    // blink the led on boards that support it
     led.update(sensor_mgr->imu_mgr.gyros_calibrated);
 
+    // 3. Communicate
     comms_mgr->update();
 
     main_prof.stop();
 
     counter++;
     if ( counter >= 1000 ) {
-        main_prof.stats("");
+        main_prof.print_stats("");
+        main_prof.to_props(main_prof_node);
         counter = 0;
     }
 }

@@ -1,9 +1,9 @@
 // Module to handle actuator input/output and mixing.
 
-#include "../setup_board.h"
-#include "props2.h"
-#include "nodes.h"
-#include "sensors/pwm.h"
+#include "../../setup_board.h"
+#include "../props2.h"
+#include "../nodes.h"
+#include "../sensors/pwm.h"
 
 #include "mixer.h"
 
@@ -152,13 +152,13 @@ void mixer_t::mixing_update() {
     }
 }
 
-void mixer_t::update() {
+void mixer_t::update( PropertyNode input_node ) {
     // the pilot.get_* interface is smart to return manual
     // vs. autopilot depending on switch state.
-    inputs << inceptors_node.getDouble("power"), inceptors_node.getDouble("roll"),
-        inceptors_node.getDouble("pitch"), inceptors_node.getDouble("yaw"),
-        inceptors_node.getDouble("flaps"), inceptors_node.getDouble("gear"),
-        inceptors_node.getDouble("aux1"), inceptors_node.getDouble("aux2");
+    inputs << input_node.getDouble("power"), input_node.getDouble("roll"),
+        input_node.getDouble("pitch"), input_node.getDouble("yaw"),
+        input_node.getDouble("flaps"), input_node.getDouble("gear"),
+        input_node.getDouble("aux1"), input_node.getDouble("aux2");
 
     sas_update();
     mixing_update();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ap.h"
+#include "effectors.h"
 
 class fcs_mgr_t {
 
@@ -17,9 +18,9 @@ public:
 private:
 
     AutoPilot ap;
+    effectors_t eff;
     bool last_master_switch = false;
 
-    void copy_pilot_inputs();
 };
 
 extern fcs_mgr_t *fcs_mgr;
