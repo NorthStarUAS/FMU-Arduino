@@ -60,9 +60,9 @@ void message_link_t::init(uint8_t port, uint32_t baud /*, string relay_name*/ ) 
     } else {
         // setup rates for a full speed host connection
         airdata_limiter = RateLimiter(0);
-        ap_limiter = RateLimiter(-1);  // don't send
+        ap_limiter = RateLimiter(0);
         inceptors_limiter = RateLimiter(0);
-        eff_limiter = RateLimiter(-1); // don't send (maybe send for logging?)
+        eff_limiter = RateLimiter(0);
         gps_limiter = RateLimiter(0);
         imu_limiter = RateLimiter(0);
         mission_limiter = RateLimiter(0);
