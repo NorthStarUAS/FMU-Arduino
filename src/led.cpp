@@ -1,3 +1,4 @@
+#include "../setup_board.h"
 #include "nodes.h"
 #include "led.h"
 
@@ -17,11 +18,11 @@ void led_t::init() {
     }
 }
 
-void led_t::update(int gyros_calibrated) {
+void led_t::update() {
     if ( led_pin > 0 ) {
-        if ( gyros_calibrated < 2 ) {
+        if ( imu_node.getUInt("gyros_calibrated") < 2 ) {
             blink_rate = 50;
-        } else if ( gps_node.getInt("status") < 3 ) {
+        } else if ( gps_node.getUInt("status") < 3 ) {
             blink_rate = 200;
         } else {
             blink_rate = 800;

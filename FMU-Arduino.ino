@@ -158,7 +158,7 @@ void main_loop() {
 
     // 3. Communicate
     status_node.setUInt("available_memory", freeram());
-    led.update(sensor_mgr->imu_mgr.gyros_calibrated);
+    led.update();
     comms_mgr->update();
 
     main_prof.stop();

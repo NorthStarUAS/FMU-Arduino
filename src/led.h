@@ -16,7 +16,7 @@ private:
 public:
 
     void init();
-    void update(int gyros_calibrated); // fixme: this should really be added and taken from the property tree
+    void update();
 };
 
 extern led_t led;
