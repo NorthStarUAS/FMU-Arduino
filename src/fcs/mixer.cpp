@@ -75,16 +75,16 @@ void mixer_t::update_matrix() {
 }
 
 void mixer_t::print_mixer_matrix() {
-    printf("Mixer Matrix:\n");
+    Serial.print("Mixer Matrix:\n");
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-        printf("  ");
+        Serial.print("  ");
         for ( int j = 0; j < PWM_CHANNELS; j++ ) {
             if ( M(i,j) >= 0 ) {
-                printf(" ");
+                Serial.print(" ");
             }
-            printf("%.2f ", M(i,j));
+            Serial.print(M(i,j), 2);
         }
-        printf("\n");
+        Serial.println("");
     }
 }
 
