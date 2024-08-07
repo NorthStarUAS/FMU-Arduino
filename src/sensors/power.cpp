@@ -15,7 +15,7 @@ void power_t::init() {
 #if defined(MARMOT_V1)
     avionics_pin = A22;
     source_volt_pin = 15;
-#elif defined(AURA_V2)
+#elif defined(AURA_V2) || defined(NORTHSTAR_V3)
     avionics_pin = A1;
     source_volt_pin = A0;
     if ( config_power_node.getBool("have_attopilot") ) {

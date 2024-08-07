@@ -16,7 +16,7 @@ static const int PWM_MAX = PWM_CENTER + PWM_HALF_RANGE;
 
 #if defined(MARMOT_V1)
 static uint8_t servoPins[PWM_CHANNELS] = {21, 22, 23, 2, 3, 4, 5, 6};
-#elif defined(AURA_V2)
+#elif defined(AURA_V2) || defined(NORTHSTAR_V3)
 static uint8_t servoPins[PWM_CHANNELS] = {6, 5, 4, 3, 23, 22, 21, 20};
 #else
 static uint8_t servoPins[PWM_CHANNELS] = {0};
@@ -41,8 +41,8 @@ void pwm_t::init(int board) {
     printf("PWM: ");
 #if defined(MARMOT_V1)
     printf("Marmot v1 pin mapping.\n");
-#elif defined(AURA_V2)
-    printf("Aura v2 pin mapping.\n");
+#elif defined(AURA_V2) || defined(NORTHSTAR_V3)
+    printf("Aura v2 / NorthStar v3 pin mapping.\n");
 #else
     printf("No valid PWM pin mapping defined.\n");
 #endif

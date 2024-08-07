@@ -97,7 +97,7 @@ void imu_mgr_t::init() {
     int pin = 24;
     printf("MPU9250 @ SPI pin: %d\n", pin);
     IMU.configure(pin);
-#elif defined(AURA_V2)
+#elif defined(AURA_V2) || defined(NORTHSTAR_V3)
     // Aura3 has an mpu9250 on I2C Addr 0x68
     int address = 0x68;
     printf("MPU9250 @ I2C Addr: 0x%02X\n", address);

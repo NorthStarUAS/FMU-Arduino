@@ -32,7 +32,7 @@ void airdata_mgr_t::init() {
 
 #if defined(MARMOT_V1)
     barometer = 1;
-#elif defined(AURA_V2)
+#elif defined(AURA_V2) || defined(NORTHSTAR_V3)
     barometer = 2;
 #endif
 

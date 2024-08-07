@@ -5,7 +5,7 @@
 void led_t::init() {
 #if defined(MARMOT_V1)
     led_pin = 0;
-#elif defined(AURA_V2)
+#elif defined(AURA_V2) || defined(NORTHSTAR_V3)
     led_pin = 13;
 #endif
 
