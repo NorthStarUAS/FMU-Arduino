@@ -24,6 +24,9 @@ LittleFS_Program progmfs;
 
 comms_mgr_t *comms_mgr = nullptr;
 
+// fixme: faster init/bootup?
+// fixme: add wdt ... because chute happens, over temp, external interference, sensor/wiring issue, etc.
+
 void setup() {
     Serial.begin(115200);
     delay(1000);  // hopefully long enough for serial to come alive
