@@ -1,12 +1,12 @@
 {
     "L1_controller": {
         "bank_limit_deg": 30,
-        "bank_bias_deg": -5,
+        "bank_bias_deg": 0,
         "damping": 1.5,
         "period": 10
     },
     "TECS": {
-        "mass_kg": 3,
+        "mass_kg": 1600,
         "weight_bal": 1.5,
         "max_kt": 180,
         "min_kt": 75
@@ -14,7 +14,7 @@
     "component": [
         {
             "config": {
-                "Kp": 0.03,
+                "Kp": 0.04,
                 "Td": 0.0,
                 "Ti": 3.0,
                 "u_trim": 0.0,
@@ -70,12 +70,12 @@
         },
         {
             "config": {
-                "Kp": 0.007,
+                "Kp": 0.000005,
                 "Td": 0.0,
                 "Ti": 4.0,
                 "u_trim": 2.0,
-                "u_max": 25.0,
-                "u_min": -15.0
+                "u_max": 15.0,
+                "u_min": -10.0
             },
             "debug": "False",
             "description": "Total energy (diff) based pitch control",
@@ -98,7 +98,7 @@
         },
         {
             "config": {
-                "Kp": -0.06,
+                "Kp": -0.04,
                 "Td": 0.0,
                 "Ti": 3.0,
                 "u_trim": 0.0,
