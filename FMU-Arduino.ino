@@ -59,7 +59,6 @@ void setup() {
         }
         MTP.addFilesystem(progmfs, "Program Memory Flash");
     }
-
     MTP.begin();
 
     config = new config_t();
@@ -125,10 +124,6 @@ int freeram() {
 
 // main arduino loop -- Fixme: set this up on a hardware timer so the main loop can do non-time sensitive stuff, but caution on race conditions
 void main_loop() {
-    // static elapsedMillis mainTimer = 0;
-    // static elapsedMillis hbTimer = 0;
-    // static elapsedMillis debugTimer = 0;
-
     // Fixme: do we want to go back to IMU driven main loop timing?
     // When new IMU data is ready (new pulse from IMU), go out and grab the IMU data
     // and output fresh IMU message plus the most recent data from everything else.
