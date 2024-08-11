@@ -26,7 +26,7 @@ void execute_command(string command, SerialLink *serial) {
         reply.pack();
         serial->write_packet( reply.id, reply.payload, reply.len);
         result = 1;
-    } else if ( tokens[0] == "set" ) {
+    } else if ( tokens[0] == "set" and tokens.size() == 3 ) {
         if ( tokens[1][0] == '/' ) {
             // requires absolute path
             printf("  %s\n", tokens[1].c_str());
