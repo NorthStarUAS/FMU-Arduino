@@ -37,6 +37,7 @@ PropertyNode mission_node;
 PropertyNode circle_node;
 PropertyNode home_node;
 PropertyNode route_node;
+PropertyNode startup_node;
 PropertyNode task_node;
 
 // Performance / debug
@@ -80,6 +81,7 @@ void PropertyNodes_init() {
     circle_node = PropertyNode("/task/circle");
     home_node = PropertyNode("/task/home");
     route_node = PropertyNode("/task/route");
+    startup_node = PropertyNode("/task/startup");
     task_node = PropertyNode("/task");
 
     // Performance / debug

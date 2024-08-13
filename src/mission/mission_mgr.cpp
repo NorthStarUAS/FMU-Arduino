@@ -7,11 +7,15 @@
 
 void mission_mgr_t::init() {
     circle_mgr.init();
+    home_mgr.init();
     route_mgr.init();
     mission_node.setString("mode", "none");
 }
 
 void mission_mgr_t::update(float dt) {
+    // global tasks
+    home_mgr.update();
+
     // sanity check create default task if nothing active
     if ( current_task == nullptr ) {
         start_idle_task();

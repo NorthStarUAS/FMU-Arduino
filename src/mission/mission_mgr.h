@@ -1,4 +1,5 @@
 #include "circle_mgr.h"
+#include "home_mgr.h"
 #include "route_mgr.h"
 #include "tasks/task.h"
 
@@ -7,6 +8,7 @@ class mission_mgr_t {
 public:
 
     circle_mgr_t circle_mgr;
+    home_mgr_t home_mgr;
     route_mgr_t route_mgr;
     task_t *current_task = nullptr;
 
