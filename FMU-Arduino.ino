@@ -29,7 +29,11 @@ comms_mgr_t *comms_mgr = nullptr;
 
 void setup() {
     Serial.begin(115200);
-    delay(1000);  // hopefully long enough for serial to come alive
+    int timeout = millis() + 1000;
+    // wait for up to a second for Serial to become ready (continue if not ready!)
+    while ( !Serial and millis() < timeout ) {
+        delay(1);
+    }
 
     // different random seed each run
     randomSeed(analogRead(0));
@@ -107,7 +111,8 @@ void setup() {
     comms_mgr = new comms_mgr_t();
     comms_mgr->init();
 
-    Serial.println("Ready and transmitting...");
+    Serial.print("Boot seconds: "); Serial.println(millis()/1000.0, 2);
+    Serial.println("Ready and transmitting..."); Serial.println();
 
     main_prof.set_name("main_loop");
 
