@@ -1990,7 +1990,6 @@ public:
 class fcs_refs_v1_t {
 public:
 
-    uint8_t index;
     uint32_t millis;
     float groundtrack_deg;
     float altitude_agl_ft;
@@ -2001,7 +2000,6 @@ public:
     // internal structure for packing
     #pragma pack(push, 1)
     struct _compact_t {
-        uint8_t index;
         uint32_t millis;
         int16_t groundtrack_deg;
         uint16_t altitude_agl_ft;
@@ -2027,7 +2025,6 @@ public:
         payload = (uint8_t *)REALLOC(payload, size);
         // copy values
         _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
         _buf->millis = millis;
         _buf->groundtrack_deg = intround(groundtrack_deg * 10.0);
         _buf->altitude_agl_ft = uintround(altitude_agl_ft * 10.0);
@@ -2040,7 +2037,6 @@ public:
     bool unpack(uint8_t *external_message, int message_size) {
         _compact_t *_buf = (_compact_t *)external_message;
         len = sizeof(_compact_t);
-        index = _buf->index;
         millis = _buf->millis;
         groundtrack_deg = _buf->groundtrack_deg / (float)10.0;
         altitude_agl_ft = _buf->altitude_agl_ft / (float)10.0;
@@ -2059,7 +2055,6 @@ public:
     }
 
     void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
         node.setUInt("millis", millis);
         node.setDouble("groundtrack_deg", groundtrack_deg);
         node.setDouble("altitude_agl_ft", altitude_agl_ft);
@@ -2077,7 +2072,6 @@ public:
     }
 
     void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
         millis = node.getUInt("millis");
         groundtrack_deg = node.getDouble("groundtrack_deg");
         altitude_agl_ft = node.getDouble("altitude_agl_ft");
@@ -2091,7 +2085,6 @@ public:
 class mission_v1_t {
 public:
 
-    uint8_t index;
     uint32_t millis;
     uint8_t is_airborne;
     float flight_timer;
@@ -2106,7 +2099,6 @@ public:
     // internal structure for packing
     #pragma pack(push, 1)
     struct _compact_t {
-        uint8_t index;
         uint32_t millis;
         uint8_t is_airborne;
         uint16_t flight_timer;
@@ -2137,7 +2129,6 @@ public:
         payload = (uint8_t *)REALLOC(payload, size);
         // copy values
         _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
         _buf->millis = millis;
         _buf->is_airborne = is_airborne;
         _buf->flight_timer = uintround(flight_timer * 1.0);
@@ -2156,7 +2147,6 @@ public:
     bool unpack(uint8_t *external_message, int message_size) {
         _compact_t *_buf = (_compact_t *)external_message;
         len = sizeof(_compact_t);
-        index = _buf->index;
         millis = _buf->millis;
         is_airborne = _buf->is_airborne;
         flight_timer = _buf->flight_timer / (float)1.0;
@@ -2180,7 +2170,6 @@ public:
     }
 
     void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
         node.setUInt("millis", millis);
         node.setUInt("is_airborne", is_airborne);
         node.setDouble("flight_timer", flight_timer);
@@ -2202,7 +2191,6 @@ public:
     }
 
     void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
         millis = node.getUInt("millis");
         is_airborne = node.getUInt("is_airborne");
         flight_timer = node.getDouble("flight_timer");

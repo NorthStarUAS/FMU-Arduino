@@ -80,6 +80,9 @@ void message_link_t::update() {
     if ( refs_limiter.update() ) {
         output_counter += write_refs();
     }
+    if ( mission_limiter.update() ) {
+        output_counter += write_mission();
+    }
     if ( inceptors_limiter.update() ) {
         output_counter += write_inceptors();
     }
@@ -333,7 +336,7 @@ int message_link_t::write_airdata()
     return serial.write_packet( air_msg.id, air_msg.payload, air_msg.len );
 }
 
-// autopilot targets / status
+// fcs reference values
 int message_link_t::write_refs()
 {
     ns_message::fcs_refs_v1_t refs_msg;
@@ -341,6 +344,54 @@ int message_link_t::write_refs()
     refs_msg.millis = imu_node.getUInt("millis");
     refs_msg.pack();
     return serial.write_packet( refs_msg.id, refs_msg.payload, refs_msg.len );
+}
+
+// mission values
+int message_link_t::write_mission()
+{
+    // this is the messy message we need to assemble the old fashioned way
+    ns_message::mission_v1_t mission_msg;
+    mission_msg.millis = imu_node.getUInt("millis");
+    mission_msg.is_airborne = airdata_node.getBool("is_airborne");
+    mission_msg.flight_timer = airdata_node.getInt("flight_timer_millis") / 1000.0;
+    mission_msg.task_name = mission_node.getString("task");
+    mission_msg.task_attribute = 0; // fixme task attribute?
+    // fixme: route stuff
+    mission_msg.route_size = 0;
+    mission_msg.target_waypoint_idx = 0;
+    mission_msg.wp_index = 0;
+    mission_msg.wp_longitude_raw = 0;
+    mission_msg.wp_latitude_raw = 0;
+
+    // fixme other stuff
+    // wp_lon = mission.wp_longitude_raw / 10000000.0
+    // wp_lat = mission.wp_latitude_raw / 10000000.0
+    // wp_index = mission.wp_index
+    // route_size = mission.route_size
+    // status_node.setDouble("flight_timer", mission.flight_timer)
+    // status_node.setBool("onboard_flight_timer", True)
+    // if route_size != active_node.getInt("route_size"):
+    //     # route size change, zero all the waypoint coordinates
+    //     for i in range(active_node.getInt("route_size")):
+    //         wp_node = active_node.getChild('wpt/%d' % i)
+    //         wp_node.setDouble("longitude_deg", 0)
+    //         wp_node.setDouble("latitude_deg", 0)
+    // route_node.setInt("target_waypoint_idx", mission.target_waypoint_idx)
+    // if wp_index < route_size:
+    //     wp_node = active_node.getChild('wpt/%d' % wp_index)
+    //     wp_node.setDouble("longitude_deg", wp_lon)
+    //     wp_node.setDouble("latitude_deg", wp_lat)
+    // elif wp_index == 65534:
+    //     circle_node.setDouble("longitude_deg", wp_lon)
+    //     circle_node.setDouble("latitude_deg", wp_lat)
+    //     circle_node.setDouble("radius_m", mission.task_attribute / 10.0)
+    // elif wp_index == 65535:
+    //     home_node.setDouble("longitude_deg", wp_lon)
+    //     home_node.setDouble("latitude_deg", wp_lat)
+    // task_node.setString("current_task", mission.task_name)
+
+    mission_msg.pack();
+    return serial.write_packet( mission_msg.id, mission_msg.payload, mission_msg.len );
 }
 
 int message_link_t::write_power()

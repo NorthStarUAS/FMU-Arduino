@@ -31,6 +31,7 @@ private:
     int write_ack( uint16_t sequence_num, uint8_t result );
     int write_airdata();
     int write_refs();
+    int write_mission();
     int write_inceptors();
     int write_effectors();
     int write_imu();
