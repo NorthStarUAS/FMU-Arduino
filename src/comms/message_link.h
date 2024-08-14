@@ -30,7 +30,7 @@ private:
 
     int write_ack( uint16_t sequence_num, uint8_t result );
     int write_airdata();
-    int write_ap();
+    int write_refs();
     int write_inceptors();
     int write_effectors();
     int write_imu();
@@ -43,7 +43,7 @@ private:
     bool parse_message( uint8_t id, uint8_t *buf, uint8_t message_size );
 
     RateLimiter airdata_limiter;
-    RateLimiter ap_limiter;
+    RateLimiter refs_limiter;
     RateLimiter inceptors_limiter;
     RateLimiter eff_limiter;
     RateLimiter gps_limiter;

@@ -29,7 +29,7 @@ comms_mgr_t *comms_mgr = nullptr;
 
 void setup() {
     Serial.begin(115200);
-    int timeout = millis() + 1000;
+    uint32_t timeout = millis() + 1000;
     // wait for up to a second for Serial to become ready (continue if not ready!)
     while ( !Serial and millis() < timeout ) {
         delay(1);

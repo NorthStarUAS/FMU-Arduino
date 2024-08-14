@@ -43,8 +43,7 @@ const uint8_t effectors_v1_id = 61;
 const uint8_t pilot_v4_id = 51;
 const uint8_t inceptors_v2_id = 63;
 const uint8_t power_v1_id = 55;
-const uint8_t ap_status_v7_id = 39;
-const uint8_t ap_targets_v1_id = 59;
+const uint8_t fcs_refs_v1_id = 65;
 const uint8_t mission_v1_id = 60;
 const uint8_t system_health_v6_id = 46;
 const uint8_t status_v7_id = 56;
@@ -1987,175 +1986,8 @@ public:
     }
 };
 
-// Message: ap_status_v7 (id: 39)
-class ap_status_v7_t {
-public:
-
-    uint8_t index;
-    float timestamp_sec;
-    uint8_t flags;
-    float groundtrack_deg;
-    float roll_deg;
-    float altitude_msl_ft;
-    float altitude_ground_m;
-    float pitch_deg;
-    float airspeed_kt;
-    float flight_timer;
-    uint16_t target_waypoint_idx;
-    double wp_longitude_deg;
-    double wp_latitude_deg;
-    uint16_t wp_index;
-    uint16_t route_size;
-    uint8_t task_id;
-    uint16_t task_attribute;
-    uint8_t sequence_num;
-
-    // internal structure for packing
-    #pragma pack(push, 1)
-    struct _compact_t {
-        uint8_t index;
-        float timestamp_sec;
-        uint8_t flags;
-        int16_t groundtrack_deg;
-        int16_t roll_deg;
-        uint16_t altitude_msl_ft;
-        uint16_t altitude_ground_m;
-        int16_t pitch_deg;
-        int16_t airspeed_kt;
-        uint16_t flight_timer;
-        uint16_t target_waypoint_idx;
-        double wp_longitude_deg;
-        double wp_latitude_deg;
-        uint16_t wp_index;
-        uint16_t route_size;
-        uint8_t task_id;
-        uint16_t task_attribute;
-        uint8_t sequence_num;
-    };
-    #pragma pack(pop)
-
-    // id, ptr to payload and len
-    static const uint8_t id = 39;
-    uint8_t *payload = nullptr;
-    int len = 0;
-
-    ~ap_status_v7_t() {
-        free(payload);
-    }
-
-    bool pack() {
-        len = sizeof(_compact_t);
-        // compute dynamic packet size (if neede)
-        int size = len;
-        payload = (uint8_t *)REALLOC(payload, size);
-        // copy values
-        _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
-        _buf->timestamp_sec = timestamp_sec;
-        _buf->flags = flags;
-        _buf->groundtrack_deg = intround(groundtrack_deg * 10.0);
-        _buf->roll_deg = intround(roll_deg * 10.0);
-        _buf->altitude_msl_ft = uintround(altitude_msl_ft * 1.0);
-        _buf->altitude_ground_m = uintround(altitude_ground_m * 1.0);
-        _buf->pitch_deg = intround(pitch_deg * 10.0);
-        _buf->airspeed_kt = intround(airspeed_kt * 10.0);
-        _buf->flight_timer = uintround(flight_timer * 1.0);
-        _buf->target_waypoint_idx = target_waypoint_idx;
-        _buf->wp_longitude_deg = wp_longitude_deg;
-        _buf->wp_latitude_deg = wp_latitude_deg;
-        _buf->wp_index = wp_index;
-        _buf->route_size = route_size;
-        _buf->task_id = task_id;
-        _buf->task_attribute = task_attribute;
-        _buf->sequence_num = sequence_num;
-        return true;
-    }
-
-    bool unpack(uint8_t *external_message, int message_size) {
-        _compact_t *_buf = (_compact_t *)external_message;
-        len = sizeof(_compact_t);
-        index = _buf->index;
-        timestamp_sec = _buf->timestamp_sec;
-        flags = _buf->flags;
-        groundtrack_deg = _buf->groundtrack_deg / (float)10.0;
-        roll_deg = _buf->roll_deg / (float)10.0;
-        altitude_msl_ft = _buf->altitude_msl_ft / (float)1.0;
-        altitude_ground_m = _buf->altitude_ground_m / (float)1.0;
-        pitch_deg = _buf->pitch_deg / (float)10.0;
-        airspeed_kt = _buf->airspeed_kt / (float)10.0;
-        flight_timer = _buf->flight_timer / (float)1.0;
-        target_waypoint_idx = _buf->target_waypoint_idx;
-        wp_longitude_deg = _buf->wp_longitude_deg;
-        wp_latitude_deg = _buf->wp_latitude_deg;
-        wp_index = _buf->wp_index;
-        route_size = _buf->route_size;
-        task_id = _buf->task_id;
-        task_attribute = _buf->task_attribute;
-        sequence_num = _buf->sequence_num;
-        return true;
-    }
-
-    void msg2props(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        msg2props(node);
-    }
-
-    void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
-        node.setDouble("timestamp_sec", timestamp_sec);
-        node.setUInt("flags", flags);
-        node.setDouble("groundtrack_deg", groundtrack_deg);
-        node.setDouble("roll_deg", roll_deg);
-        node.setDouble("altitude_msl_ft", altitude_msl_ft);
-        node.setDouble("altitude_ground_m", altitude_ground_m);
-        node.setDouble("pitch_deg", pitch_deg);
-        node.setDouble("airspeed_kt", airspeed_kt);
-        node.setDouble("flight_timer", flight_timer);
-        node.setUInt("target_waypoint_idx", target_waypoint_idx);
-        node.setDouble("wp_longitude_deg", wp_longitude_deg);
-        node.setDouble("wp_latitude_deg", wp_latitude_deg);
-        node.setUInt("wp_index", wp_index);
-        node.setUInt("route_size", route_size);
-        node.setUInt("task_id", task_id);
-        node.setUInt("task_attribute", task_attribute);
-        node.setUInt("sequence_num", sequence_num);
-    }
-
-    void props2msg(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        props2msg(node);
-    }
-
-    void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
-        timestamp_sec = node.getDouble("timestamp_sec");
-        flags = node.getUInt("flags");
-        groundtrack_deg = node.getDouble("groundtrack_deg");
-        roll_deg = node.getDouble("roll_deg");
-        altitude_msl_ft = node.getDouble("altitude_msl_ft");
-        altitude_ground_m = node.getDouble("altitude_ground_m");
-        pitch_deg = node.getDouble("pitch_deg");
-        airspeed_kt = node.getDouble("airspeed_kt");
-        flight_timer = node.getDouble("flight_timer");
-        target_waypoint_idx = node.getUInt("target_waypoint_idx");
-        wp_longitude_deg = node.getDouble("wp_longitude_deg");
-        wp_latitude_deg = node.getDouble("wp_latitude_deg");
-        wp_index = node.getUInt("wp_index");
-        route_size = node.getUInt("route_size");
-        task_id = node.getUInt("task_id");
-        task_attribute = node.getUInt("task_attribute");
-        sequence_num = node.getUInt("sequence_num");
-    }
-};
-
-// Message: ap_targets_v1 (id: 59)
-class ap_targets_v1_t {
+// Message: fcs_refs_v1 (id: 65)
+class fcs_refs_v1_t {
 public:
 
     uint8_t index;
@@ -2180,11 +2012,11 @@ public:
     #pragma pack(pop)
 
     // id, ptr to payload and len
-    static const uint8_t id = 59;
+    static const uint8_t id = 65;
     uint8_t *payload = nullptr;
     int len = 0;
 
-    ~ap_targets_v1_t() {
+    ~fcs_refs_v1_t() {
         free(payload);
     }
 

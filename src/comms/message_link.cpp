@@ -47,7 +47,7 @@ void message_link_t::init(uint8_t port, uint32_t baud /*, string relay_name*/ ) 
     if ( baud <= 115200 ) {
         // setup rates for a slower telemetry connection
         airdata_limiter = RateLimiter(2);
-        ap_limiter = RateLimiter(2);
+        refs_limiter = RateLimiter(2);
         inceptors_limiter = RateLimiter(4);
         eff_limiter = RateLimiter(4);
         gps_limiter = RateLimiter(2.5);
@@ -60,7 +60,7 @@ void message_link_t::init(uint8_t port, uint32_t baud /*, string relay_name*/ ) 
     } else {
         // setup rates for a full speed host connection
         airdata_limiter = RateLimiter(0);
-        ap_limiter = RateLimiter(0);
+        refs_limiter = RateLimiter(0);
         inceptors_limiter = RateLimiter(0);
         eff_limiter = RateLimiter(0);
         gps_limiter = RateLimiter(0);
@@ -77,8 +77,8 @@ void message_link_t::update() {
     if ( airdata_limiter.update() ) {
         output_counter += write_airdata();
     }
-    if ( ap_limiter.update() ) {
-        output_counter += write_ap();
+    if ( refs_limiter.update() ) {
+        output_counter += write_refs();
     }
     if ( inceptors_limiter.update() ) {
         output_counter += write_inceptors();
@@ -128,10 +128,11 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
         }
         write_ack( msg.sequence_num, command_result );
         result = true;
-    } else if ( id == ns_message::ap_targets_v1_id ) {
-        ns_message::ap_targets_v1_t ap_msg;
-        ap_msg.unpack(buf, message_size);
-        ap_msg.msg2props(refs_node);
+    } else if ( id == ns_message::fcs_refs_v1_id ) {
+        // not expecting to receive this one on the FMU
+        // ns_message::fcs_refs_v1_t ap_msg;
+        // ap_msg.unpack(buf, message_size);
+        // ap_msg.msg2props(refs_node);
     } else if ( id == ns_message::mission_v1_id ) {
         // relay directly to gcs
         // if ( relay_id == "host" ) {
@@ -333,13 +334,13 @@ int message_link_t::write_airdata()
 }
 
 // autopilot targets / status
-int message_link_t::write_ap()
+int message_link_t::write_refs()
 {
-    ns_message::ap_targets_v1_t ap_msg;
-    ap_msg.props2msg(refs_node);
-    ap_msg.millis = imu_node.getUInt("millis");
-    ap_msg.pack();
-    return serial.write_packet( ap_msg.id, ap_msg.payload, ap_msg.len );
+    ns_message::fcs_refs_v1_t refs_msg;
+    refs_msg.props2msg(refs_node);
+    refs_msg.millis = imu_node.getUInt("millis");
+    refs_msg.pack();
+    return serial.write_packet( refs_msg.id, refs_msg.payload, refs_msg.len );
 }
 
 int message_link_t::write_power()
