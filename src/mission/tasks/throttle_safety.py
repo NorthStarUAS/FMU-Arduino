@@ -9,13 +9,13 @@ class ThrottleSafety(Task):
         self.act_node = PropertyNode("/actuators")
         self.airdata_node = PropertyNode("/sensors/airdata")
         self.gps_node = PropertyNode("/sensors/gps/0")
-        
+
         # initial defaults are locked down (this is kind of a big deal!)
         self.master_safety = True
         self.safety_mode = 'on_ground'
         self.airborne_latch = False
         self.act_node.setBool("throttle_safety", True)
-        
+
         self.name = config_node.getString("name")
         if config_node.hasChild("safety_mode"):
             self.safety_mode = config_node.getString('safety_mode')
@@ -23,7 +23,7 @@ class ThrottleSafety(Task):
     def activate(self):
         self.active = True
         comms.events.log("safety", "throttle_safety: " + str(self.safety_mode) + " " + str(self.master_safety))
-    
+
     def update(self, dt):
         if not self.active:
             return False
@@ -31,7 +31,7 @@ class ThrottleSafety(Task):
         is_airborne = self.airdata_node.getBool("is_airborne")
         if not self.airborne_latch and is_airborne:
             self.airborne_latch = True
-            
+
         if self.master_safety:
             # safety is on, check if we should remove it (so throttle can run.)
             if not self.gps_node.getBool("settle"):
@@ -64,7 +64,7 @@ class ThrottleSafety(Task):
 
     def is_complete(self):
         return False
-    
+
     def close(self):
         self.active = False
         return True
