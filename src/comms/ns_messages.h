@@ -38,9 +38,7 @@ const uint8_t airdata_v8_id = 54;
 const uint8_t filter_v5_id = 47;
 const uint8_t nav_v6_id = 52;
 const uint8_t nav_metrics_v6_id = 53;
-const uint8_t actuator_v3_id = 37;
 const uint8_t effectors_v1_id = 61;
-const uint8_t pilot_v4_id = 51;
 const uint8_t inceptors_v2_id = 63;
 const uint8_t power_v1_id = 55;
 const uint8_t fcs_refs_v1_id = 65;
@@ -203,7 +201,6 @@ public:
 class gps_v5_t {
 public:
 
-    uint8_t index;
     uint32_t millis;
     uint64_t unix_usec;
     uint8_t num_sats;
@@ -222,7 +219,6 @@ public:
     // internal structure for packing
     #pragma pack(push, 1)
     struct _compact_t {
-        uint8_t index;
         uint32_t millis;
         uint64_t unix_usec;
         uint8_t num_sats;
@@ -256,7 +252,6 @@ public:
         payload = (uint8_t *)REALLOC(payload, size);
         // copy values
         _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
         _buf->millis = millis;
         _buf->unix_usec = unix_usec;
         _buf->num_sats = num_sats;
@@ -277,7 +272,6 @@ public:
     bool unpack(uint8_t *external_message, int message_size) {
         _compact_t *_buf = (_compact_t *)external_message;
         len = sizeof(_compact_t);
-        index = _buf->index;
         millis = _buf->millis;
         unix_usec = _buf->unix_usec;
         num_sats = _buf->num_sats;
@@ -304,7 +298,6 @@ public:
     }
 
     void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
         node.setUInt("millis", millis);
         node.setUInt64("unix_usec", unix_usec);
         node.setUInt("num_sats", num_sats);
@@ -330,7 +323,6 @@ public:
     }
 
     void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
         millis = node.getUInt("millis");
         unix_usec = node.getUInt64("unix_usec");
         num_sats = node.getUInt("num_sats");
@@ -525,7 +517,6 @@ public:
 class imu_v6_t {
 public:
 
-    uint8_t index;
     uint32_t millis;
     float ax_raw;
     float ay_raw;
@@ -547,7 +538,6 @@ public:
     // internal structure for packing
     #pragma pack(push, 1)
     struct _compact_t {
-        uint8_t index;
         uint32_t millis;
         int16_t ax_raw;
         int16_t ay_raw;
@@ -584,7 +574,6 @@ public:
         payload = (uint8_t *)REALLOC(payload, size);
         // copy values
         _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
         _buf->millis = millis;
         _buf->ax_raw = intround(ax_raw * 835.296217);
         _buf->ay_raw = intround(ay_raw * 835.296217);
@@ -608,7 +597,6 @@ public:
     bool unpack(uint8_t *external_message, int message_size) {
         _compact_t *_buf = (_compact_t *)external_message;
         len = sizeof(_compact_t);
-        index = _buf->index;
         millis = _buf->millis;
         ax_raw = _buf->ax_raw / (float)835.296217;
         ay_raw = _buf->ay_raw / (float)835.296217;
@@ -638,7 +626,6 @@ public:
     }
 
     void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
         node.setUInt("millis", millis);
         node.setDouble("ax_raw", ax_raw);
         node.setDouble("ay_raw", ay_raw);
@@ -667,7 +654,6 @@ public:
     }
 
     void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
         millis = node.getUInt("millis");
         ax_raw = node.getDouble("ax_raw");
         ay_raw = node.getDouble("ay_raw");
@@ -829,7 +815,6 @@ public:
 class airdata_v8_t {
 public:
 
-    uint8_t index;
     uint32_t millis;
     float baro_press_pa;
     float diff_press_pa;
@@ -848,7 +833,6 @@ public:
     // internal structure for packing
     #pragma pack(push, 1)
     struct _compact_t {
-        uint8_t index;
         uint32_t millis;
         uint16_t baro_press_pa;
         uint16_t diff_press_pa;
@@ -882,7 +866,6 @@ public:
         payload = (uint8_t *)REALLOC(payload, size);
         // copy values
         _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
         _buf->millis = millis;
         _buf->baro_press_pa = uintround(baro_press_pa * 0.5);
         _buf->diff_press_pa = uintround(diff_press_pa * 10.0);
@@ -903,7 +886,6 @@ public:
     bool unpack(uint8_t *external_message, int message_size) {
         _compact_t *_buf = (_compact_t *)external_message;
         len = sizeof(_compact_t);
-        index = _buf->index;
         millis = _buf->millis;
         baro_press_pa = _buf->baro_press_pa / (float)0.5;
         diff_press_pa = _buf->diff_press_pa / (float)10.0;
@@ -930,7 +912,6 @@ public:
     }
 
     void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
         node.setUInt("millis", millis);
         node.setDouble("baro_press_pa", baro_press_pa);
         node.setDouble("diff_press_pa", diff_press_pa);
@@ -956,7 +937,6 @@ public:
     }
 
     void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
         millis = node.getUInt("millis");
         baro_press_pa = node.getDouble("baro_press_pa");
         diff_press_pa = node.getDouble("diff_press_pa");
@@ -1169,7 +1149,6 @@ public:
 class nav_v6_t {
 public:
 
-    uint8_t index;
     uint32_t millis;
     int32_t latitude_raw;
     int32_t longitude_raw;
@@ -1186,7 +1165,6 @@ public:
     // internal structure for packing
     #pragma pack(push, 1)
     struct _compact_t {
-        uint8_t index;
         uint32_t millis;
         int32_t latitude_raw;
         int32_t longitude_raw;
@@ -1218,7 +1196,6 @@ public:
         payload = (uint8_t *)REALLOC(payload, size);
         // copy values
         _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
         _buf->millis = millis;
         _buf->latitude_raw = latitude_raw;
         _buf->longitude_raw = longitude_raw;
@@ -1237,7 +1214,6 @@ public:
     bool unpack(uint8_t *external_message, int message_size) {
         _compact_t *_buf = (_compact_t *)external_message;
         len = sizeof(_compact_t);
-        index = _buf->index;
         millis = _buf->millis;
         latitude_raw = _buf->latitude_raw;
         longitude_raw = _buf->longitude_raw;
@@ -1262,7 +1238,6 @@ public:
     }
 
     void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
         node.setUInt("millis", millis);
         node.setInt("latitude_raw", latitude_raw);
         node.setInt("longitude_raw", longitude_raw);
@@ -1286,7 +1261,6 @@ public:
     }
 
     void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
         millis = node.getUInt("millis");
         latitude_raw = node.getInt("latitude_raw");
         longitude_raw = node.getInt("longitude_raw");
@@ -1306,7 +1280,6 @@ public:
 class nav_metrics_v6_t {
 public:
 
-    uint8_t index;
     uint32_t metrics_millis;
     float p_bias;
     float q_bias;
@@ -1327,7 +1300,6 @@ public:
     // internal structure for packing
     #pragma pack(push, 1)
     struct _compact_t {
-        uint8_t index;
         uint32_t metrics_millis;
         int16_t p_bias;
         int16_t q_bias;
@@ -1363,7 +1335,6 @@ public:
         payload = (uint8_t *)REALLOC(payload, size);
         // copy values
         _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
         _buf->metrics_millis = metrics_millis;
         _buf->p_bias = intround(p_bias * 10000.0);
         _buf->q_bias = intround(q_bias * 10000.0);
@@ -1386,7 +1357,6 @@ public:
     bool unpack(uint8_t *external_message, int message_size) {
         _compact_t *_buf = (_compact_t *)external_message;
         len = sizeof(_compact_t);
-        index = _buf->index;
         metrics_millis = _buf->metrics_millis;
         p_bias = _buf->p_bias / (float)10000.0;
         q_bias = _buf->q_bias / (float)10000.0;
@@ -1415,7 +1385,6 @@ public:
     }
 
     void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
         node.setUInt("metrics_millis", metrics_millis);
         node.setDouble("p_bias", p_bias);
         node.setDouble("q_bias", q_bias);
@@ -1443,7 +1412,6 @@ public:
     }
 
     void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
         metrics_millis = node.getUInt("metrics_millis");
         p_bias = node.getDouble("p_bias");
         q_bias = node.getDouble("q_bias");
@@ -1463,143 +1431,16 @@ public:
     }
 };
 
-// Message: actuator_v3 (id: 37)
-class actuator_v3_t {
-public:
-
-    uint8_t index;
-    float timestamp_sec;
-    float aileron;
-    float elevator;
-    float throttle;
-    float rudder;
-    float channel5;
-    float flaps;
-    float channel7;
-    float channel8;
-    uint8_t status;
-
-    // internal structure for packing
-    #pragma pack(push, 1)
-    struct _compact_t {
-        uint8_t index;
-        float timestamp_sec;
-        int16_t aileron;
-        int16_t elevator;
-        uint16_t throttle;
-        int16_t rudder;
-        int16_t channel5;
-        int16_t flaps;
-        int16_t channel7;
-        int16_t channel8;
-        uint8_t status;
-    };
-    #pragma pack(pop)
-
-    // id, ptr to payload and len
-    static const uint8_t id = 37;
-    uint8_t *payload = nullptr;
-    int len = 0;
-
-    ~actuator_v3_t() {
-        free(payload);
-    }
-
-    bool pack() {
-        len = sizeof(_compact_t);
-        // compute dynamic packet size (if neede)
-        int size = len;
-        payload = (uint8_t *)REALLOC(payload, size);
-        // copy values
-        _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
-        _buf->timestamp_sec = timestamp_sec;
-        _buf->aileron = intround(aileron * 20000.0);
-        _buf->elevator = intround(elevator * 20000.0);
-        _buf->throttle = uintround(throttle * 60000.0);
-        _buf->rudder = intround(rudder * 20000.0);
-        _buf->channel5 = intround(channel5 * 20000.0);
-        _buf->flaps = intround(flaps * 20000.0);
-        _buf->channel7 = intround(channel7 * 20000.0);
-        _buf->channel8 = intround(channel8 * 20000.0);
-        _buf->status = status;
-        return true;
-    }
-
-    bool unpack(uint8_t *external_message, int message_size) {
-        _compact_t *_buf = (_compact_t *)external_message;
-        len = sizeof(_compact_t);
-        index = _buf->index;
-        timestamp_sec = _buf->timestamp_sec;
-        aileron = _buf->aileron / (float)20000.0;
-        elevator = _buf->elevator / (float)20000.0;
-        throttle = _buf->throttle / (float)60000.0;
-        rudder = _buf->rudder / (float)20000.0;
-        channel5 = _buf->channel5 / (float)20000.0;
-        flaps = _buf->flaps / (float)20000.0;
-        channel7 = _buf->channel7 / (float)20000.0;
-        channel8 = _buf->channel8 / (float)20000.0;
-        status = _buf->status;
-        return true;
-    }
-
-    void msg2props(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        msg2props(node);
-    }
-
-    void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
-        node.setDouble("timestamp_sec", timestamp_sec);
-        node.setDouble("aileron", aileron);
-        node.setDouble("elevator", elevator);
-        node.setDouble("throttle", throttle);
-        node.setDouble("rudder", rudder);
-        node.setDouble("channel5", channel5);
-        node.setDouble("flaps", flaps);
-        node.setDouble("channel7", channel7);
-        node.setDouble("channel8", channel8);
-        node.setUInt("status", status);
-    }
-
-    void props2msg(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        props2msg(node);
-    }
-
-    void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
-        timestamp_sec = node.getDouble("timestamp_sec");
-        aileron = node.getDouble("aileron");
-        elevator = node.getDouble("elevator");
-        throttle = node.getDouble("throttle");
-        rudder = node.getDouble("rudder");
-        channel5 = node.getDouble("channel5");
-        flaps = node.getDouble("flaps");
-        channel7 = node.getDouble("channel7");
-        channel8 = node.getDouble("channel8");
-        status = node.getUInt("status");
-    }
-};
-
 // Message: effectors_v1 (id: 61)
 class effectors_v1_t {
 public:
 
-    uint8_t index;
     uint32_t millis;
     float channel[8];
 
     // internal structure for packing
     #pragma pack(push, 1)
     struct _compact_t {
-        uint8_t index;
         uint32_t millis;
         int16_t channel[8];
     };
@@ -1621,7 +1462,6 @@ public:
         payload = (uint8_t *)REALLOC(payload, size);
         // copy values
         _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
         _buf->millis = millis;
         for (int _i=0; _i<8; _i++) _buf->channel[_i] = intround(channel[_i] * 20000.0);
         return true;
@@ -1630,7 +1470,6 @@ public:
     bool unpack(uint8_t *external_message, int message_size) {
         _compact_t *_buf = (_compact_t *)external_message;
         len = sizeof(_compact_t);
-        index = _buf->index;
         millis = _buf->millis;
         for (int _i=0; _i<8; _i++) channel[_i] = _buf->channel[_i] / (float)20000.0;
         return true;
@@ -1645,7 +1484,6 @@ public:
     }
 
     void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
         node.setUInt("millis", millis);
         for (int _i=0; _i<8; _i++) node.setDouble("channel", channel[_i], _i);
     }
@@ -1659,104 +1497,8 @@ public:
     }
 
     void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
         millis = node.getUInt("millis");
         for (int _i=0; _i<8; _i++) channel[_i] = node.getDouble("channel", _i);
-    }
-};
-
-// Message: pilot_v4 (id: 51)
-class pilot_v4_t {
-public:
-
-    uint8_t index;
-    uint32_t millis;
-    float channel[sbus_channels];
-    uint8_t failsafe;
-    uint8_t master_switch;
-    uint8_t throttle_safety;
-
-    // internal structure for packing
-    #pragma pack(push, 1)
-    struct _compact_t {
-        uint8_t index;
-        uint32_t millis;
-        int16_t channel[sbus_channels];
-        uint8_t failsafe;
-        uint8_t master_switch;
-        uint8_t throttle_safety;
-    };
-    #pragma pack(pop)
-
-    // id, ptr to payload and len
-    static const uint8_t id = 51;
-    uint8_t *payload = nullptr;
-    int len = 0;
-
-    ~pilot_v4_t() {
-        free(payload);
-    }
-
-    bool pack() {
-        len = sizeof(_compact_t);
-        // compute dynamic packet size (if neede)
-        int size = len;
-        payload = (uint8_t *)REALLOC(payload, size);
-        // copy values
-        _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
-        _buf->millis = millis;
-        for (int _i=0; _i<sbus_channels; _i++) _buf->channel[_i] = intround(channel[_i] * 20000.0);
-        _buf->failsafe = failsafe;
-        _buf->master_switch = master_switch;
-        _buf->throttle_safety = throttle_safety;
-        return true;
-    }
-
-    bool unpack(uint8_t *external_message, int message_size) {
-        _compact_t *_buf = (_compact_t *)external_message;
-        len = sizeof(_compact_t);
-        index = _buf->index;
-        millis = _buf->millis;
-        for (int _i=0; _i<sbus_channels; _i++) channel[_i] = _buf->channel[_i] / (float)20000.0;
-        failsafe = _buf->failsafe;
-        master_switch = _buf->master_switch;
-        throttle_safety = _buf->throttle_safety;
-        return true;
-    }
-
-    void msg2props(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        msg2props(node);
-    }
-
-    void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
-        node.setUInt("millis", millis);
-        for (int _i=0; _i<sbus_channels; _i++) node.setDouble("channel", channel[_i], _i);
-        node.setUInt("failsafe", failsafe);
-        node.setUInt("master_switch", master_switch);
-        node.setUInt("throttle_safety", throttle_safety);
-    }
-
-    void props2msg(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        props2msg(node);
-    }
-
-    void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
-        millis = node.getUInt("millis");
-        for (int _i=0; _i<sbus_channels; _i++) channel[_i] = node.getDouble("channel", _i);
-        failsafe = node.getUInt("failsafe");
-        master_switch = node.getUInt("master_switch");
-        throttle_safety = node.getUInt("throttle_safety");
     }
 };
 
@@ -1889,7 +1631,6 @@ public:
 class power_v1_t {
 public:
 
-    uint8_t index;
     uint32_t millis;
     float avionics_vcc;
     float main_vcc;
@@ -1900,7 +1641,6 @@ public:
     // internal structure for packing
     #pragma pack(push, 1)
     struct _compact_t {
-        uint8_t index;
         uint32_t millis;
         uint16_t avionics_vcc;
         uint16_t main_vcc;
@@ -1926,7 +1666,6 @@ public:
         payload = (uint8_t *)REALLOC(payload, size);
         // copy values
         _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
         _buf->millis = millis;
         _buf->avionics_vcc = uintround(avionics_vcc * 1000.0);
         _buf->main_vcc = uintround(main_vcc * 1000.0);
@@ -1939,7 +1678,6 @@ public:
     bool unpack(uint8_t *external_message, int message_size) {
         _compact_t *_buf = (_compact_t *)external_message;
         len = sizeof(_compact_t);
-        index = _buf->index;
         millis = _buf->millis;
         avionics_vcc = _buf->avionics_vcc / (float)1000.0;
         main_vcc = _buf->main_vcc / (float)1000.0;
@@ -1958,7 +1696,6 @@ public:
     }
 
     void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
         node.setUInt("millis", millis);
         node.setDouble("avionics_vcc", avionics_vcc);
         node.setDouble("main_vcc", main_vcc);
@@ -1976,7 +1713,6 @@ public:
     }
 
     void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
         millis = node.getUInt("millis");
         avionics_vcc = node.getDouble("avionics_vcc");
         main_vcc = node.getDouble("main_vcc");
@@ -2208,7 +1944,6 @@ public:
 class system_health_v6_t {
 public:
 
-    uint8_t index;
     float timestamp_sec;
     float system_load_avg;
     uint16_t fmu_timer_misses;
@@ -2221,7 +1956,6 @@ public:
     // internal structure for packing
     #pragma pack(push, 1)
     struct _compact_t {
-        uint8_t index;
         float timestamp_sec;
         uint16_t system_load_avg;
         uint16_t fmu_timer_misses;
@@ -2249,7 +1983,6 @@ public:
         payload = (uint8_t *)REALLOC(payload, size);
         // copy values
         _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
         _buf->timestamp_sec = timestamp_sec;
         _buf->system_load_avg = uintround(system_load_avg * 100.0);
         _buf->fmu_timer_misses = fmu_timer_misses;
@@ -2264,7 +1997,6 @@ public:
     bool unpack(uint8_t *external_message, int message_size) {
         _compact_t *_buf = (_compact_t *)external_message;
         len = sizeof(_compact_t);
-        index = _buf->index;
         timestamp_sec = _buf->timestamp_sec;
         system_load_avg = _buf->system_load_avg / (float)100.0;
         fmu_timer_misses = _buf->fmu_timer_misses;
@@ -2285,7 +2017,6 @@ public:
     }
 
     void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
         node.setDouble("timestamp_sec", timestamp_sec);
         node.setDouble("system_load_avg", system_load_avg);
         node.setUInt("fmu_timer_misses", fmu_timer_misses);
@@ -2305,7 +2036,6 @@ public:
     }
 
     void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
         timestamp_sec = node.getDouble("timestamp_sec");
         system_load_avg = node.getDouble("system_load_avg");
         fmu_timer_misses = node.getUInt("fmu_timer_misses");
@@ -2321,7 +2051,6 @@ public:
 class status_v7_t {
 public:
 
-    uint8_t index;
     uint32_t millis;
     uint16_t serial_number;
     uint16_t firmware_rev;
@@ -2334,7 +2063,6 @@ public:
     // internal structure for packing
     #pragma pack(push, 1)
     struct _compact_t {
-        uint8_t index;
         uint32_t millis;
         uint16_t serial_number;
         uint16_t firmware_rev;
@@ -2362,7 +2090,6 @@ public:
         payload = (uint8_t *)REALLOC(payload, size);
         // copy values
         _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
         _buf->millis = millis;
         _buf->serial_number = serial_number;
         _buf->firmware_rev = firmware_rev;
@@ -2377,7 +2104,6 @@ public:
     bool unpack(uint8_t *external_message, int message_size) {
         _compact_t *_buf = (_compact_t *)external_message;
         len = sizeof(_compact_t);
-        index = _buf->index;
         millis = _buf->millis;
         serial_number = _buf->serial_number;
         firmware_rev = _buf->firmware_rev;
@@ -2398,7 +2124,6 @@ public:
     }
 
     void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
         node.setUInt("millis", millis);
         node.setUInt("serial_number", serial_number);
         node.setUInt("firmware_rev", firmware_rev);
@@ -2418,7 +2143,6 @@ public:
     }
 
     void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
         millis = node.getUInt("millis");
         serial_number = node.getUInt("serial_number");
         firmware_rev = node.getUInt("firmware_rev");
