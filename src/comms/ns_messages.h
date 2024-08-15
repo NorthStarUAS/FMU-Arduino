@@ -1822,8 +1822,6 @@ class mission_v1_t {
 public:
 
     uint32_t millis;
-    uint8_t is_airborne;
-    float flight_timer;
     string task_name;
     uint16_t task_attribute;
     uint16_t route_size;
@@ -1836,8 +1834,6 @@ public:
     #pragma pack(push, 1)
     struct _compact_t {
         uint32_t millis;
-        uint8_t is_airborne;
-        uint16_t flight_timer;
         uint16_t task_name_len;
         uint16_t task_attribute;
         uint16_t route_size;
@@ -1866,8 +1862,6 @@ public:
         // copy values
         _compact_t *_buf = (_compact_t *)payload;
         _buf->millis = millis;
-        _buf->is_airborne = is_airborne;
-        _buf->flight_timer = uintround(flight_timer * 1.0);
         _buf->task_name_len = task_name.length();
         _buf->task_attribute = task_attribute;
         _buf->route_size = route_size;
@@ -1884,8 +1878,6 @@ public:
         _compact_t *_buf = (_compact_t *)external_message;
         len = sizeof(_compact_t);
         millis = _buf->millis;
-        is_airborne = _buf->is_airborne;
-        flight_timer = _buf->flight_timer / (float)1.0;
         task_attribute = _buf->task_attribute;
         route_size = _buf->route_size;
         target_waypoint_idx = _buf->target_waypoint_idx;
@@ -1907,8 +1899,6 @@ public:
 
     void msg2props(PropertyNode &node) {
         node.setUInt("millis", millis);
-        node.setUInt("is_airborne", is_airborne);
-        node.setDouble("flight_timer", flight_timer);
         node.setString("task_name", task_name);
         node.setUInt("task_attribute", task_attribute);
         node.setUInt("route_size", route_size);
@@ -1928,8 +1918,6 @@ public:
 
     void props2msg(PropertyNode &node) {
         millis = node.getUInt("millis");
-        is_airborne = node.getUInt("is_airborne");
-        flight_timer = node.getDouble("flight_timer");
         task_name = node.getString("task_name");
         task_attribute = node.getUInt("task_attribute");
         route_size = node.getUInt("route_size");
