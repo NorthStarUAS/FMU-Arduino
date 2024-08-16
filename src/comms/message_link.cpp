@@ -146,7 +146,6 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
         ns_message::mission_v1_t mission;
         mission.unpack(buf, message_size);
         if ( message_size == mission.len ) {
-            task_node.setDouble("flight_timer", mission.flight_timer);
             task_node.setString("current_task", mission.task_name);
             task_node.setInt("task_attribute", mission.task_attribute);
             route_node.setInt("target_waypoint_idx", mission.target_waypoint_idx);
@@ -352,8 +351,6 @@ int message_link_t::write_mission()
     // this is the messy message we need to assemble the old fashioned way
     ns_message::mission_v1_t mission_msg;
     mission_msg.millis = imu_node.getUInt("millis");
-    mission_msg.is_airborne = airdata_node.getBool("is_airborne");
-    mission_msg.flight_timer = airdata_node.getInt("flight_timer_millis") / 1000.0;
     mission_msg.task_name = mission_node.getString("task");
     mission_msg.task_attribute = 0; // fixme task attribute?
     // fixme: route stuff
@@ -366,10 +363,8 @@ int message_link_t::write_mission()
     // fixme other stuff
     // wp_lon = mission.wp_longitude_raw / 10000000.0
     // wp_lat = mission.wp_latitude_raw / 10000000.0
-    // wp_index = mission.wp_index
+    mission_msg.wp_index = route_counter;
     // route_size = mission.route_size
-    // status_node.setDouble("flight_timer", mission.flight_timer)
-    // status_node.setBool("onboard_flight_timer", True)
     // if route_size != active_node.getInt("route_size"):
     //     # route size change, zero all the waypoint coordinates
     //     for i in range(active_node.getInt("route_size")):
@@ -377,19 +372,31 @@ int message_link_t::write_mission()
     //         wp_node.setDouble("longitude_deg", 0)
     //         wp_node.setDouble("latitude_deg", 0)
     // route_node.setInt("target_waypoint_idx", mission.target_waypoint_idx)
-    // if wp_index < route_size:
-    //     wp_node = active_node.getChild('wpt/%d' % wp_index)
-    //     wp_node.setDouble("longitude_deg", wp_lon)
-    //     wp_node.setDouble("latitude_deg", wp_lat)
-    // elif wp_index == 65534:
-    //     circle_node.setDouble("longitude_deg", wp_lon)
-    //     circle_node.setDouble("latitude_deg", wp_lat)
-    //     circle_node.setDouble("radius_m", mission.task_attribute / 10.0)
-    // elif wp_index == 65535:
-    //     home_node.setDouble("longitude_deg", wp_lon)
-    //     home_node.setDouble("latitude_deg", wp_lat)
-    // task_node.setString("current_task", mission.task_name)
-
+    if ( route_counter < 0 /*fixme: route_size*/ ) {
+        // wp_node = active_node.getChild('wpt/%d' % wp_index)
+        // wp_node.setDouble("longitude_deg", wp_lon)
+        // wp_node.setDouble("latitude_deg", wp_lat)
+        mission_msg.wp_longitude_raw = 0; // fixme
+        mission_msg.wp_latitude_raw = 0;  // fixme
+        mission_msg.task_attribute = 0;   // fixme
+        route_counter++;
+    } else if ( route_counter >= 0 /*fixme: route_size - 1*/ and route_counter < 65534 ) {
+        // eat a null message if we get caught in this condition
+        mission_msg.wp_longitude_raw = 0;
+        mission_msg.wp_latitude_raw = 0;
+        mission_msg.task_attribute = 0;
+        route_counter = 65534;
+    } else if ( route_counter == 65534 ) {
+        mission_msg.wp_longitude_raw = circle_node.getDouble("longitude_deg") * 10000000;
+        mission_msg.wp_latitude_raw = circle_node.getDouble("latitude_deg") * 10000000;
+        mission_msg.task_attribute = circle_node.getDouble("radius_m");
+        route_counter = 65535;
+    } else if ( route_counter == 65535 ) {
+        mission_msg.wp_longitude_raw = home_node.getDouble("longitude_deg") * 10000000;
+        mission_msg.wp_latitude_raw = home_node.getDouble("latitude_deg") * 10000000;
+        mission_msg.task_attribute = home_node.getDouble("azimuth_deg");
+        route_counter = 0;
+    }
     mission_msg.pack();
     return serial.write_packet( mission_msg.id, mission_msg.payload, mission_msg.len );
 }
