@@ -390,6 +390,9 @@ int message_link_t::write_mission()
         mission_msg.wp_longitude_raw = circle_node.getDouble("longitude_deg") * 10000000;
         mission_msg.wp_latitude_raw = circle_node.getDouble("latitude_deg") * 10000000;
         mission_msg.task_attribute = circle_node.getDouble("radius_m");
+        if ( circle_node.getString("direction") == "right" ) {
+            mission_msg.task_attribute += 30000;
+        }
         route_counter = 65535;
     } else if ( route_counter == 65535 ) {
         mission_msg.wp_longitude_raw = home_node.getDouble("longitude_deg") * 10000000;
