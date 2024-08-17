@@ -42,7 +42,6 @@ void mission_mgr_t::process_command_request() {
             double lat_deg = gps_node.getDouble("latitude_deg");
             start_circle_task(lon_deg, lat_deg);
         }
-
     }
 }
 
