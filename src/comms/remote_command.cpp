@@ -1,15 +1,17 @@
 #include "../props2.h"
+#include "../mission/mission_mgr.h"
 #include "../nav/nav_mgr.h"
 #include "../sensors/sensor_mgr.h"
 #include "../util/strutils.h"
+#include "events.h"
 #include "remote_command.h"
 
 void execute_command(string command, SerialLink *serial) {
     uint8_t result = 0;
-        vector<string> tokens = split(command, " ", 3);
+    vector<string> tokens = split(command, " ", 3);
     // fixme: use tokens[0] rather than raw command string
     if ( command == "hb" ) {
-        result = 1;
+        result = 2;
     } else if ( command == "zero_gyros" ) {
         sensor_mgr->imu_mgr.gyros_calibrated = 0;   // start state
         result = 1;
@@ -77,9 +79,24 @@ void execute_command(string command, SerialLink *serial) {
                         node.setString(name.c_str(), tokens[2]);
                     }
                 }
+                result = 1;
             } else {
                 // not a valid property name
             }
+        }
+    } else if ( tokens[0] == "home" and tokens.size() >= 4 ) {
+        home_node.setDouble("longitude_deg", atof(tokens[1].c_str()));
+        home_node.setDouble("latitude_deg", atof(tokens[2].c_str()));
+        home_node.setDouble("azimuth_deg",atof(tokens[3].c_str()));
+        result = 1;
+    } else if ( tokens[0] == "task" and tokens.size() >= 2 ) {
+        if ( tokens[1] == "circle" and tokens.size() == 4 ) {
+            double lon_deg = atof(tokens[2].c_str());
+            double lat_deg = atof(tokens[3].c_str());
+            if ( mission_mgr != nullptr ) {
+                mission_mgr->start_circle_task(lon_deg, lat_deg);
+            }
+            result = 1;
         }
     } else {
         // printf("unknown message: %s, relaying to host\n", command.c_str());
@@ -87,6 +104,13 @@ void execute_command(string command, SerialLink *serial) {
         //     relay.forward_packet(relay_t::dest_enum::host_dest,
         //                             id, buf, message_size);
         // }
-        result = 1;
+    }
+
+    if ( result == 0 ) {
+        event_mgr->add_event("fail", command);
+    } else if ( result == 1 ) {
+        event_mgr->add_event("uas", command);
+    } else {
+        // success but don't report (like for hb command)
     }
 }
