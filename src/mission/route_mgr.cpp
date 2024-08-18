@@ -30,82 +30,99 @@ void route_mgr_t::init() {
     route_node.setString("follow_mode", "leader");
     route_node.setString("start_mode", "first_wpt");
     route_node.setString("completion_mode", "loop");
+
+    // make sure routes start empty
+    relative_route.clear();
+    abs_route_standby.clear();
+    abs_route_active.clear();
 }
 
-// build route from a property tree node
+// build relative route from a property tree (config) node
 bool route_mgr_t::build( PropertyNode config_route_node ) {
-    standby_route.clear();
+    relative_route.clear();
     for ( int i = 0; i < config_route_node.getLen("wpt"); i++ ) {
         string child_name = "wpt/" + std::to_string(i);
         PropertyNode child = config_route_node.getChild(child_name.c_str());
-        waypoint_t wp;
+        wp_rel_t wp;
         wp.build(child);
-        standby_route.push_back(wp);
+        relative_route.push_back(wp);
     }
-    printf("loaded %d waypoints.\n", standby_route.size());
+    printf("loaded %d waypoints.\n", relative_route.size());
     return true;
 }
 
 // build a route from a string request
 bool route_mgr_t::build_str( string request ) {
     vector<string> tokens = split(request, ",");
-    if ( tokens.size() < 4 ) {
+    if ( tokens.size() < 3 ) {
         return false;
     }
-    standby_route.clear();
+    abs_route_standby.clear();
     unsigned int i = 0;
     while ( i + 4 <= tokens.size() ) {
-        int mode = std::stoi(tokens[i]);
-        waypoint_t wp(mode, std::stod(tokens[i+1]), std::stod(tokens[i+2]));
-        standby_route.push_back(wp);
+        wp_abs_t wp(std::stod(tokens[i+1]), std::stod(tokens[i+2]));
+        abs_route_standby.push_back(wp);
         i += 4;
     }
-    printf("Loaded %d waypoints.\n", standby_route.size());
+    printf("Loaded %d waypoints.\n", abs_route_standby.size());
     return true;
 }
 
 // swap active and standby routes
 void route_mgr_t::swap() {
-    active_route.swap( standby_route );
+    abs_route_active.swap( abs_route_standby );
     current_wp = 0;             // make sure we start at beginning
 }
 
-waypoint_t route_mgr_t::get_current_wp() {
-    if ( current_wp >= 0 and current_wp < active_route.size() ) {
-        return active_route[current_wp];
+coord_t route_mgr_t::get_current_wp() {
+    if ( current_wp >= 0 and current_wp < get_active_size() ) {
+        if ( use_relative ) {
+            wp_rel_t wp = relative_route[current_wp];
+            return wp.as_coord();
+        } else {
+            wp_abs_t wp = abs_route_active[current_wp];
+            return wp.as_coord();
+        }
     } else {
-        return waypoint_t();
+        return coord_t();
     }
 }
 
-waypoint_t route_mgr_t::get_previous_wp() {
+coord_t route_mgr_t::get_previous_wp() {
     int prev = current_wp - 1;
     if ( prev < 0 ) {
-        prev = active_route.size() - 1;
+        prev = get_active_size() - 1;
     }
-    if ( prev >= 0 and prev < (int)active_route.size() ) {
-        return active_route[prev];
+    if ( prev >= 0 and prev < (int)get_active_size() ) {
+        if ( use_relative ) {
+            wp_rel_t wp = relative_route[prev];
+            return wp.as_coord();
+        } else {
+            wp_abs_t wp = abs_route_active[prev];
+            return wp.as_coord();
+        }
     } else {
-        return waypoint_t();
+        return coord_t();
     }
 }
 
 void route_mgr_t::increment_wp() {
-    if ( current_wp < active_route.size() - 1 ) {
+    if ( current_wp < abs_route_active.size() - 1 ) {
         current_wp += 1;
     } else {
         current_wp = 0;
     }
 }
 
-void route_mgr_t::set_wp( uint16_t i, waypoint_t wp ) {
-    if ( i < active_route.size() ) {
-        active_route[i] = wp;
-    }
-}
+// void route_mgr_t::set_wp( uint16_t i, waypoint_t wp ) {
+//     if ( i < active_route.size() ) {
+//         active_route[i] = wp;
+//     }
+// }
 
-// fixme: need a more representative method name
-void route_mgr_t::dribble( bool reset ) {
+// compute one route leg distance per call to spread out expensive
+// wgs84 math over multiple frames.
+void route_mgr_t::compute_leg_dist( bool reset ) {
     if ( reset ) {
         wp_counter = 0;
         dist_valid = false;
@@ -113,7 +130,7 @@ void route_mgr_t::dribble( bool reset ) {
 
     // compute one route leg distance per call to spread out expensive
     // wgs84 math over multiple frames.
-    int route_size = active_route.size();
+    unsigned int route_size = get_active_size();
     if ( route_size > 0 ) {
         if ( wp_counter >= route_size ) {
             wp_counter = 0;
@@ -121,15 +138,26 @@ void route_mgr_t::dribble( bool reset ) {
         }
         if ( wp_counter < route_size - 1 ) {
             // compute leg course and distance
-            waypoint_t wp = active_route[wp_counter];
-            waypoint_t next = active_route[wp_counter+1];
+            coord_t cur;
+            coord_t next;
+            if ( use_relative ) {
+                cur = relative_route[wp_counter].as_coord();
+                next = relative_route[wp_counter+1].as_coord();
+            } else {
+                cur = abs_route_active[wp_counter].as_coord();
+                next = abs_route_active[wp_counter+1].as_coord();
+            }
             double leg_course;
             double rev_course;
             double leg_dist;
-            geo_inverse_wgs_84( wp.lat_deg, wp.lon_deg,
+            geo_inverse_wgs_84( cur.lat_deg, cur.lon_deg,
                                 next.lat_deg, next.lon_deg,
                                 &leg_course, &rev_course, &leg_dist);
-            wp.leg_dist_m = leg_dist;
+            if ( use_relative ) {
+                relative_route[wp_counter].leg_dist_m = leg_dist;
+            } else {
+                abs_route_active[wp_counter].leg_dist_m = leg_dist;
+            }
         }
         wp_counter += 1;
     }
@@ -143,12 +171,10 @@ void route_mgr_t::reposition( bool force ) {
     if ( force or fabs(home_lon - last_lon) > 0.000001 or
          fabs(home_lat - last_lat) > 0.000001 or
          fabs(home_az - last_az) > 0.001 ) {
-        for ( unsigned int i = 0; i < active_route.size(); i++ ) {
-            waypoint_t wp = active_route[i];
-            if ( !wp.absolute ) {
-                wp.update_relative_pos(home_lon, home_lat, home_az);
-                printf("WPT: %.1f %.1f %.8f %.8f\n", wp.hdg_deg, wp.dist_m, wp.lat_deg, wp.lon_deg);
-            }
+        for ( unsigned int i = 0; i < relative_route.size(); i++ ) {
+            wp_rel_t wp = relative_route[i];
+            wp.update_relative_pos(home_lon, home_lat, home_az);
+            printf("WPT: %.1f %.1f %lu %lu\n", wp.hdg_deg, wp.dist_m, wp.latitude_raw, wp.longitude_raw);
         }
         if ( comms_node.getBool("display_on") ) {
             printf("ROUTE pattern updated: %.8f %.8f (course = %.1f)\n",
@@ -162,9 +188,13 @@ void route_mgr_t::reposition( bool force ) {
 
 float route_mgr_t::get_remaining_distance_from_next_waypoint() {
     float result = 0.0;
-    for ( unsigned int i = current_wp; i < active_route.size(); i++ ) {
-        waypoint_t wp = active_route[i];
-        result += wp.leg_dist_m;
+    unsigned int route_size = get_active_size();
+    for ( unsigned int i = current_wp; i < route_size; i++ ) {
+        if ( use_relative ) {
+           result += relative_route[i].leg_dist_m;
+        } else {
+            result += abs_route_active[i].leg_dist_m;
+        }
     }
     return result;
 }
@@ -236,7 +266,7 @@ void route_mgr_t::update() {
             swap();
             reposition(true);
             result = "success: " + request;
-            dribble(true);
+            compute_leg_dist(true);
         } else {
             result = "failed: " + request;
         }
@@ -244,8 +274,9 @@ void route_mgr_t::update() {
         route_node.setString("route_request", "");
     }
 
-    route_node.setInt("route_size", active_route.size());
-    if ( active_route.size() > 0 ) {
+    unsigned int route_size = get_active_size();
+    route_node.setInt("route_size", route_size);
+    if ( route_size > 0 ) {
         if ( gps_node.getDouble("data_age") < 10.0 ) {
             // track current waypoint of route (only!) if we have
             // recent gps data
@@ -261,7 +292,7 @@ void route_mgr_t::update() {
             // parameters instead!
             string start_mode = route_node.getString("start_mode");
             if ( start_mode == "first_leg" and current_wp == 0 ) {
-                if ( active_route.size() > 1 ) {
+                if ( route_size > 1 ) {
                     current_wp += 1;
                 } else {
                     route_node.setString("start_mode", "first_wpt");
@@ -276,8 +307,8 @@ void route_mgr_t::update() {
             float tas_kt = wind_node.getDouble("true_airspeed_kt");
             float tas_mps = tas_kt * kt2mps;
 
-            waypoint_t prev = get_previous_wp();
-            waypoint_t wp = get_current_wp();
+            coord_t prev = get_previous_wp();
+            coord_t wp = get_current_wp();
 
             // compute direct-to course and distance
             double pos_lon = nav_node.getDouble("longitude_deg");
@@ -425,7 +456,7 @@ void route_mgr_t::update() {
             } else if ( completion_mode == "circle_last_wpt" ) {
                 if ( wp_eta_sec < 1.0 ) {
                     acquired = true;
-                    if ( current_wp < active_route.size() - 1 ) {
+                    if ( current_wp < get_active_size() - 1u ) {
                         increment_wp();
                     } else {
                         wp = get_current_wp();
@@ -438,7 +469,7 @@ void route_mgr_t::update() {
             } else if ( completion_mode == "extend_last_leg" ) {
                 if ( wp_eta_sec < 1.0 ) {
                     acquired = true;
-                    if ( current_wp < active_route.size() - 1 ) {
+                    if ( current_wp < get_active_size() - 1u ) {
                         increment_wp();
                     } else {
                         // follow the last leg forever
@@ -464,8 +495,8 @@ void route_mgr_t::update() {
         // mission_mgr.start_circle_task()
     }
 
-    // dribble active route into property tree
-    dribble();
+    // compute leg distance for one segment (cycles independent of target waypoint)
+    compute_leg_dist();
 }
 
 // single global instance of route_mgr
