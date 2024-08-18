@@ -11,7 +11,9 @@ public:
 
     void init();
     bool build( PropertyNode config_route_node );
-    bool build_str( string request );
+    // bool build_str( string request );
+    void build_start();
+    void build_append(int32_t lon_raw, int32_t lat_raw);
     void swap();
     uint16_t get_active_size() {
         if ( use_relative ) {

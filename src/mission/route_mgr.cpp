@@ -1,6 +1,7 @@
 #include <math.h>
 
 #include "../nodes.h"
+#include "../comms/events.h"
 #include "../util/strutils.h"
 #include "../util/wgs84.h"
 #include "../util/windtri.h"
@@ -10,6 +11,7 @@
 static const double d2r = M_PI / 180.0;
 static const double r2d = 180.0 / M_PI;
 static const double kt2mps = 0.5144444444444444444;
+static const double mps2kt = 1.0 / kt2mps;
 static const double sqrt_of_2 = sqrt(2.0);
 static const double gravity = 9.81;                 // m/sec^2
 
@@ -52,25 +54,35 @@ bool route_mgr_t::build( PropertyNode config_route_node ) {
 }
 
 // build a route from a string request
-bool route_mgr_t::build_str( string request ) {
-    vector<string> tokens = split(request, ",");
-    if ( tokens.size() < 3 ) {
-        return false;
-    }
+// bool route_mgr_t::build_str( string request ) {
+//     vector<string> tokens = split(request, ",");
+//     if ( tokens.size() < 3 ) {
+//         return false;
+//     }
+//     abs_route_standby.clear();
+//     unsigned int i = 0;
+//     while ( i + 4 <= tokens.size() ) {
+//         wp_abs_t wp(std::stod(tokens[i+1]), std::stod(tokens[i+2]));
+//         abs_route_standby.push_back(wp);
+//         i += 4;
+//     }
+//     printf("Loaded %d waypoints.\n", abs_route_standby.size());
+//     return true;
+// }
+
+void route_mgr_t::build_start() {
     abs_route_standby.clear();
-    unsigned int i = 0;
-    while ( i + 4 <= tokens.size() ) {
-        wp_abs_t wp(std::stod(tokens[i+1]), std::stod(tokens[i+2]));
-        abs_route_standby.push_back(wp);
-        i += 4;
-    }
-    printf("Loaded %d waypoints.\n", abs_route_standby.size());
-    return true;
+}
+
+void route_mgr_t::build_append(int32_t lon_raw, int32_t lat_raw) {
+    wp_abs_t wp = wp_abs_t(lon_raw, lat_raw);
+    abs_route_standby.push_back(wp);
 }
 
 // swap active and standby routes
 void route_mgr_t::swap() {
     abs_route_active.swap( abs_route_standby );
+    use_relative = false;       // switching to absolute route waypoints mode
     current_wp = 0;             // make sure we start at beginning
 }
 
@@ -215,9 +227,9 @@ float route_mgr_t::get_remaining_distance_from_next_waypoint() {
 // about the relative heading error, so this function will produce the
 // "correct" heading error.
 float route_mgr_t::wind_heading_error( float current_crs_deg, float target_crs_deg ) {
-    float ws_kt = wind_node.getDouble("wind_speed_kt");
-    float tas_kt = wind_node.getDouble("true_airspeed_kt");
-    float wd_deg = wind_node.getDouble("wind_dir_deg");
+    float ws_kt = airdata_node.getDouble("wind_speed_mps") * mps2kt;
+    float tas_kt = airdata_node.getDouble("true_airspeed_mps") * mps2kt;
+    float wd_deg = airdata_node.getDouble("wind_dir_deg");
     float est_cur_hdg_deg = 0.0;
     float gs1_kt = 0.0;
     float est_nav_hdg_deg = 0.0;
@@ -259,37 +271,35 @@ float route_mgr_t::wind_heading_error( float current_crs_deg, float target_crs_d
 void route_mgr_t::update() {
     reposition();  // check if home has changed and reposition if needed
 
-    string request = route_node.getString("route_request");
-    if ( request.length() ) {
-        string result = "";
-        if ( build_str(request) ) {
-            swap();
-            reposition(true);
-            result = "success: " + request;
-            compute_leg_dist(true);
-        } else {
-            result = "failed: " + request;
-        }
-        route_node.setString("request_result", result.c_str());
-        route_node.setString("route_request", "");
-    }
+    // string request = route_node.getString("route_request");
+    // if ( request.length() ) {
+    //     string result = "";
+    //     if ( build_str(request) ) {
+    //         swap();
+    //         reposition(true);
+    //         result = "success: " + request;
+    //         compute_leg_dist(true);
+    //     } else {
+    //         result = "failed: " + request;
+    //     }
+    //     route_node.setString("request_result", result.c_str());
+    //     route_node.setString("route_request", "");
+    // }
 
     unsigned int route_size = get_active_size();
     route_node.setInt("route_size", route_size);
     if ( route_size > 0 ) {
         if ( gps_node.getDouble("data_age") < 10.0 ) {
-            // track current waypoint of route (only!) if we have
-            // recent gps data
+            // track current waypoint of route, (only!) if we have recent gps
+            // data
 
-            // route start up logic: if start_mode == first_wpt
-            // then there is nothing to do, we simply continue to
-            // track wpt 0 if that is the current waypoint.  If
-            // start_mode == "first_leg", then if we are tracking
-            // wpt 0, increment it so we track the 2nd waypoint
-            // along the first leg.  If only a 1 point route is
-            // given along with first_leg startup behavior, then
-            // don't do that again, force some sort of sane route
-            // parameters instead!
+            // route start up logic: if start_mode == first_wpt then there is
+            // nothing to do, we simply continue to track wpt 0 if that is the
+            // current waypoint.  If start_mode == "first_leg", then if we are
+            // tracking wpt 0, increment it so we track the 2nd waypoint along
+            // the first leg.  If only a 1 point route is given along with
+            // first_leg startup behavior, then don't do that again, force some
+            // sort of sane route parameters instead!
             string start_mode = route_node.getString("start_mode");
             if ( start_mode == "first_leg" and current_wp == 0 ) {
                 if ( route_size > 1 ) {
@@ -304,11 +314,11 @@ void route_mgr_t::update() {
             float L1_damping = config_L1_node.getDouble("damping");
             float gs_mps = nav_node.getDouble("groundspeed_mps");
             float groundtrack_deg = nav_node.getDouble("groundtrack_deg");
-            float tas_kt = wind_node.getDouble("true_airspeed_kt");
-            float tas_mps = tas_kt * kt2mps;
+            float tas_mps = airdata_node.getDouble("true_airspeed_mps");
 
             coord_t prev = get_previous_wp();
             coord_t wp = get_current_wp();
+            // event_mgr->add_event("rte", std::to_string((int)(prev.lon_deg*100)) + " " + std::to_string((int)(prev.lat_deg*100)) + " " + std::to_string((int)(wp.lon_deg*100)) + " " + std::to_string((int)(wp.lat_deg*100)));
 
             // compute direct-to course and distance
             double pos_lon = nav_node.getDouble("longitude_deg");
@@ -318,6 +328,7 @@ void route_mgr_t::update() {
             double direct_dist = 0.0;
             geo_inverse_wgs_84( pos_lat, pos_lon, wp.lat_deg, wp.lon_deg,
                                 &direct_course, &rev_course, &direct_dist );
+
             //print pos_lat, pos_lon, ":", wp.lat_deg, wp.lon_deg
             //print " course to:", direct_course, "dist:", direct_dist
 
