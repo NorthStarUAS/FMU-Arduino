@@ -8,23 +8,22 @@
 
 int execute_command(string command, SerialLink *serial) {
     uint8_t result = 0;
-    vector<string> tokens = split(command, " ", 3);
+    vector<string> tokens = split(command, " ");
     // fixme: use tokens[0] rather than raw command string
-    if ( command == "hb" ) {
+    if ( tokens[0] == "hb" && tokens.size() == 1 ) {
         result = 2;
-    } else if ( command == "zero_gyros" ) {
+    } else if ( tokens[0] == "zero_gyros" && tokens.size() == 1 ) {
         sensor_mgr->imu_mgr.gyros_calibrated = 0;   // start state
         result = 1;
-    } else if ( command == "reset_ekf" ) {
+    } else if ( tokens[0] == "reset_ekf" && tokens.size() == 1 ) {
         nav_mgr->reinit();
         result = 1;
-    } else if ( command.substr(0, 4) == "get " ) {
-        string path = command.substr(4);
-        // printf("command: get  node: %s\n", path.c_str());
-        PropertyNode node(path);
+    } else if ( tokens[0] == "get" and tokens.size() == 2 ) {
+        // printf("command: get  node: %s\n", tokens[1].c_str());
+        PropertyNode node(tokens[1]);
         ns_message::command_v1_t reply;
         reply.sequence_num = 0;
-        reply.message = "set " + path + " " + node.get_json_string();
+        reply.message = std::string("set ") + tokens[1] + " " + node.get_json_string();
         reply.pack();
         serial->write_packet( reply.id, reply.payload, reply.len);
         result = 1;
@@ -90,6 +89,28 @@ int execute_command(string command, SerialLink *serial) {
         home_node.setDouble("azimuth_deg",atof(tokens[3].c_str()));
         home_node.setBool("valid", true);
         result = 1;
+    } else if ( tokens[0] == "route" and tokens.size() >=2 ) {
+        if ( (tokens[1] == "start") or (tokens[1] == "cont") and tokens.size() >= 4 ) {
+            if ( tokens[1] == "start" ) {
+                // event_mgr->add_event("route start", std::to_string(tokens.size()));
+                mission_mgr->route_mgr.build_start();
+            }
+            unsigned int i = 2;
+            while ( i <= tokens.size() - 2 ) {
+                // event_mgr->add_event("route add i", std::to_string(i));
+                int32_t lon_raw = atoi(tokens[i].c_str());
+                int32_t lat_raw = atoi(tokens[i+1].c_str());
+                mission_mgr->route_mgr.build_append(lon_raw, lat_raw);
+                i += 2;
+            }
+            result = 1;
+        } else if ( tokens[1] == "end" ) {
+            mission_mgr->route_mgr.swap();                  // make standby route active
+            event_mgr->add_event("route recv", std::to_string(mission_mgr->route_mgr.get_active_size()));
+            mission_mgr->route_mgr.compute_leg_dist(true);  // start leg distance calculating from the beginning
+            mission_mgr->start_route_task();                // activate the route task
+            result = 1;
+        }
     } else if ( tokens[0] == "task" and tokens.size() >= 2 ) {
         if ( tokens[1] == "circle" and tokens.size() == 4 ) {
             double lon_deg = atof(tokens[2].c_str());
