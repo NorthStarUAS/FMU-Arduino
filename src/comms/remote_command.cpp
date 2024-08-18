@@ -6,7 +6,7 @@
 #include "events.h"
 #include "remote_command.h"
 
-void execute_command(string command, SerialLink *serial) {
+int execute_command(string command, SerialLink *serial) {
     uint8_t result = 0;
     vector<string> tokens = split(command, " ", 3);
     // fixme: use tokens[0] rather than raw command string
@@ -114,4 +114,5 @@ void execute_command(string command, SerialLink *serial) {
     } else {
         // success but don't report (like for hb command)
     }
+    return result;
 }

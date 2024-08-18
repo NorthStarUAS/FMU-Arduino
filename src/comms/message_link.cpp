@@ -124,7 +124,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
         uint8_t command_result = 0;
         if ( last_command_seq_num != msg.sequence_num ) {
             last_command_seq_num = msg.sequence_num;
-            execute_command(msg.message, &serial);
+            command_result = execute_command(msg.message, &serial);
         } else {
             printf("ignoring duplicate command\n");
             command_result = 1;
@@ -312,6 +312,7 @@ int message_link_t::write_nav()
 {
     ns_message::nav_v6_t nav_msg;
     nav_msg.props2msg(nav_node);
+    nav_msg.sequence_num = last_command_seq_num;
     nav_msg.pack();
     return serial.write_packet( nav_msg.id, nav_msg.payload, nav_msg.len );
 }
