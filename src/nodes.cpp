@@ -79,9 +79,9 @@ void PropertyNodes_init() {
     // Mission and Tasks
     mission_node = PropertyNode("/mission");
     circle_node = PropertyNode("/task/circle");
-    home_node = PropertyNode("/task/home");
+    home_node = PropertyNode("/mission/home");
     route_node = PropertyNode("/task/route");
-    startup_node = PropertyNode("/task/startup");
+    startup_node = PropertyNode("/mission/startup");
     task_node = PropertyNode("/task");
 
     // Performance / debug
