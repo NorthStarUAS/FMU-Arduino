@@ -11,8 +11,8 @@ public:
 
     float dist_m = 0.0;
     float hdg_deg = 0.0;
-    uint32_t longitude_raw;
-    uint32_t latitude_raw;
+    int32_t longitude_raw;
+    int32_t latitude_raw;
     float leg_dist_m = 0.0;
 
     wp_rel_t() {}
@@ -37,12 +37,12 @@ class wp_abs_t {
 
 public:
 
-    uint32_t longitude_raw;
-    uint32_t latitude_raw;
+    int32_t longitude_raw;
+    int32_t latitude_raw;
     float leg_dist_m = 0.0;
 
     wp_abs_t() {}
-    wp_abs_t( uint32_t lon_raw, uint32_t lat_raw ) {
+    wp_abs_t( int32_t lon_raw, int32_t lat_raw ) {
         longitude_raw = lon_raw;
         latitude_raw = lat_raw;
     }
