@@ -143,35 +143,35 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
         //                          id, buf, message_size);
         // }
         // this is the messy message
-        ns_message::mission_v1_t mission;
-        mission.unpack(buf, message_size);
-        if ( message_size == mission.len ) {
-            task_node.setString("current_task", mission.task_name);
-            task_node.setInt("task_attribute", mission.task_attribute);
-            route_node.setInt("target_waypoint_idx", mission.target_waypoint_idx);
-            double wp_lon = mission.wp_longitude_raw / 10000000.0l;
-            double wp_lat = mission.wp_latitude_raw / 10000000.0l;
-            int wp_index = mission.wp_index;
-            PropertyNode wp_node;
-            if ( mission.route_size != route_mgr.get_active_size() ) {
-                // route size change, zero all the waypoint coordinates
-                route_mgr.set_active_size( mission.route_size );
-                for ( int i = 0; i < mission.route_size; i++ ) {
-                    route_mgr.set_wp( i, waypoint_t() );
-                }
-            }
-            if ( wp_index < mission.route_size ) {
-                route_mgr.set_wp( wp_index, waypoint_t(1, wp_lon, wp_lat) );
-            } else if ( wp_index == 65534 ) {
-                circle_node.setDouble("longitude_deg", wp_lon);
-                circle_node.setDouble("latitude_deg", wp_lat);
-                circle_node.setDouble("radius_m", mission.task_attribute / 10.0);
-            } else if ( wp_index == 65535 ) {
-                home_node.setDouble("longitude_deg", wp_lon);
-                home_node.setDouble("latitude_deg", wp_lat);
-            }
-            result = true;
-        }
+        // ns_message::mission_v1_t mission;
+        // mission.unpack(buf, message_size);
+        // if ( message_size == mission.len ) {
+        //     task_node.setString("current_task", mission.task_name);
+        //     task_node.setInt("task_attribute", mission.task_attribute);
+        //     route_node.setInt("target_waypoint_idx", mission.target_waypoint_idx);
+        //     double wp_lon = mission.wp_longitude_raw / 10000000.0l;
+        //     double wp_lat = mission.wp_latitude_raw / 10000000.0l;
+        //     int wp_index = mission.wp_index;
+        //     PropertyNode wp_node;
+        //     if ( mission.route_size != route_mgr.get_active_size() ) {
+        //         // route size change, zero all the waypoint coordinates
+        //         route_mgr.set_active_size( mission.route_size );
+        //         for ( int i = 0; i < mission.route_size; i++ ) {
+        //             route_mgr.set_wp( i, waypoint_t() );
+        //         }
+        //     }
+        //     if ( wp_index < mission.route_size ) {
+        //         route_mgr.set_wp( wp_index, waypoint_t(1, wp_lon, wp_lat) );
+        //     } else if ( wp_index == 65534 ) {
+        //         circle_node.setDouble("longitude_deg", wp_lon);
+        //         circle_node.setDouble("latitude_deg", wp_lat);
+        //         circle_node.setDouble("radius_m", mission.task_attribute / 10.0);
+        //     } else if ( wp_index == 65535 ) {
+        //         home_node.setDouble("longitude_deg", wp_lon);
+        //         home_node.setDouble("latitude_deg", wp_lat);
+        //     }
+        //     result = true;
+        // }
     } else if ( id == ns_message::airdata_v8_id ) {
         if ( status_node.getBool("HIL_mode") ) {
             ns_message::airdata_v8_t msg;
@@ -395,9 +395,15 @@ int message_link_t::write_mission()
         }
         route_counter = 65535;
     } else if ( route_counter == 65535 ) {
-        mission_msg.wp_longitude_raw = home_node.getDouble("longitude_deg") * 10000000;
-        mission_msg.wp_latitude_raw = home_node.getDouble("latitude_deg") * 10000000;
-        mission_msg.task_attribute = home_node.getDouble("azimuth_deg");
+        if ( home_node.getBool("valid") ) {
+            mission_msg.wp_longitude_raw = home_node.getDouble("longitude_deg") * 10000000;
+            mission_msg.wp_latitude_raw = home_node.getDouble("latitude_deg") * 10000000;
+            mission_msg.task_attribute = home_node.getDouble("azimuth_deg");
+        } else {
+            mission_msg.wp_longitude_raw = 0;
+            mission_msg.wp_latitude_raw = 0;
+            mission_msg.task_attribute = 0;
+        }
         route_counter = 0;
     }
     mission_msg.pack();
