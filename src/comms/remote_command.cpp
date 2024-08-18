@@ -88,6 +88,7 @@ void execute_command(string command, SerialLink *serial) {
         home_node.setDouble("longitude_deg", atof(tokens[1].c_str()));
         home_node.setDouble("latitude_deg", atof(tokens[2].c_str()));
         home_node.setDouble("azimuth_deg",atof(tokens[3].c_str()));
+        home_node.setBool("valid", true);
         result = 1;
     } else if ( tokens[0] == "task" and tokens.size() >= 2 ) {
         if ( tokens[1] == "circle" and tokens.size() == 4 ) {
