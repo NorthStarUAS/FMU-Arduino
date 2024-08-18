@@ -86,6 +86,20 @@ void route_mgr_t::swap() {
     current_wp = 0;             // make sure we start at beginning
 }
 
+coord_t route_mgr_t::get_wp(unsigned int i) {
+    if ( i >= 0 and i < get_active_size() ) {
+        if ( use_relative ) {
+            wp_rel_t wp = relative_route[i];
+            return wp.as_coord();
+        } else {
+            wp_abs_t wp = abs_route_active[i];
+            return wp.as_coord();
+        }
+    } else {
+        return coord_t();
+    }
+}
+
 coord_t route_mgr_t::get_current_wp() {
     if ( current_wp >= 0 and current_wp < get_active_size() ) {
         if ( use_relative ) {

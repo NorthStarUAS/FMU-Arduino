@@ -23,6 +23,7 @@ public:
         }
     }
     // void set_active_size( uint16_t n ) { active_route.resize(n); }
+    coord_t get_wp(unsigned int i);
     coord_t get_current_wp();
     coord_t get_previous_wp();
     void increment_wp();
