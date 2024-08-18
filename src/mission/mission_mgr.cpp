@@ -3,6 +3,7 @@
 
 #include "tasks/circle.h"
 #include "tasks/idle.h"
+#include "tasks/route.h"
 #include "mission_mgr.h"
 
 void mission_mgr_t::init() {
@@ -73,6 +74,17 @@ void mission_mgr_t::start_circle_task(double lon_deg, double lat_deg) {
         // create and activate task
         circle_task_t *circle = new circle_task_t(circle_node);
         new_task(circle);
+    }
+}
+
+void mission_mgr_t::start_route_task() {
+    // sanity check, are we already running the requested task
+    if ( current_task != nullptr and current_task->name == "route" ) {
+        event_mgr->add_event("mission", "route already active");
+    } else {
+        // create and activate task
+        route_task_t *route = new route_task_t(circle_node);
+        new_task(route);
     }
 }
 
