@@ -10,7 +10,7 @@
 
 #include "../nodes.h"
 
-#include "../mission/route_mgr.h"
+#include "../mission/mission_mgr.h"
 #include "../nav/nav_mgr.h"                // reset ekf
 #include "../nav/nav_constants.h"
 #include "../sensors/sensor_mgr.h"            // reset gyros
@@ -354,34 +354,20 @@ int message_link_t::write_mission()
     mission_msg.millis = imu_node.getUInt("millis");
     mission_msg.task_name = mission_node.getString("task");
     mission_msg.task_attribute = 0; // fixme task attribute?
-    // fixme: route stuff
-    mission_msg.route_size = 0;
-    mission_msg.target_waypoint_idx = 0;
-    mission_msg.wp_index = 0;
-    mission_msg.wp_longitude_raw = 0;
-    mission_msg.wp_latitude_raw = 0;
+    unsigned int route_size = route_node.getUInt("route_size");
+    mission_msg.route_size = route_size;
+    mission_msg.target_waypoint_idx = route_node.getUInt("target_waypoint_idx");;
 
-    // fixme other stuff
-    // wp_lon = mission.wp_longitude_raw / 10000000.0
-    // wp_lat = mission.wp_latitude_raw / 10000000.0
     mission_msg.wp_index = route_counter;
-    // route_size = mission.route_size
-    // if route_size != active_node.getInt("route_size"):
-    //     # route size change, zero all the waypoint coordinates
-    //     for i in range(active_node.getInt("route_size")):
-    //         wp_node = active_node.getChild('wpt/%d' % i)
-    //         wp_node.setDouble("longitude_deg", 0)
-    //         wp_node.setDouble("latitude_deg", 0)
-    // route_node.setInt("target_waypoint_idx", mission.target_waypoint_idx)
-    if ( route_counter < 0 /*fixme: route_size*/ ) {
-        // wp_node = active_node.getChild('wpt/%d' % wp_index)
-        // wp_node.setDouble("longitude_deg", wp_lon)
-        // wp_node.setDouble("latitude_deg", wp_lat)
-        mission_msg.wp_longitude_raw = 0; // fixme
-        mission_msg.wp_latitude_raw = 0;  // fixme
-        mission_msg.task_attribute = 0;   // fixme
+    if ( route_counter < route_size ) {
+        // it is unfortnate that get_wp converts from raw to deg and we have to
+        // convert back to raw for the message.
+        coord_t coord = mission_mgr->route_mgr.get_wp(route_counter);
+        mission_msg.wp_longitude_raw = coord.lon_deg * 10000000;
+        mission_msg.wp_latitude_raw = coord.lat_deg * 10000000;
+        mission_msg.task_attribute = 0;
         route_counter++;
-    } else if ( route_counter >= 0 /*fixme: route_size - 1*/ and route_counter < 65534 ) {
+    } else if ( route_counter >= route_size and route_counter < 65534 ) {
         // eat a null message if we get caught in this condition
         mission_msg.wp_longitude_raw = 0;
         mission_msg.wp_latitude_raw = 0;
