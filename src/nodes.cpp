@@ -61,9 +61,6 @@ void PropertyNodes_init() {
     // INS/GNSS
     nav_node = PropertyNode("/filters/nav");
 
-    // State
-    wind_node = PropertyNode("/filters/wind");
-
     // Status and Comms
     comms_node = PropertyNode("/comms");
     status_node = PropertyNode("/status");

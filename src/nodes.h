@@ -55,9 +55,6 @@ extern PropertyNode rcin_node;
 // INS/GNSS
 extern PropertyNode nav_node;
 
-// State
-extern PropertyNode wind_node;
-
 // Status and Comms
 extern PropertyNode comms_node;
 extern PropertyNode status_node;
