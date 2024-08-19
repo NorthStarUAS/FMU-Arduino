@@ -1,8 +1,10 @@
+#pragma once
+
+#include "../util/constants.h"
+
 class airdata_helper_t {
 
 private:
-
-    const double kt2mps = 0.5144444444444444444;
 
     // is airborne
     float up_mps = 6.0;

@@ -1,14 +1,12 @@
 #include <math.h>
 
 #include "../nodes.h"
+#include "../util/constants.h"
 #include "../util/wgs84.h"
 
 #include "circle_mgr.h"
 
-static const double d2r = M_PI / 180.0;
-static const double r2d = 180.0 / M_PI;
 static const double sqrt_of_2 = sqrt(2.0);
-static const double gravity = 9.81;         // m/sec^2
 
 void circle_mgr_t::init() {
     // sanity check, set some conservative values if none are provided
@@ -133,7 +131,7 @@ void circle_mgr_t::update() {
     // distance from center.
     float total_accel = accel + turn_accel;
 
-    float target_bank = -atan( total_accel / gravity );
+    float target_bank = -atan( total_accel / g );
     float target_bank_deg = target_bank * r2d + bank_bias_deg;
 
     float bank_limit_deg = config_L1_node.getDouble("bank_limit_deg");

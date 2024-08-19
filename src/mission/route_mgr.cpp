@@ -2,18 +2,14 @@
 
 #include "../nodes.h"
 #include "../comms/events.h"
+#include "../util/constants.h"
 #include "../util/strutils.h"
 #include "../util/wgs84.h"
 #include "../util/windtri.h"
 
 #include "route_mgr.h"
 
-static const double d2r = M_PI / 180.0;
-static const double r2d = 180.0 / M_PI;
-static const double kt2mps = 0.5144444444444444444;
-static const double mps2kt = 1.0 / kt2mps;
 static const double sqrt_of_2 = sqrt(2.0);
-static const double gravity = 9.81;                 // m/sec^2
 
 void route_mgr_t::init() {
     // sanity check, set some conservative values if none are
@@ -452,7 +448,7 @@ void route_mgr_t::update() {
             // target bank angle computed here
             float accel = 2.0 * sin(hdg_error * d2r) * VomegaA;
 
-            float target_bank_deg = -atan(accel / gravity)*r2d + bank_bias_deg;
+            float target_bank_deg = -atan(accel / g)*r2d + bank_bias_deg;
 
             float bank_limit_deg = config_L1_node.getDouble("bank_limit_deg");
             if ( target_bank_deg < -bank_limit_deg + bank_bias_deg ) {

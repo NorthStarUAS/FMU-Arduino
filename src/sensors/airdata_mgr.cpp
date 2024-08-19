@@ -4,6 +4,7 @@
 
 #include "../../setup_board.h"
 #include "../nodes.h"
+#include "../util/constants.h"
 
 #include "airdata_mgr.h"
 
@@ -24,8 +25,6 @@ static MS4525DO ms45_pitot;
 
 #include "MS5525DO/MS5525DO.h"
 static MS5525DO ms55_pitot;
-
-static const float mps2kts = 1.9438444924406046432;
 
 void airdata_mgr_t::init() {
     config_airdata_node = PropertyNode("/config/airdata");
@@ -158,7 +157,7 @@ void airdata_mgr_t::compute_airspeed() {
     }
     float Pa = fabs(pitot_butter); // allow inverted plumbing and prevent negative differential pressures.
     float airspeed_mps = sqrt( 2*Pa / 1.225 ) * pitot_cal;
-    float airspeed_kt = airspeed_mps * mps2kts;
+    float airspeed_kt = airspeed_mps * mps2kt;
     airdata_node.setDouble( "airspeed_mps", airspeed_mps );
     airdata_node.setDouble( "airspeed_kt", airspeed_kt );
 }

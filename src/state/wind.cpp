@@ -1,6 +1,7 @@
 #include <math.h>
 
 #include "../nodes.h"
+#include "../util/constants.h"
 
 #include "wind.h"
 
@@ -19,9 +20,6 @@ void wind_est_t::init() {
 // velocity vector, only produces valid estimates for fixed wing in
 // flight.)
 void wind_est_t::update( double dt ) {
-    const double d2r = M_PI / 180.0; // degrees to radians
-    const double r2d = 180.0 / M_PI; // radians to degrees
-
     double airspeed_mps = airdata_node.getDouble("airspeed_mps");
     double pitot_scale = pitot_scale_filt.get_value();
 

@@ -2,10 +2,9 @@
 
 #include "../nodes.h"
 #include "../util/affine.h"
+#include "../util/constants.h"
 
 #include "calib_accels.h"
-
-const float g = 9.81;
 
 int calib_accels_t::raw_up_axis( float ax, float ay, float az ) {
     const float thresh = g * 0.85;

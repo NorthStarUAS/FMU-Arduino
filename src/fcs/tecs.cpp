@@ -31,14 +31,11 @@
 // those limits to be exceeded.
 
 #include "../nodes.h"
+#include "../util/constants.h"
 
 #include "tecs.h"
 
 static bool tecs_inited = false;
-
-static const float g = 9.81;
-static const double F2M = 0.3048;
-static const double KT2MPS = 0.5144444444444444444;
 
 static void init_tecs() {
     // quick sanity check
@@ -74,8 +71,8 @@ void update_tecs() {
     tecs_node.setDouble("energy_kin", energy_kin);
 
     // Target energy
-    double target_alt_m = refs_node.getDouble("altitude_agl_ft") * F2M;
-    double target_vel_mps = refs_node.getDouble("airspeed_kt") * KT2MPS;
+    double target_alt_m = refs_node.getDouble("altitude_agl_ft") * ft2m;
+    double target_vel_mps = refs_node.getDouble("airspeed_kt") * kt2mps;
     double target_pot = mass_kg * g * target_alt_m;
     double target_kin = 0.5 * mass_kg * target_vel_mps * target_vel_mps;
     double target_total = target_pot + target_kin;
@@ -93,12 +90,12 @@ void update_tecs() {
     // operational speed range)
     double min_kt = config_tecs_node.getDouble("min_kt");
     if ( min_kt < 15 ) { min_kt = 15;}
-    double min_mps = min_kt * KT2MPS;
+    double min_mps = min_kt * kt2mps;
     double min_kinetic = 0.5 * mass_kg * min_mps * min_mps;
 
     double max_kt = config_tecs_node.getDouble("max_kt");
     if ( max_kt < 15 ) { max_kt = 2 * min_kt; }
-    double max_mps = max_kt * KT2MPS;
+    double max_mps = max_kt * kt2mps;
     double max_kinetic = 0.5 * mass_kg * max_mps * max_mps;
 
     // Set min & max kinetic energy errors allowed (prevents us from

@@ -5,11 +5,10 @@
 #include <math.h>
 
 #include "../nodes.h"
+#include "../util/constants.h"
 #include "../util/wgs84.h"
 
 #include "home_mgr.h"
-
-static const double d2r = M_PI / 180.0; // fixme: we should start a constants.h / conversions.h
 
 void home_mgr_t::init() {
     home_node.setBool("valid", false);

@@ -1,10 +1,10 @@
 #include <math.h>
 
+#include "../util/constants.h"
+
 #include "windtri.h"
 
-static const double d2r = M_PI / 180.0;
-static const double r2d = 180.0 / M_PI;
-static const double m2pi = M_PI * 2.0;
+static const float m2pi = M_PI * 2.0;
 
 // Given a wind speed estimate, true airspeed estimate, wind direction
 // estimate, and a desired course to fly, then compute a true heading to
