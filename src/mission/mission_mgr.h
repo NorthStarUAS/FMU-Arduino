@@ -1,3 +1,5 @@
+#pragma once
+
 #include "circle_mgr.h"
 #include "home_mgr.h"
 #include "route_mgr.h"

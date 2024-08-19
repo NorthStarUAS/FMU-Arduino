@@ -36,6 +36,8 @@
 // usage) to creating new property nodes on the fly, so consider trying to
 // structure your code so that allocations are only in the init() function.
 
+#pragma once
+
 #include "props2.h"
 
 // Configuration

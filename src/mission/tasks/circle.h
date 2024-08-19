@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../../props2.h"
 #include "task.h"
 

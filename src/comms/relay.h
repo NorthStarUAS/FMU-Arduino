@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../../setup_board.h"
 
 #include "serial_link.h"

@@ -1,3 +1,5 @@
+#pragma once
+
 class circle_mgr_t {
 
 public:

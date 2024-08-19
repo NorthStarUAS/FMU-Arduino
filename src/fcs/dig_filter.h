@@ -27,7 +27,6 @@ using std::deque;
 
 #include "component.h"
 
-
 /**
  * AuraDigitalFilter - a selection of digital filters
  *

@@ -1,3 +1,5 @@
+#pragma once
+
 class home_mgr_t {
 
 public:

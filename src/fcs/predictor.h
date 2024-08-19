@@ -24,7 +24,6 @@ using std::string;
 
 #include "component.h"
 
-
 class AuraPredictor : public APComponent {
 
 private:
@@ -40,7 +39,7 @@ private:
 
     // Input values
     double ivalue;                 // input value
-    
+
 public:
 
     AuraPredictor( string config_path );

@@ -24,7 +24,6 @@ using std::string;
 
 #include "component.h"
 
-
 class AuraSummer : public APComponent {
 
 private:
