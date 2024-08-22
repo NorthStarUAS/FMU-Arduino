@@ -33,11 +33,11 @@ class LostLink(Task):
     def activate(self):
         self.active = True
         comms.events.log("comms", "lost link monitor started")
-    
+
     def update(self, dt):
         if not self.active:
             return
-        
+
         # FIXME: this needs to be fleshed out a *lot* more in the future
         # with more flexible options.  FIXME: what about a sensible
         # fallback in case we can't find the push_task or other desired
@@ -47,7 +47,7 @@ class LostLink(Task):
         if last_message_sec < 0.00001:
             # likely zero, likely never received a message from GCS yet
             return
-        
+
         current_time = self.status_node.getDouble("frame_time")
         message_age = current_time - last_message_sec
         # print "update lost link task, msg age = %.1f timeout=%.1f" % \
@@ -76,11 +76,11 @@ class LostLink(Task):
 
                 # Note: don't take any action when/if link resumes
                 # (simply continue with circle home task). Operator
-                # decision/action required to for next steps.
+                # decision/action required for next steps.
 
     def is_complete(self):
         return False
-    
+
     def close(self):
         self.active = False
         return True
