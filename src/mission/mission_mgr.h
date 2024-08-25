@@ -20,6 +20,7 @@ public:
     void process_command_request();
     void new_task(task_t *task);
     void start_circle_task(double lon_deg, double lat_deg);
+    void start_launch_task();
     void start_route_task();
     void start_idle_task();
 };
