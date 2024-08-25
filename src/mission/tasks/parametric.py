@@ -72,12 +72,12 @@ class Parametric(Task):
         self.pos_node = PropertyNode("/position")
         self.home_node = PropertyNode("/task/home")
         self.circle_node = PropertyNode("/task/circle/active")
-        self.targets_node = PropertyNode("/autopilot/targets")
+        self.targets_node = PropertyNode("/fcs/refs")
         self.nav_node = PropertyNode("/navigation")
-        self.tecs_node = PropertyNode("/config/autopilot/TECS")
+        self.tecs_node = PropertyNode("/config/fcs/TECS")
 
         self.t = 0.0
-        
+
         self.name = config_node.getString("name")
         self.function = self.rose
         if config_node.getString("function") == "simple":
@@ -98,7 +98,7 @@ class Parametric(Task):
         self.max_kt = self.tecs_node.getDouble("max_kt")
         if config_node.hasChild("max_kt"):
             self.max_kt = config_node.getDouble("max_kt")
-            
+
         # estimate a dt that roughly approximates 1 meter (doesn't
         # have to be perfect)
         loop_t = math.pi * 2
@@ -166,7 +166,7 @@ class Parametric(Task):
         (x2, y2) = self.function(t2)
         dx = x2 - x1; dy = y2 - y1
         return math.pi*0.5 - math.atan2(dy, dx)
-    
+
     # return an estimate of the radius of curvature at point t
     def curvature_at_t(self, t, step):
         t1 = t - step
@@ -175,7 +175,7 @@ class Parametric(Task):
         p2 = self.function(t)
         p3 = self.function(t2)
         return define_circle(p1, p2, p3)
-    
+
     def find_next_t(self, x, y, initial_guess):
         t = initial_guess
         d = self.distance_t2xy(t, x, y)
@@ -193,12 +193,12 @@ class Parametric(Task):
 
         # save existing state
         mission.task.state.save(modes=True, circle=True, targets=True)
-        
+
         # set modes
         fcsmode.set("basic+tecs")
         self.nav_node.setString("mode", "circle")
         comms.events.log("mission", "parametric path")
-    
+
     def update(self, dt):
         if not self.active:
             return False
@@ -240,10 +240,10 @@ class Parametric(Task):
             if airspeed_kt < self.min_kt:
                 airspeed_kt = self.min_kt
             self.targets_node.setDouble("airspeed_kt", airspeed_kt)
-            
+
     def is_complete(self):
         return False
-    
+
     def close(self):
         # restore the previous state
         mission.task.state.restore()
