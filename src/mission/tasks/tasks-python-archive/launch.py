@@ -24,7 +24,7 @@ class Launch(Task):
         self.flight_node = PropertyNode("/controls/flight")
         self.engine_node = PropertyNode("/controls/engine")
 
-        self.complete_agl_ft = 150.0
+        self.completion_agl_ft = 150.0
         self.mission_agl_ft = 300.0
         self.target_speed_mps = 15 # FIXME: update config file too!
         self.roll_gain = 0.5
@@ -152,7 +152,7 @@ class Launch(Task):
         self.last_ap_master = self.switches_node.getBool("master_switch")
 
     def is_complete(self):
-        if self.airdata_node.getDouble("altitude_agl_m") * m2ft >= self.complete_agl_ft:
+        if self.airdata_node.getDouble("altitude_agl_m") * m2ft >= self.completion_agl_ft:
             # raise flaps
             self.flight_node.setDouble("flaps_setpoint", 0.0)
 
