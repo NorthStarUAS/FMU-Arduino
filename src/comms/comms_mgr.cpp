@@ -10,10 +10,6 @@
 
 void comms_mgr_t::init() {
     PropertyNode config_comms_node = PropertyNode("/config/comms");
-    const char *file_path = "comms.json";
-    if ( !config_comms_node.load(file_path) ) {
-        printf("Comms config file loading failed: %s\n", file_path);
-    }
 
     heartbeat = RateLimiter(0.1);
 

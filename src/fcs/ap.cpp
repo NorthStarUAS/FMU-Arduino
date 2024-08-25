@@ -57,13 +57,13 @@ void AutoPilot::reset() {
 
 
 bool AutoPilot::build() {
-    PropertyNode config_node("/config/autopilot");
+    PropertyNode config_node("/config/fcs");
     for ( int i = 0; i < config_node.getLen("component"); i++ ) {
         printf("Number of components: %d (i: %d)\n", config_node.getLen("component"), i);
         string child_name = "component/" + std::to_string(i);
 	    PropertyNode component = config_node.getChild(child_name.c_str());
         printf("ap stage: %s\n", child_name.c_str());
-        string config_path = "/config/autopilot/" + child_name;
+        string config_path = "/config/fcs/" + child_name; // fixme: can we just pass the node, not the name here?
         string module = component.getString("module");
         if ( module == "pid" ) {
             APComponent *c = new AuraPID( config_path );

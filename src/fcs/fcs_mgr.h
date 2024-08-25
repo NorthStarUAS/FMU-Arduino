@@ -18,7 +18,7 @@ public:
 private:
 
     AutoPilot ap;
-    effectors_t eff;
+    effectors_t effectors;
     bool last_master_switch = false;
 
 };

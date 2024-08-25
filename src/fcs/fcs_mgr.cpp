@@ -1,4 +1,4 @@
-// control_mgr.cpp - high level control/autopilot interface
+// control_mgr.cpp - high level flight control system interface
 //
 // Written by Curtis Olson, started January 2006.
 //
@@ -27,13 +27,15 @@
 #include "fcs_mgr.h"
 
 void fcs_mgr_t::init() {
-    // initialize and build the autopilot controller from the property
-    // tree config (/config/autopilot)
+    PropertyNode config_fcs_node = PropertyNode("/config/fcs");
+
+    // initialize and build the flight controller from the property
+    // tree config (/config/fcs)
     ap.init();
-    eff.init();
+    effectors.init();
     set_mode("basic");
 
-    printf("Autopilot initialized\n");
+    printf("FCS initialized\n");
 }
 
 // send a reset signal to all ap modules that support it.  This gives each
@@ -72,9 +74,9 @@ void fcs_mgr_t::update(float dt) {
     // copy pilot inputs to flight control outputs when not in
     // autopilot mode
     if ( !master_switch ) {
-        eff.write(inceptors_node);
+        effectors.write(inceptors_node);
     } else {
-        eff.write(outputs_node);
+        effectors.write(outputs_node);
     }
 }
 

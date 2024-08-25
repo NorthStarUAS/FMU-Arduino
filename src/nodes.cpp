@@ -46,8 +46,8 @@ PropertyNode profile_node;
 void PropertyNodes_init() {
     // Configuration
     config_node = PropertyNode("/config");
-    config_L1_node = PropertyNode("/config/autopilot/L1_controller");
-    config_tecs_node = PropertyNode("/config/autopilot/TECS");
+    config_L1_node = PropertyNode("/config/fcs/L1_controller");
+    config_tecs_node = PropertyNode("/config/fcs/TECS");
     imu_calib_node = PropertyNode("/config/imu/calibration");
 
     // Sensors

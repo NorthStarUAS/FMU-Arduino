@@ -10,16 +10,19 @@
         "cruise_kt": "40",
         "display_units": "kts"
     },
-    "autopilot": {
-        "include": "autopilot.json"
-    },
     "airdata": {
         "pitot_calibrate_factor": 1.0
+    },
+    "comms": {
+        "include": "comms.json"
     },
     "imu": {
         "calibration": {
             "include": "imu-calibration.json"
         }
+    },
+    "fcs": {
+        "include": "fcs.json"
     },
     "nav": {
         "include": "nav.json"
