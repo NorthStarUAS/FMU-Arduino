@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "../props2.h"
 #include "../util/ratelimiter.h"
 
 #include "console.h"
@@ -20,8 +19,6 @@ private:
     RateLimiter heartbeat;
     uint32_t tempTimer;  // fixme use elapsedmillis?
     uint32_t counter;
-
-    PropertyNode config_comms_node;
 
 public:
 

@@ -1,15 +1,21 @@
 #include <Arduino.h>
 
 #include "../nodes.h"
+#include "../props2.h"
 #include "info.h"
 #include "comms_mgr.h"
 
+// fixme: move lost link detection over to here!  The lost link task should just
+// respond to the link state, not determine it.
+
 void comms_mgr_t::init() {
-    config_comms_node = PropertyNode("/config/comms");
+    PropertyNode config_comms_node = PropertyNode("/config/comms");
+    const char *file_path = "comms.json";
+    if ( !config_comms_node.load(file_path) ) {
+        printf("Comms config file loading failed: %s\n", file_path);
+    }
 
     heartbeat = RateLimiter(0.1);
-    // tempTimer = millis(); // fixme use ellapsedmillis?
-    // counter = 0;
 
     if ( config_comms_node.hasChild("gcs") ) {
         PropertyNode gcs_node = config_comms_node.getChild("gcs");
