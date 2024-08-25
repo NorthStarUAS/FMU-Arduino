@@ -1,0 +1,7 @@
+{
+    "gcs": {
+        "port": 2,
+        "baud": 57600,
+        "link_timeout_sec": 30
+    }
+}
