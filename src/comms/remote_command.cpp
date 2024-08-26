@@ -108,10 +108,10 @@ int execute_command(string command, SerialLink *serial) {
             mission_mgr->route_mgr.swap();                  // make standby route active
             event_mgr->add_event("route recv", std::to_string(mission_mgr->route_mgr.get_active_size()));
             mission_mgr->route_mgr.compute_leg_dist(true);  // start leg distance calculating from the beginning
-            mission_mgr->start_route_task();                // activate the route task
             result = 1;
         }
     } else if ( tokens[0] == "task" and tokens.size() >= 2 ) {
+        // fixme: handle all these through "mission_node.request"
         if ( tokens[1] == "circle" and tokens.size() == 4 ) {
             double lon_deg = atof(tokens[2].c_str());
             double lat_deg = atof(tokens[3].c_str());
@@ -119,7 +119,18 @@ int execute_command(string command, SerialLink *serial) {
                 mission_mgr->start_circle_task(lon_deg, lat_deg);
             }
             result = 1;
+        } else if ( tokens[1] == "launch" ) {
+            if ( mission_mgr != nullptr ) {
+                mission_mgr->start_launch_task();
+            }
+            result = 1;
+        } else if ( tokens[1] == "route" ) {
+            if ( mission_mgr != nullptr ) {
+                mission_mgr->start_route_task();
+            }
+            result = 1;
         }
+
     } else {
         // printf("unknown message: %s, relaying to host\n", command.c_str());
         // if ( relay_id == "gcs" ) {
