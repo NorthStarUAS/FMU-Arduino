@@ -46,11 +46,6 @@ static void init_tecs() {
         config_tecs_node.setDouble("weight_bal", 1.0);
     }
     tecs_inited = true;
-
-    // fixme: we don't want hard coded refs!
-    refs_node.setDouble("altitude_agl_ft", 2000);
-    refs_node.setDouble("airspeed_kt", 120);
-
 }
 
 // compute various energy metrics and errors
