@@ -18,11 +18,12 @@ void mission_mgr_t::update(float dt) {
     // global tasks
     home_mgr.update();
 
+    process_command_request();
+
     // sanity check create default task if nothing active
     if ( current_task == nullptr ) {
         start_idle_task();
     }
-    process_command_request();
 
     // update the current task
     current_task->update(dt);
@@ -33,11 +34,20 @@ void mission_mgr_t::update(float dt) {
     } else if (mission_node.getString("mode") == "route" ) {
         route_mgr.update();
     }
+
+    if ( current_task->is_complete() ) {
+        current_task->close();
+        delete current_task;
+        current_task = nullptr;
+    }
 }
 
 void mission_mgr_t::process_command_request() {
     string command = mission_node.getString("request");
     mission_node.setString("request", "");
+    if ( command.length() ) {
+        event_mgr->add_event("mission request", command);
+    }
     if ( command == "circle_here" ) {
         if ( gps_node.getInt("status") == 3 ) {
             double lon_deg = gps_node.getDouble("longitude_deg");
@@ -78,14 +88,24 @@ void mission_mgr_t::start_circle_task(double lon_deg, double lat_deg) {
     }
 }
 
+void mission_mgr_t::start_idle_task() {
+    if ( current_task != nullptr and current_task->name == "idle" ) {
+        // sanity check, are we already running the requested task
+    } else {
+        // create and activate task
+        idle_task_t *task = new idle_task_t(PropertyNode());
+        new_task(task);
+    }
+}
+
 void mission_mgr_t::start_launch_task() {
     // sanity check, are we already running the requested task
     if ( current_task != nullptr and current_task->name == "launch" ) {
         event_mgr->add_event("mission", current_task->name + " already active");
     } else {
         // create and activate task
-        // fixme config! launch_task_t *launch = new launch_task_t(config_launch_node);
-        // fixme! new_task(launch);
+        launch_task_t *launch = new launch_task_t();
+        new_task(launch);
     }
 }
 
@@ -97,16 +117,6 @@ void mission_mgr_t::start_route_task() {
         // create and activate task
         route_task_t *route = new route_task_t(circle_node);
         new_task(route);
-    }
-}
-
-void mission_mgr_t::start_idle_task() {
-    if ( current_task != nullptr and current_task->name == "idle" ) {
-        // sanity check, are we already running the requested task
-    } else {
-        // create and activate task
-        idle_task_t *task = new idle_task_t(PropertyNode());
-        new_task(task);
     }
 }
 

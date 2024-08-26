@@ -7,7 +7,7 @@ class launch_task_t : public task_t {
 
 public:
 
-    launch_task_t( PropertyNode config_node );
+    launch_task_t();
     ~launch_task_t() {}
 
     void activate();

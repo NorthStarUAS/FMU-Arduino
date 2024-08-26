@@ -6,9 +6,10 @@ using std::string;
 #include "../../util/constants.h"
 #include "launch.h"
 
-launch_task_t::launch_task_t(PropertyNode config_node) {
+launch_task_t::launch_task_t() {
     name = "launch";
 
+    PropertyNode config_node = PropertyNode("/config/mission/launch");
     if ( config_node.hasChild("completion_agl_ft") ) {
         completion_agl_ft = config_node.getDouble("completion_agl_ft");
     }
@@ -163,6 +164,7 @@ bool launch_task_t::is_complete() {
             if ( rudder_enable ) {
                 outputs_node.setDouble("yaw", 0.0);
             }
+            mission_node.setString("request", "circle_here");
             return true;
         } else {
             return false;
