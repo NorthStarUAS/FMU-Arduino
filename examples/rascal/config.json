@@ -24,6 +24,9 @@
     "fcs": {
         "include": "fcs.json"
     },
+    "mission": {
+        "include": "mission.json"
+    },
     "nav": {
         "include": "nav.json"
     },
