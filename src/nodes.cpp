@@ -36,6 +36,7 @@ PropertyNode effectors_node;
 PropertyNode mission_node;
 PropertyNode circle_node;
 PropertyNode home_node;
+PropertyNode land_node;
 PropertyNode route_node;
 PropertyNode startup_node;
 PropertyNode task_node;
@@ -77,6 +78,7 @@ void PropertyNodes_init() {
     mission_node = PropertyNode("/mission");
     circle_node = PropertyNode("/mission/circle");
     home_node = PropertyNode("/mission/home");
+    land_node = PropertyNode("/mission/land");
     route_node = PropertyNode("/mission/route");
     startup_node = PropertyNode("/mission/startup");
     task_node = PropertyNode("/task");

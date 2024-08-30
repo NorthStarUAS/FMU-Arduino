@@ -73,6 +73,7 @@ extern PropertyNode effectors_node;
 extern PropertyNode mission_node;
 extern PropertyNode circle_node;
 extern PropertyNode home_node;
+extern PropertyNode land_node;
 extern PropertyNode route_node;
 extern PropertyNode startup_node;
 extern PropertyNode task_node;
