@@ -5,7 +5,7 @@ using std::string;
 #include "../../fcs/fcs_mgr.h"
 #include "idle.h"
 
-idle_task_t::idle_task_t(PropertyNode config_node) {
+idle_task_t::idle_task_t() {
     name = "idle";
 }
 

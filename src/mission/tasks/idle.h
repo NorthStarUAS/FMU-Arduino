@@ -7,7 +7,7 @@ class idle_task_t : public task_t {
 
 public:
 
-    idle_task_t( PropertyNode config_node );
+    idle_task_t();
     ~idle_task_t() {}
 
     void activate();
