@@ -19,7 +19,7 @@
     "flare_seconds": 5.0,
     "glideslope_deg": 3.0,
     "lateral_offset_m": 0.0,
-    "turn_radius_m": 75
+    "circle_radius_m": 75
   },
 
   "task": [

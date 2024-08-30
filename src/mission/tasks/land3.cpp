@@ -34,7 +34,7 @@ void land_task_t::activate() {
     // approach from earlier in the flight) approach_mgr.restart() // FIXME
     circle_capture = false;
     gs_capture = false;
-    flare = false;
+    in_flare = false;
 }
 
 void land_task_t::build_approach(PropertyNode config_node) {
@@ -46,25 +46,23 @@ void land_task_t::build_approach(PropertyNode config_node) {
     // this task.
 
     // fetch config parameters
-    turn_radius_m = config_node.getDouble("turn_radius_m");
-    if ( turn_radius_m < 50.0 ) {
-        turn_radius_m = 50.0;
+    circle_radius_m = config_node.getDouble("circle_radius_m");
+    if ( circle_radius_m < 50.0 ) {
+        circle_radius_m = 50.0;
     }
     float extend_final_leg_m = config_node.getDouble("extend_final_leg_m");
     float lateral_offset_m = config_node.getDouble("lateral_offset_m");
     string dir = config_node.getString("direction");
-    float side = -1.0;
     if ( dir == "left" ) {
         side = -1.0;
     } else if ( dir == "right" ) {
         side = 1.0;
     }
-    float final_heading_deg = home_node.getDouble("azimuth_deg");
+    final_heading_deg = home_node.getDouble("azimuth_deg");
     float glideslope_deg = config_node.getDouble("glideslope_deg");
     if ( glideslope_deg < 3.0 ) {
         glideslope_deg = 3.0;
     }
-    glideslope_rad = glideslope_deg * d2r;
     alt_base_agl_ft = config_node.getDouble("alt_base_agl_ft");
     flare_pitch_deg = config_node.getDouble("flare_pitch_deg");
     flare_seconds = config_node.getDouble("flare_seconds");
@@ -75,18 +73,18 @@ void land_task_t::build_approach(PropertyNode config_node) {
     // final leg length: compute horizontal distance to 175' at the
     // configured glideslope angle
     float min_alt = 175;
-    float tan_gs = tan(glideslope_rad);
+    tan_gs = tan(glideslope_deg*d2r);
     if ( tan_gs > 0 ) {
         float hdist_m = (min_alt / tan_gs) * ft2m;
         // printf("hdist_m: %.1f\n", hdist_m);
-        float half_circle_m = turn_radius_m * M_PI;
+        float half_circle_m = circle_radius_m * M_PI;
         // printf("half_circle_m: %.1f\n", half_circle_m);
         final_leg_m = hdist_m - half_circle_m + extend_final_leg_m;
         if ( final_leg_m < 50 ) {
             final_leg_m = 50;
         }
     } else {
-        final_leg_m = 4.0 * turn_radius_m + extend_final_leg_m;
+        final_leg_m = 4.0 * circle_radius_m + extend_final_leg_m;
     }
     printf("final_leg_m: %.1f\n", final_leg_m);
 
@@ -108,13 +106,13 @@ void land_task_t::build_approach(PropertyNode config_node) {
     // circle center (reuse hdg, az2)
     hdg = fmod(final_heading_deg + side * 90, 360);
     double cc_lat, cc_lon;
-    geo_direct_wgs_84( tan_lat, tan_lon, hdg, turn_radius_m, &cc_lat, &cc_lon, &az2);
+    geo_direct_wgs_84( tan_lat, tan_lon, hdg, circle_radius_m, &cc_lat, &cc_lon, &az2);
 
     // configure circle task
     circle_node.setDouble("latitude_deg", cc_lat);
     circle_node.setDouble("longitude_deg", cc_lon);
     circle_node.setString("direction", dir);
-    circle_node.setDouble("radius_m", turn_radius_m);
+    circle_node.setDouble("radius_m", circle_radius_m);
 
     // create and request approach route
     mission_mgr->route_mgr.build_start();
@@ -144,8 +142,8 @@ void land_task_t::update(float dt) {
     float alt_bias_ft = alt_base_agl_ft - inceptors_node.getDouble("pitch") * 25.0;
 
     // compute minimum 'safe' altitude
-    float safe_dist_m = M_PI * turn_radius_m + final_leg_m;
-    float safe_alt_ft = safe_dist_m * tan(glideslope_rad) * m2ft + alt_bias_ft;
+    float safe_dist_m = M_PI * circle_radius_m + final_leg_m;
+    float safe_alt_ft = safe_dist_m * tan_gs * m2ft + alt_bias_ft;
 
     float circle_pos = 0.0;
     string mode = mission_node.getString("mode");
@@ -160,7 +158,7 @@ void land_task_t::update(float dt) {
         geo_inverse_wgs_84( center_lat, center_lon, pos_lat, pos_lon, &course_deg, &rev_deg, &cur_dist_m);
         // test for circle capture
         if ( !circle_capture ) {
-            float fraction = abs(cur_dist_m / turn_radius_m);
+            float fraction = abs(cur_dist_m / circle_radius_m);
             // printf("heading to circle: %.1f %.1f", err, fraction);
             if ( fraction > 0.80 and fraction < 1.20 ) {
                 // within 20% of target circle radius, call the circle capture
@@ -185,8 +183,8 @@ void land_task_t::update(float dt) {
         }
         // distance to edge of circle + remaining circumference of circle +
         // final approach leg
-        dist_rem_m = (cur_dist_m - turn_radius_m) + angle_rem_rad * turn_radius_m + final_leg_m;
-        // printf("circle: %.1f %.1f %.1f %.1f", dist_rem_m, turn_radius_m, final_leg_m, cur_dist_m);
+        dist_rem_m = (cur_dist_m - circle_radius_m) + angle_rem_rad * circle_radius_m + final_leg_m;
+        // printf("circle: %.1f %.1f %.1f %.1f", dist_rem_m, circle_radius_m, final_leg_m, cur_dist_m);
         if ( circle_capture and gs_capture ) {
             // we are on the circle and on the glide slope, lets look for our
             // lateral exit point
@@ -203,7 +201,7 @@ void land_task_t::update(float dt) {
     }
 
     // compute glideslope/target elevation
-    float alt_m = dist_rem_m * tan(glideslope_rad);
+    float alt_m = dist_rem_m * tan_gs;
     // printf(" %s dist = %.1f alt = %.1f\n", mode, dist_rem_m, alt_m);
 
     // Compute target altitude.
@@ -255,14 +253,14 @@ void land_task_t::update(float dt) {
     }
     // printf()"dist_rem_m = %.1f gs = %.1f secs = %.1f", dist_rem_m, ground_speed_ms, seconds_to_touchdown);
 
-    if ( seconds_to_touchdown <= flare_seconds and not flare ) {
+    if ( seconds_to_touchdown <= flare_seconds and not in_flare ) {
         // within x seconds of touchdown horizontally.  Note these are padded
         // numbers because we don't know the truth exactly ... we could easily
         // be closer or lower or further or higher.  Our flare strategy is to
         // smoothly pull throttle to idle, while smoothly pitching to the target
         // flare pitch (as configured in the task definition.)
         event_mgr->add_event("land", "start flare");
-        flare = true;
+        in_flare = true;
         flare_start_time = imu_node.getUInt("millis") / 1000.0;
         approach_power = outputs_node.getDouble("power");
         approach_pitch = refs_node.getDouble("pitch_deg");
@@ -270,7 +268,7 @@ void land_task_t::update(float dt) {
         fcs_mgr->set_mode("basic");
     }
 
-    if ( flare ) {
+    if ( in_flare ) {
         float elapsed = imu_node.getUInt("millis") / 1000.0 - flare_start_time;
         float percent = elapsed / flare_seconds;  // earlier we forced flare_seconds to be at least 1.0 so this is a safe divide
         if ( percent > 1.0 ) {
