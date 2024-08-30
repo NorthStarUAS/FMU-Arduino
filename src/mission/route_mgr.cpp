@@ -183,6 +183,7 @@ void route_mgr_t::compute_leg_dist( bool reset ) {
         }
         wp_counter += 1;
     }
+    route_node.setBool("dist_valid", dist_valid);
 }
 
 void route_mgr_t::reposition( bool force ) {
@@ -519,6 +520,3 @@ void route_mgr_t::update() {
     // compute leg distance for one segment (cycles independent of target waypoint)
     compute_leg_dist();
 }
-
-// single global instance of route_mgr
-route_mgr_t route_mgr;

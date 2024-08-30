@@ -52,5 +52,3 @@ private:
     uint16_t wp_counter = 0;    // for dribble to gcs
     bool dist_valid = false;
 };
-
-extern route_mgr_t route_mgr;
