@@ -124,6 +124,11 @@ int execute_command(string command, SerialLink *serial) {
                 mission_mgr->start_launch_task();
             }
             result = 1;
+        } else if ( tokens[1] == "land" ) {
+            if ( mission_mgr != nullptr ) {
+                mission_mgr->start_land_task();
+            }
+            result = 1;
         } else if ( tokens[1] == "route" ) {
             if ( mission_mgr != nullptr ) {
                 mission_mgr->start_route_task();
