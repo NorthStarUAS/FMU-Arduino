@@ -82,7 +82,7 @@ void launch_task_t::update(float dt) {
             // reset states when engaging AP mode
             relhdg = 0.0;
             control_limit = 1.0;
-            outputs_node.setDouble("flaps_setpoint", flaps);
+            refs_node.setDouble("flaps_setpoint", flaps);
             power = 0.0;
         }
         if ( !is_airborne ) {
@@ -156,20 +156,17 @@ bool launch_task_t::is_complete() {
     if ( !active ) {
         // not active == complete
         return true;
-    } else {
-        if ( airdata_node.getDouble("altitude_agl_m") * m2ft >= completion_agl_ft ) {
-            outputs_node.setDouble("flaps_setpoint", 0.0);  // raise flaps
-            // in case we get to the completion altitude before we've feathered
-            // the rudder input, let's center the rudder.
-            if ( rudder_enable ) {
-                outputs_node.setDouble("yaw", 0.0);
-            }
-            mission_node.setString("request", "circle_here");
-            return true;
-        } else {
-            return false;
+    } else if ( airdata_node.getDouble("altitude_agl_m") * m2ft >= completion_agl_ft ) {
+        refs_node.setDouble("flaps_setpoint", 0.0);  // raise flaps
+        // in case we get to the completion altitude before we've feathered
+        // the rudder input, let's center the rudder.
+        if ( rudder_enable ) {
+            outputs_node.setDouble("yaw", 0.0);
         }
+        mission_node.setString("request", "circle_here");
+        return true;
     }
+    return false;
 }
 
 void launch_task_t::close() {
