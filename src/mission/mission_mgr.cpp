@@ -4,6 +4,7 @@
 #include "tasks/circle.h"
 #include "tasks/idle.h"
 #include "tasks/launch.h"
+#include "tasks/land3.h"
 #include "tasks/route.h"
 #include "mission_mgr.h"
 
@@ -93,7 +94,7 @@ void mission_mgr_t::start_idle_task() {
         // sanity check, are we already running the requested task
     } else {
         // create and activate task
-        idle_task_t *task = new idle_task_t(PropertyNode());
+        idle_task_t *task = new idle_task_t();
         new_task(task);
     }
 }
@@ -106,6 +107,17 @@ void mission_mgr_t::start_launch_task() {
         // create and activate task
         launch_task_t *launch = new launch_task_t();
         new_task(launch);
+    }
+}
+
+void mission_mgr_t::start_land_task() {
+    // sanity check, are we already running the requested task
+    if ( current_task != nullptr and current_task->name == "land" ) {
+        event_mgr->add_event("mission", current_task->name + " already active");
+    } else {
+        // create and activate task
+        land_task_t *land = new land_task_t();
+        new_task(land);
     }
 }
 
