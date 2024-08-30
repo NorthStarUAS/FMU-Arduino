@@ -4,11 +4,22 @@
     "roll_gain": 0.5,
     "roll_limit": 5.0,
     "rudder_enable": "True",
-    "rudder_gain": -0.025,
+    "rudder_gain": -0.1,
     "rudder_max": 0.5,
     "ref_airspeed_kt": 30,
     "ref_pitch_deg": 10.0,
     "mission_agl_ft": 400
+  },
+  "land": {
+    "alt_base_agl_ft": 0,
+    "approach_speed_kt": 25,
+    "direction": "left",
+    "extend_final_leg_m": 0,
+    "flare_pitch_deg": 4,
+    "flare_seconds": 5.0,
+    "glideslope_deg": 3.0,
+    "lateral_offset_m": 0.0,
+    "turn_radius_m": 75
   },
 
   "task": [
@@ -123,18 +134,6 @@
       "veritcal_m": 15,
       "min_kt": 25,
       "max_kt": 35
-    },
-    {
-      "name": "land",
-      "alt_bias_ft": 0,
-      "approach_speed_kt": 25,
-      "direction": "left",
-      "extend_final_leg_m": 0,
-      "flare_pitch_deg": 4,
-      "flare_seconds": 5.0,
-      "glideslope_deg": 3.0,
-      "lateral_offset_m": 0.0,
-      "turn_radius_m": 75
     }
   ]
 }
