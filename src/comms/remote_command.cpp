@@ -90,7 +90,7 @@ int execute_command(string command, SerialLink *serial) {
         home_node.setBool("valid", true);
         result = 1;
     } else if ( tokens[0] == "route" and tokens.size() >=2 ) {
-        if ( (tokens[1] == "start") or (tokens[1] == "cont") and tokens.size() >= 4 ) {
+        if ( (tokens[1] == "start") or (tokens[1] == "cont" and tokens.size() >= 4) ) {
             if ( tokens[1] == "start" ) {
                 // event_mgr->add_event("route start", std::to_string(tokens.size()));
                 mission_mgr->route_mgr.build_start();
