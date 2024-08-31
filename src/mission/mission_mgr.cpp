@@ -19,6 +19,14 @@ void mission_mgr_t::update(float dt) {
     // global tasks
     home_mgr.update();
 
+    // lost link action
+    if ( !comms_node.getBool("link_state") and last_link_state ) {
+        // link became bad
+        event_mgr->add_event("mission", "circle home");
+        mission_node.setString("request", "circle_home");
+    }
+    last_link_state = comms_node.getBool("link_state");
+
     process_command_request();
 
     // sanity check create default task if nothing active
@@ -54,6 +62,22 @@ void mission_mgr_t::process_command_request() {
             double lon_deg = gps_node.getDouble("longitude_deg");
             double lat_deg = gps_node.getDouble("latitude_deg");
             start_circle_task(lon_deg, lat_deg);
+        } else {
+            // fixme: we are lost and kinda screwed!
+        }
+    } else if ( command == "circle_home" ) {
+        if ( home_node.getBool("valid") ) {
+            // if we have a valid home location
+            double lon_deg = home_node.getDouble("longitude_deg");
+            double lat_deg = home_node.getDouble("latitude_deg");
+            start_circle_task(lon_deg, lat_deg);
+        } else if ( gps_node.getInt("status") == 3 ) {
+            // plan b, circle here
+            double lon_deg = gps_node.getDouble("longitude_deg");
+            double lat_deg = gps_node.getDouble("latitude_deg");
+            start_circle_task(lon_deg, lat_deg);
+        } else {
+            // fixme: we are lost and kinda screwed!
         }
     }
 }

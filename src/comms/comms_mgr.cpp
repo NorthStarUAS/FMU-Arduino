@@ -63,9 +63,9 @@ void comms_mgr_t::update() {
     // cleared.
     float last_command_sec = comms_node.getDouble("last_command_sec");
     // simulate lost link for testing, but don't carry this code into a final build
-    // if ( comms_node.getBool("simulate_lost_link") ) {
-    //     last_command_sec = 0.0;
-    // }
+    if ( comms_node.getBool("simulate_lost_link") ) {
+        last_command_sec = 0.0;
+    }
     float current_sec = millis() / 1000.0;
     if ( current_sec - last_command_sec < lost_link_timeout_sec ) {
         // link ok
