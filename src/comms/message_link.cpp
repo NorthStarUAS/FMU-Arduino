@@ -9,17 +9,16 @@
 #include <Arduino.h>
 
 #include "../nodes.h"
+#include "../ns_messages.h"
 
 #include "../mission/mission_mgr.h"
 #include "../nav/nav_mgr.h"                // reset ekf
 #include "../nav/nav_constants.h"
 #include "../sensors/sensor_mgr.h"            // reset gyros
-// #include "../sensors/pilot.h"              // update_ap()
 
 #include "events.h"
 // #include "relay.h"
 #include "remote_command.h"
-#include "ns_messages.h"
 #include "message_link.h"
 
 message_link_t::message_link_t() {}
@@ -130,6 +129,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
             command_result = 1;
         }
         write_ack( msg.sequence_num, command_result );
+        comms_node.setDouble("last_command_sec", millis() / 1000.0);
         result = true;
     } else if ( id == ns_message::fcs_refs_v1_id ) {
         // not expecting to receive this one on the FMU
@@ -408,17 +408,16 @@ int message_link_t::write_power()
 // system status
 int message_link_t::write_status()
 {
-    ns_message::status_v7_t status_msg;
-
-    // estimate output byte rate
     uint32_t current_time = millis(); // fixme use elapsedmillis(), not a variable called that...
+    ns_message::status_v7_t status_msg;
+    status_msg.props2msg(status_node);
+    status_msg.millis = current_time;
+    // estimate output byte rate
     uint32_t elapsed_millis = current_time - bytes_last_millis;
     bytes_last_millis = current_time;
     uint32_t byte_rate = output_counter * 1000 / elapsed_millis;
-    status_node.setUInt("byte_rate", byte_rate);
-
-    status_msg.props2msg(status_node);
-    status_msg.millis = current_time;
+    status_msg.link_state = comms_node.getBool("link_state");
+    status_msg.byte_rate = byte_rate;
     status_msg.pack();
     return serial.write_packet( status_msg.id, status_msg.payload, status_msg.len );
 }

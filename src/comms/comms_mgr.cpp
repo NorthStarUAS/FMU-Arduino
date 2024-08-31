@@ -11,7 +11,12 @@
 void comms_mgr_t::init() {
     PropertyNode config_comms_node = PropertyNode("/config/comms");
 
-    heartbeat = RateLimiter(0.1);
+    if ( comms_node.hasChild("lost_link_timeout_sec") ) {
+        lost_link_timeout_sec = comms_node.getDouble("lost_link_timeout_sec");
+    }
+    comms_node.setBool("link_state", true);  // start optimistic
+
+    status = RateLimiter(0.1);
 
     if ( config_comms_node.hasChild("gcs") ) {
         PropertyNode gcs_node = config_comms_node.getChild("gcs");
@@ -50,7 +55,31 @@ void comms_mgr_t::init() {
 }
 
 void comms_mgr_t::update() {
-    // counter++;
+    // lost link detection: message_link.cpp records the last_command_sec value
+    // whenever a remote command is received.  We expect at least a hb command
+    // every 10 seconds. If too much time has elapsed since the last received
+    // command we flag a lost link state here.  The mission manager is
+    // responsible for deciding what action to take if this flag is set or
+    // cleared.
+    float last_command_sec = comms_node.getDouble("last_command_sec");
+    // simulate lost link for testing, but don't carry this code into a final build
+    // if ( comms_node.getBool("simulate_lost_link") ) {
+    //     last_command_sec = 0.0;
+    // }
+    float current_sec = millis() / 1000.0;
+    if ( current_sec - last_command_sec < lost_link_timeout_sec ) {
+        // link ok
+        if ( !comms_node.getBool("link_state") ) {
+            event_mgr->add_event("comms", "link ok");
+        }
+        comms_node.setBool("link_state", true);
+    } else {
+        // it has been too long, link lost
+        if ( comms_node.getBool("link_state") ) {
+            event_mgr->add_event("comms", "link lost");
+        }
+        comms_node.setBool("link_state", false);
+    }
 
     if ( gcs_link.is_inited() ) {
         gcs_link.read_commands();
@@ -74,7 +103,7 @@ void comms_mgr_t::update() {
     event_mgr->clear_events();
 
     // 10 second heartbeat console output
-    if ( heartbeat.update() ) {
+    if ( status.update() ) {
         write_status_info_ascii();
         write_power_ascii();
         // float elapsed_sec = (millis() - tempTimer) / 1000.0;

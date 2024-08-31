@@ -16,9 +16,10 @@ private:
     message_link_t host_link;
     console_t console;
 
-    RateLimiter heartbeat;
+    RateLimiter status;
     uint32_t tempTimer;  // fixme use elapsedmillis?
     uint32_t counter;
+    float lost_link_timeout_sec = 30.0;
 
 public:
 
