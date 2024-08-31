@@ -2,7 +2,7 @@
 
 #include "../props2.h"
 #include "../nodes.h"
-#include "../comms/ns_messages.h"
+#include "../ns_messages.h"
 #include "../sensors/pwm.h"
 #include "mixer.h"
 

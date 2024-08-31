@@ -16,7 +16,7 @@
 #include <string>
 using std::string;
 
-#include "../props2.h"  // github.com/NorthStarUAS/props2
+#include "props2.h"  // github.com/NorthStarUAS/props2
 
 namespace ns_message {
 
@@ -2045,6 +2045,7 @@ public:
     uint8_t master_hz;
     uint32_t baud;
     uint32_t available_memory;
+    uint16_t link_state;
     uint16_t byte_rate;
     uint16_t main_loop_timer_misses;
 
@@ -2057,6 +2058,7 @@ public:
         uint8_t master_hz;
         uint32_t baud;
         uint32_t available_memory;
+        uint16_t link_state;
         uint16_t byte_rate;
         uint16_t main_loop_timer_misses;
     };
@@ -2084,6 +2086,7 @@ public:
         _buf->master_hz = master_hz;
         _buf->baud = baud;
         _buf->available_memory = available_memory;
+        _buf->link_state = link_state;
         _buf->byte_rate = byte_rate;
         _buf->main_loop_timer_misses = main_loop_timer_misses;
         return true;
@@ -2098,6 +2101,7 @@ public:
         master_hz = _buf->master_hz;
         baud = _buf->baud;
         available_memory = _buf->available_memory;
+        link_state = _buf->link_state;
         byte_rate = _buf->byte_rate;
         main_loop_timer_misses = _buf->main_loop_timer_misses;
         return true;
@@ -2118,6 +2122,7 @@ public:
         node.setUInt("master_hz", master_hz);
         node.setUInt("baud", baud);
         node.setUInt("available_memory", available_memory);
+        node.setUInt("link_state", link_state);
         node.setUInt("byte_rate", byte_rate);
         node.setUInt("main_loop_timer_misses", main_loop_timer_misses);
     }
@@ -2137,6 +2142,7 @@ public:
         master_hz = node.getUInt("master_hz");
         baud = node.getUInt("baud");
         available_memory = node.getUInt("available_memory");
+        link_state = node.getUInt("link_state");
         byte_rate = node.getUInt("byte_rate");
         main_loop_timer_misses = node.getUInt("main_loop_timer_misses");
     }
