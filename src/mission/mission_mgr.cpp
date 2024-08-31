@@ -21,9 +21,13 @@ void mission_mgr_t::update(float dt) {
 
     // lost link action
     if ( !comms_node.getBool("link_state") and last_link_state ) {
-        // link became bad
+        // link became bad, circle home, minimum agl is 200'
         event_mgr->add_event("mission", "circle home");
         mission_node.setString("request", "circle_home");
+        float ref_agl = refs_node.getDouble("altitude_agl_ft");
+        if ( ref_agl < 200.0 ) {
+            refs_node.setDouble("altitude_agl_ft", 200.0);
+        }
     }
     last_link_state = comms_node.getBool("link_state");
 
