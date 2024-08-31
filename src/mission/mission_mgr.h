@@ -24,6 +24,11 @@ public:
     void start_land_task();
     void start_route_task();
     void start_idle_task();
+
+private:
+
+    bool last_link_state = true;
+
 };
 
 extern mission_mgr_t *mission_mgr;
