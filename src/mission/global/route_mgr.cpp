@@ -1,11 +1,11 @@
 #include <math.h>
 
-#include "../nodes.h"
-#include "../comms/events.h"
-#include "../util/constants.h"
-#include "../util/strutils.h"
-#include "../util/wgs84.h"
-#include "../util/windtri.h"
+#include "../../nodes.h"
+#include "../../comms/events.h"
+#include "../../util/constants.h"
+#include "../../util/strutils.h"
+#include "../../util/wgs84.h"
+#include "../../util/windtri.h"
 
 #include "route_mgr.h"
 

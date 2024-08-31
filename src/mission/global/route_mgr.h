@@ -3,7 +3,7 @@
 #include <vector>
 using std::vector;
 
-#include "../props2.h"
+#include "../../props2.h"
 
 #include "waypoint.h"
 

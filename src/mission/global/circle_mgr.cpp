@@ -1,8 +1,8 @@
 #include <math.h>
 
-#include "../nodes.h"
-#include "../util/constants.h"
-#include "../util/wgs84.h"
+#include "../../nodes.h"
+#include "../../util/constants.h"
+#include "../../util/wgs84.h"
 
 #include "circle_mgr.h"
 

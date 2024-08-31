@@ -1,8 +1,8 @@
 #pragma once
 
-#include "circle_mgr.h"
-#include "home_mgr.h"
-#include "route_mgr.h"
+#include "global/circle_mgr.h"
+#include "global/home_mgr.h"
+#include "global/route_mgr.h"
 #include "tasks/task.h"
 
 class mission_mgr_t {

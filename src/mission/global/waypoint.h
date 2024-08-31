@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../props2.h"
+#include "../../props2.h"
 
 struct coord_t {
     double lon_deg = 0.0;
