@@ -19,7 +19,7 @@ void airdata_helper_t::init() {
 
 void airdata_helper_t::update() {
     // determine if aircraft is flying or not
-    if ( !is_airborne and airdata_node.getDouble("altitude_agl_m") >= up_m and airdata_node.getDouble("airspeed_mps") >= up_mps ) {
+    if ( not is_airborne and airdata_node.getDouble("altitude_agl_m") >= up_m and airdata_node.getDouble("airspeed_mps") >= up_mps ) {
         // if all conditions over the threshold, we are airborne
         is_airborne = true;
         airdata_node.setBool("is_airborne", true);

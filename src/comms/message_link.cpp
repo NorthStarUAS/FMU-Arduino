@@ -217,7 +217,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
         // FIXME: let's add extra protections here (somewhere?) against
         // inadvertently switching to HIL or accepting external data while in
         // flight.
-        if ( !airdata_node.getBool("is_airborne") ) {
+        if ( not airdata_node.getBool("is_airborne") ) {
             status_node.setBool("HIL_mode", true);
         }
 

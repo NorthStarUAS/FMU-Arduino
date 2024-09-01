@@ -69,7 +69,7 @@ void comms_mgr_t::update() {
     float current_sec = millis() / 1000.0;
     if ( current_sec - last_command_sec < lost_link_timeout_sec ) {
         // link ok
-        if ( !comms_node.getBool("link_state") ) {
+        if ( not comms_node.getBool("link_state") ) {
             event_mgr->add_event("comms", "link ok");
         }
         comms_node.setBool("link_state", true);
