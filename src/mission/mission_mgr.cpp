@@ -12,15 +12,17 @@ void mission_mgr_t::init() {
     circle_mgr.init();
     home_mgr.init();
     route_mgr.init();
+    throttle_safety.init();
     mission_node.setString("mode", "none");
 }
 
 void mission_mgr_t::update(float dt) {
     // global tasks
     home_mgr.update();
+    throttle_safety.update();
 
     // lost link action
-    if ( !comms_node.getBool("link_state") and last_link_state ) {
+    if ( not comms_node.getBool("link_state") and last_link_state ) {
         // link became bad, circle home, minimum agl is 200'
         event_mgr->add_event("mission", "circle home");
         mission_node.setString("request", "circle_home");
