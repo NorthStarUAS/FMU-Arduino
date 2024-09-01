@@ -55,7 +55,7 @@ void switches_t::update() {
                 state = switch_list[i].num_states - 1;
             }
             if ( switch_list[i].last_state >= 0 and switch_list[i].last_state != state ) {
-            // we transitioned, update the switch value
+                // we transitioned, update the switch value
                 switch_list[i].value = state;
                 printf("Switch: %s = %d\n", switch_list[i].name.c_str(), switch_list[i].value);
                 inceptors_node.setInt(switch_list[i].name.c_str(), switch_list[i].value);
