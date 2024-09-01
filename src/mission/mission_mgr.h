@@ -24,6 +24,7 @@ public:
     void start_circle_task(double lon_deg, double lat_deg);
     void start_launch_task();
     void start_land_task();
+    void start_preflight_task();
     void start_route_task();
     void start_idle_task();
 

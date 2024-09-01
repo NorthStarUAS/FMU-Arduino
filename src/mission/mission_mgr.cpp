@@ -5,6 +5,7 @@
 #include "tasks/idle.h"
 #include "tasks/launch.h"
 #include "tasks/land3.h"
+#include "tasks/preflight.h"
 #include "tasks/route.h"
 #include "mission_mgr.h"
 
@@ -148,6 +149,17 @@ void mission_mgr_t::start_land_task() {
         // create and activate task
         land_task_t *land = new land_task_t();
         new_task(land);
+    }
+}
+
+void mission_mgr_t::start_preflight_task() {
+    // sanity check, are we already running the requested task
+    if ( current_task != nullptr and current_task->name == "preflight" ) {
+        event_mgr->add_event("mission", current_task->name + " already active");
+    } else {
+        // create and activate task
+        preflight_task_t *preflight = new preflight_task_t();
+        new_task(preflight);
     }
 }
 

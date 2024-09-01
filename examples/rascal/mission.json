@@ -21,6 +21,9 @@
     "lateral_offset_m": 0.0,
     "circle_radius_m": 75
   },
+  "preflight": {
+    "duration_sec": "60.0"
+  },
   "throttle_safety": {
     "safety_mode": "on_touchdown"
   },
@@ -116,10 +119,6 @@
       "lateral_fov_deg": "39.0",
       "overlap": "0.7",
       "trigger": "channel5"
-    },
-    {
-      "name": "preflight",
-      "duration_sec": "60.0"
     },
     {
       "name": "route",
