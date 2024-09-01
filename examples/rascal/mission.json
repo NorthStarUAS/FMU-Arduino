@@ -21,7 +21,9 @@
     "lateral_offset_m": 0.0,
     "circle_radius_m": 75
   },
-
+  "throttle_safety": {
+    "safety_mode": "on_touchdown"
+  },
   "task": [
     {
       "name": "lost_link",
@@ -52,10 +54,6 @@
             ]
         }
       ]
-    },
-    {
-      "name": "throttle_safety",
-      "safety_mode": "on_touchdown"
     },
     {
       "name": "is_airborne",
