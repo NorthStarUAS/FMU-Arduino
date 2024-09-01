@@ -64,7 +64,7 @@ void launch_task_t::activate() {
 }
 
 void launch_task_t::update(float dt) {
-    if ( !active ) {
+    if ( not active ) {
         return;
     }
 
@@ -78,14 +78,14 @@ void launch_task_t::update(float dt) {
     // until flying/climbing
 
     if ( inceptors_node.getBool("master_switch") ) {
-        if ( !last_ap_master ) {
+        if ( not last_ap_master ) {
             // reset states when engaging AP mode
             relhdg = 0.0;
             control_limit = 1.0;
             refs_node.setDouble("flaps_setpoint", flaps);
             power = 0.0;
         }
-        if ( !is_airborne ) {
+        if ( not is_airborne ) {
             // run up throttle over the specified interval
             power += dt / throttle_time_sec;
             if ( power > 1.0 ) {
@@ -153,7 +153,7 @@ void launch_task_t::update(float dt) {
 }
 
 bool launch_task_t::is_complete() {
-    if ( !active ) {
+    if ( not active ) {
         // not active == complete
         return true;
     } else if ( airdata_node.getDouble("altitude_agl_m") * m2ft >= completion_agl_ft ) {

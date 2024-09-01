@@ -15,7 +15,7 @@ void home_mgr_t::init() {
 }
 
 void home_mgr_t::update() {
-    if ( !home_node.getBool("valid") ) {
+    if ( not home_node.getBool("valid") ) {
         if ( gps_node.getDouble("gps_age") < 1.0 and gps_node.getBool("settle") ) {
             // Save current position as startup position
             startup_node.setDouble("longitude_deg", gps_node.getDouble("longitude_deg"));

@@ -13,7 +13,7 @@ void idle_task_t::activate() {
     active = true;
 
     // set modes
-    if ( !airdata_node.getBool("is_airborne") ) {
+    if ( not airdata_node.getBool("is_airborne") ) {
         fcs_mgr->set_mode("basic");
         mission_node.setString("mode", "none");
         outputs_node.setDouble("power", 0.0);

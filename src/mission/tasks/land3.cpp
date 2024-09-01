@@ -16,7 +16,7 @@ land_task_t::land_task_t() {
 void land_task_t::activate() {
     active = true;
 
-    if ( !airdata_node.getBool("is_airborne") ) {
+    if ( not airdata_node.getBool("is_airborne") ) {
         // not airborne, nothing to do, fixme: we want to immediately complete?
         return;
     }
@@ -133,7 +133,7 @@ void land_task_t::build_approach(PropertyNode config_node) {
 }
 
 void land_task_t::update(float dt) {
-    if ( !active ) {
+    if ( not active ) {
         return;
     }
 
@@ -157,7 +157,7 @@ void land_task_t::update(float dt) {
         double course_deg, rev_deg, cur_dist_m;
         geo_inverse_wgs_84( center_lat, center_lon, pos_lat, pos_lon, &course_deg, &rev_deg, &cur_dist_m);
         // test for circle capture
-        if ( !circle_capture ) {
+        if ( not circle_capture ) {
             float fraction = abs(cur_dist_m / circle_radius_m);
             // printf("heading to circle: %.1f %.1f", err, fraction);
             if ( fraction > 0.80 and fraction < 1.20 ) {
@@ -211,7 +211,7 @@ void land_task_t::update(float dt) {
 
     // prior to glide slope capture, never allow target altitude lower than safe
     // altitude
-    if ( !gs_capture ) {
+    if ( not gs_capture ) {
         // printf("safe: %.1f new: %.1f\n", safe_alt_ft, new_ref_alt);
         if ( new_ref_alt < safe_alt_ft ) {
             new_ref_alt = safe_alt_ft;
@@ -231,7 +231,7 @@ void land_task_t::update(float dt) {
     float gs_error = atan2(alt_error_ft * ft2m, dist_rem_m) * r2d;
     // printf("alt_error_ft = %.1f  gs err = %.1f\n", alt_error_ft, gs_error);
 
-    if ( circle_capture and !gs_capture ) {
+    if ( circle_capture and not gs_capture ) {
         // on the circle, but haven't intercepted gs
         // printf()"waiting for gs intercept\n");
         if ( gs_error <= 1.0 and circle_pos >= 0 ) {
@@ -288,10 +288,10 @@ void land_task_t::update(float dt) {
 }
 
 bool land_task_t::is_complete() {
-    if ( !active ) {
+    if ( not active ) {
         // not active == complete
         return true;
-    } else if ( !airdata_node.getBool("is_airborne") ) {
+    } else if ( not airdata_node.getBool("is_airborne") ) {
         return true;
     }
     return false;
