@@ -17,7 +17,7 @@ public:
 
 private:
 
-    string launch_mode = "hand";  // "hand" or "surface"
+    string launch_mode = "wheels";  // "wheels" or "airborne"
     float completion_agl_ft = 150.0;
     float mission_agl_ft = 300.0;
     float ref_airspeed_kt = 15;  // FIXME: update config file too!

@@ -1,5 +1,6 @@
 {
   "launch": {
+    "launch_mode": "wheels",
     "completion_agl_ft": 150,
     "roll_gain": 0.5,
     "roll_limit": 5.0,

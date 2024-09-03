@@ -10,6 +10,9 @@ launch_task_t::launch_task_t() {
     name = "launch";
 
     PropertyNode config_node = PropertyNode("/config/mission/launch");
+    if ( config_node.hasChild("launch_mode") ) {
+        launch_mode = config_node.getString("launch_mode");
+    }
     if ( config_node.hasChild("completion_agl_ft") ) {
         completion_agl_ft = config_node.getDouble("completion_agl_ft");
     }
@@ -43,17 +46,17 @@ launch_task_t::launch_task_t() {
 }
 
 void launch_task_t::activate() {
-    if ( airdata_node.getBool("is_airborne") ) {
-        return;
-    }
-
     active = true;
 
-    if ( launch_mode == "surface" ) {
+    if ( airdata_node.getBool("is_airborne") ) {
+        launch_mode = "airborne";  // force in-air launch if we are airborne
+    }
+
+    if ( launch_mode == "wheels" ) {
         // start with roll control only, we fix elevator to neutral until flight
         // speeds come up and steer the rudder directly
         fcs_mgr->set_mode("roll");
-    } else {
+    } else if ( launch_mode == "airborne" ) {
         // hand/cat launch, start flying immediately
         fcs_mgr->set_mode("roll+pitch");
         refs_node.setDouble("pitch_deg", ref_pitch_deg);

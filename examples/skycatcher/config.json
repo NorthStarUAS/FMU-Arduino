@@ -13,8 +13,8 @@
     "comms": {
         "include": "comms.json"
     },
-    "autopilot": {
-        "include": "autopilot.json"
+    "fcs": {
+        "include": "fcs.json"
     },
     "airdata": {
         "pitot_calibrate_factor": 1.0
