@@ -1,0 +1,128 @@
+{
+    "L1_controller": {
+        "bank_limit_deg": 30,
+        "bank_bias_deg": 0,
+        "damping": 1.5,
+        "period": 15
+    },
+    "TECS": {
+        "mass_kg": 1600,
+        "weight_bal": 1.5,
+        "max_kt": 180,
+        "min_kt": 75
+    },
+    "component": [
+        {
+            "config": {
+                "Kp": 0.06,
+                "Td": 0.0,
+                "Ti": 3.0,
+                "u_trim": 0.0,
+                "u_max": 1.0,
+                "u_min": -1.0
+            },
+            "debug": "False",
+            "description": "Built in L1 controller sets target roll angle",
+            "enable": {
+                "prop": [
+                    "/fcs/locks/roll"
+                ]
+            },
+            "input": {
+                "prop": "/filters/nav/roll_deg"
+            },
+            "module": "pid",
+            "name": "Roll angle hold",
+            "output": {
+                "prop": "/fcs/outputs/roll"
+            },
+            "reference": {
+                "prop": "/fcs/refs/roll_deg"
+            }
+        },
+        {
+            "config": {
+                "Kp": -0.000001,
+                "Td": 0.0,
+                "Ti": 4.0,
+                "u_trim": 0.5,
+                "u_max": 1.0,
+                "u_min": 0.0
+            },
+            "debug": "False",
+            "description": "Total energy (sum) based throttle control",
+            "enable": {
+                "prop": [
+                    "/fcs/locks/tecs"
+                ]
+            },
+            "input": {
+                "prop": "/fcs/tecs/error_total"
+            },
+            "module": "pid",
+            "name": "TECS Sum Hold",
+            "output": {
+                "prop": "/fcs/outputs/power"
+            },
+            "reference": {
+                "value": 0.0
+            }
+        },
+        {
+            "config": {
+                "Kp": 0.000005,
+                "Td": 0.0,
+                "Ti": 4.0,
+                "u_trim": 2.0,
+                "u_max": 15.0,
+                "u_min": -10.0
+            },
+            "debug": "False",
+            "description": "Total energy (diff) based pitch control",
+            "enable": {
+                "prop": [
+                    "/fcs/locks/tecs"
+                ]
+            },
+            "input": {
+                "prop": "/fcs/tecs/error_diff"
+            },
+            "module": "pid",
+            "name": "Energy Distribition Hold",
+            "output": {
+                "prop": "/fcs/refs/pitch_deg"
+            },
+            "reference": {
+                "value": 0.0
+            }
+        },
+        {
+            "config": {
+                "Kp": -0.04,
+                "Td": 0.0,
+                "Ti": 3.0,
+                "u_trim": 0.0,
+                "u_max": 1.0,
+                "u_min": -1.0
+            },
+            "debug": "False",
+            "description": "Stage #2, Drive elevator to hold target pitch angle",
+            "enable": {
+                "prop": [
+                    "/fcs/locks/pitch"
+                ]
+            },
+            "input": {
+                "prop": "/filters/nav/pitch_deg"
+            },
+            "module": "pid",
+            "name": "Speed Hold 2",
+            "output": {
+                "prop": "/fcs/outputs/pitch"
+            },
+            "reference": {
+                "prop": "/fcs/refs/pitch_deg"
+            }
+        }
+    ]
+}
