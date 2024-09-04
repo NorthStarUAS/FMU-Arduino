@@ -14,9 +14,8 @@ public:
     // aura-v2 and marmot-v1 hardware
     SerialLink serial;
     unsigned long output_counter = 0;
-    // string relay_id;
 
-    void init(uint8_t port, uint32_t baud /*, string relay_name*/);
+    void init(uint8_t port, uint32_t baud);
     void update();
     void read_commands();
     bool is_inited() { return saved_port >= 0; }
@@ -24,6 +23,7 @@ public:
 private:
 
     int saved_port = -1;
+    uint32_t saved_baud = 0;
     uint32_t event_last_millis = 0;
     uint32_t gps_last_millis = 0;
     uint32_t mission_last_millis = 0;
@@ -46,16 +46,12 @@ private:
     int write_events();
     bool parse_message( uint8_t id, uint8_t *buf, uint8_t message_size );
 
-    RateLimiter airdata_limiter;
-    RateLimiter refs_limiter;
-    RateLimiter inceptors_limiter;
-    RateLimiter eff_limiter;
-    RateLimiter gps_limiter;
-    RateLimiter imu_limiter;
-    RateLimiter mission_limiter;
-    RateLimiter nav_limiter;
-    RateLimiter nav_metrics_limiter;
-    RateLimiter power_limiter;
-    RateLimiter status_limiter;
-
+    RateLimiter limiter_50hz;
+    RateLimiter limiter_10hz;
+    RateLimiter limiter_4hz;
+    RateLimiter limiter_2_5hz;
+    RateLimiter limiter_2hz;
+    RateLimiter limiter_1sec;
+    RateLimiter limiter_2sec;
+    RateLimiter limiter_10sec;
 };

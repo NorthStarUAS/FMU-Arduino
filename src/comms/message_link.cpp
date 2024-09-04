@@ -14,21 +14,21 @@
 #include "../mission/mission_mgr.h"
 #include "../nav/nav_mgr.h"                // reset ekf
 #include "../nav/nav_constants.h"
-#include "../sensors/sensor_mgr.h"            // reset gyros
+#include "../sensors/sensor_mgr.h"         // reset gyros
 
 #include "comms_mgr.h"
 #include "events.h"
-// #include "relay.h"
 #include "remote_command.h"
 #include "message_link.h"
 
 message_link_t::message_link_t() {}
 message_link_t::~message_link_t() {}
 
-void message_link_t::init(uint8_t port, uint32_t baud /*, string relay_name*/ ) {
+void message_link_t::init(uint8_t port, uint32_t baud ) {
     // port: 0 = usb/console, 1 = telem 1 (host), 2 = telem 2 (gcs)
     // telemetry baud = 57600 (or 115200), host baud = 500,000
     saved_port = port;
+    saved_baud = baud;
     if ( serial.open(baud, port) ) {
         printf("opened message_link port: %d @ %ld baud\n", port, baud);
         delay(100);
@@ -36,78 +36,64 @@ void message_link_t::init(uint8_t port, uint32_t baud /*, string relay_name*/ ) 
         printf("ERROR opening message_link port: %d @ %ld baud\n", port, baud);
         delay(1000);
     }
-    // relay_id = relay_name;
-    // if ( relay_id == "host" ) {
-    //     relay.set_host_link(&serial);
-    // } else if ( relay_id == "gcs" ) {
-    //     relay.set_gcs_link(&serial);
-    // }
 
-    // fixme: make externally configurable?
-    if ( baud <= 115200 ) {
-        // setup rates for a slower telemetry connection
-        airdata_limiter = RateLimiter(2);
-        refs_limiter = RateLimiter(2);
-        inceptors_limiter = RateLimiter(4);
-        eff_limiter = RateLimiter(4);
-        gps_limiter = RateLimiter(2.5);
-        imu_limiter = RateLimiter(4);
-        mission_limiter = RateLimiter(2);
-        nav_limiter = RateLimiter(10);
-        nav_metrics_limiter = RateLimiter(0.5);
-        power_limiter = RateLimiter(1);
-        status_limiter = RateLimiter(0.1);
-    } else {
-        // setup rates for a full speed host connection
-        airdata_limiter = RateLimiter(0);
-        refs_limiter = RateLimiter(0);
-        inceptors_limiter = RateLimiter(0);
-        eff_limiter = RateLimiter(0);
-        gps_limiter = RateLimiter(0);
-        imu_limiter = RateLimiter(0);
-        mission_limiter = RateLimiter(0);
-        nav_limiter = RateLimiter(0);
-        nav_metrics_limiter = RateLimiter(0.5);
-        power_limiter = RateLimiter(0);
-        status_limiter = RateLimiter(0.5);
-    }
+    limiter_50hz = RateLimiter(50);
+    limiter_10hz = RateLimiter(10);
+    limiter_4hz = RateLimiter(4);
+    limiter_2_5hz = RateLimiter(2.5);
+    limiter_2hz = RateLimiter(2);
+    limiter_1sec = RateLimiter(1);
+    limiter_2sec = RateLimiter(0.5);
+    limiter_10sec = RateLimiter(0.1);
 }
 
 void message_link_t::update() {
-    if ( airdata_limiter.update() ) {
-        output_counter += write_airdata();
+    // fixme: make externally configurable?
+    if ( saved_baud <= 115200 ) {
+        output_counter += write_events();
+        if ( limiter_10hz.update() ) {
+            output_counter += write_nav();
+        }
+        if ( limiter_4hz.update() ) {
+            output_counter += write_effectors();
+            output_counter += write_imu();
+            output_counter += write_inceptors();
+        }
+        if ( limiter_2_5hz.update() ) {
+            output_counter += write_gps();
+        }
+        if ( limiter_2hz.update() ) {
+            output_counter += write_airdata();
+            output_counter += write_refs();
+            output_counter += write_mission();
+        }
+        if ( limiter_1sec.update() ) {
+            output_counter += write_power();
+        }
+        if ( limiter_2sec.update() ) {
+            output_counter += write_nav_metrics();
+        }
+        if ( limiter_10sec.update() ) {
+            output_counter += write_status();
+        }
+    } else {
+        if ( limiter_50hz.update() ) {
+            output_counter += write_airdata();
+            output_counter += write_effectors();
+            output_counter += write_events();
+            output_counter += write_gps();
+            output_counter += write_imu();
+            output_counter += write_inceptors();
+            output_counter += write_mission();
+            output_counter += write_nav();
+            output_counter += write_power();
+            output_counter += write_refs();
+        }
+        if ( limiter_2sec.update() ) {
+            output_counter += write_nav_metrics();
+            output_counter += write_status();
+        }
     }
-    if ( refs_limiter.update() ) {
-        output_counter += write_refs();
-    }
-    if ( mission_limiter.update() ) {
-        output_counter += write_mission();
-    }
-    if ( inceptors_limiter.update() ) {
-        output_counter += write_inceptors();
-    }
-    if ( eff_limiter.update() ) {
-        output_counter += write_effectors();
-    }
-    if ( imu_limiter.update() ) {
-        output_counter += write_imu();
-    }
-    if ( gps_limiter.update() ) {
-        output_counter += write_gps();
-    }
-    if ( nav_limiter.update() ) {
-        output_counter += write_nav();
-    }
-    if ( nav_metrics_limiter.update() ) {
-        output_counter += write_nav_metrics();
-    }
-    if ( power_limiter.update() ) {
-        output_counter += write_power();
-    }
-    if ( status_limiter.update() ) {
-        output_counter += write_status();
-    }
-    output_counter += write_events();
 }
 
 bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_size ) {
@@ -122,47 +108,6 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
         write_ack( msg.sequence_num, command_result );
         comms_node.setDouble("last_command_sec", millis() / 1000.0);
         result = true;
-    } else if ( id == ns_message::fcs_refs_v1_id ) {
-        // not expecting to receive this one on the FMU
-        // ns_message::fcs_refs_v1_t ap_msg;
-        // ap_msg.unpack(buf, message_size);
-        // ap_msg.msg2props(refs_node);
-    } else if ( id == ns_message::mission_v1_id ) {
-        // relay directly to gcs
-        // if ( relay_id == "host" ) {
-        //     relay.forward_packet(relay_t::dest_enum::gcs_dest,
-        //                          id, buf, message_size);
-        // }
-        // this is the messy message
-        // ns_message::mission_v1_t mission;
-        // mission.unpack(buf, message_size);
-        // if ( message_size == mission.len ) {
-        //     task_node.setString("current_task", mission.task_name);
-        //     task_node.setInt("task_attribute", mission.task_attribute);
-        //     route_node.setInt("target_waypoint_idx", mission.target_waypoint_idx);
-        //     double wp_lon = mission.wp_longitude_raw / 10000000.0l;
-        //     double wp_lat = mission.wp_latitude_raw / 10000000.0l;
-        //     int wp_index = mission.wp_index;
-        //     PropertyNode wp_node;
-        //     if ( mission.route_size != route_mgr.get_active_size() ) {
-        //         // route size change, zero all the waypoint coordinates
-        //         route_mgr.set_active_size( mission.route_size );
-        //         for ( int i = 0; i < mission.route_size; i++ ) {
-        //             route_mgr.set_wp( i, waypoint_t() );
-        //         }
-        //     }
-        //     if ( wp_index < mission.route_size ) {
-        //         route_mgr.set_wp( wp_index, waypoint_t(1, wp_lon, wp_lat) );
-        //     } else if ( wp_index == 65534 ) {
-        //         circle_node.setDouble("longitude_deg", wp_lon);
-        //         circle_node.setDouble("latitude_deg", wp_lat);
-        //         circle_node.setDouble("radius_m", mission.task_attribute / 10.0);
-        //     } else if ( wp_index == 65535 ) {
-        //         home_node.setDouble("longitude_deg", wp_lon);
-        //         home_node.setDouble("latitude_deg", wp_lat);
-        //     }
-        //     result = true;
-        // }
     } else if ( id == ns_message::airdata_v8_id ) {
         if ( status_node.getBool("HIL_mode") ) {
             ns_message::airdata_v8_t msg;
@@ -244,7 +189,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
             power_node.setDouble("timestamp", power_millis / 1000.0);
         }
     } else {
-        printf("unknown message id: %d len: %d\n", id, message_size);
+        printf("unknown/unexpected message id: %d len: %d\n", id, message_size);
     }
     return result;
 }
