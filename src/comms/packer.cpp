@@ -30,7 +30,7 @@ void packer_t::pack_gps() {
 // nav (ekf) data
 void packer_t::pack_nav() {
     nav_msg.props2msg(nav_node);
-    nav_msg.sequence_num = last_command_seq_num;
+    nav_msg.sequence_num = comms_node.getUInt("last_command_seq_num");
     nav_msg.pack();
 }
 
