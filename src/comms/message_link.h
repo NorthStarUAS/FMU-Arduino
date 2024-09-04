@@ -14,7 +14,7 @@ public:
     // aura-v2 and marmot-v1 hardware
     SerialLink serial;
     unsigned long output_counter = 0;
-    string relay_id;
+    // string relay_id;
 
     void init(uint8_t port, uint32_t baud /*, string relay_name*/);
     void update();
@@ -24,8 +24,11 @@ public:
 private:
 
     int saved_port = -1;
+    uint32_t event_last_millis = 0;
     uint32_t gps_last_millis = 0;
-    uint32_t bytes_last_millis = 0;
+    uint32_t mission_last_millis = 0;
+    uint32_t status_last_millis = 0;
+    // uint32_t bytes_last_millis = 0;
     // uint16_t route_counter = 0;
 
     int write_ack( uint16_t sequence_num, uint8_t result );

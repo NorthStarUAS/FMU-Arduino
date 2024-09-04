@@ -3,10 +3,25 @@
 #include "events.h"
 #include "packer.h"
 
-// inceptors
-void packer_t::pack_inceptors() {
-    inceptor_msg.props2msg(inceptors_node);
-    inceptor_msg.pack();
+void packer_t::update() {
+    pack_airdata();
+    pack_effectors();
+    pack_event();
+    pack_gps();
+    pack_imu();
+    pack_inceptors();
+    pack_mission();
+    pack_nav();
+    pack_nav_metrics();
+    pack_power();
+    pack_refs();
+    pack_status();
+}
+
+void packer_t::pack_airdata() {
+    air_msg.props2msg(airdata_node);
+    air_msg.altitude_ground_m = nav_node.getDouble("altitude_ground_m");
+    air_msg.pack();
 }
 
 // final effector commands
@@ -15,9 +30,17 @@ void packer_t::pack_effectors() {
     eff_msg.pack();
 }
 
-void packer_t::pack_imu() {
-    imu_msg.props2msg(imu_node);
-    imu_msg.pack();
+// pack one event per iteration and assume the message_link instances and logger
+// catch it on the same iteration.
+void packer_t::pack_event() {
+    if ( event_mgr != nullptr and event_mgr->event_list.size()) {
+        event_msg.millis = millis();
+        event_msg.message = event_mgr->event_list[0];
+        event_msg.pack();
+        event_mgr->pop_front();
+    } else {
+        event_msg.millis = 0;
+    }
 }
 
 void packer_t::pack_gps() {
@@ -28,31 +51,15 @@ void packer_t::pack_gps() {
     }
 }
 
-// nav (ekf) data
-void packer_t::pack_nav() {
-    nav_msg.props2msg(nav_node);
-    nav_msg.sequence_num = comms_node.getUInt("last_command_seq_num");
-    nav_msg.pack();
+void packer_t::pack_imu() {
+    imu_msg.props2msg(imu_node);
+    imu_msg.pack();
 }
 
-// nav (ekf) metrics
-void packer_t::pack_nav_metrics() {
-    metrics_msg.props2msg(nav_node);
-    metrics_msg.metrics_millis = nav_node.getUInt("millis");
-    metrics_msg.pack();
-}
-
-void packer_t::pack_airdata() {
-    air_msg.props2msg(airdata_node);
-    air_msg.altitude_ground_m = nav_node.getDouble("altitude_ground_m");
-    air_msg.pack();
-}
-
-// fcs reference values
-void packer_t::pack_refs() {
-    refs_msg.props2msg(refs_node);
-    refs_msg.millis = imu_node.getUInt("millis");
-    refs_msg.pack();
+// inceptors
+void packer_t::pack_inceptors() {
+    inceptor_msg.props2msg(inceptors_node);
+    inceptor_msg.pack();
 }
 
 // mission values
@@ -103,9 +110,30 @@ void packer_t::pack_mission() {
     mission_msg.pack();
 }
 
+// nav (ekf) data
+void packer_t::pack_nav() {
+    nav_msg.props2msg(nav_node);
+    nav_msg.sequence_num = comms_node.getUInt("last_command_seq_num");
+    nav_msg.pack();
+}
+
+// nav (ekf) metrics
+void packer_t::pack_nav_metrics() {
+    nav_metrics_msg.props2msg(nav_node);
+    nav_metrics_msg.metrics_millis = nav_node.getUInt("millis");
+    nav_metrics_msg.pack();
+}
+
 void packer_t::pack_power() {
     power_msg.props2msg(power_node);
     power_msg.pack();
+}
+
+// fcs reference values
+void packer_t::pack_refs() {
+    refs_msg.props2msg(refs_node);
+    refs_msg.millis = imu_node.getUInt("millis");
+    refs_msg.pack();
 }
 
 // system status
@@ -116,16 +144,10 @@ void packer_t::pack_status() {
     // estimate output byte rate
     uint32_t elapsed_millis = current_time - bytes_last_millis;
     bytes_last_millis = current_time;
-    uint32_t byte_rate = output_counter * 1000 / elapsed_millis;
+    uint32_t byte_rate = comms_node.getUInt("bytes_to_gcs") * 1000 / elapsed_millis;
+    comms_node.setUInt("bytes_to_gcs", 0);
     status_msg.link_state = comms_node.getBool("link_state");
     status_msg.byte_rate = byte_rate;
     status_msg.pack();
 }
 
-void packer_t::pack_event() {
-    if ( event_mgr != nullptr and event_mgr->event_list.size()) {
-        event_msg.millis = millis();
-        event_msg.message = event_mgr->event_list[0];
-        event_msg.pack();
-    }
-}

@@ -7,6 +7,7 @@
 #include "console.h"
 #include "events.h"
 #include "message_link.h"
+#include "packer.h"
 
 class comms_mgr_t {
 
@@ -23,7 +24,11 @@ private:
 
 public:
 
+    packer_t packer;
+
     void init();
     void update();
 
 };
+
+extern comms_mgr_t *comms_mgr;

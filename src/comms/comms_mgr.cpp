@@ -81,9 +81,16 @@ void comms_mgr_t::update() {
         comms_node.setBool("link_state", false);
     }
 
+    // build all the messages for comms and logging
+    packer.update();
+
     if ( gcs_link.is_inited() ) {
         gcs_link.read_commands();
         gcs_link.update();
+        uint32_t bytes = comms_node.getUInt("bytes_to_gcs");
+        bytes += gcs_link.output_counter;
+        comms_node.setUInt("bytes_to_gcs", bytes);
+        gcs_link.output_counter = 0;
     }
 
     if ( host_link.is_inited() ) {
@@ -114,3 +121,5 @@ void comms_mgr_t::update() {
         printf("\n");
     }
 }
+
+comms_mgr_t *comms_mgr = nullptr;

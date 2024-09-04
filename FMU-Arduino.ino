@@ -22,8 +22,6 @@ myprofile main_prof;
 FS *datafs = nullptr;
 LittleFS_Program progmfs;
 
-comms_mgr_t *comms_mgr = nullptr;
-
 // fixme: faster init/bootup?
 // fixme: add wdt ... because chute happens, over temp, external interference, sensor/wiring issue, etc.
 

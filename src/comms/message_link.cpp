@@ -16,6 +16,7 @@
 #include "../nav/nav_constants.h"
 #include "../sensors/sensor_mgr.h"            // reset gyros
 
+#include "comms_mgr.h"
 #include "events.h"
 // #include "relay.h"
 #include "remote_command.h"
@@ -88,6 +89,9 @@ void message_link_t::update() {
     if ( eff_limiter.update() ) {
         output_counter += write_effectors();
     }
+    if ( imu_limiter.update() ) {
+        output_counter += write_imu();
+    }
     if ( gps_limiter.update() ) {
         output_counter += write_gps();
     }
@@ -101,14 +105,7 @@ void message_link_t::update() {
         output_counter += write_power();
     }
     if ( status_limiter.update() ) {
-        int len = write_status();
-        output_counter = len;   // start over counting bytes
-    }
-    // tradition has us writing the imu packet last so a full rate
-    // receiver could use it as an end of frame marker if it wanted
-    // to.
-    if ( imu_limiter.update() ) {
-        output_counter += write_imu();
+        output_counter += write_status();
     }
     output_counter += write_events();
 }
@@ -253,8 +250,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
 }
 
 // return an ack of a message received
-int message_link_t::write_ack( uint16_t sequence_num, uint8_t result )
-{
+int message_link_t::write_ack( uint16_t sequence_num, uint8_t result ) {
     ns_message::ack_v1_t ack;
     ack.sequence_num = sequence_num;
     ack.result = result;
@@ -262,172 +258,91 @@ int message_link_t::write_ack( uint16_t sequence_num, uint8_t result )
     return serial.write_packet( ack.id, ack.payload, ack.len);
 }
 
-// inceptors
-int message_link_t::write_inceptors()
-{
-    ns_message::inceptors_v2_t inceptor_msg;
-    inceptor_msg.props2msg(inceptors_node);
-    inceptor_msg.pack();
-    return serial.write_packet( inceptor_msg.id, inceptor_msg.payload, inceptor_msg.len);
+int message_link_t::write_airdata() {
+    ns_message::airdata_v8_t &air_msg = comms_mgr->packer.air_msg;
+    return serial.write_packet( air_msg.id, air_msg.payload, air_msg.len );
 }
 
 // final effector commands
-int message_link_t::write_effectors()
-{
-    ns_message::effectors_v1_t eff_msg;
-    eff_msg.props2msg(effectors_node);
-    eff_msg.pack();
+int message_link_t::write_effectors() {
+    ns_message::effectors_v1_t &eff_msg = comms_mgr->packer.eff_msg;
     return serial.write_packet( eff_msg.id, eff_msg.payload, eff_msg.len);
 }
 
-int message_link_t::write_imu()
-{
-    ns_message::imu_v6_t imu_msg;
-    imu_msg.props2msg(imu_node);
-    imu_msg.pack();
-    return serial.write_packet( imu_msg.id, imu_msg.payload, imu_msg.len );
+int message_link_t::write_events() {
+    ns_message::event_v3_t &event_msg = comms_mgr->packer.event_msg;
+    if ( event_msg.millis > event_last_millis ) {
+        event_last_millis = event_msg.millis;
+        return serial.write_packet( event_msg.id, event_msg.payload, event_msg.len );
+    } else {
+        return 0;
+    }
 }
 
-int message_link_t::write_gps()
-{
-    ns_message::gps_v5_t gps_msg;
-    if ( gps_node.getUInt("millis") != gps_last_millis ) {
-        gps_last_millis = gps_node.getUInt("millis");
-        gps_msg.props2msg(gps_node);
-        gps_msg.pack();
+int message_link_t::write_gps() {
+    ns_message::gps_v5_t &gps_msg = comms_mgr->packer.gps_msg;
+    if ( gps_msg.millis > gps_last_millis ) {
+        gps_last_millis = gps_msg.millis;
         return serial.write_packet( gps_msg.id, gps_msg.payload, gps_msg.len );
     } else {
         return 0;
     }
 }
 
+int message_link_t::write_imu() {
+    ns_message::imu_v6_t &imu_msg = comms_mgr->packer.imu_msg;
+    return serial.write_packet( imu_msg.id, imu_msg.payload, imu_msg.len );
+}
+
+// inceptors
+int message_link_t::write_inceptors() {
+    ns_message::inceptors_v2_t &inceptor_msg = comms_mgr->packer.inceptor_msg;
+    return serial.write_packet( inceptor_msg.id, inceptor_msg.payload, inceptor_msg.len);
+}
+
 // nav (ekf) data
-int message_link_t::write_nav()
-{
-    ns_message::nav_v6_t nav_msg;
-    nav_msg.props2msg(nav_node);
-    nav_msg.sequence_num = last_command_seq_num;
-    nav_msg.pack();
+int message_link_t::write_nav() {
+    ns_message::nav_v6_t &nav_msg = comms_mgr->packer.nav_msg;
     return serial.write_packet( nav_msg.id, nav_msg.payload, nav_msg.len );
 }
 
 // nav (ekf) metrics
-int message_link_t::write_nav_metrics()
-{
-    ns_message::nav_metrics_v6_t metrics_msg;
-    metrics_msg.props2msg(nav_node);
-    metrics_msg.metrics_millis = nav_node.getUInt("millis");
-    metrics_msg.pack();
+int message_link_t::write_nav_metrics() {
+    ns_message::nav_metrics_v6_t &metrics_msg = comms_mgr->packer.nav_metrics_msg;
     return serial.write_packet( metrics_msg.id, metrics_msg.payload, metrics_msg.len );
 }
 
-int message_link_t::write_airdata()
-{
-    ns_message::airdata_v8_t air_msg;
-    air_msg.props2msg(airdata_node);
-    air_msg.altitude_ground_m = nav_node.getDouble("altitude_ground_m");
-    air_msg.pack();
-    return serial.write_packet( air_msg.id, air_msg.payload, air_msg.len );
-}
-
 // fcs reference values
-int message_link_t::write_refs()
-{
-    ns_message::fcs_refs_v1_t refs_msg;
-    refs_msg.props2msg(refs_node);
-    refs_msg.millis = imu_node.getUInt("millis");
-    refs_msg.pack();
+int message_link_t::write_refs() {
+    ns_message::fcs_refs_v1_t &refs_msg = comms_mgr->packer.refs_msg;
     return serial.write_packet( refs_msg.id, refs_msg.payload, refs_msg.len );
 }
 
 // mission values
-int message_link_t::write_mission()
-{
-    // this is the messy message we need to assemble the old fashioned way
-    ns_message::mission_v1_t mission_msg;
-    mission_msg.millis = imu_node.getUInt("millis");
-    mission_msg.task_name = mission_node.getString("task");
-    mission_msg.task_attribute = 0; // fixme task attribute?
-    unsigned int route_size = route_node.getUInt("route_size");
-    mission_msg.route_size = route_size;
-    mission_msg.target_waypoint_idx = route_node.getUInt("target_waypoint_idx");;
-
-    mission_msg.wp_index = route_counter;
-    if ( route_counter < route_size ) {
-        // it is unfortnate that get_wp converts from raw to deg and we have to
-        // convert back to raw for the message.
-        coord_t coord = mission_mgr->route_mgr.get_wp(route_counter);
-        mission_msg.wp_longitude_raw = coord.lon_deg * 10000000;
-        mission_msg.wp_latitude_raw = coord.lat_deg * 10000000;
-        mission_msg.task_attribute = 0;
-        route_counter++;
-    } else if ( route_counter >= route_size and route_counter < 65534 ) {
-        // eat a null message if we get caught in this condition
-        mission_msg.wp_longitude_raw = 0;
-        mission_msg.wp_latitude_raw = 0;
-        mission_msg.task_attribute = 0;
-        route_counter = 65534;
-    } else if ( route_counter == 65534 ) {
-        mission_msg.wp_longitude_raw = circle_node.getDouble("longitude_deg") * 10000000;
-        mission_msg.wp_latitude_raw = circle_node.getDouble("latitude_deg") * 10000000;
-        mission_msg.task_attribute = circle_node.getDouble("radius_m");
-        if ( circle_node.getString("direction") == "right" ) {
-            mission_msg.task_attribute += 30000;
-        }
-        route_counter = 65535;
-    } else if ( route_counter == 65535 ) {
-        if ( home_node.getBool("valid") ) {
-            mission_msg.wp_longitude_raw = home_node.getDouble("longitude_deg") * 10000000;
-            mission_msg.wp_latitude_raw = home_node.getDouble("latitude_deg") * 10000000;
-            mission_msg.task_attribute = home_node.getDouble("azimuth_deg");
-        } else {
-            mission_msg.wp_longitude_raw = 0;
-            mission_msg.wp_latitude_raw = 0;
-            mission_msg.task_attribute = 0;
-        }
-        route_counter = 0;
+int message_link_t::write_mission() {
+    ns_message::mission_v1_t &mission_msg = comms_mgr->packer.mission_msg;
+    if ( mission_msg.millis > mission_last_millis ) {
+        mission_last_millis = mission_msg.millis;
+        return serial.write_packet( mission_msg.id, mission_msg.payload, mission_msg.len );
+    } else {
+        return 0;
     }
-    mission_msg.pack();
-    return serial.write_packet( mission_msg.id, mission_msg.payload, mission_msg.len );
 }
 
-int message_link_t::write_power()
-{
-    ns_message::power_v1_t power_msg;
-    power_msg.props2msg(power_node);
-    power_msg.pack();
+int message_link_t::write_power() {
+    ns_message::power_v1_t &power_msg = comms_mgr->packer.power_msg;
     return serial.write_packet( power_msg.id, power_msg.payload, power_msg.len );
 }
 
 // system status
-int message_link_t::write_status()
-{
-    uint32_t current_time = millis(); // fixme use elapsedmillis(), not a variable called that...
-    ns_message::status_v7_t status_msg;
-    status_msg.props2msg(status_node);
-    status_msg.millis = current_time;
-    // estimate output byte rate
-    uint32_t elapsed_millis = current_time - bytes_last_millis;
-    bytes_last_millis = current_time;
-    uint32_t byte_rate = output_counter * 1000 / elapsed_millis;
-    status_msg.link_state = comms_node.getBool("link_state");
-    status_msg.byte_rate = byte_rate;
-    status_msg.pack();
-    return serial.write_packet( status_msg.id, status_msg.payload, status_msg.len );
-}
-
-int message_link_t::write_events() {
-    int count = 0;
-    if ( event_mgr != nullptr ) {
-        for ( unsigned int i = 0; i < event_mgr->event_list.size(); i++ ) {
-            ns_message::event_v3_t event_msg;
-            event_msg.millis = millis();
-            event_msg.message = event_mgr->event_list[i];
-            event_msg.pack();
-            count += serial.write_packet( event_msg.id, event_msg.payload, event_msg.len );
-        }
+int message_link_t::write_status() {
+    ns_message::status_v7_t &status_msg = comms_mgr->packer.status_msg;
+    if ( status_msg.millis > status_last_millis ) {
+        status_last_millis = status_msg.millis;
+        return serial.write_packet( status_msg.id, status_msg.payload, status_msg.len );
+    } else {
+        return 0;
     }
-    return count;
 }
 
 void message_link_t::read_commands() {
