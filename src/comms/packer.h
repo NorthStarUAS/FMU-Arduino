@@ -14,6 +14,7 @@ public:
     ns_message::airdata_v8_t air_msg;
     ns_message::fcs_refs_v1_t refs_msg;
     ns_message::mission_v1_t mission_msg;
+    uint16_t route_counter = 0;
     ns_message::power_v1_t power_msg;
     ns_message::status_v7_t status_msg;
     ns_message::event_v3_t event_msg;

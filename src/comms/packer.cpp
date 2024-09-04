@@ -1,4 +1,5 @@
 #include "../nodes.h"
+#include "../mission/mission_mgr.h"
 #include "events.h"
 #include "packer.h"
 
