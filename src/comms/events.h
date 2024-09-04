@@ -11,6 +11,7 @@ public:
 
     vector<string> event_list;
     void add_event(string header, string msg);
+    void pop_front();
     void clear_events();
 
 };
