@@ -121,13 +121,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
         msg.unpack(buf, message_size);
         printf("received command: %s %d\n", msg.message.c_str(), msg.sequence_num);
         uint8_t command_result = 0;
-        if ( last_command_seq_num != msg.sequence_num ) {
-            last_command_seq_num = msg.sequence_num;
-            command_result = execute_command(msg.message, &serial);
-        } else {
-            printf("ignoring duplicate command\n");
-            command_result = 1;
-        }
+        command_result = execute_command(&msg, &serial);
         write_ack( msg.sequence_num, command_result );
         comms_node.setDouble("last_command_sec", millis() / 1000.0);
         result = true;
