@@ -6,7 +6,14 @@
 #include "events.h"
 #include "remote_command.h"
 
-int execute_command(string command, SerialLink *serial) {
+int execute_command(ns_message::command_v1_t *msg, SerialLink *serial) {
+    if ( last_command_seq_num == msg->sequence_num ) {
+        // duplicate command
+        return 1;
+    }
+
+    last_command_seq_num = msg->sequence_num;
+    string command = msg->message;
     uint8_t result = 0;
     vector<string> tokens = split(command, " ");
     // fixme: use tokens[0] rather than raw command string
