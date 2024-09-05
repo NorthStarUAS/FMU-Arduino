@@ -39,15 +39,17 @@ void imu_mgr_t::set_strapdown_calibration() {
         }
     }
 
-    printf("IMU strapdown calibration matrix:\n");
+    Serial.println("IMU strapdown calibration matrix:");
     for ( int i = 0; i < 3; i++ ) {
-        printf("  ");
+        Serial.print("  ");
         for ( int j = 0; j < 3; j++ ) {
-            printf("%.4f ", strapdown(i,j));
+            if ( strapdown(i,j) >= 0 ) {
+                Serial.print(" ");
+            }
+            Serial.print(strapdown(i,j), 3);  Serial.print(" ");
         }
-        printf("\n");
+        Serial.println();
     }
-    delay(200);
 }
 
 // update the mag calibration matrix from the config structur
@@ -59,35 +61,41 @@ void imu_mgr_t::set_accel_calibration() {
         }
     }
 
-    printf("Accelerometer affine matrix:\n");
+    Serial.println("Accelerometer affine matrix:");
     for ( int i = 0; i < 4; i++ ) {
-        printf("  ");
+        Serial.print("  ");
         for ( int j = 0; j < 4; j++ ) {
-            printf("%.4f ", accel_affine(i,j));
+            if ( accel_affine(i,j) >= 0 ) {
+                Serial.print(" ");
+            }
+            Serial.print(accel_affine(i,j), 3); Serial.print(" ");
         }
-        printf("\n");
+        Serial.println();
     }
-    delay(200);
 }
 
 // update the mag calibration matrix from the config structur
 void imu_mgr_t::set_mag_calibration() {
     mag_affine = Eigen::Matrix4f::Identity();
-    for ( int i = 0; i < 4; i++ ) {
-        for ( int j = 0; j < 4; j++ ) {
-            mag_affine(i,j) = imu_calib_node.getDouble("mag_affine", i*4+j);
+    if ( imu_calib_node.hasChild("mag_affine") ) {
+        for ( int i = 0; i < 4; i++ ) {
+            for ( int j = 0; j < 4; j++ ) {
+                mag_affine(i,j) = imu_calib_node.getDouble("mag_affine", i*4+j);
+            }
         }
     }
 
-    printf("Magnetometer affine matrix:\n");
+    Serial.println("Magnetometer affine matrix:");
     for ( int i = 0; i < 4; i++ ) {
-        printf("  ");
+        Serial.print("  ");
         for ( int j = 0; j < 4; j++ ) {
-            printf("%.4f ", mag_affine(i,j));
+            if ( mag_affine(i,j) >= 0 ) {
+                Serial.print(" ");
+            }
+            Serial.print(mag_affine(i,j), 3); Serial.print(" ");
         }
-        printf("\n");
+        Serial.println();
     }
-    delay(200);
 }
 
 // configure the IMU settings and setup the ISR to aquire the data
