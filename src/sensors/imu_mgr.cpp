@@ -33,9 +33,11 @@ void imu_mgr_t::defaults_common() {
 // Update the R matrix (called after loading/receiving any new config message)
 void imu_mgr_t::set_strapdown_calibration() {
     strapdown = Eigen::Matrix3f::Identity();
-    for ( int i = 0; i < 3; i++ ) {
-        for ( int j = 0; j < 3; j++ ) {
-            strapdown(i,j) = imu_calib_node.getDouble("strapdown", i*3+j);
+    if ( imu_calib_node.hasChild("strapdown") ) {
+        for ( int i = 0; i < 3; i++ ) {
+            for ( int j = 0; j < 3; j++ ) {
+                strapdown(i,j) = imu_calib_node.getDouble("strapdown", i*3+j);
+            }
         }
     }
 
@@ -55,9 +57,11 @@ void imu_mgr_t::set_strapdown_calibration() {
 // update the mag calibration matrix from the config structur
 void imu_mgr_t::set_accel_calibration() {
     accel_affine = Eigen::Matrix4f::Identity();
-    for ( int i = 0; i < 4; i++ ) {
-        for ( int j = 0; j < 4; j++ ) {
-            accel_affine(i,j) = imu_calib_node.getDouble("accel_affine", i*4+j);
+    if ( imu_calib_node.hasChild("accel_affine") ) {
+        for ( int i = 0; i < 4; i++ ) {
+            for ( int j = 0; j < 4; j++ ) {
+                accel_affine(i,j) = imu_calib_node.getDouble("accel_affine", i*4+j);
+            }
         }
     }
 
