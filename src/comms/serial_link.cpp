@@ -1,12 +1,6 @@
 #include "serial_link.h"
 
-SerialLink::SerialLink() {
-}
-
-SerialLink::~SerialLink() {
-}
-
-void SerialLink::checksum( uint8_t id, uint8_t len_lo, uint8_t len_hi, uint8_t *buf, uint16_t buf_size, uint8_t *cksum0, uint8_t *cksum1 ) {
+void checksum( uint8_t id, uint8_t len_lo, uint8_t len_hi, uint8_t *buf, uint16_t buf_size, uint8_t *cksum0, uint8_t *cksum1 ) {
     uint8_t c0 = 0;
     uint8_t c1 = 0;
 
