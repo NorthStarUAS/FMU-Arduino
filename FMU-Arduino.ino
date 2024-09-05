@@ -175,4 +175,10 @@ void main_loop() {
 void loop() {
     MTP.loop();
     delay(10);
+
+    printf("Emptying log buffer: %d\n", data_logger_t::log_buffer.size());
+    uint8_t val;
+    while ( not data_logger_t::log_buffer.isEmpty() ) {
+        data_logger_t::log_buffer.lockedPop(val);
+    }
 }

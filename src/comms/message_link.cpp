@@ -21,9 +21,6 @@
 #include "remote_command.h"
 #include "message_link.h"
 
-message_link_t::message_link_t() {}
-message_link_t::~message_link_t() {}
-
 void message_link_t::init(uint8_t port, uint32_t baud ) {
     // port: 0 = usb/console, 1 = telem 1 (host), 2 = telem 2 (gcs)
     // telemetry baud = 57600 (or 115200), host baud = 500,000

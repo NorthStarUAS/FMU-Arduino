@@ -47,6 +47,7 @@ void comms_mgr_t::init() {
     }
 
     console.init();
+    data_logger.init(data_logger_t::MID_RATE);
 
     event_mgr = new events_t();
     event_mgr->clear_events();
@@ -104,6 +105,8 @@ void comms_mgr_t::update() {
     // }
 
     console.update();
+
+    data_logger.log_messages();
 
     // the link objects will each write all accumulated events each frame, so
     // then we clear them here after all the links have updated.

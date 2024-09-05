@@ -1,6 +1,6 @@
 #include "serial_link.h"
 
-void checksum( uint8_t id, uint8_t len_lo, uint8_t len_hi, uint8_t *buf, uint16_t buf_size, uint8_t *cksum0, uint8_t *cksum1 ) {
+void SerialLink::checksum( uint8_t id, uint8_t len_lo, uint8_t len_hi, uint8_t *buf, uint16_t buf_size, uint8_t *cksum0, uint8_t *cksum1 ) {
     uint8_t c0 = 0;
     uint8_t c1 = 0;
 
@@ -21,26 +21,6 @@ void checksum( uint8_t id, uint8_t len_lo, uint8_t len_hi, uint8_t *buf, uint16_
     *cksum0 = c0;
     *cksum1 = c1;
 }
-
-// void SerialLink::checksum( uint8_t hdr1, uint8_t hdr2, uint8_t *buf, uint8_t size, uint8_t *cksum0, uint8_t *cksum1 )
-// {
-//     uint8_t c0 = 0;
-//     uint8_t c1 = 0;
-
-//     c0 += hdr1;
-//     c1 += c0;
-
-//     c0 += hdr2;
-//     c1 += c0;
-
-//     for ( uint8_t i = 0; i < size; i++ ) {
-//         c0 += (uint8_t)buf[i];
-//         c1 += c0;
-//     }
-
-//     *cksum0 = c0;
-//     *cksum1 = c1;
-// }
 
 bool SerialLink::open( int baud, int port ) {
     if ( port == 0 ) {

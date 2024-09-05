@@ -6,6 +6,7 @@
 
 #include "console.h"
 #include "events.h"
+#include "data_logger.h"
 #include "message_link.h"
 #include "packer.h"
 
@@ -25,6 +26,7 @@ private:
 public:
 
     packer_t packer;
+    data_logger_t data_logger;
 
     void init();
     void update();

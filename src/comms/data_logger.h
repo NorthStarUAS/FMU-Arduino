@@ -1,34 +1,30 @@
 #pragma once
 
-#include "serial_link.h"
+#include "../logs/RingBuf.h"
+
 #include "../util/ratelimiter.h"
 
-class message_link_t {
+static const unsigned int max_buf_size = 1024;
+
+class data_logger_t {
 
 public:
 
-    // Serial = usb, Serial1 connects to /dev/ttyO4 on beaglebone in
-    // aura-v2 and marmot-v1 hardware
-    SerialLink serial;
+    static RingBuf<uint8_t, max_buf_size> log_buffer;
     unsigned long output_counter = 0;
 
-    void init(uint8_t port, uint32_t baud);
-    void write_messages();
-    void read_commands();
-    bool is_inited() { return saved_port >= 0; }
+    enum log_rate_t { HIGH_RATE, MID_RATE, LOW_RATE };
+    void init(log_rate_t rate);
+    void log_messages();
 
 private:
 
-    int saved_port = -1;
-    uint32_t saved_baud = 0;
+    log_rate_t log_rate;
     uint32_t event_last_millis = 0;
     uint32_t gps_last_millis = 0;
     uint32_t mission_last_millis = 0;
     uint32_t status_last_millis = 0;
-    // uint32_t bytes_last_millis = 0;
-    // uint16_t route_counter = 0;
 
-    int write_ack( uint16_t sequence_num, uint8_t result );
     int write_airdata();
     int write_refs();
     int write_mission();
@@ -41,14 +37,14 @@ private:
     int write_power();
     int write_status();
     int write_events();
-    bool parse_message( uint8_t id, uint8_t *buf, uint8_t message_size );
 
     RateLimiter limiter_50hz;
+    RateLimiter limiter_25hz;
     RateLimiter limiter_10hz;
-    RateLimiter limiter_4hz;
-    RateLimiter limiter_2_5hz;
-    RateLimiter limiter_2hz;
     RateLimiter limiter_1sec;
     RateLimiter limiter_2sec;
     RateLimiter limiter_10sec;
+
+    int log_packet(uint8_t packet_id, uint8_t *payload, uint16_t len);
+
 };
