@@ -19,7 +19,8 @@
 IntervalTimer main_timer;
 myprofile main_prof;
 
-FS *datafs = nullptr;
+FS *configfs = nullptr;
+FS *logfs = nullptr;
 LittleFS_Program progmfs;
 
 // fixme: faster init/bootup?
@@ -44,8 +45,8 @@ void setup() {
     if ( !SD.begin(BUILTIN_SDCARD)) {
         printf("Cannot initializing builtin SD card ... no card?\n");
     } else {
-        printf("SD card initialized for config and logging.\n");
-        datafs = &SD;
+        printf("SD card initialized for logging.\n");
+        logfs = &SD;
         MTP.addFilesystem(SD, "SD Card");
     }
 
@@ -53,12 +54,11 @@ void setup() {
     uint32_t lfs_progm_bytes = 1024*1024;   // allocate 1Mb flash disk, doesn't seem to work if we try to allocate larger even though we should be able to do 7+ Mb
     if ( !progmfs.begin(lfs_progm_bytes) ) {
         printf("Problem initializing flash storage ... failed.\n");
+        printf("This is a big problem, no config files can be read!\n");
     } else {
         printf("Program memory flash initialized: %lu bytes.\n", lfs_progm_bytes);
-        if ( datafs == nullptr ) {
-            printf("Using progm for config and logging.\n");
-            datafs = &progmfs;
-        }
+        printf("Using progm for config files.\n");
+        configfs = &progmfs;
         MTP.addFilesystem(progmfs, "Program Memory Flash");
     }
     MTP.begin();

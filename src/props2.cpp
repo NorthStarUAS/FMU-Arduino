@@ -1,6 +1,6 @@
 #if defined(ARDUINO)
 #  include <FS.h>
-extern FS *datafs;  // SD or LittleFS_Program (or other) defined in the top level sketch
+extern FS *configfs;  // SD or LittleFS_Program (or other) defined in the top level sketch
 #elif defined(ARDUPILOT_BUILD)
 #  include <AP_Filesystem/AP_Filesystem.h>
 #  undef _GLIBCXX_USE_C99_STDIO   // vsnprintf() not defined
@@ -741,11 +741,11 @@ bool PropertyNode::load_json( const char *file_path, Value *v ) {
 
     // open a file in read mode
 #if defined(ARDUINO)
-    if ( ! datafs->exists(file_path) ) {
+    if ( ! configfs->exists(file_path) ) {
         printf("file does not exist: %s\n", file_path);
         return false;
     }
-    File open_fd = datafs->open(file_path, FILE_READ);
+    File open_fd = configfs->open(file_path, FILE_READ);
     if ( !open_fd ) {
         printf("file open failed: %s\n", file_path);
         return false;
@@ -903,7 +903,7 @@ static bool save_json( const char *file_path, Value *v ) {
     // SdFat sdcard;
     // long lFreeClusters = sdcard.vol()->freeClusterCount();
     // uint64_t free_bytes = lFreeClusters * 512;  // clusters are always 512k
-    uint64_t free_bytes = datafs->totalSize() - datafs->usedSize();
+    uint64_t free_bytes = configfs->totalSize() - configfs->usedSize();
 #elif defined(ARDUPILOT_BUILD)
     uint64_t free_bytes = AP::FS().disk_free("/");
 #else
@@ -926,7 +926,7 @@ static bool save_json( const char *file_path, Value *v ) {
 
     // open a file in write mode
 #if defined(ARDUINO)
-    File open_fd = datafs->open(file_path, FILE_WRITE);
+    File open_fd = configfs->open(file_path, FILE_WRITE);
     if ( !open_fd ) {
         printf("file open failed: %s\n", file_path);
         return false;
