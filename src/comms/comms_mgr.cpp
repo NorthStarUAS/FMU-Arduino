@@ -86,7 +86,7 @@ void comms_mgr_t::update() {
 
     if ( gcs_link.is_inited() ) {
         gcs_link.read_commands();
-        gcs_link.update();
+        gcs_link.write_messages();
         uint32_t bytes = comms_node.getUInt("bytes_to_gcs");
         bytes += gcs_link.output_counter;
         comms_node.setUInt("bytes_to_gcs", bytes);
@@ -95,7 +95,7 @@ void comms_mgr_t::update() {
 
     if ( host_link.is_inited() ) {
         host_link.read_commands();
-	    host_link.update();
+	    host_link.write_messages();
     }
 
     // human console interaction begins when gyros finish calibrating

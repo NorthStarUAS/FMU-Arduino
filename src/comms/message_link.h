@@ -16,7 +16,7 @@ public:
     unsigned long output_counter = 0;
 
     void init(uint8_t port, uint32_t baud);
-    void update();
+    void write_messages();
     void read_commands();
     bool is_inited() { return saved_port >= 0; }
 

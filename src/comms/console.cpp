@@ -116,6 +116,6 @@ void console_t::update() {
     } else {
         // binary mode
         console_link.read_commands();
-        console_link.update();
+        console_link.write_messages();
     }
 }

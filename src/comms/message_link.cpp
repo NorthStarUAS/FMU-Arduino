@@ -47,7 +47,7 @@ void message_link_t::init(uint8_t port, uint32_t baud ) {
     limiter_10sec = RateLimiter(0.1);
 }
 
-void message_link_t::update() {
+void message_link_t::write_messages() {
     // fixme: make externally configurable?
     if ( saved_baud <= 115200 ) {
         output_counter += write_events();
@@ -93,6 +93,102 @@ void message_link_t::update() {
             output_counter += write_nav_metrics();
             output_counter += write_status();
         }
+    }
+}
+
+// return an ack of a message received
+int message_link_t::write_ack( uint16_t sequence_num, uint8_t result ) {
+    ns_message::ack_v1_t ack;
+    ack.sequence_num = sequence_num;
+    ack.result = result;
+    ack.pack();
+    return serial.write_packet( ack.id, ack.payload, ack.len);
+}
+
+int message_link_t::write_airdata() {
+    ns_message::airdata_v8_t &air_msg = comms_mgr->packer.air_msg;
+    return serial.write_packet( air_msg.id, air_msg.payload, air_msg.len );
+}
+
+// final effector commands
+int message_link_t::write_effectors() {
+    ns_message::effectors_v1_t &eff_msg = comms_mgr->packer.eff_msg;
+    return serial.write_packet( eff_msg.id, eff_msg.payload, eff_msg.len);
+}
+
+int message_link_t::write_events() {
+    ns_message::event_v3_t &event_msg = comms_mgr->packer.event_msg;
+    if ( event_msg.millis > event_last_millis ) {
+        event_last_millis = event_msg.millis;
+        return serial.write_packet( event_msg.id, event_msg.payload, event_msg.len );
+    } else {
+        return 0;
+    }
+}
+
+int message_link_t::write_gps() {
+    ns_message::gps_v5_t &gps_msg = comms_mgr->packer.gps_msg;
+    if ( gps_msg.millis > gps_last_millis ) {
+        gps_last_millis = gps_msg.millis;
+        return serial.write_packet( gps_msg.id, gps_msg.payload, gps_msg.len );
+    } else {
+        return 0;
+    }
+}
+
+int message_link_t::write_imu() {
+    ns_message::imu_v6_t &imu_msg = comms_mgr->packer.imu_msg;
+    return serial.write_packet( imu_msg.id, imu_msg.payload, imu_msg.len );
+}
+
+// inceptors
+int message_link_t::write_inceptors() {
+    ns_message::inceptors_v2_t &inceptor_msg = comms_mgr->packer.inceptor_msg;
+    return serial.write_packet( inceptor_msg.id, inceptor_msg.payload, inceptor_msg.len);
+}
+
+// nav (ekf) data
+int message_link_t::write_nav() {
+    ns_message::nav_v6_t &nav_msg = comms_mgr->packer.nav_msg;
+    return serial.write_packet( nav_msg.id, nav_msg.payload, nav_msg.len );
+}
+
+// nav (ekf) metrics
+int message_link_t::write_nav_metrics() {
+    ns_message::nav_metrics_v6_t &metrics_msg = comms_mgr->packer.nav_metrics_msg;
+    return serial.write_packet( metrics_msg.id, metrics_msg.payload, metrics_msg.len );
+}
+
+// fcs reference values
+int message_link_t::write_refs() {
+    ns_message::fcs_refs_v1_t &refs_msg = comms_mgr->packer.refs_msg;
+    return serial.write_packet( refs_msg.id, refs_msg.payload, refs_msg.len );
+}
+
+// mission values
+int message_link_t::write_mission() {
+    ns_message::mission_v1_t &mission_msg = comms_mgr->packer.mission_msg;
+    if ( mission_msg.millis > mission_last_millis ) {
+        mission_last_millis = mission_msg.millis;
+        return serial.write_packet( mission_msg.id, mission_msg.payload, mission_msg.len );
+    } else {
+        return 0;
+    }
+}
+
+int message_link_t::write_power() {
+    ns_message::power_v1_t &power_msg = comms_mgr->packer.power_msg;
+    return serial.write_packet( power_msg.id, power_msg.payload, power_msg.len );
+}
+
+// system status
+int message_link_t::write_status() {
+    ns_message::status_v7_t &status_msg = comms_mgr->packer.status_msg;
+    if ( status_msg.millis > status_last_millis ) {
+        status_last_millis = status_msg.millis;
+        return serial.write_packet( status_msg.id, status_msg.payload, status_msg.len );
+    } else {
+        return 0;
     }
 }
 
@@ -192,102 +288,6 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
         printf("unknown/unexpected message id: %d len: %d\n", id, message_size);
     }
     return result;
-}
-
-// return an ack of a message received
-int message_link_t::write_ack( uint16_t sequence_num, uint8_t result ) {
-    ns_message::ack_v1_t ack;
-    ack.sequence_num = sequence_num;
-    ack.result = result;
-    ack.pack();
-    return serial.write_packet( ack.id, ack.payload, ack.len);
-}
-
-int message_link_t::write_airdata() {
-    ns_message::airdata_v8_t &air_msg = comms_mgr->packer.air_msg;
-    return serial.write_packet( air_msg.id, air_msg.payload, air_msg.len );
-}
-
-// final effector commands
-int message_link_t::write_effectors() {
-    ns_message::effectors_v1_t &eff_msg = comms_mgr->packer.eff_msg;
-    return serial.write_packet( eff_msg.id, eff_msg.payload, eff_msg.len);
-}
-
-int message_link_t::write_events() {
-    ns_message::event_v3_t &event_msg = comms_mgr->packer.event_msg;
-    if ( event_msg.millis > event_last_millis ) {
-        event_last_millis = event_msg.millis;
-        return serial.write_packet( event_msg.id, event_msg.payload, event_msg.len );
-    } else {
-        return 0;
-    }
-}
-
-int message_link_t::write_gps() {
-    ns_message::gps_v5_t &gps_msg = comms_mgr->packer.gps_msg;
-    if ( gps_msg.millis > gps_last_millis ) {
-        gps_last_millis = gps_msg.millis;
-        return serial.write_packet( gps_msg.id, gps_msg.payload, gps_msg.len );
-    } else {
-        return 0;
-    }
-}
-
-int message_link_t::write_imu() {
-    ns_message::imu_v6_t &imu_msg = comms_mgr->packer.imu_msg;
-    return serial.write_packet( imu_msg.id, imu_msg.payload, imu_msg.len );
-}
-
-// inceptors
-int message_link_t::write_inceptors() {
-    ns_message::inceptors_v2_t &inceptor_msg = comms_mgr->packer.inceptor_msg;
-    return serial.write_packet( inceptor_msg.id, inceptor_msg.payload, inceptor_msg.len);
-}
-
-// nav (ekf) data
-int message_link_t::write_nav() {
-    ns_message::nav_v6_t &nav_msg = comms_mgr->packer.nav_msg;
-    return serial.write_packet( nav_msg.id, nav_msg.payload, nav_msg.len );
-}
-
-// nav (ekf) metrics
-int message_link_t::write_nav_metrics() {
-    ns_message::nav_metrics_v6_t &metrics_msg = comms_mgr->packer.nav_metrics_msg;
-    return serial.write_packet( metrics_msg.id, metrics_msg.payload, metrics_msg.len );
-}
-
-// fcs reference values
-int message_link_t::write_refs() {
-    ns_message::fcs_refs_v1_t &refs_msg = comms_mgr->packer.refs_msg;
-    return serial.write_packet( refs_msg.id, refs_msg.payload, refs_msg.len );
-}
-
-// mission values
-int message_link_t::write_mission() {
-    ns_message::mission_v1_t &mission_msg = comms_mgr->packer.mission_msg;
-    if ( mission_msg.millis > mission_last_millis ) {
-        mission_last_millis = mission_msg.millis;
-        return serial.write_packet( mission_msg.id, mission_msg.payload, mission_msg.len );
-    } else {
-        return 0;
-    }
-}
-
-int message_link_t::write_power() {
-    ns_message::power_v1_t &power_msg = comms_mgr->packer.power_msg;
-    return serial.write_packet( power_msg.id, power_msg.payload, power_msg.len );
-}
-
-// system status
-int message_link_t::write_status() {
-    ns_message::status_v7_t &status_msg = comms_mgr->packer.status_msg;
-    if ( status_msg.millis > status_last_millis ) {
-        status_last_millis = status_msg.millis;
-        return serial.write_packet( status_msg.id, status_msg.payload, status_msg.len );
-    } else {
-        return 0;
-    }
 }
 
 void message_link_t::read_commands() {
