@@ -37,9 +37,9 @@ void setup() {
     // different random seed each run
     randomSeed(analogRead(0));
 
-    printf("\nNorthStar FMU: Rev %d\n", FIRMWARE_REV);
-    printf("You are seeing this message on the usb interface.\n");
-    printf("Sensor/config communication is on Serial1 @ %d baud (N81) no flow control.\n", HOST_BAUD);
+    printf("\nNorthStar FMU: Rev %d\n\n", FIRMWARE_REV);
+    // printf("You are seeing this message on the usb interface.\n");
+    // printf("Sensor/config communication is on Serial1 @ %d baud (N81) no flow control.\n", HOST_BAUD);
 
     // initialize onboard flash file storage
     uint32_t lfs_progm_bytes = 1024*1024;   // allocate 1Mb flash disk, doesn't seem to work if we try to allocate larger even though we should be able to do 7+ Mb
@@ -75,7 +75,7 @@ void setup() {
 
     status_node.setUInt("firmware_rev", FIRMWARE_REV);
     status_node.setUInt("master_hz", MASTER_HZ);
-    status_node.setUInt("baud", TELEMETRY_BAUD);
+    // status_node.setUInt("baud", TELEMETRY_BAUD);
     status_node.setUInt("serial_number", config_node.getUInt("serial_number"));
 
     sensor_mgr = new sensor_mgr_t();
