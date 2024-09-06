@@ -56,14 +56,15 @@ void launch_task_t::activate() {
         // start with roll control only, we fix elevator to neutral until flight
         // speeds come up and steer the rudder directly
         fcs_mgr->set_mode("roll");
+        outputs_node.setDouble("pitch", 0.0);
     } else if ( launch_mode == "airborne" ) {
         // hand/cat launch, start flying immediately
         fcs_mgr->set_mode("roll+pitch");
         refs_node.setDouble("pitch_deg", ref_pitch_deg);
-        refs_node.setDouble("roll_deg", 0.0);
-        refs_node.setDouble("altitude_agl_ft", mission_agl_ft);
-        refs_node.setDouble("airspeed_kt", ref_airspeed_kt);
     }
+    refs_node.setDouble("roll_deg", 0.0);
+    refs_node.setDouble("altitude_agl_ft", mission_agl_ft);
+    refs_node.setDouble("airspeed_kt", ref_airspeed_kt);
 }
 
 void launch_task_t::update(float dt) {
@@ -143,7 +144,7 @@ void launch_task_t::update(float dt) {
         }
         refs_node.setDouble("roll_deg", roll_deg);
 
-        if ( is_airborne or airdata_node.getDouble("airspeed_mps") > ref_airspeed_kt ) {
+        if ( is_airborne or airdata_node.getDouble("airspeed_mps")*mps2kt > ref_airspeed_kt ) {
             // we are flying or we've reached our flying/climbout airspeed:
             // switch to normal flight mode
             if ( fcs_mgr->get_mode() != "basic+tecs" ) {
