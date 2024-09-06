@@ -155,6 +155,6 @@ void write_status_info_ascii() {
     printf("Uptime: %d(sec)", (unsigned int)(millis() / 1000));
     printf(" SN: %d", config_node.getInt("serial_number"));
     printf(" Firmware: %d", FIRMWARE_REV);
-    printf(" Main loop hz: %d", MASTER_HZ);
-    printf(" Baud: %d\n", HOST_BAUD);
+    printf(" Main loop hz: %d\n", MASTER_HZ);
+    // printf(" Baud: %d\n", HOST_BAUD);
 }
