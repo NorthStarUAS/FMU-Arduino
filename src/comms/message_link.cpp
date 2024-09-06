@@ -74,10 +74,10 @@ void message_link_t::write_messages() {
             output_counter += write_status();
         }
     } else {
+        output_counter += write_events();
         if ( limiter_50hz.update() ) {
             output_counter += write_airdata();
             output_counter += write_effectors();
-            output_counter += write_events();
             output_counter += write_gps();
             output_counter += write_imu();
             output_counter += write_inceptors();
