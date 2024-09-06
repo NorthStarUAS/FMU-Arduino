@@ -7,6 +7,8 @@
  */
 
 #include <Arduino.h>
+#include <MTP_Teensy.h>
+#include <SD.h>
 
 #include "../nodes.h"
 #include "../ns_messages.h"
@@ -26,6 +28,15 @@ void data_logger_t::init(log_rate_t rate) {
     limiter_1sec = RateLimiter(1);
     limiter_2sec = RateLimiter(0.5);
     limiter_10sec = RateLimiter(0.1);
+
+    // initialize SD card
+    if ( !SD.begin(BUILTIN_SDCARD)) {
+        printf("Cannot initializing builtin SD card ... no card?\n");
+    } else {
+        printf("SD card initialized for logging.\n");
+        sd_card_inited = true;
+        MTP.addFilesystem(SD, "SD Card");
+    }
 }
 
 void data_logger_t::log_messages() {
@@ -212,6 +223,14 @@ int data_logger_t::log_packet(uint8_t packet_id, uint8_t *payload, uint16_t len)
         return len + 7;
     } else {
         return 0;
+    }
+}
+
+void data_logger_t::write_buffer() {
+    // printf("Emptying log buffer: %d\n", data_logger_t::log_buffer.size());
+    uint8_t val;
+    while ( not data_logger_t::log_buffer.isEmpty() ) {
+        data_logger_t::log_buffer.lockedPop(val);
     }
 }
 

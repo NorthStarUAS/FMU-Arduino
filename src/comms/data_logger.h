@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../logs/RingBuf.h"
+#include <Arduino.h>
 
+#include "../logs/RingBuf.h"
 #include "../util/ratelimiter.h"
 
 static const unsigned int max_buf_size = 1024;
@@ -14,8 +15,10 @@ public:
     unsigned long output_counter = 0;
 
     enum log_rate_t { HIGH_RATE, MID_RATE, LOW_RATE };
+
     void init(log_rate_t rate);
-    void log_messages();
+    void log_messages();          // called inside the interrupt handler, pushes data to the ring buffer
+    void write_buffer();          // called from the main loop, empties ringbuf, writes to sd card
 
 private:
 
@@ -44,6 +47,8 @@ private:
     RateLimiter limiter_1sec;
     RateLimiter limiter_2sec;
     RateLimiter limiter_10sec;
+
+    bool sd_card_inited = false;
 
     int log_packet(uint8_t packet_id, uint8_t *payload, uint16_t len);
 

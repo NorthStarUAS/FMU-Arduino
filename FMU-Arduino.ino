@@ -41,15 +41,6 @@ void setup() {
     printf("You are seeing this message on the usb interface.\n");
     printf("Sensor/config communication is on Serial1 @ %d baud (N81) no flow control.\n", HOST_BAUD);
 
-    // initialize SD card
-    if ( !SD.begin(BUILTIN_SDCARD)) {
-        printf("Cannot initializing builtin SD card ... no card?\n");
-    } else {
-        printf("SD card initialized for logging.\n");
-        logfs = &SD;
-        MTP.addFilesystem(SD, "SD Card");
-    }
-
     // initialize onboard flash file storage
     uint32_t lfs_progm_bytes = 1024*1024;   // allocate 1Mb flash disk, doesn't seem to work if we try to allocate larger even though we should be able to do 7+ Mb
     if ( !progmfs.begin(lfs_progm_bytes) ) {
@@ -173,12 +164,10 @@ void main_loop() {
 }
 
 void loop() {
+    // These things run at lower priority outside the interrupt handler. (But
+    // absolutely no property tree access here!)
     MTP.loop();
     delay(10);
 
-    printf("Emptying log buffer: %d\n", data_logger_t::log_buffer.size());
-    uint8_t val;
-    while ( not data_logger_t::log_buffer.isEmpty() ) {
-        data_logger_t::log_buffer.lockedPop(val);
-    }
+    comms_mgr->data_logger.write_buffer();
 }
