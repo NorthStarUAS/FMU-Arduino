@@ -7,7 +7,6 @@
  */
 
 #include <Arduino.h>
-#include <MTP_Teensy.h>
 #include <SD.h>
 
 #include "../nodes.h"
@@ -28,15 +27,6 @@ void data_logger_t::init(log_rate_t rate) {
     limiter_1sec = RateLimiter(1);
     limiter_2sec = RateLimiter(0.5);
     limiter_10sec = RateLimiter(0.1);
-
-    // initialize SD card
-    if ( !SD.begin(BUILTIN_SDCARD)) {
-        printf("Cannot initializing builtin SD card ... no card?\n");
-    } else {
-        printf("SD card initialized for logging.\n");
-        sd_card_inited = true;
-        MTP.addFilesystem(SD, "SD Card");
-    }
 }
 
 void data_logger_t::log_messages() {

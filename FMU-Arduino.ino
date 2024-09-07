@@ -42,16 +42,38 @@ void setup() {
     // printf("Sensor/config communication is on Serial1 @ %d baud (N81) no flow control.\n", HOST_BAUD);
 
     // initialize onboard flash file storage
-    uint32_t lfs_progm_bytes = 1024*1024;   // allocate 1Mb flash disk, doesn't seem to work if we try to allocate larger even though we should be able to do 7+ Mb
+    #if defined(ARDUINO_TEENSY36)
+    uint32_t lfs_progm_bytes = 1024*128;   // allocate 128Kb flash disk,
+    #elif defined(ARDUINO_TEENSY40)
+    uint32_t lfs_progm_bytes = 1024*1024;   // allocate 1.25Mb flash disk,
+    #elif defind(ARDUINO_TEENSY41)
+    uint64_t lfs_progm_bytes = 1024*1024 * 7; // should be able to go up to 7Mb
+    #else
+    uint32_t lfs_progm_bytes = 0;
+    #endif
+
     if ( !progmfs.begin(lfs_progm_bytes) ) {
-        printf("Problem initializing flash storage ... failed.\n");
-        printf("This is a big problem, no config files can be read!\n");
+        printf("Unable to initialize flash storage ... failed to allocate %lu bytes.\n", lfs_progm_bytes);
     } else {
         printf("Program memory flash initialized: %lu bytes.\n", lfs_progm_bytes);
         printf("Using progm for config files.\n");
         configfs = &progmfs;
         MTP.addFilesystem(progmfs, "Program Memory Flash");
     }
+
+    // initialize SD card
+    if ( !SD.begin(BUILTIN_SDCARD)) {
+        printf("Cannot initializing builtin SD card ... no card?\n");
+    } else {
+        printf("SD card initialized for logging.\n");
+        logfs = &SD;
+        if ( configfs == nullptr ) {
+            configfs = &SD;
+            printf("Using SD card for config files.\n");
+        }
+        MTP.addFilesystem(SD, "SD Card");
+    }
+
     MTP.begin();
 
     config = new config_t();
@@ -109,12 +131,14 @@ void setup() {
     main_timer.begin(main_loop, 1000000/MASTER_HZ);
 }
 
+#if defined(NORTHSTAR_V3)
 extern unsigned long _heap_start;
 extern unsigned long _heap_end;
 extern char *__brkval;
 int freeram() {
   return (char *)&_heap_end - __brkval;
 }
+#endif
 
 // main arduino loop -- Fixme: set this up on a hardware timer so the main loop can do non-time sensitive stuff, but caution on race conditions
 void main_loop() {
@@ -149,7 +173,9 @@ void main_loop() {
     mission_mgr->update(dt);
 
     // 3. Communicate
+    #if defined(NORTHSTAR_V3)
     status_node.setUInt("available_memory", freeram());
+    #endif
     led.update();
     comms_mgr->update();
 
