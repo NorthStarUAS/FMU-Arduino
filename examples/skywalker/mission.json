@@ -1,0 +1,137 @@
+{
+  "launch": {
+    "launch_mode": "airborne",
+    "completion_agl_ft": 150,
+    "roll_gain": 0.5,
+    "roll_limit": 10.0,
+    "rudder_enable": "True",
+    "rudder_gain": -0.03,
+    "rudder_max": 0.5,
+    "ref_airspeed_kt": 20,
+    "ref_pitch_deg": 10.0,
+    "mission_agl_ft": 250
+  },
+  "land": {
+    "alt_base_agl_ft": 0,
+    "approach_speed_kt": 20,
+    "direction": "left",
+    "extend_final_leg_m": 50,
+    "flare_pitch_deg": 0,
+    "flare_seconds": 5,
+    "glideslope_deg": 7,
+    "lateral_offset_m": 0.0,
+    "circle_radius_m": 75
+  },
+  "preflight": {
+    "duration_sec": "60.0"
+  },
+  "throttle_safety": {
+    "safety_mode": "on_touchdown"
+  },
+  "task": [
+    {
+      "name": "lost_link",
+      "altitude_agl_ft": 400,
+      "radius_m": 100,
+      "speed_kt": 30
+    },
+    {
+      "name": "switches",
+      "switch": [
+        {
+          "input": "/sensors/pilot_input/ap_master_switch",
+          "output": "/autopilot/master_switch",
+          "type": "boolean"
+        },
+        {
+          "input": "/sensors/pilot_input/ap_flight_mode",
+          "output": "/task/chirp/trigger_junk",
+          "type": "boolean"
+        },
+        {
+            "input": "/sensors/pilot_input/fcs_switch",
+            "type": "choice",
+            "outputs": [
+              "/autopilot/fcs_pid",
+              "/autopilot/fcs_dtss_pid",
+              "/autopilot/fcs_dtss_hinf"
+            ]
+        }
+      ]
+    },
+    {
+      "name": "is_airborne",
+      "off_airspeed_kt": 15,
+      "off_alt_agl_ft": 10,
+      "on_airspeed_kt": 10,
+      "on_alt_agl_ft": 30
+    },
+    {
+      "name": "flaps_manager",
+      "speed_secs": 5.0
+    },
+    {
+      "name": "excite",
+      "experiment": [
+        {
+          "type": "oms",
+          "duration_sec": 20,
+          "target": [ "elevator", "aileron", "throttle" ],
+          "freq_rps": [ 1.0, 2.0, 3.0, 4.0,
+                        2.0, 3.0, 4.0, 5.0,
+                        3.0, 4.0, 5.0, 6.0
+                      ],
+          "phase_rad": [ 0.0, 0.0, 0.0, 0.0,
+                          0.0, 0.0, 0.0, 0.0,
+                          0.0, 0.0, 0.0, 0.0
+                        ],
+          "amplitude": [ 0.1, 0.1, 0.1, 0.1,
+                          0.1, 0.1, 0.1, 0.1,
+                          0.1, 0.1, 0.1, 0.1
+                        ]
+        },
+        {
+          "type": "doublet3211",
+          "duration_sec": 0.5,
+          "amplitude": [ 0.2, 0.2 ],
+          "target": [ "elevator", "aileron" ]
+        },
+        {
+          "type": "chirp",
+          "duration_sec": 20,
+          "amplitude": [ 0.1, 0.2 ],
+          "freq_start_rad_sec": [ 2, 30 ],
+          "freq_end_rad_sec": [ 30, 2 ],
+          "target": [ "elevator", "aileron" ]
+        }
+      ]
+    },
+    {
+      "name": "glide",
+      "top_agl_ft": 400,
+      "bottom_agl_ft": 150,
+      "pitch_start_deg": 5,
+      "pitch_end_deg": -20,
+      "pitch_increment": 2.5
+    },
+    {
+      "name": "#camera",
+      "forward_fov_deg": "56.2",
+      "lateral_fov_deg": "39.0",
+      "overlap": "0.7",
+      "trigger": "channel5"
+    },
+    {
+      "name": "route",
+      "include": "../routes/bowtie-300m.json"
+    },
+    {
+      "name": "parametric",
+      "function": "rose",
+      "radius_m": 250,
+      "veritcal_m": 15,
+      "min_kt": 25,
+      "max_kt": 35
+    }
+  ]
+}
