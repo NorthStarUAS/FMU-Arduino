@@ -1,21 +1,21 @@
 # IMPORTANT ARDUINO SETUP PATCH
 
 * edit
-  # comms with host
-  - $(arduino)/hardware/teensy/avr/cores/teensy3/serial1.c
-  - $(arduino)/hardware/teensy/avr/cores/teensy4/HardwareSerial1.c
-  
-  - SERIAL1_TX_BUFFER_SIZE 512
-  - SERIAL1_RX_BUFFER_SIZE 512
+  1. comms with host
+     * $(arduino)/hardware/teensy/avr/cores/teensy3/serial1.c
+     * $(arduino)/hardware/teensy/avr/cores/teensy4/HardwareSerial1.c
 
-  # gps comms
-  - $(arduino)/hardware/teensy/avr/cores/teensy3/serial3.c
-  - $(arduino)/hardware/teensy/avr/cores/teensy4/HardwareSerial3.c
-  
-  - SERIAL1_TX_BUFFER_SIZE 255
-  - SERIAL1_RX_BUFFER_SIZE 255
-  
-# Teensy vs. Beaglebone baud rate notes:
+       SERIAL1_TX_BUFFER_SIZE 512
+       SERIAL1_RX_BUFFER_SIZE 512
+
+  2. gps comms
+     * $(arduino)/hardware/teensy/avr/cores/teensy3/serial3.c
+     * $(arduino)/hardware/teensy/avr/cores/teensy4/HardwareSerial3.c
+
+       SERIAL1_TX_BUFFER_SIZE 255
+       SERIAL1_RX_BUFFER_SIZE 255
+
+## Teensy vs. Beaglebone baud rate notes
 
 * supported beaglebone bauds can be found in
   beaglebone:/usr/include/asm-generic/termbits.h
@@ -30,14 +30,14 @@
   /usr/local/arduino-1.8.1/hardware/teensy/avr/cores/teensy3/)
 
 * Example: 500,000 baud:
-  - Teensy divisor = (96000000*2 + baud/2)/baud (ex: 500,000 baud = 384)
-  - Actual baud = 96000000*2 / divisor (ex: div=384, baud=500,000)
-  - Beaglebone termbits.h: B500000
-  
+  * Teensy divisor = (96000000*2 + baud/2)/baud (ex: 500,000 baud = 384)
+  * Actual baud = 96000000*2 / divisor (ex: div=384, baud=500,000)
+  * Beaglebone termbits.h: B500000
+
 * Example: 115,200 baud:
-  - Teensy divisor = 1167
-  - Actual teensy baud rate = 115176.965  (0.02% error)
-  - Beaglebone termbits.h: B115200
+  * Teensy divisor = 1167
+  * Actual teensy baud rate = 115176.965  (0.02% error)
+  * Beaglebone termbits.h: B115200
 
 * If teensy and beaglebone don't have exact same baud, it may work if
   it's close enough, but there is an increasing risk of dropping
@@ -47,8 +47,7 @@
   1,000,000 which the teensy can match exactly.  It is recommended to
   pick an exact match if possible.
 
-
-# SBUS Channel conventions
+## SBUS Channel conventions
 
 I need to make some choices here.  Either I can spend a huge amount of
 time making the input channel mapping fully configurable (which
@@ -58,11 +57,11 @@ them to be the official mapping for AuraUAS.  For now I choose the
 latter approach.  So here are the official mappings:
 
 * Channel 0: Master auto/manual switch.
-  - val < 0 (norm) = Manual
-  - val > 0 (norm) = Autopilot
+  * val < 0 (norm) = Manual
+  * val > 0 (norm) = Autopilot
 * Channel 1: Throttle safety
-  - val < 0 (norm) = Throttle disabled
-  - val > 0 (norm) = Throttle enabled
+  * val < 0 (norm) = Throttle disabled
+  * val > 0 (norm) = Throttle enabled
 * Channel 2: Throttle
 * Channel 3: Aileron
 * Channel 4: Elevator
@@ -76,8 +75,7 @@ Note: Mixing modes are handled on board the aura-sensors module (aka
 "smart" receiver.)  This simplifies transmitter programming and many
 other aircraft setup tasks tremendously.
 
-
-# Available mixing modes
+## Available mixing modes
 
 Briefly, the supported mixing modes at the time of writing are:
 
@@ -89,8 +87,7 @@ Briefly, the supported mixing modes at the time of writing are:
 * Vtail mixing
 * Differential thrust mixing.
 
-
-# PWM Output Channel Assignments
+## PWM Output Channel Assignments
 
 Again, for the purpose of keeping code and configurations simpler, here
 are the official PWM output channel mappings:
