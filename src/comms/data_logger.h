@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <SD.h>
 
 #include "../logs/RingBuf.h"
 #include "../util/ratelimiter.h"
@@ -48,7 +49,7 @@ private:
     RateLimiter limiter_2sec;
     RateLimiter limiter_10sec;
 
-    bool sd_card_inited = false;
+    File log_fd;
 
     int log_packet(uint8_t packet_id, uint8_t *payload, uint16_t len);
 

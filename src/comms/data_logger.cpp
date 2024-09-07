@@ -7,7 +7,6 @@
  */
 
 #include <Arduino.h>
-#include <SD.h>
 
 #include "../nodes.h"
 #include "../ns_messages.h"
@@ -19,6 +18,8 @@
 #include "serial_link.h"
 #include "data_logger.h"
 
+extern FS *logfs;
+
 void data_logger_t::init(log_rate_t rate) {
     log_rate = rate;
     limiter_50hz = RateLimiter(50);
@@ -27,6 +28,38 @@ void data_logger_t::init(log_rate_t rate) {
     limiter_1sec = RateLimiter(1);
     limiter_2sec = RateLimiter(0.5);
     limiter_10sec = RateLimiter(0.1);
+
+    if ( logfs != nullptr ) {
+        string log_dir_name = "/logs";
+        string file_name = "";
+        if ( not logfs->exists(log_dir_name.c_str()) ) {
+            logfs->mkdir(log_dir_name.c_str());
+        }
+        // find next available log file number
+        File log_dir = logfs->open(log_dir_name.c_str());
+        int next_val = 0;
+        while ( true ) {
+            File entry = log_dir.openNextFile();
+            if ( not entry ) {
+                break;
+            }
+            printf("file: %s\n", entry.name());
+            string name = entry.name();
+            // expecting file names of the form: flight_00000.nst
+            int val = atoi(name.substr(7, 5).c_str());
+            if ( val >= next_val ) {
+                next_val = val + 1;
+            }
+        }
+        string val_str = std::to_string(next_val);
+        string pad = string(5 - val_str.length(), '0');
+        string log_name = log_dir_name + "/flight_" + pad + val_str + ".nst";
+        printf("Next log file name: %s\n", log_name.c_str());
+        log_fd = logfs->open(log_name.c_str(), FILE_WRITE);
+        if ( !log_fd ) {
+            printf("Failed to open log file: %s\n", log_name.c_str());
+        }
+    }
 }
 
 void data_logger_t::log_messages() {
@@ -221,7 +254,9 @@ void data_logger_t::write_buffer() {
     uint8_t val;
     while ( not data_logger_t::log_buffer.isEmpty() ) {
         data_logger_t::log_buffer.lockedPop(val);
+        log_fd.write(val);
     }
+    log_fd.flush();
 }
 
 RingBuf<uint8_t, max_buf_size> data_logger_t::log_buffer;
