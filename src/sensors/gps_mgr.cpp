@@ -3,7 +3,7 @@
 
 #include "../nodes.h"
 
-#include "../nav/nav_constants.h"
+#include "../util/constants.h"
 #include "../nav/coremag.h"
 #include "gps_mgr.h"
 
@@ -29,9 +29,9 @@ void gps_mgr_t::update() {
                 gps_acquired = true;
                 gps_settle_timer = 0;
                 update_magvar();
-                printf("GPS: 3d fix acquired.\n");
-                printf("GPS: unix time = %.3f\n", (double)unix_usec / 1000000.0);
-                printf("Local magvar (deg) = %.2f\n", magvar_rad*R2D);
+                Serial.println("GPS: 3d fix acquired.");
+                Serial.print("GPS: unix time = "); Serial.println((double)unix_usec / 1000000.0, 3);
+                Serial.print("Local magvar (deg) = "); Serial.println(magvar_rad*r2d, 2);
             } else if ( !gps_settled and gps_settle_timer > 10000 ) {  // 10 seconds
                 printf("GPS: settled for 10 seconds.\n");
                 gps_settled = true;
@@ -93,9 +93,9 @@ void gps_mgr_t::update_unix_usec() {
 
 void gps_mgr_t::update_magvar() {
     long int jd = unixdate_to_julian_days( unix_usec / 1000000 );
-    printf("GPS: julian days = %ld\n", jd);
-    double lat_rad = (gps_data.lat / 10000000.0) * D2R;
-    double lon_rad = (gps_data.lon / 10000000.0) * D2R;
+    Serial.print("GPS: julian days = "); Serial.println(jd);
+    double lat_rad = (gps_data.lat / 10000000.0) * d2r;
+    double lon_rad = (gps_data.lon / 10000000.0) * d2r;
     float alt_m = gps_data.hMSL / 1000.0;
     double fields[6];
     magvar_rad = calc_magvar( lat_rad, lon_rad, alt_m / 1000.0, jd, fields );
@@ -103,5 +103,8 @@ void gps_mgr_t::update_magvar() {
     mag_ned(1) = fields[4];
     mag_ned(2) = fields[5];
     mag_ned.normalize();
-    printf("GPS: ideal mag vector = %.3f %.3f %.3f\n", mag_ned(0), mag_ned(1), mag_ned(2));
+    Serial.print("GPS: ideal mag vector = ");
+    Serial.print(mag_ned(0), 3); Serial.print(" ");
+    Serial.print(mag_ned(1), 3); Serial.print(" ");
+    Serial.print(mag_ned(2), 3); Serial.println("");
 }
