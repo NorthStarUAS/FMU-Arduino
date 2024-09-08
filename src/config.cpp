@@ -12,7 +12,7 @@ uint16_t config_t::read_serial_number() {
     uint8_t hi = EEPROM.read(1);
     // printf("raw serial number read %d %d\n", hi, lo);
     serial_number = hi * 256 + lo;
-    if ( !config_node.isNull() ) {
+    if ( not config_node.isNull() ) {
         config_node.setInt("serial_number", serial_number);
     }
     return serial_number;
@@ -31,7 +31,7 @@ uint16_t config_t::set_serial_number(uint16_t value) {
 bool config_t::load_json_config() {
     PropertyNode local_config_node("/config");
     const char *file_path = "config.json";
-    if ( !local_config_node.load(file_path) ) {
+    if ( not local_config_node.load(file_path) ) {
         printf("Config file loading failed: %s\n", file_path);
         return false;
     }
