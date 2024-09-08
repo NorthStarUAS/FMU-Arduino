@@ -1,3 +1,5 @@
+// fixme: bad comments
+
 /* Binary I/O section: generial info ...
  * Packets start with two bytes ... START_OF_MSG0 and START_OF_MSG1
  * Following that is the packet ID
@@ -9,7 +11,7 @@
 #include "../../setup_board.h"
 #include "../nodes.h"
 
-#include "../nav/nav_constants.h"
+#include "../util/constants.h"
 #include "../sensors/pwm.h"
 
 #include "info.h"
@@ -17,130 +19,144 @@
 void write_pilot_in_ascii() {
     // pilot (receiver) input data
     if ( inceptors_node.getBool("failsafe") ) {
-        printf("FAILSAFE! ");
+        Serial.print("FAILSAFE! ");
     }
     if ( inceptors_node.getBool("master_switch") ) {
-        printf("(Auto) ");
+        Serial.print("(Auto) ");
     } else {
-        printf("(Manual) ");
+        Serial.print("(Manual) ");
     }
     if ( inceptors_node.getBool("throttle_safety") ) {
-        printf("(Throttle enable) ");
+        Serial.print("(Throttle enable) ");
     } else {
-        printf("(Throttle safe) ");
+        Serial.print("(Throttle safe) ");
     }
-    printf("%.3f %.3f %.3f %.3f",
-           inceptors_node.getDouble("power"),
-           inceptors_node.getDouble("roll"), inceptors_node.getDouble("pitch"), inceptors_node.getDouble("yaw"));
-    printf("\n");
+    Serial.print(inceptors_node.getDouble("power"), 2); Serial.print(" ");
+    Serial.print(inceptors_node.getDouble("roll"), 2); Serial.print(" ");
+    Serial.print(inceptors_node.getDouble("pitch"), 2); Serial.print(" ");
+    Serial.print(inceptors_node.getDouble("yaw"), 2); Serial.println();
 }
 
 void write_actuator_out_ascii() {
     // actuator output
-    printf("RCOUT:");
+    Serial.print("RCOUT: ");
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
-        printf("%.2f ", effectors_node.getDouble("channel", i));
+        Serial.print(effectors_node.getDouble("channel", i), 2); Serial.print(" ");
     }
-    printf("\n");
+    Serial.println();
+}
+
+static void write_padded_double(double val, int prec) {
+    if ( val >= 0  ) {
+        Serial.print(" ");
+    }
+    Serial.print(val, prec);
+}
+static void write_zero_padded_int(int val, int width) {
+    int base = 1;
+    for ( int i = 1; i < width; i++ ) {
+        base *= 10;
+    }
+    while ( base >= 10 ) {
+        if ( val < base ) {
+            Serial.print("0");
+        }
+        base /= 10;
+    }
+    Serial.print(val);
 }
 
 void write_imu_ascii() {
     // output imu data
-    printf("IMU: ");
-    printf("%.3f ", imu_node.getDouble("timestamp"));
-    printf("%.2f ", imu_node.getDouble("p_rps"));
-    printf("%.2f ", imu_node.getDouble("q_rps"));
-    printf("%.2f ", imu_node.getDouble("r_rps"));
-    printf("%.2f ", imu_node.getDouble("ax_mps2"));
-    printf("%.2f ", imu_node.getDouble("ay_mps2"));
-    printf("%.2f ", imu_node.getDouble("az_mps2"));
-    printf("%.2f ", imu_node.getDouble("temp_C"));
-    printf("\n");
+    Serial.print("IMU: ");
+    Serial.print(imu_node.getDouble("timestamp"), 2); Serial.print(" ");
+    write_padded_double(imu_node.getDouble("p_rps"), 2); Serial.print(" ");
+    write_padded_double(imu_node.getDouble("q_rps"), 2); Serial.print(" ");
+    write_padded_double(imu_node.getDouble("r_rps"), 2); Serial.print(" ");
+    write_padded_double(imu_node.getDouble("ax_mps2"), 2); Serial.print(" ");
+    write_padded_double(imu_node.getDouble("ay_mps2"), 2); Serial.print(" ");
+    write_padded_double(imu_node.getDouble("az_mps2"), 2); Serial.print(" ");
+    Serial.print(imu_node.getDouble("temp_C"), 1); Serial.println();
 }
 
 void write_gps_ascii() {
-    printf("GPS:");
-    printf(" Lat: %.7f", gps_node.getDouble("latitude_deg"));
-    printf(" Lon: %.7f", gps_node.getDouble("longitude_deg"));
-    printf(" Alt: %.1f", gps_node.getDouble("altitude_m"));
-    printf(" Vel: %.1f %.1f %.1f",
-                    gps_node.getDouble("vn_mps"),
-                    gps_node.getDouble("ve_mps"),
-                    gps_node.getDouble("vd_mps"));
-    printf(" Sat: %d", gps_node.getInt("num_sats"));
-    printf(" Fix: %d", gps_node.getInt("status"));
-    printf(" Time: %02d:%02d:%02d ",
-                    gps_node.getInt("hour"),
-                    gps_node.getInt("min"),
-                    gps_node.getInt("sec"));
-    printf(" Date: %02d/%02d/%04d",
-                    gps_node.getInt("month"),
-                    gps_node.getInt("day"),
-                    gps_node.getInt("year"));
-    printf("\n");
+    Serial.print("GPS:");
+    Serial.print(" Lat: "); Serial.print(gps_node.getDouble("latitude_deg"), 7);
+    Serial.print(" Lon: "); Serial.print(gps_node.getDouble("longitude_deg"), 7);
+    Serial.print(" Alt: "); Serial.print(gps_node.getDouble("altitude_m"), 1);
+    Serial.print(" Vel: ");
+    write_padded_double(gps_node.getDouble("vn_mps"), 1); Serial.print(" ");
+    write_padded_double(gps_node.getDouble("ve_mps"), 1); Serial.print(" ");
+    write_padded_double(gps_node.getDouble("vd_mps"), 1);
+    Serial.print(" Sat: "); Serial.print(gps_node.getInt("num_sats"));
+    Serial.print(" Fix: "); Serial.print(gps_node.getInt("status"));
+    Serial.print(" Time: ");
+    write_zero_padded_int(gps_node.getInt("hour"), 2); Serial.print(":");
+    write_zero_padded_int(gps_node.getInt("min"), 2); Serial.print(":");
+    write_zero_padded_int(gps_node.getInt("sec"), 2);
+    Serial.print(" Date: ");
+    write_zero_padded_int(gps_node.getInt("month"), 2); Serial.print("/");
+    write_zero_padded_int(gps_node.getInt("day"), 2); Serial.print("/");
+    write_zero_padded_int(gps_node.getInt("year"), 4);
+    Serial.println();
 }
 
 void write_nav_ascii() {
     // values
-    printf("Pos: %.7f, %.7f, %.2f",
-                    nav_node.getDouble("latitude_deg"),
-                    nav_node.getDouble("longitude_deg"),
-                    nav_node.getDouble("altitude_m"));
-    printf(" Vel: %.2f, %.2f, %.2f",
-                    nav_node.getDouble("vn_mps"),
-                    nav_node.getDouble("ve_mps"),
-                    nav_node.getDouble("vd_mps"));
-    printf(" Att: %.2f, %.2f, %.2f\n",
-                    nav_node.getDouble("phi_rad")*R2D,
-                    nav_node.getDouble("the_rad")*R2D,
-                    nav_node.getDouble("psi_rad")*R2D);
+    Serial.print("Pos: ");
+    Serial.print(nav_node.getDouble("latitude_deg"), 7); Serial.print(" ");
+    Serial.print(nav_node.getDouble("longitude_deg"), 7); Serial.print(" ");
+    Serial.print(nav_node.getDouble("altitude_m"), 1);
+    Serial.print(" Vel: ");
+    write_padded_double(nav_node.getDouble("vn_mps"), 2); Serial.print(" ");
+    write_padded_double(nav_node.getDouble("ve_mps"), 2); Serial.print(" ");
+    write_padded_double(nav_node.getDouble("vd_mps"), 2);
+    Serial.print(" Att: ");
+    write_padded_double(nav_node.getDouble("phi_rad")*r2d, 2); Serial.print(" ");
+    write_padded_double(nav_node.getDouble("the_rad")*r2d, 2); Serial.print(" ");
+    write_padded_double(nav_node.getDouble("psi_rad")*r2d, 2); Serial.println();
 }
 
 void write_nav_stats_ascii() {
     // covariances
-    printf("gxb: %.2f %.2f %.2f",
-                    nav_node.getDouble("p_bias"),
-                    nav_node.getDouble("q_bias"),
-                    nav_node.getDouble("r_bias"));
-    printf(" axb: %.2f %.2f %.2f",
-                    nav_node.getDouble("ax_bias"),
-                    nav_node.getDouble("ay_bias"),
-                    nav_node.getDouble("az_bias"));
+    Serial.print("gbx: ");
+    Serial.print(nav_node.getDouble("p_bias"), 2); Serial.print(" ");
+    Serial.print(nav_node.getDouble("q_bias"), 2); Serial.print(" ");
+    Serial.print(nav_node.getDouble("r_bias"), 2);
+    Serial.print(" abx: ");
+    Serial.print(nav_node.getDouble("ax_bias"), 2); Serial.print(" ");
+    Serial.print(nav_node.getDouble("ay_bias"), 2); Serial.print(" ");
+    Serial.print(nav_node.getDouble("az_bias"), 2);
     float num = 3.0;            // how many standard deviations
-    printf(" cov pos: %.2f %.2f %.2f",
-                    num * nav_node.getDouble("Pp0"),
-                    num * nav_node.getDouble("Pp1"),
-                    num * nav_node.getDouble("Pp2"));
-    printf(" vel: %.2f %.2f %.2f",
-                    num * nav_node.getDouble("Pv0"),
-                    num * nav_node.getDouble("Pv1"),
-                    num * nav_node.getDouble("Pv2"));
-    printf(" att: %.2f %.2f %.2f\n",
-                    num * nav_node.getDouble("Pa0")*R2D,
-                    num * nav_node.getDouble("Pa1")*R2D,
-                    num * nav_node.getDouble("Pa2")*R2D);
+    Serial.print(" cov pos: ");
+    Serial.print(num * nav_node.getDouble("Pp0"), 2); Serial.print(" ");
+    Serial.print(num * nav_node.getDouble("Pp1"), 2); Serial.print(" ");
+    Serial.print(num * nav_node.getDouble("Pp2"), 2);
+    Serial.print(" vel: ");
+    Serial.print(num * nav_node.getDouble("Pv0"), 2); Serial.print(" ");
+    Serial.print(num * nav_node.getDouble("Pv1"), 2); Serial.print(" ");
+    Serial.print(num * nav_node.getDouble("Pv2"), 2);
+    Serial.print(" att: ");
+    Serial.print(num * nav_node.getDouble("Pa0")*r2d, 2); Serial.print(" ");
+    Serial.print(num * nav_node.getDouble("Pa1")*r2d, 2); Serial.print(" ");
+    Serial.print(num * nav_node.getDouble("Pa2")*r2d, 2); Serial.println();
     if ( false ) {
         nav_node.pretty_print();
     }
 }
 
 void write_airdata_ascii() {
-    printf("Baro: %.0f pa %.1f C %.1f m ",
-                    airdata_node.getDouble("baro_press_pa"),
-                    airdata_node.getDouble("baro_temp_C"),
-                    airdata_node.getDouble("altitude_m"));
-    printf("Pitot: %.4f mps (%.1f pa) %.1f C %d errors\n",
-                    airdata_node.getDouble("airspeed_mps"),
-		            airdata_node.getDouble("diffPress_pa"),
-                    airdata_node.getDouble("air_temp_C"),
-                    airdata_node.getUInt("error_count"));
+    Serial.print("Baro: "); Serial.print(airdata_node.getDouble("baro_press_pa"), 0); Serial.print(" pa ");
+    Serial.print(airdata_node.getDouble("baro_temp_C"), 1); Serial.print(" C ");
+    Serial.print(airdata_node.getDouble("altitude_m"), 1); Serial.print(" m ");
+    Serial.print("Pitot: ");
+    Serial.print(airdata_node.getDouble("airspeed_mps"), 1); Serial.print(" mps (");
+	Serial.print(airdata_node.getDouble("diffPress_pa"), 1); Serial.print(" pa) ");
+    Serial.print(airdata_node.getDouble("air_temp_C"), 1); Serial.print(" C ");
+    Serial.print(airdata_node.getUInt("error_count")); Serial.println(" errors");
 }
 
 void write_power_ascii() {
-    // printf("Avionics v: %.2f  Batt v: %.2f  Batt amp: %.2f\n",
-    //        power_node.getDouble("avionics_vcc"),
-    //        power_node.getDouble("main_vcc"),
-    //        power_node.getDouble("main_amps"));
     Serial.print("Avionics v: ");
     Serial.print(power_node.getDouble("avionics_vcc"));
     Serial.print(" Batt v: ");
