@@ -42,16 +42,6 @@ void setup() {
     // printf("Sensor/config communication is on Serial1 @ %d baud (N81) no flow control.\n", HOST_BAUD);
 
     // initialize onboard flash file storage
-    #if defined(ARDUINO_TEENSY36)
-    uint32_t lfs_progm_bytes = 1024*128;   // allocate 128Kb flash disk,
-    #elif defined(ARDUINO_TEENSY40)
-    uint32_t lfs_progm_bytes = 1024*1024;   // allocate 1.25Mb flash disk,
-    #elif defind(ARDUINO_TEENSY41)
-    uint64_t lfs_progm_bytes = 1024*1024 * 7; // should be able to go up to 7Mb
-    #else
-    uint32_t lfs_progm_bytes = 0;
-    #endif
-
     if ( !progmfs.begin(lfs_progm_bytes) ) {
         printf("Unable to initialize flash storage ... failed to allocate %lu bytes.\n", lfs_progm_bytes);
     } else {
