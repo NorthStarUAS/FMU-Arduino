@@ -30,7 +30,7 @@ void setup() {
     Serial.begin(115200);
     uint32_t timeout = millis() + 1000;
     // wait for up to a second for Serial to become ready (continue if not ready!)
-    while ( !Serial and millis() < timeout ) {
+    while ( not Serial and millis() < timeout ) {
         delay(1);
     }
 
@@ -42,7 +42,7 @@ void setup() {
     // printf("Sensor/config communication is on Serial1 @ %d baud (N81) no flow control.\n", HOST_BAUD);
 
     // initialize onboard flash file storage
-    if ( !progmfs.begin(lfs_progm_bytes) ) {
+    if ( not progmfs.begin(lfs_progm_bytes) ) {
         printf("Unable to initialize flash storage ... failed to allocate %lu bytes.\n", lfs_progm_bytes);
     } else {
         printf("Program memory flash initialized: %lu bytes.\n", lfs_progm_bytes);
@@ -52,7 +52,8 @@ void setup() {
     }
 
     // initialize SD card
-    if ( !SD.begin(BUILTIN_SDCARD)) {
+    // SD.begin(BUILTIN_SDCARD)
+    if ( not SD.sdfs.begin(SdioConfig(DMA_SDIO))) {
         printf("Cannot initializing builtin SD card ... no card?\n");
     } else {
         printf("SD card initialized for logging.\n");
@@ -67,7 +68,7 @@ void setup() {
     MTP.begin();
 
     config = new config_t();
-    if ( !config->load_json_config() ) {
+    if ( configfs == nullptr or not config->load_json_config() ) {
         printf("No config file loaded, we cannot do much without it.\n");
         delay(5000);
     }
@@ -183,7 +184,6 @@ void loop() {
     // These things run at lower priority outside the interrupt handler. (But
     // absolutely no property tree access here!)
     MTP.loop();
-    delay(10);
-
     comms_mgr->data_logger.write_buffer();
+    delay(1);
 }
