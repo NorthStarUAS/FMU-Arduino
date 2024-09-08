@@ -72,7 +72,10 @@ void calib_accels_t::update()  {
     }
 
     if ( state < 6 ) {
-        printf("up axis: %d armed: %d slow-fast: %.3f stable: %d\n", up_axis, armed, d,  stable);
+        Serial.print("up axis: "); Serial.print(up_axis);
+        Serial.print(" armed: "); Serial.print(armed);
+        Serial.print(" slow-fast: "); Serial.print(d, 3);
+        Serial.print(" stable: "); Serial.println(stable);
     }
 
     if ( state == 0 ) {
@@ -156,7 +159,7 @@ void calib_accels_t::update()  {
         }
         float fit = fit_metrics(affine);
         imu_calib_node.setDouble("accel_fit_mean", fit);
-        printf("Fit quality: %.2f\n", fit);
+        Serial.print("Fit quality: "); Serial.println(fit, 2);
 
         // extract strapdown rotation matrix
         Eigen::Affine3f a3f;
@@ -177,32 +180,10 @@ void calib_accels_t::update()  {
     }
 }
 
-static void print_matrix(Eigen::MatrixXf M) {
-    printf("Matrix:\n");
-    for ( int i = 0; i < M.rows(); i++ ) {
-        printf("  ");
-        for ( int j = 0; j < M.cols(); j++ ) {
-            if ( M(i,j) >= 0 ) {
-                printf(" ");
-            }
-            printf("%.2f ", M(i,j));
-        }
-        printf("\n");
-    }
-}
-
-static void print_vector(const char *label, Eigen::VectorXf v) {
-    printf("%s: ", label);
-    for ( int i = 0; i < v.size(); i++ ) {
-        printf("%.2f ", v(i));
-    }
-    printf("\n");
-}
-
 float calib_accels_t::fit_metrics(Eigen::MatrixXf affine) {
     Eigen::VectorXf errors;
     errors.resize(6);
-    print_matrix(Meas);
+    print_matrix("Meas", Meas);
     for ( int i = 0; i < Meas.rows(); i++ ) {
         Eigen::Vector4f v1; v1 << Meas(i,0), Meas(i,1), Meas(i,2), 1.0;
         Eigen::Vector4f v2 = affine * v1;
@@ -211,7 +192,7 @@ float calib_accels_t::fit_metrics(Eigen::MatrixXf affine) {
         print_vector("v2", v2);
         print_vector("v3", v3);
         errors[i] = (v2.head(3) - v3).norm();
-        printf("error[%d] = %.2f\n", i, errors[i]);
+        Serial.print("error["); Serial.print(i); Serial.print(")] = "); Serial.println(errors[i], 2);
     }
     return errors.mean();
 }

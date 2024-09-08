@@ -2,47 +2,67 @@
 
 #include "affine.h"
 
-static void print_matrix(const char *label, Eigen::MatrixXf M) {
-    printf("%s:\n", label);
+void print_matrix(const char *label, Eigen::MatrixXf M) {
+    Serial.print(label); Serial.println(": ");
     for ( int i = 0; i < M.rows(); i++ ) {
-        printf("  ");
+        Serial.print("  ");
         for ( int j = 0; j < M.cols(); j++ ) {
             if ( M(i,j) >= 0 ) {
-                printf(" ");
+                Serial.print(" ");
             }
-            printf("%.6f ", M(i,j));
+            Serial.print(M(i,j), 2); Serial.print(" ");
         }
-        printf("\n");
+        Serial.println("");
     }
-    delay(100);
 }
+
+void print_vector(const char *label, Eigen::VectorXf v) {
+    Serial.print(label); Serial.println(": ");
+    for ( int i = 0; i < v.size(); i++ ) {
+        Serial.print(v(i), 2); Serial.print(" ");
+    }
+    Serial.println("");
+}
+
+// static void print_matrix(const char *label, Eigen::MatrixXf M) {
+//     printf("%s:\n", label);
+//     for ( int i = 0; i < M.rows(); i++ ) {
+//         printf("  ");
+//         for ( int j = 0; j < M.cols(); j++ ) {
+//             if ( M(i,j) >= 0 ) {
+//                 printf(" ");
+//             }
+//             printf("%.6f ", M(i,j));
+//         }
+//         printf("\n");
+//     }
+// }
 
 static void print_numpy_style(const char *label, Eigen::MatrixXf M) {
-    printf("%s = [ ", label);
+    Serial.print(label); Serial.print(" = [ ");
     for ( int j = 0; j < M.cols(); j++ ) {
         if ( j > 0 ) {
-            printf(", ");
+            Serial.print(", ");
         }
-        printf("[ ");
+        Serial.print("[ ");
         for ( int i = 0; i < M.rows(); i++ ) {
             if ( i > 0 ) {
-                printf(", ");
+                Serial.print(", ");
             }
-            printf("%.6f", M(i,j));
+            Serial.print(M(i,j), 3);
         }
-        printf("]");
+        Serial.print("]");
     }
-    printf("]\n");
-    delay(100);
+    Serial.println("]");
 }
 
-static void print_vector(const char *label, Eigen::VectorXf v) {
-    printf("%s: ", label);
-    for ( int i = 0; i < v.size(); i++ ) {
-        printf("%.2f ", v(i));
-    }
-    printf("\n");
-}
+// static void print_vector(const char *label, Eigen::VectorXf v) {
+//     printf("%s: ", label);
+//     for ( int i = 0; i < v.size(); i++ ) {
+//         printf("%.2f ", v(i));
+//     }
+//     printf("\n");
+// }
 
 bool affine_from_points(Eigen::MatrixXf src, Eigen::MatrixXf dst, bool shear, bool scale, Eigen::MatrixXf &M ) {
     printf("affine_from_points()\n");
