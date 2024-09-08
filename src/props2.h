@@ -2,8 +2,6 @@
 
 #if defined(ARDUINO)
 #  include <Arduino.h>
-#elif defined(ARDUPILOT_BUILD)
-#  undef _GLIBCXX_USE_C99_STDIO   // vsnprintf() not defined
 #endif
 
 #include <stdio.h>
@@ -21,9 +19,10 @@ using namespace rapidjson;
 // property system style interface with a rapidjson document as the backend
 //
 
-class DocPointerWrapper {
+class SharedStateWrapper {
 public:
     Document *doc;
+    int *realloc_counter;
 };
 
 class PropertyNode {
@@ -77,6 +76,7 @@ public:
     // indexed value setters
     bool setUInt( const char *name, unsigned int index, unsigned int u ); // returns true if successful
     bool setDouble( const char *name, double x, unsigned int u ); // returns true if successful
+    bool setString( const char *name, string s, unsigned int u ); // returns true if successful
 
     // load/merge json file under this node
     bool load( const char *file_path );
@@ -89,30 +89,36 @@ public:
     string get_json_string();
     bool set_json_string(string message);
 
-    DocPointerWrapper get_Document() {
-        init_Document();
-        DocPointerWrapper d;
+    SharedStateWrapper get_shared_state() {
+        init_shared_state();
+        SharedStateWrapper d;
         d.doc = doc;
+        d.realloc_counter = realloc_counter;
         return d;
     }
-
-    void set_Document( DocPointerWrapper d ) {
+    
+    void set_shared_state( SharedStateWrapper d ) {
         doc = d.doc;
+        realloc_counter = d.realloc_counter;
     }
 
 private:
-    // shared document instance
+    // shared state instances
     static Document *doc;
-    static int shared_realloc_counter;
+    static int *realloc_counter;
 
     // pointer to rapidjson Object;
     Value *val = nullptr;
     string saved_path;
     int saved_realloc_counter;
 
-    void init_Document() {
+    inline void init_shared_state() {
         if ( doc == nullptr ) {
             doc = new Document;
+        }
+        if ( realloc_counter == nullptr ) {
+            realloc_counter = new int;
+            *realloc_counter = 0;
         }
     }
     bool extend_array(Value *node, int size);

@@ -1,20 +1,12 @@
 #if defined(ARDUINO)
-#  include <FS.h>
-extern FS *configfs;  // SD or LittleFS_Program (or other) defined in the top level sketch
-#elif defined(ARDUPILOT_BUILD)
-#  include <AP_Filesystem/AP_Filesystem.h>
-#  undef _GLIBCXX_USE_C99_STDIO   // vsnprintf() not defined
-#  include "setup_board.h"
+#  include <SD.h>
+   extern FS *configfs;  // SD or LittleFS_Program (or other) defined in the top level sketch
 #else
 #  include <sys/stat.h>
 #  include <sys/statfs.h>
 #  include <sys/types.h>
 #  include <fcntl.h>            // open()
 #  include <unistd.h>           // read()
-#endif
-
-#if defined(__PX4_POSIX)
-#  include <px4_platform_common/posix.h>
 #endif
 
 #include <math.h>
@@ -54,7 +46,7 @@ bool PropertyNode::extend_array(Value *node, int size) {
 }
 
 PropertyNode::PropertyNode() {
-    init_Document();
+    init_shared_state();
 }
 
 Value *PropertyNode::find_node_from_path(Value *start_node, string path, bool create) {
@@ -84,8 +76,8 @@ Value *PropertyNode::find_node_from_path(Value *start_node, string path, bool cr
                 // printf("    has %s\n", tokens[i].c_str());
                 node = &(*node)[tokens[i].c_str()];
             } else if ( create ) {
-                shared_realloc_counter++;
-                printf("    creating %s (%d)\n", tokens[i].c_str(), shared_realloc_counter);
+                (*realloc_counter)++;
+                printf("    creating %s (%d)\n", tokens[i].c_str(), *realloc_counter);
                 Value key;
                 key.SetString(tokens[i].c_str(), tokens[i].length(), doc->GetAllocator());
                 Value newobj(kObjectType);
@@ -108,7 +100,7 @@ Value *PropertyNode::find_node_from_path(Value *start_node, string path, bool cr
 }
 
 PropertyNode::PropertyNode(string abs_path, bool create) {
-    init_Document();
+    init_shared_state();
     // printf("PropertyNode(%s) %d\n", abs_path.c_str(), (int)&doc);
     if ( abs_path[0] != '/' ) {
         printf("  not an absolute path\n");
@@ -116,23 +108,23 @@ PropertyNode::PropertyNode(string abs_path, bool create) {
     }
     val = find_node_from_path(doc, abs_path, create);
     saved_path = abs_path;
-    saved_realloc_counter = shared_realloc_counter;
+    saved_realloc_counter = *realloc_counter;
     // pretty_print();
 }
 
 //PropertyNode::PropertyNode(Value *v) {
-//    init_Document();
+//    init_shared_state();
 //    val = v;
 //}
 
 void PropertyNode::realloc_check() {
-    if ( saved_realloc_counter != shared_realloc_counter ) {
+    if ( saved_realloc_counter != *realloc_counter ) {
         // printf("REALLOC HAPPENED, updating pointer to %s\n", saved_path.c_str());
-        // printf(" saved %d  new %d\n", saved_realloc_counter, shared_realloc_counter);
+        // printf(" saved %d  new %d\n", saved_realloc_counter, *realloc_counter);
         // Value *tmp = val;
         val = find_node_from_path(doc, saved_path, true);
         // printf("  orig %p -> new %p\n", tmp, val);
-        saved_realloc_counter = shared_realloc_counter;
+        saved_realloc_counter = *realloc_counter;
     }
 }
 
@@ -393,13 +385,7 @@ static string getValueAsString( Value &v ) {
     } else if ( v.IsUint64() ) {
         return std::to_string(v.GetUint64());
     } else if ( v.IsDouble() ) {
-#if defined(ARDUPILOT_BUILD)
-        char buf[30];
-        hal.util->snprintf(buf, 30, "%lf", v.GetDouble());
-        return buf;
-#else
         return std::to_string(v.GetDouble());
-#endif
     } else if ( v.IsString() ) {
         return v.GetString();
     }
@@ -719,6 +705,32 @@ bool PropertyNode::setDouble( const char *name, double x, unsigned int index ) {
     return true;
 }
 
+bool PropertyNode::setString( const char *name, string s, unsigned int index ) {
+    realloc_check();
+    if ( !val->IsObject() ) {
+        printf("  converting value to object\n");
+        // hal.scheduler->delay(100);
+        val->SetObject();
+    }
+    if ( !val->HasMember(name) ) {
+        // printf("creating %s\n", name);
+        Value key(name, doc->GetAllocator());
+        Value a(kArrayType);
+        val->AddMember(key, a, doc->GetAllocator());
+    } else {
+        // printf("%s already exists\n", name);
+        Value &a = (*val)[name];
+        if ( ! a.IsArray() ) {
+            printf("converting member to array: %s\n", name);
+            a.SetArray();
+        }
+    }
+    Value &a = (*val)[name];
+    extend_array(&a, index+1);    // protect against out of range
+    a[index].SetString(s.c_str(), s.length(), doc->GetAllocator());
+    return true;
+}
+
 bool PropertyNode::load_json( const char *file_path, Value *v ) {
     realloc_check();
     printf("loading from %s\n", file_path);
@@ -727,11 +739,7 @@ bool PropertyNode::load_json( const char *file_path, Value *v ) {
 #if !defined(ARDUINO)
     // posix systems: stat() before opening the file
     struct stat st;
-#  if defined(ARDUPILOT_BUILD)
-    if ( AP::FS().stat(file_path, &st) < 0 ) {
-#  else
     if ( stat(file_path, &st) < 0 ) {
-#  endif
         printf("Read stat failed: %s - %d\n", file_path, errno);
         printf("does it exist?");
         return false;
@@ -753,11 +761,7 @@ bool PropertyNode::load_json( const char *file_path, Value *v ) {
     file_size = open_fd.size();
 #else
     // posix systems
-#  if defined(ARDUPILOT_BUILD)
-    const int open_fd = AP::FS().open(file_path, O_RDONLY);
-#  else
     const int open_fd = open(file_path, O_RDONLY);
-#  endif
     if (open_fd == -1) {
         printf("Open failed: %s - %d\n", file_path, errno);
         return false;
@@ -774,8 +778,6 @@ bool PropertyNode::load_json( const char *file_path, Value *v ) {
     // read from file
 #if defined(ARDUINO)
     ssize_t read_len = open_fd.read(read_buf, file_size);
-#elif defined(ARDUPILOT_BUILD)
-    ssize_t read_len = AP::FS().read(open_fd, read_buf, file_size);
 #else
     ssize_t read_len = read(open_fd, read_buf, file_size);
 #endif
@@ -787,8 +789,6 @@ bool PropertyNode::load_json( const char *file_path, Value *v ) {
     // close file after reading
 #if defined(ARDUINO)
     open_fd.close();
-#elif defined(ARDUPILOT_BUILD)
-    AP::FS().close(open_fd);
 #else
     close(open_fd);
 #endif
@@ -826,65 +826,24 @@ static bool rename_file(const char *current_name, const char *new_name) {
     printf("Renaming %s to %s\n", current_name, new_name);
 
 #if defined(ARDUINO)
-    printf("Fail to rename(), need to implement, but there should be a rename() function now in the sdfat library!");
-#elif defined(ARDUPILOT_BUILD)
-    struct stat st;
-    if ( AP::FS().stat(current_name, &st) < 0 ) {
-        printf("Read stat failed: %s - %d\n", current_name, errno);
+    if ( configfs != &SD ) {
+        printf("Renaming only works on SD cards (SdFat)\n");
         return false;
     }
-    printf("%s: size %d mtime %d\n", current_name, (int)st.st_size, (int)st.st_mtim.tv_sec);
-    char read_buf[st.st_size];
-
-    int open_fd = -1;
-
-    // open a file in read mode
-    open_fd = AP::FS().open(current_name, O_RDONLY);
-    if (open_fd == -1) {
-        printf("Open failed: %s - %s\n", current_name, strerror(errno));
+    if ( not configfs->exists(current_name) ) {
+        printf("File to rename does not exist: %s\n", current_name);
         return false;
     }
-
-    // read from file
-    ssize_t read_len = AP::FS().read(open_fd, read_buf, sizeof(read_buf));
-    if ( read_len == -1 ) {
-        printf("Read failed: %s - %s\n", current_name, strerror(errno));
+    if ( configfs->exists(new_name) ) {
+        configfs->remove(new_name);
+    }
+    FsFile orig = SD.sdfs.open(current_name);
+    if ( not orig ) {
+        printf("Cannot open %s before renaming.\n", current_name);
         return false;
     }
-
-    // close file after reading
-    AP::FS().close(open_fd);
-
-    AP::FS().unlink(new_name);  // we don't care if this doesn't exist
-
-    // check disk space
-    uint64_t free_bytes = AP::FS().disk_free("/");
-    console->printf("Disk free: %dk needed: %dk\n",
-                    (unsigned int)free_bytes / 1024,
-                    (unsigned int)(sizeof(read_buf) / 1024) + 1);
-
-    // open a file in write mode
-    open_fd = AP::FS().open(new_name, O_WRONLY | O_CREAT);
-    if (open_fd == -1) {
-        printf("Open %s failed: %s\n", new_name, strerror(errno));
-        return false;
-    }
-
-    // write file
-    ssize_t write_size;
-    write_size = AP::FS().write(open_fd, read_buf, sizeof(read_buf));
-    if ( write_size == -1 ) {
-        printf("Write failed: %s - %s\n", new_name, strerror(errno));
-        return false;
-    }
-
-    // close file
-    AP::FS().close(open_fd);
-
-    // set the mtime of the copy to the original
-    AP::FS().set_mtime(new_name, st.st_mtim.tv_sec);
-
-    AP::FS().unlink(current_name);  // remove the original
+    orig.rename(new_name);
+    orig.close();
 #else
     rename(current_name, new_name);
 #endif
@@ -904,8 +863,6 @@ static bool save_json( const char *file_path, Value *v ) {
     // long lFreeClusters = sdcard.vol()->freeClusterCount();
     // uint64_t free_bytes = lFreeClusters * 512;  // clusters are always 512k
     uint64_t free_bytes = configfs->totalSize() - configfs->usedSize();
-#elif defined(ARDUPILOT_BUILD)
-    uint64_t free_bytes = AP::FS().disk_free("/");
 #else
     struct statfs statfs_buf;
     uint64_t free_bytes;
@@ -920,25 +877,26 @@ static bool save_json( const char *file_path, Value *v ) {
            (unsigned int)free_bytes / 1024,
            (unsigned int)(buffer.GetSize() / 1024) + 1);
 
-    // rename existing file
-    string bak = (string)file_path + ".bak";
-    rename_file(file_path, bak.c_str());
-
-    // open a file in write mode
+    // open a new file in write mode
 #if defined(ARDUINO)
-    File open_fd = configfs->open(file_path, FILE_WRITE);
+    string new_name;
+    if ( configfs == &SD ) {
+        // SdFat has rename
+        new_name = (string)file_path + ".new";
+    } else {
+        // LittleFS does not have rename
+        new_name = (string)file_path;
+    }
+    if ( configfs->exists(new_name.c_str()) ) {
+        configfs->remove(new_name.c_str());
+    }
+    File open_fd = configfs->open(new_name.c_str(), FILE_WRITE);
     if ( !open_fd ) {
         printf("file open failed: %s\n", file_path);
         return false;
     }
 #else
-#  if defined(ARDUPILOT_BUILD)
-    const int open_fd = AP::FS().open(file_path, O_WRONLY | O_CREAT);
-#  elif defined(__PX4_POSIX)
-    const int open_fd = ::open(file_path, O_WRONLY | O_CREAT, PX4_O_MODE_666);
-#  else
     const int open_fd = ::open(file_path, O_WRONLY | O_CREAT, 0660);
-#  endif
     if (open_fd == -1) {
         printf("Open %s failed: %d\n", file_path, errno);
         return false;
@@ -949,12 +907,10 @@ static bool save_json( const char *file_path, Value *v ) {
     std::size_t write_size;
 #if defined(ARDUINO)
     write_size = open_fd.write(buffer.GetString(), buffer.GetSize());
-#elif defined(ARDUPILOT_BUILD)
-    write_size = AP::FS().write(open_fd, buffer.GetString(), buffer.GetSize());
 #else
     write_size = write(open_fd, buffer.GetString(), buffer.GetSize());
 #endif
-    if ( write_size == buffer.GetSize() ) {
+    if ( write_size != buffer.GetSize() ) {
         printf("Write failed - %s\n", strerror(errno));
         return false;
     }
@@ -962,11 +918,16 @@ static bool save_json( const char *file_path, Value *v ) {
     // close file
 #if defined(ARDUINO)
     open_fd.close();
-#elif defined(ARDUPILOT_BUILD)
-    AP::FS().close(open_fd);
 #else
     close(open_fd);
 #endif
+
+    // rename existing file to .bak
+    string bak = (string)file_path + ".bak";
+    rename_file(file_path, bak.c_str());
+
+    // rename new file to final file name
+    rename_file(new_name.c_str(), file_path);
 
     return true;
 }
@@ -1042,23 +1003,21 @@ void PropertyNode::pretty_print() {
     PrettyWriter<StringBuffer> writer(buffer);
     //PrettyWriter<StringBuffer, UTF8<>, UTF8<>, CrtAllocator, kWriteNanAndInfFlag> writer(buffer);
     //Writer<StringBuffer, UTF8<>, UTF8<>, CrtAllocator, kWriteNanAndInfFlag> writer(buffer);
-    bool error = val->Accept(writer);
+
+    // bool error = val->Accept(writer);
+    val->Accept(writer);
+
     // work around size limitations
     // printf("buffer length: %d\n", buffer.GetSize());
     const char *ptr = buffer.GetString();
     for ( unsigned int i = 0; i < buffer.GetSize(); i++ ) {
         printf("%c", ptr[i]);
-#if defined(ARDUPILOT_BUILD)
-        // needed so we don't overwhelm the serial output thread buffer
-        if ( i % 256 == 0 ) {
-            hal.scheduler->delay(50);
-        }
-#endif
     }
     printf("\n");
-    if ( error ) {
-        printf("json formating errro (nan or inf?)\n");
-    }
+
+    // if ( error ) {
+    //     printf("json formating errro (nan or inf?)\n");
+    // }
 }
 
 string PropertyNode::get_json_string() {
@@ -1103,7 +1062,7 @@ bool PropertyNode::set_json_string( string message ) {
 }
 
 Document *PropertyNode::doc = nullptr;
-int PropertyNode::shared_realloc_counter = 0;
+int *PropertyNode::realloc_counter = nullptr;
 
 #if 0
 int main() {
