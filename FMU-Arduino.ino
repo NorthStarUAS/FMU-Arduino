@@ -6,14 +6,15 @@
 #include "setup_board.h"        // #include this early
 #include "src/nodes.h"
 
-#include "src/comms/comms_mgr.h"
 #include "src/config.h"
-#include "src/fcs/fcs_mgr.h"
 #include "src/led.h"
+#include "src/comms/comms_mgr.h"
+#include "src/fcs/fcs_mgr.h"
 #include "src/mission/mission_mgr.h"
 #include "src/nav/nav_mgr.h"
 #include "src/sensors/sensor_mgr.h"
 #include "src/state/state_mgr.h"
+#include "src/util/freeram.h"
 #include "src/util/myprof.h"
 
 IntervalTimer main_timer;
@@ -84,7 +85,6 @@ void setup() {
     }
     config->read_serial_number();
     printf("Serial Number: %d\n", config->read_serial_number());
-    delay(100);
 
     status_node.setUInt("firmware_rev", FIRMWARE_REV);
     status_node.setUInt("master_hz", MASTER_HZ);
@@ -122,15 +122,6 @@ void setup() {
     main_timer.begin(main_loop, 1000000/MASTER_HZ);
 }
 
-#if defined(NORTHSTAR_V3)
-extern unsigned long _heap_start;
-extern unsigned long _heap_end;
-extern char *__brkval;
-int freeram() {
-  return (char *)&_heap_end - __brkval;
-}
-#endif
-
 // main arduino loop -- Fixme: set this up on a hardware timer so the main loop can do non-time sensitive stuff, but caution on race conditions
 void main_loop() {
     // Fixme: do we want to go back to IMU driven main loop timing?
@@ -164,9 +155,7 @@ void main_loop() {
     mission_mgr->update(dt);
 
     // 3. Communicate
-    #if defined(NORTHSTAR_V3)
     status_node.setUInt("available_memory", freeram());
-    #endif
     led.update();
     comms_mgr->update();
 
