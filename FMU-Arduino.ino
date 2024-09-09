@@ -15,10 +15,9 @@
 #include "src/sensors/sensor_mgr.h"
 #include "src/state/state_mgr.h"
 #include "src/util/freeram.h"
-#include "src/util/myprof.h"
+#include "src/util/profile.h"
 
 IntervalTimer main_timer;
-myprofile main_prof;
 
 FS *configfs = nullptr;
 FS *logfs = nullptr;
@@ -116,8 +115,6 @@ void setup() {
     Serial.print("Boot seconds: "); Serial.println(millis()/1000.0, 2);
     Serial.println("Ready and transmitting..."); Serial.println();
 
-    main_prof.set_name("main_loop");
-
     // Start the main data collection loop on a hardware interval timer
     main_timer.begin(main_loop, 1000000/MASTER_HZ);
 }
@@ -163,8 +160,8 @@ void main_loop() {
 
     counter++;
     if ( counter >= 1000 ) {
-        main_prof.print_stats("");
-        main_prof.to_props();
+        profile_print_stats();
+        profile_to_props();
         counter = 0;
     }
 }

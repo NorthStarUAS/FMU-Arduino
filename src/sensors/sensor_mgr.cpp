@@ -22,6 +22,8 @@ void sensor_mgr_t::init() {
 }
 
 void sensor_mgr_t::update() {
+    sensors_prof.start();
+
     // poll the pressure sensors
     airdata_mgr.update();
 
@@ -37,6 +39,8 @@ void sensor_mgr_t::update() {
     }
 
     inceptors.read();
+
+    sensors_prof.stop();
 }
 
 sensor_mgr_t *sensor_mgr = nullptr;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../util/profile.h"
 #include "airdata_mgr.h"
 #include "gps_mgr.h"
 #include "imu_mgr.h"
@@ -20,8 +21,6 @@ public:
     imu_mgr_t imu_mgr;
     inceptors_t inceptors;
     power_t power;
-
-private:
 
 };
 

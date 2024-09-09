@@ -1,18 +1,19 @@
 #pragma once
 
 #include <Arduino.h>
+#include <string>
+using std::string;
 
 class myprofile {
 
 public:
 
-    myprofile();
+    myprofile( string prof_name );
     ~myprofile();
 
-    void set_name( const char *_name );
     void start();
     uint32_t stop();
-    void print_stats( const char *preface );
+    void print_stats( string preface = "" );
     void to_props();
 
     uint32_t count;
@@ -25,6 +26,15 @@ public:
 
 private:
 
-    char name[17];
+    string name;
 
 };
+
+extern myprofile main_prof;
+extern myprofile sensors_prof;
+extern myprofile fcs_prof;
+extern myprofile nav_prof;
+extern myprofile mission_prof;
+
+void profile_print_stats();
+void profile_to_props();

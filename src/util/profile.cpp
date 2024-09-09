@@ -1,9 +1,10 @@
 #include "../nodes.h"
-#include "myprof.h"
+#include "profile.h"
 
 #include <Arduino.h>
 
-myprofile::myprofile() {
+myprofile::myprofile( string prof_name ) {
+    name = prof_name;
     total_millis = 0;
     count = 0;
     sum_time = 0;
@@ -13,10 +14,6 @@ myprofile::myprofile() {
 }
 
 myprofile::~myprofile() {
-}
-
-void myprofile::set_name( const char *_name ) {
-    strncpy(name, _name, 16);
 }
 
 void myprofile::start() {
@@ -51,13 +48,13 @@ uint32_t myprofile::stop() {
     return elapsed;
 }
 
-void myprofile::print_stats( const char *preface ) {
+void myprofile::print_stats( string preface ) {
     float avg_hz = 0.0;
     if ( total_millis > 1 ) {
     	avg_hz = (float)count * 1000 / total_millis;
     }
-    Serial.print(preface);
-    Serial.print(name);
+    Serial.print(preface.c_str());
+    Serial.print(name.c_str());
     Serial.print(" avg: ");
     Serial.print((sum_time/1000.0) / (float)count, 2);
     Serial.print("(us) num: ");
@@ -78,7 +75,7 @@ void myprofile::print_stats( const char *preface ) {
 }
 
 void myprofile::to_props() {
-    PropertyNode node = profile_node.getChild(name);
+    PropertyNode node = profile_node.getChild(name.c_str());
     float avg_hz = 0.0;
     if ( total_millis > 1 ) {
     	avg_hz = (float)count * 1000 / total_millis;
@@ -88,4 +85,26 @@ void myprofile::to_props() {
     node.setDouble("max_us", max_interval/1000.0);
     node.setDouble("avg_hz", avg_hz);
     node.setUInt("overruns", overruns);
+}
+
+myprofile main_prof("main_loop");
+myprofile sensors_prof("sensors");
+myprofile fcs_prof("fcs");
+myprofile nav_prof("ekf");
+myprofile mission_prof("mission");
+
+void profile_print_stats() {
+    main_prof.print_stats();
+    sensors_prof.print_stats();
+    fcs_prof.print_stats();
+    nav_prof.print_stats();
+    mission_prof.print_stats();
+}
+
+void profile_to_props() {
+    main_prof.to_props();
+    sensors_prof.to_props();
+    fcs_prof.to_props();
+    nav_prof.to_props();
+    mission_prof.to_props();
 }
