@@ -35,6 +35,7 @@ extern myprofile sensors_prof;
 extern myprofile fcs_prof;
 extern myprofile nav_prof;
 extern myprofile mission_prof;
+extern myprofile comms_prof;
 
 void profile_print_stats();
 void profile_to_props();

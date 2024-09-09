@@ -2,6 +2,8 @@
 
 #include "../nodes.h"
 #include "../props2.h"
+#include "../util/profile.h"
+
 #include "info.h"
 #include "comms_mgr.h"
 
@@ -56,6 +58,8 @@ void comms_mgr_t::init() {
 }
 
 void comms_mgr_t::update() {
+    comms_prof.start();
+
     // lost link detection: message_link.cpp records the last_command_sec value
     // whenever a remote command is received.  We expect at least a hb command
     // every 10 seconds. If too much time has elapsed since the last received
@@ -119,6 +123,8 @@ void comms_mgr_t::update() {
         // Serial.println(" hz");
         printf("\n");
     }
+
+    comms_prof.stop();
 }
 
 comms_mgr_t *comms_mgr = nullptr;

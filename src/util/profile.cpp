@@ -92,6 +92,7 @@ myprofile sensors_prof("sensors");
 myprofile fcs_prof("fcs");
 myprofile nav_prof("ekf");
 myprofile mission_prof("mission");
+myprofile comms_prof("comms");
 
 void profile_print_stats() {
     main_prof.print_stats();
@@ -99,6 +100,7 @@ void profile_print_stats() {
     fcs_prof.print_stats();
     nav_prof.print_stats();
     mission_prof.print_stats();
+    comms_prof.print_stats();
 }
 
 void profile_to_props() {
@@ -107,4 +109,5 @@ void profile_to_props() {
     fcs_prof.to_props();
     nav_prof.to_props();
     mission_prof.to_props();
+    comms_prof.to_props();
 }

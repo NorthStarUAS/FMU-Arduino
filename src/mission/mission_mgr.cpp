@@ -1,5 +1,6 @@
 #include "../nodes.h"
 #include "../comms/events.h"
+#include "../util/profile.h"
 
 #include "tasks/circle.h"
 #include "tasks/idle.h"
@@ -18,6 +19,8 @@ void mission_mgr_t::init() {
 }
 
 void mission_mgr_t::update(float dt) {
+    mission_prof.start();
+
     // global tasks
     home_mgr.update();
     throttle_safety.update();
@@ -56,6 +59,8 @@ void mission_mgr_t::update(float dt) {
         delete current_task;
         current_task = nullptr;
     }
+
+    mission_prof.stop();
 }
 
 void mission_mgr_t::process_command_request() {

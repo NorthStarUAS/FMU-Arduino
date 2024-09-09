@@ -3,6 +3,7 @@
 #include <string>
 
 #include "../nodes.h"
+#include "../util/profile.h"
 
 #include "nav_mgr.h"
 #include "nav_constants.h"  // R2D
@@ -83,6 +84,8 @@ static inline int32_t intround(float f) {
 }
 
 void nav_mgr_t::update() {
+    nav_prof.start();
+
     IMUdata imu1;
     imu1.time = imu_node.getDouble("timestamp");
     imu1.p = imu_node.getDouble("p_rps");
@@ -192,6 +195,8 @@ void nav_mgr_t::update() {
         status = 0;             // not initialized
     }
     nav_node.setInt("status", status);
+
+    nav_prof.stop();
 }
 
 void nav_mgr_t::reinit() {

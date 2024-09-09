@@ -22,6 +22,7 @@
 #include <stdio.h>
 
 #include "../nodes.h"
+#include "../util/profile.h"
 
 #include "tecs.h"
 #include "fcs_mgr.h"
@@ -47,6 +48,8 @@ void fcs_mgr_t::reset() {
 }
 
 void fcs_mgr_t::update(float dt) {
+    fcs_prof.start();
+
     // sanity check
     if ( dt > 1.0 ) { dt = 0.01; }
     if ( dt < 0.00001 ) { dt = 0.01; }
@@ -78,6 +81,8 @@ void fcs_mgr_t::update(float dt) {
     } else {
         effectors.write(outputs_node);
     }
+
+    fcs_prof.stop();
 }
 
 string fcs_mgr_t::get_mode() {
