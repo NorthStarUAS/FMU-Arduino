@@ -12,7 +12,6 @@ void sensor_mgr_t::init() {
     imu_mgr.set_strapdown_calibration();
     imu_mgr.set_accel_calibration();
     imu_mgr.set_mag_calibration();
-    delay(100);
 
     // power sensing
     analogReadResolution(16);   // set up ADC0

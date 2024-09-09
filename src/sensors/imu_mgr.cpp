@@ -125,7 +125,6 @@ void imu_mgr_t::init() {
         printf("\nIMU initialization unsuccessful.\n");
         printf("Check IMU wiring or try cycling power.\n");
         printf("\n");
-        delay(1000);
         return;
     }
 
@@ -133,7 +132,6 @@ void imu_mgr_t::init() {
     int setFiltStatus = IMU.setFilt(DLPF_BANDWIDTH_41HZ, MPU9250_SRD);
     if ( setFiltStatus < 0 ) {
         printf("Filter initialization unsuccessful.\n");
-        delay(1000);
         return;
     }
 

@@ -25,7 +25,6 @@ void power_t::init() {
     }
  #else
     printf("Master board configuration not defined correctly.\n");
-    delay(1000);
 #endif
 }
 

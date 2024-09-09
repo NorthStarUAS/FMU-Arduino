@@ -55,7 +55,6 @@ void airdata_mgr_t::init() {
         if ( bme280_status < 0 ) {
             printf("BME280 barometer initialization unsuccessful\n");
             printf("Check wiring or try cycling power\n");
-            delay(1000);
         } else {
             printf("BME280 barometer driver ready.\n");
         }
@@ -77,7 +76,6 @@ void airdata_mgr_t::init() {
         if ( !bmp180_status ) {
             printf("Onboard barometer initialization unsuccessful.\n");
             printf("Check wiring or try cycling power.\n");
-            delay(1000);
         } else {
             printf("BMP180 barometer ready.\n");
         }
