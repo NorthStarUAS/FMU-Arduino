@@ -28,6 +28,8 @@ private:
     uint32_t gps_last_millis = 0;
     uint32_t mission_last_millis = 0;
     uint32_t status_last_millis = 0;
+    uint32_t max_buffer_used = 0;
+    uint32_t buffer_overrun_count = 0;
 
     int write_airdata();
     int write_refs();

@@ -243,8 +243,15 @@ int data_logger_t::log_packet(uint8_t packet_id, uint8_t *payload, uint16_t len)
         log_buffer.push(cksum0);
         log_buffer.push(cksum1);
 
+        if ( log_buffer.size() > max_buffer_used ) {
+            max_buffer_used = log_buffer.size();
+            comms_node.setUInt("datalog_max_buffer_used", max_buffer_used);
+        }
+
         return len + 7;
     } else {
+        buffer_overrun_count++;
+        comms_node.setUInt("datalog_buffer_overruns", buffer_overrun_count);
         return 0;
     }
 }
