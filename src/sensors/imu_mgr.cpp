@@ -245,11 +245,14 @@ void imu_mgr_t::calibrate_gyros() {
         gyro_startup_bias = slow;
         gyros_calibrated = 2;
         // update(); // update imu_calib values before anything else get's a chance to read them // FIXME???
-        printf("Average gyro startup bias: %.4f %.4f %.4f\n", gyro_startup_bias(0), gyro_startup_bias(1), gyro_startup_bias(2));
+        Serial.print("Average gyro startup bias: ");
+        Serial.print(gyro_startup_bias(0), 3); Serial.print(" ");
+        Serial.print(gyro_startup_bias(1), 3); Serial.print(" ");
+        Serial.print(gyro_startup_bias(2), 3); Serial.println();
         if ( total_timer > 15000 ) {
-            printf("gyro init: too much motion, using best average guess.\n");
+            Serial.println("gyro init: too much motion, using best average guess.");
         } else {
-            printf("gyro init: success.\n");
+            Serial.println("gyro init: success.");
         }
     }
 }
