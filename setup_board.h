@@ -35,12 +35,13 @@ const int DT_MILLIS = (1000 / MASTER_HZ);
 // const int HOST_BAUD = 500000;
 // const int TELEMETRY_BAUD = 115200;
 
+// progm storage size
 #if defined(ARDUINO_TEENSY36)
-const uint32_t lfs_progm_bytes = 1024*128;   // allocate 128Kb flash disk,
+  const uint32_t lfs_progm_bytes = 1024*128;   // allocate 128Kb flash disk,
 #elif defined(ARDUINO_TEENSY40)
-const uint32_t lfs_progm_bytes = 1024*1024;   // allocate 1.25Mb flash disk,
+  const uint32_t lfs_progm_bytes = 1024*1024 * 1.25;   // allocate 1.25Mb flash disk,
 #elif defined(ARDUINO_TEENSY41)
-const uint32_t lfs_progm_bytes = 1024*1024 * 7; // should be able to go up to 7Mb
+  const uint32_t lfs_progm_bytes = 1024*1024 * 7; // should be able to go up to 7Mb
 #else
-const uint32_t lfs_progm_bytes = 0;
+  const uint32_t lfs_progm_bytes = 0;
 #endif
