@@ -5,7 +5,6 @@
 
 myprofile::myprofile( string prof_name ) {
     name = prof_name;
-    total_millis = 0;
     count = 0;
     sum_time = 0;
     max_interval = 0;
@@ -17,9 +16,6 @@ myprofile::~myprofile() {
 }
 
 void myprofile::start() {
-    if ( count == 0 ) {
-	    total_millis = 0;
-    }
     interval = 0;
     count++;
 }
@@ -49,10 +45,6 @@ uint32_t myprofile::stop() {
 }
 
 void myprofile::print_stats( string preface ) {
-    float avg_hz = 0.0;
-    if ( total_millis > 1 ) {
-    	avg_hz = (float)count * 1000 / total_millis;
-    }
     Serial.print(preface.c_str());
     Serial.print(name.c_str());
     Serial.print(" avg: ");
@@ -65,8 +57,7 @@ void myprofile::print_stats( string preface ) {
     Serial.print(min_interval/1000.0, 2);
     Serial.print("-");
     Serial.print(max_interval/1000.0, 2);
-    Serial.print(") hz: ");
-    Serial.print(avg_hz, 1);
+    Serial.print(") ");
     if ( overruns > 0 ) {
         Serial.print(" over: ");
         Serial.print(overruns);
@@ -76,14 +67,9 @@ void myprofile::print_stats( string preface ) {
 
 void myprofile::to_props() {
     PropertyNode node = profile_node.getChild(name.c_str());
-    float avg_hz = 0.0;
-    if ( total_millis > 1 ) {
-    	avg_hz = (float)count * 1000 / total_millis;
-    }
     node.setDouble("avg_us", (sum_time/1000.0) / (float)count);
     node.setDouble("min_us", min_interval/1000.0);
     node.setDouble("max_us", max_interval/1000.0);
-    node.setDouble("avg_hz", avg_hz);
     node.setUInt("overruns", overruns);
 }
 

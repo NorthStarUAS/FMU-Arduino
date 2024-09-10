@@ -17,7 +17,6 @@ public:
     void to_props();
 
     uint32_t count;
-    elapsedMillis total_millis;
     elapsedMicros interval;
     uint32_t min_interval;
     uint32_t max_interval;
