@@ -42,7 +42,9 @@ void setup() {
     // printf("Sensor/config communication is on Serial1 @ %d baud (N81) no flow control.\n", HOST_BAUD);
 
     // initialize onboard flash file storage
-    if ( not progmfs.begin(lfs_progm_bytes) ) {
+    if ( lfs_progm_bytes == 0 ) {
+        // not supported
+    } else if ( not progmfs.begin(lfs_progm_bytes) ) {
         printf("Unable to initialize flash storage ... failed to allocate %lu bytes.\n", lfs_progm_bytes);
     } else {
         printf("Program memory flash initialized: %lu bytes.\n", lfs_progm_bytes);
