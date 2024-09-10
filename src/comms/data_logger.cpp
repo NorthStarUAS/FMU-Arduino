@@ -32,11 +32,11 @@ void data_logger_t::init(log_rate_t rate) {
     if ( logfs != nullptr ) {
         string log_dir_name = "/logs";
         string file_name = "";
-        if ( not logfs->exists(log_dir_name.c_str()) ) {
-            logfs->mkdir(log_dir_name.c_str());
+        if ( not SD.exists(log_dir_name.c_str()) ) {
+            SD.mkdir(log_dir_name.c_str());
         }
         // find next available log file number
-        File log_dir = logfs->open(log_dir_name.c_str());
+        File log_dir = SD.open(log_dir_name.c_str());
         int next_val = 0;
         while ( true ) {
             File entry = log_dir.openNextFile();
@@ -51,13 +51,15 @@ void data_logger_t::init(log_rate_t rate) {
                 next_val = val + 1;
             }
         }
+        log_dir.close();
         string val_str = std::to_string(next_val);
         string pad = string(5 - val_str.length(), '0');
         string log_name = log_dir_name + "/flight_" + pad + val_str + ".nst";
         printf("Next log file name: %s\n", log_name.c_str());
-        log_fd = logfs->open(log_name.c_str(), FILE_WRITE);
+        log_fd = SD.sdfs.open(log_name.c_str(), FILE_WRITE);
         if ( !log_fd ) {
             printf("Failed to open log file: %s\n", log_name.c_str());
+            printf("Error - %s\n", strerror(errno));
         }
     }
 }

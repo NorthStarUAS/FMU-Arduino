@@ -6,7 +6,7 @@
 #include "../logs/RingBuf.h"
 #include "../util/ratelimiter.h"
 
-static const unsigned int max_buf_size = 1024;
+static const unsigned int max_buf_size = 2048;
 
 class data_logger_t {
 
@@ -51,7 +51,7 @@ private:
     RateLimiter limiter_2sec;
     RateLimiter limiter_10sec;
 
-    File log_fd;
+    FsFile log_fd;
 
     int log_packet(uint8_t packet_id, uint8_t *payload, uint16_t len);
 
