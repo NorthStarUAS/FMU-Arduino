@@ -28,7 +28,6 @@ void comms_mgr_t::init() {
             gcs_link.init(port, baud);
         } else {
             printf("comms config error in gcs link section!\n");
-            delay(500);
         }
     } else {
         printf("No gcs comms link configured.\n");
@@ -42,7 +41,6 @@ void comms_mgr_t::init() {
             host_link.init(port, baud);
         } else {
             printf("comms config error in host link section!\n");
-            delay(500);
         }
     } else {
         printf("No host comms link configured.\n");
@@ -53,8 +51,6 @@ void comms_mgr_t::init() {
 
     event_mgr = new events_t();
     event_mgr->clear_events();
-
-    delay(100);
 }
 
 void comms_mgr_t::update() {
