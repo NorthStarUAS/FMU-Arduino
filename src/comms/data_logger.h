@@ -51,7 +51,7 @@ private:
     RateLimiter limiter_2sec;
     RateLimiter limiter_10sec;
 
-    FsFile log_fd;
+    File log_fd;
 
     int log_packet(uint8_t packet_id, uint8_t *payload, uint16_t len);
 

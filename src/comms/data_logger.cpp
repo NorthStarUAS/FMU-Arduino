@@ -31,7 +31,7 @@ void data_logger_t::init(log_rate_t rate) {
 
     if ( logfs != nullptr ) {
         string log_dir_name = "/logs";
-        string file_name = "";
+        // string log_dir_name = "";
         if ( not SD.exists(log_dir_name.c_str()) ) {
             SD.mkdir(log_dir_name.c_str());
         }
@@ -54,9 +54,9 @@ void data_logger_t::init(log_rate_t rate) {
         log_dir.close();
         string val_str = std::to_string(next_val);
         string pad = string(5 - val_str.length(), '0');
-        string log_name = log_dir_name + "/flight_" + pad + val_str + ".nst";
+        string log_name = log_dir_name + "/" + "flight_" + pad + val_str + ".nst";
         printf("Next log file name: %s\n", log_name.c_str());
-        log_fd = SD.sdfs.open(log_name.c_str(), FILE_WRITE);
+        log_fd = SD.open(log_name.c_str(), FILE_WRITE);
         if ( !log_fd ) {
             printf("Failed to open log file: %s\n", log_name.c_str());
             printf("Error - %s\n", strerror(errno));
