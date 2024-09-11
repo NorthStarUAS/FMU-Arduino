@@ -9,7 +9,6 @@ myprofile::myprofile( string prof_name ) {
     sum_time = 0;
     max_interval = 0;
     min_interval = 10000;
-    overruns = 0;
 }
 
 myprofile::~myprofile() {
@@ -38,9 +37,6 @@ uint32_t myprofile::stop() {
     if ( elapsed > max_interval ) {
 	    max_interval = elapsed;
     }
-    if ( elapsed > 40000 ) {
-        overruns++;
-    }
     return elapsed;
 }
 
@@ -57,12 +53,7 @@ void myprofile::print_stats( string preface ) {
     Serial.print(min_interval/1000.0, 2);
     Serial.print("-");
     Serial.print(max_interval/1000.0, 2);
-    Serial.print(") ");
-    if ( overruns > 0 ) {
-        Serial.print(" over: ");
-        Serial.print(overruns);
-    }
-    Serial.println();
+    Serial.println(")");
 }
 
 void myprofile::to_props() {
@@ -70,7 +61,6 @@ void myprofile::to_props() {
     node.setDouble("avg_us", (sum_time/1000.0) / (float)count);
     node.setDouble("min_us", min_interval/1000.0);
     node.setDouble("max_us", max_interval/1000.0);
-    node.setUInt("overruns", overruns);
 }
 
 myprofile main_prof("main_loop");

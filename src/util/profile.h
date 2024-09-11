@@ -21,7 +21,6 @@ public:
     uint32_t min_interval;
     uint32_t max_interval;
     double sum_time;
-    uint32_t overruns;
 
 private:
 

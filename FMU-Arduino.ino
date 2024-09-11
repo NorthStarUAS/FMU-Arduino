@@ -17,7 +17,7 @@
 #include "src/util/freeram.h"
 #include "src/util/profile.h"
 
-IntervalTimer main_timer;
+IntervalTimer main_scheduler;
 
 FS *configfs = nullptr;
 FS *logfs = nullptr;
@@ -118,17 +118,15 @@ void setup() {
     Serial.println("Ready and transmitting..."); Serial.println();
 
     // Start the main data collection loop on a hardware interval timer
-    main_timer.begin(main_loop, 1000000/MASTER_HZ);
+    main_scheduler.begin(main_loop, 1000000/MASTER_HZ);
 }
 
 // main arduino loop -- Fixme: set this up on a hardware timer so the main loop can do non-time sensitive stuff, but caution on race conditions
 void main_loop() {
-    // Fixme: do we want to go back to IMU driven main loop timing?
-    // When new IMU data is ready (new pulse from IMU), go out and grab the IMU data
-    // and output fresh IMU message plus the most recent data from everything else.
-
     static const float dt = 1.0 / MASTER_HZ;
-    static int counter = 0;
+    static unsigned int counter = 0;
+    static unsigned int overruns = 0;
+    static elapsedMillis main_timer = 0;
 
     main_prof.start();
 
@@ -158,13 +156,16 @@ void main_loop() {
     led.update();
     comms_mgr->update();
 
-    main_prof.stop();
+    uint32_t elapsed_micros = main_prof.stop();
 
+    if ( elapsed_micros > DT_MILLIS * 1000 ) {
+        overruns++;
+    }
     counter++;
-    if ( counter >= 1000 ) {
+    if ( counter % 1000 == 0 ) {
+        Serial.print("Main loop overruns: "); Serial.println(overruns);
         profile_print_stats();
         profile_to_props();
-        counter = 0;
     }
 }
 
