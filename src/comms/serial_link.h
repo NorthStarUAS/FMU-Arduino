@@ -6,9 +6,6 @@ class SerialLink {
 
 private:
 
-    // port
-    Stream *_port;
-
     // parser
     int state = 0;
     int counter = 0;
@@ -17,6 +14,9 @@ private:
     static const uint16_t MAX_MESSAGE_LEN = 1024;
 
 public:
+
+    // port
+    Stream *_port;
 
     static const uint8_t START_OF_MSG0 = 147;
     static const uint8_t START_OF_MSG1 = 224;

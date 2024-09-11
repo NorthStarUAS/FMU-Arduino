@@ -1,6 +1,7 @@
 #pragma once
 
 #include "serial_link.h"
+#include "../logs/RingBuf.h"
 #include "../util/ratelimiter.h"
 
 class message_link_t {
@@ -19,29 +20,35 @@ public:
 
 private:
 
+    static const unsigned int max_buf_size = 2048;
+    RingBuf<uint8_t, max_buf_size> serial_buffer;
+
     int saved_port = -1;
     uint32_t saved_baud = 0;
     uint32_t event_last_millis = 0;
     uint32_t gps_last_millis = 0;
     uint32_t mission_last_millis = 0;
     uint32_t status_last_millis = 0;
-    // uint32_t bytes_last_millis = 0;
-    // uint16_t route_counter = 0;
+    uint32_t max_buffer_used = 0;
+    uint32_t buffer_overrun_count = 0;
 
-    int write_ack( uint16_t sequence_num, uint8_t result );
-    int write_airdata();
-    int write_refs();
-    int write_mission();
-    int write_inceptors();
-    int write_effectors();
-    int write_imu();
-    int write_gps();
-    int write_nav();
-    int write_nav_metrics();
-    int write_power();
-    int write_status();
-    int write_events();
+    void write_ack( uint16_t sequence_num, uint8_t result );
+    void write_airdata();
+    void write_refs();
+    void write_mission();
+    void write_inceptors();
+    void write_effectors();
+    void write_imu();
+    void write_gps();
+    void write_nav();
+    void write_nav_metrics();
+    void write_power();
+    void write_status();
+    void write_events();
     bool parse_message( uint8_t id, uint8_t *buf, uint8_t message_size );
+
+    int send_packet(uint8_t packet_id, uint8_t *payload, uint16_t len);
+    void write_chunk();
 
     RateLimiter limiter_50hz;
     RateLimiter limiter_10hz;
