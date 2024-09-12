@@ -211,13 +211,13 @@ int message_link_t::send_packet(uint8_t packet_id, uint8_t *payload, uint16_t le
 
         if ( serial_buffer.size() > max_buffer_used ) {
             max_buffer_used = serial_buffer.size();
-            comms_node.setUInt("serial_link_max_buffer_used", max_buffer_used);
+            comms_node.setUInt("serial_link_max_buffer_used", max_buffer_used, saved_port );
         }
 
         return len + 7;
     } else {
         buffer_overrun_count++;
-        comms_node.setUInt("serial_buffer_overruns", buffer_overrun_count);
+        comms_node.setUInt("serial_buffer_overruns", buffer_overrun_count, saved_port );
         return 0;
     }
 }
@@ -225,7 +225,9 @@ void message_link_t::write_chunk() {
     // printf("Emptying log buffer: %d\n", data_logger_t::log_buffer.size());
     int count = 0;
     uint8_t val;
-    while ( not serial_buffer.isEmpty() and count < 100 ) {
+    // int max_per_update = saved_baud / (10 /*bits per byte*/ * MASTER_HZ);
+    int max_per_update = 100;
+    while ( not serial_buffer.isEmpty() and serial._port->availableForWrite() ) {
         serial_buffer.pop(val);
         serial._port->write(val);
         count++;
