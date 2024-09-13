@@ -18,7 +18,7 @@ using std::string;
 
 #include "props2.h"  // github.com/NorthStarUAS/props2
 
-namespace ns_message {
+namespace nst_message {
 
 static inline int32_t intround(float f) {
     return (int32_t)(f >= 0.0 ? (f + 0.5) : (f - 0.5));
@@ -2450,4 +2450,4 @@ public:
     }
 };
 
-} // namespace ns_message
+} // namespace nst_message

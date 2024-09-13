@@ -9,7 +9,7 @@
 #include <Arduino.h>
 
 #include "../nodes.h"
-#include "../ns_messages.h"
+#include "../nst_messages.h"
 
 #include "../mission/mission_mgr.h"
 #include "../nav/nav_constants.h"
@@ -133,18 +133,18 @@ void data_logger_t::log_messages() {
 }
 
 int data_logger_t::write_airdata() {
-    ns_message::airdata_v8_t &air_msg = comms_mgr->packer.air_msg;
+    nst_message::airdata_v8_t &air_msg = comms_mgr->packer.air_msg;
     return log_packet( air_msg.id, air_msg.payload, air_msg.len );
 }
 
 // final effector commands
 int data_logger_t::write_effectors() {
-    ns_message::effectors_v1_t &eff_msg = comms_mgr->packer.eff_msg;
+    nst_message::effectors_v1_t &eff_msg = comms_mgr->packer.eff_msg;
     return log_packet( eff_msg.id, eff_msg.payload, eff_msg.len);
 }
 
 int data_logger_t::write_events() {
-    ns_message::event_v3_t &event_msg = comms_mgr->packer.event_msg;
+    nst_message::event_v3_t &event_msg = comms_mgr->packer.event_msg;
     if ( event_msg.millis > event_last_millis ) {
         event_last_millis = event_msg.millis;
         return log_packet( event_msg.id, event_msg.payload, event_msg.len );
@@ -154,7 +154,7 @@ int data_logger_t::write_events() {
 }
 
 int data_logger_t::write_gps() {
-    ns_message::gps_v5_t &gps_msg = comms_mgr->packer.gps_msg;
+    nst_message::gps_v5_t &gps_msg = comms_mgr->packer.gps_msg;
     if ( gps_msg.millis > gps_last_millis ) {
         gps_last_millis = gps_msg.millis;
         return log_packet( gps_msg.id, gps_msg.payload, gps_msg.len );
@@ -164,37 +164,37 @@ int data_logger_t::write_gps() {
 }
 
 int data_logger_t::write_imu() {
-    ns_message::imu_v6_t &imu_msg = comms_mgr->packer.imu_msg;
+    nst_message::imu_v6_t &imu_msg = comms_mgr->packer.imu_msg;
     return log_packet( imu_msg.id, imu_msg.payload, imu_msg.len );
 }
 
 // inceptors
 int data_logger_t::write_inceptors() {
-    ns_message::inceptors_v2_t &inceptor_msg = comms_mgr->packer.inceptor_msg;
+    nst_message::inceptors_v2_t &inceptor_msg = comms_mgr->packer.inceptor_msg;
     return log_packet( inceptor_msg.id, inceptor_msg.payload, inceptor_msg.len);
 }
 
 // nav (ekf) data
 int data_logger_t::write_nav() {
-    ns_message::nav_v6_t &nav_msg = comms_mgr->packer.nav_msg;
+    nst_message::nav_v6_t &nav_msg = comms_mgr->packer.nav_msg;
     return log_packet( nav_msg.id, nav_msg.payload, nav_msg.len );
 }
 
 // nav (ekf) metrics
 int data_logger_t::write_nav_metrics() {
-    ns_message::nav_metrics_v6_t &metrics_msg = comms_mgr->packer.nav_metrics_msg;
+    nst_message::nav_metrics_v6_t &metrics_msg = comms_mgr->packer.nav_metrics_msg;
     return log_packet( metrics_msg.id, metrics_msg.payload, metrics_msg.len );
 }
 
 // fcs reference values
 int data_logger_t::write_refs() {
-    ns_message::fcs_refs_v1_t &refs_msg = comms_mgr->packer.refs_msg;
+    nst_message::fcs_refs_v1_t &refs_msg = comms_mgr->packer.refs_msg;
     return log_packet( refs_msg.id, refs_msg.payload, refs_msg.len );
 }
 
 // mission values
 int data_logger_t::write_mission() {
-    ns_message::mission_v1_t &mission_msg = comms_mgr->packer.mission_msg;
+    nst_message::mission_v1_t &mission_msg = comms_mgr->packer.mission_msg;
     if ( mission_msg.millis > mission_last_millis ) {
         mission_last_millis = mission_msg.millis;
         return log_packet( mission_msg.id, mission_msg.payload, mission_msg.len );
@@ -204,13 +204,13 @@ int data_logger_t::write_mission() {
 }
 
 int data_logger_t::write_power() {
-    ns_message::power_v1_t &power_msg = comms_mgr->packer.power_msg;
+    nst_message::power_v1_t &power_msg = comms_mgr->packer.power_msg;
     return log_packet( power_msg.id, power_msg.payload, power_msg.len );
 }
 
 // system status
 int data_logger_t::write_status() {
-    ns_message::status_v7_t &status_msg = comms_mgr->packer.status_msg;
+    nst_message::status_v7_t &status_msg = comms_mgr->packer.status_msg;
     if ( status_msg.millis > status_last_millis ) {
         status_last_millis = status_msg.millis;
         return log_packet( status_msg.id, status_msg.payload, status_msg.len );

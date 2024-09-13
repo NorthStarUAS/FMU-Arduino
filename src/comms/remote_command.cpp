@@ -6,7 +6,7 @@
 #include "events.h"
 #include "remote_command.h"
 
-int execute_command(ns_message::command_v1_t *msg, SerialLink *serial) {
+int execute_command(nst_message::command_v1_t *msg, SerialLink *serial) {
     if ( comms_node.getUInt("last_command_seq_num") == msg->sequence_num ) {
         // duplicate command
         return 1;
@@ -28,7 +28,7 @@ int execute_command(ns_message::command_v1_t *msg, SerialLink *serial) {
     } else if ( tokens[0] == "get" and tokens.size() == 2 ) {
         // printf("command: get  node: %s\n", tokens[1].c_str());
         PropertyNode node(tokens[1]);
-        ns_message::command_v1_t reply;
+        nst_message::command_v1_t reply;
         reply.sequence_num = 0;
         reply.message = std::string("set ") + tokens[1] + " " + node.get_json_string();
         reply.pack();

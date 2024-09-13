@@ -2,7 +2,6 @@
 
 #include "../props2.h"
 #include "../nodes.h"
-#include "../ns_messages.h"
 #include "../../setup_board.h"
 #include "sbus/sbus.h"
 #include "switches.h"
