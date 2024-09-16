@@ -121,12 +121,10 @@ void setup() {
     main_scheduler.begin(main_loop, 1000000/MASTER_HZ);
 }
 
-// main arduino loop -- Fixme: set this up on a hardware timer so the main loop can do non-time sensitive stuff, but caution on race conditions
 void main_loop() {
     static const float dt = 1.0 / MASTER_HZ;
     static unsigned int counter = 0;
     static unsigned int overruns = 0;
-    static elapsedMillis main_timer = 0;
 
     main_prof.start();
 
@@ -164,6 +162,7 @@ void main_loop() {
     counter++;
     if ( counter % 1000 == 0 ) {
         Serial.print("Main loop overruns: "); Serial.println(overruns);
+        profile_node.setUInt("main_loop_overrruns", overruns);
         profile_print_stats();
         profile_to_props();
     }
