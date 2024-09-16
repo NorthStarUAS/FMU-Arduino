@@ -35,6 +35,9 @@ bool SerialLink::open( int baud, int port ) {
     } else if ( port == 3 ) {
         Serial3.begin(baud);
         _port = &Serial3;
+    } else if ( port == 4 ) {
+        Serial4.begin(baud);
+        _port = &Serial4;
     } else {
         printf("unsupported port number: %d, defaulting to Serial, will probably clash with the console.", port);
         Serial.begin(baud);
