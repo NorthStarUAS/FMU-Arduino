@@ -1,7 +1,7 @@
 #pragma once
 
-void write_pilot_in_ascii();
-void write_actuator_out_ascii();
+void write_inceptors_ascii();
+void write_effectors_ascii();
 void write_imu_ascii();
 void write_gps_ascii();
 void write_nav_ascii();

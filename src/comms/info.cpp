@@ -16,8 +16,8 @@
 
 #include "info.h"
 
-void write_pilot_in_ascii() {
-    // pilot (receiver) input data
+void write_inceptors_ascii() {
+    // inceptor (sbus receiver) input data
     if ( inceptors_node.getBool("failsafe") ) {
         Serial.print("FAILSAFE! ");
     }
@@ -37,8 +37,8 @@ void write_pilot_in_ascii() {
     Serial.print(inceptors_node.getDouble("yaw"), 2); Serial.println();
 }
 
-void write_actuator_out_ascii() {
-    // actuator output
+void write_effectors_ascii() {
+    // final effector (servo) positions
     Serial.print("RCOUT: ");
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         Serial.print(effectors_node.getDouble("channel", i), 2); Serial.print(" ");
@@ -52,6 +52,7 @@ static void write_padded_double(double val, int prec) {
     }
     Serial.print(val, prec);
 }
+
 static void write_zero_padded_int(int val, int width) {
     int base = 1;
     for ( int i = 1; i < width; i++ ) {

@@ -68,13 +68,12 @@ void fcs_mgr_t::update(float dt) {
     // update tecs (total energy) values and error metrics
     update_tecs();
 
-    // update the autopilot stages (even in manual flight mode.)  This
-    // keeps the differential value up to date, tracks manual inputs,
-    // and keeps more continuity in the flight when the mode is
-    // switched to autopilot.
+    // update the autopilot stages (even in manual flight mode.)  This keeps the
+    // differential value up to date, tracks manual inputs, and keeps more
+    // continuity in the flight when the mode is switched to autopilot.
     ap.update( dt );
 
-    // copy pilot inputs to flight control outputs when not in
+    // copy pilot inputs (inceptors) to flight control outputs when not in
     // autopilot mode
     if ( !master_switch ) {
         effectors.write(inceptors_node);

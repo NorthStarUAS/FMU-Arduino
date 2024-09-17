@@ -18,7 +18,7 @@ private:
 
 public:
 
-    bool display_pilot = false;
+    bool display_inceptors = false;
     bool display_gps = false;
     bool display_airdata = false;
     bool display_imu = false;

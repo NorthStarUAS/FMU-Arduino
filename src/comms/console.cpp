@@ -9,13 +9,13 @@
 
 void console_t::display_menu() {
     printf("%s\n",
-            "  1) Pilot input\n"
+            "  1) Inceptors (sbus in)\n"
             "  2) GPS\n"
             "  3) Airdata\n"
             "  4) IMU\n"
             "  5) Nav/EKF\n"
             "  6) EKF biases/covariances\n"
-            "  7) Actuator output\n"
+            "  7) Effectors (servos out)\n"
             "  8) Calibrate IMU strapdown\n"
             "  9) Pretty print property tree\n"
             "  Reboot: type \"reboot\"\n");
@@ -34,13 +34,13 @@ void console_t::init() {
 void console_t::update() {
     if ( interactive ) {
         if ( info_timer.update() ) {
-            if ( display_pilot ) { write_pilot_in_ascii(); }
+            if ( display_inceptors ) { write_inceptors_ascii(); }
             if ( display_gps ) { write_gps_ascii(); }
             if ( display_airdata ) { write_airdata_ascii(); }
             if ( display_imu ) { write_imu_ascii(); }
             if ( display_nav ) { write_nav_ascii(); }
             if ( display_nav_stats ) { write_nav_stats_ascii(); }
-            if ( display_act ) { write_actuator_out_ascii(); }
+            if ( display_act ) { write_effectors_ascii(); }
 
             // discard non-user input (but watch for the reboot command)
             int16_t user_input = 0;
@@ -73,7 +73,7 @@ void console_t::update() {
                 user_input = Serial.read();
                 printf("read character: %c\n", (char)user_input);
                 if ( user_input == '1' ) {
-                    display_pilot = !display_pilot;
+                    display_inceptors = !display_inceptors;
                 } else if ( user_input == '2' ) {
                     display_gps = !display_gps;
                 } else if ( user_input == '3' ) {
