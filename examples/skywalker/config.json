@@ -11,6 +11,7 @@
         "display_units": "kts"
     },
     "airdata": {
+        "pitot": "ms55",
         "pitot_calibrate_factor": 1.0
     },
     "comms": {
