@@ -85,11 +85,11 @@ void airdata_mgr_t::init() {
 
     if ( config_airdata_node.getString("pitot") == "ms45" ) {
         pitot = 1;
-        ms45_pitot.configure(0x28, &Wire);
+        ms45_pitot.configure(0x28, &Wire1);
         ms45_pitot.begin();
     } else if ( config_airdata_node.getString("pitot") == "ms55" ) {
         pitot = 2;
-        ms55_pitot.configure(0x76, &Wire);
+        ms55_pitot.configure(0x76, &Wire1);
         ms55_pitot.begin();
     } else if ( config_airdata_node.getString("pitot") == "swift" ) {
         pitot = 3;
