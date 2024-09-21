@@ -15,6 +15,11 @@ private:
     uint8_t pitot = 0;
     bool pitot_found = false;
     bool ams_baro_found = false;
+    bool airspeed_inited = false;
+    uint32_t airspeed_init_start_millis = 0;
+    float pitot_sum = 0.0;
+    uint32_t pitot_count = 0;
+    float pitot_offset = 0.0;
 
     // 2nd order filter, 100hz sample rate expected, 3rd field is
     // cutoff freq.  higher freq value == noisier, a value near 1 hz

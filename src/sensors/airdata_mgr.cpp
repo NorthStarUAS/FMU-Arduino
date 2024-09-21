@@ -148,16 +148,38 @@ void airdata_mgr_t::compute_airspeed() {
     // specified in Pa (N/m^2) where 1 psi == 6900 Pa, then the
     // velocity will be in meters per second.
 
-    float pitot_butter = pitot_filter.update(airdata_node.getDouble("diff_press_pa"));
+    float diff_press_pa = airdata_node.getDouble("diff_press_pa");
+
+    // zero calibrate the diff pressure sensor
+    if ( ! airspeed_inited ) {
+        if ( airspeed_init_start_millis > 0 ) {
+            pitot_sum += diff_press_pa;
+            pitot_count++;
+            pitot_offset = pitot_sum / (double)pitot_count;
+            /* printf("a1 raw=%.1f filt=%.1f a1 off=%.1f a1 sum=%.1f a1 count=%d\n",
+               analog[0], pitot_filt.get_value(), pitot_offset, pitot_sum,
+               pitot_count); */
+        } else {
+            airspeed_init_start_millis = millis();
+            pitot_sum = 0.0;
+            pitot_count = 0;
+        }
+        if ( millis() > airspeed_init_start_millis + 10.0 * 1000 ) {
+            Serial.print("pitot_offset inited = "); Serial.println(pitot_offset);
+            airspeed_inited = true;
+        }
+    }
+
+    float pitot_butter = pitot_filter.update(diff_press_pa);
     float pitot_cal = config_airdata_node.getDouble("pitot_calibrate");
     if ( pitot_cal < 0.5 or pitot_cal > 1.5 ) {
         pitot_cal = 1.0;
     }
-    float Pa = fabs(pitot_butter); // allow inverted plumbing and prevent negative differential pressures.
+    float Pa = pitot_butter - pitot_offset;
+    if ( Pa < 0 ) { Pa = 0.0; }
     float airspeed_mps = sqrt( 2*Pa / 1.225 ) * pitot_cal;
-    float airspeed_kt = airspeed_mps * mps2kt;
     airdata_node.setDouble( "airspeed_mps", airspeed_mps );
-    airdata_node.setDouble( "airspeed_kt", airspeed_kt );
+    airdata_node.setDouble( "airspeed_kt", airspeed_mps * mps2kt );
 }
 
 void airdata_mgr_t::update() {

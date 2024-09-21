@@ -152,7 +152,7 @@ void write_airdata_ascii() {
     Serial.print(airdata_node.getDouble("altitude_m"), 1); Serial.print(" m ");
     Serial.print("Pitot: ");
     Serial.print(airdata_node.getDouble("airspeed_mps"), 1); Serial.print(" mps (");
-	Serial.print(airdata_node.getDouble("diffPress_pa"), 1); Serial.print(" pa) ");
+	Serial.print(airdata_node.getDouble("diff_press_pa"), 1); Serial.print(" pa) ");
     Serial.print(airdata_node.getDouble("air_temp_C"), 1); Serial.print(" C ");
     Serial.print(airdata_node.getUInt("error_count")); Serial.println(" errors");
 }
