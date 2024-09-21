@@ -45,13 +45,13 @@ bool MS4525DO::getData(float* pressure, float* temperature) {
     if ( ! _ready ) {
         return false;
     }
-    
+
     uint8_t b[4]; // buffer
     const uint8_t numBytes = 4;
 
     // 4 bytes from address
     _bus->requestFrom(_address, numBytes);
-  
+
     // put the data in buffer
     int counter = 0;
     while ( _bus->available() && counter < numBytes ) {
@@ -69,7 +69,7 @@ bool MS4525DO::getData(float* pressure, float* temperature) {
         uint16_t dp_raw = (b[0] << 8) + b[1];
 
         uint16_t T_dat = (b[2] << 8) + b[3];
-	T_dat = (0xFFE0 & T_dat) >> 5;
+	    T_dat = (0xFFE0 & T_dat) >> 5;
         //b[3] = (b[3] >> 5);
         //uint16_t T_dat = ((b[2]) << 8) | b[3];
 
@@ -80,31 +80,31 @@ bool MS4525DO::getData(float* pressure, float* temperature) {
         // VV = (sqrt((V)));
 
         // Calculate differential pressure. As its centered around 8000
-	// and can go positive or negative
-	const float P_min = -1.0f;
-	const float P_max = 1.0f;
-	const float PSI_to_Pa = 6894.757f;
-	/*
-	  this equation is an inversion of the equation in the
-	  pressure transfer function figure on page 4 of the datasheet
-	  We negate the result so that positive differential pressures
-	  are generated when the bottom port is used as the static
-	  port on the pitot and top port is used as the dynamic port
-	 */
-	float diff_press_PSI = -((dp_raw - 0.1f * 16383) * (P_max - P_min) / (0.8f * 16383) + P_min);
-	*pressure = diff_press_PSI * PSI_to_Pa; // pa
+        // and can go positive or negative
+        const float P_min = -1.0f;
+        const float P_max = 1.0f;
+        const float PSI_to_Pa = 6894.757f;
+        /*
+        this equation is an inversion of the equation in the
+        pressure transfer function figure on page 4 of the datasheet
+        We negate the result so that positive differential pressures
+        are generated when the bottom port is used as the static
+        port on the pitot and top port is used as the dynamic port
+        */
+        float diff_press_PSI = -((dp_raw - 0.1f * 16383) * (P_max - P_min) / (0.8f * 16383) + P_min);
+        *pressure = diff_press_PSI * PSI_to_Pa; // pa
 
         const float T_factor = 200.0 / 2047.0;
         *temperature = (float)T_dat * T_factor - 50.0; // C
 
         // #define DEBUG_ME
         #if defined DEBUG_ME
-         Serial.print(status); Serial.print("\t");
-         Serial.print(dp_raw); Serial.print("\t");
-         Serial.print(*pressure,2); Serial.print("\t");
-         Serial.print(T_dat); Serial.print("\t");
-         Serial.print(*temperature,1); Serial.print("\t");
-         Serial.println();
+            Serial.print(status); Serial.print("\t");
+            Serial.print(dp_raw); Serial.print("\t");
+            Serial.print(*pressure,2); Serial.print("\t");
+            Serial.print(T_dat); Serial.print("\t");
+            Serial.print(*temperature,1); Serial.print("\t");
+            Serial.println();
         #endif
     }
     return true;
