@@ -9,14 +9,15 @@ void switches_t::init() {
     vector<string> name_list = config_switches_node.getChildren();
     for ( unsigned int i = 0; i < name_list.size(); i++ ) {
         string name = name_list[i];
+        printf("  %s\n", name.c_str());
         PropertyNode node = config_switches_node.getChild(name.c_str());
         if ( node.isNull() ) {
             break;
         }
-        if ( !node.hasChild("rc-channel") ) {
+        if ( not node.hasChild("rc-channel") ) {
             break;
         }
-        if ( !node.hasChild("states") ) {
+        if ( not node.hasChild("states") ) {
             break;
         }
         switch_t sw;
