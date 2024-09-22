@@ -27,7 +27,11 @@
 const int FIRMWARE_REV = 410;
 
 // this is the master loop update rate.
-const int MASTER_HZ = 100;
+#if defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41)
+  const int MASTER_HZ = 100;
+#else
+  const int MASTER_HZ = 50;
+#endif
 const int DT_MILLIS = (1000 / MASTER_HZ);
 
 // Please read the important notes in the source tree about Teensy
