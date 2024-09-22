@@ -73,7 +73,7 @@ void airdata_mgr_t::init() {
         // BMP180
         printf("BMP180 on I2C\n");
         bmp180_status = bmp180.begin();
-        if ( !bmp180_status ) {
+        if ( not bmp180_status ) {
             printf("Onboard barometer initialization unsuccessful.\n");
             printf("Check wiring or try cycling power.\n");
         } else {
@@ -151,7 +151,7 @@ void airdata_mgr_t::compute_airspeed() {
     float diff_press_pa = airdata_node.getDouble("diff_press_pa");
 
     // zero calibrate the diff pressure sensor
-    if ( ! airspeed_inited ) {
+    if ( not airspeed_inited ) {
         if ( airspeed_init_start_millis > 0 ) {
             pitot_sum += diff_press_pa;
             pitot_count++;
@@ -249,7 +249,7 @@ void airdata_mgr_t::update() {
     } else {
         result = false;
     }
-    if ( !result ) {
+    if (not result ) {
         if ( pitot_found ) {
             // Serial.println("Error while reading pitot sensor.");
             error_count++;

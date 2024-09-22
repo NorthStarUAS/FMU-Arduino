@@ -109,7 +109,7 @@ void nav_mgr_t::update() {
     gps1.vd = gps_node.getDouble("vd_mps");
 
     string selected = config_nav_node.getString("select");
-    if ( !ekf_inited and gps_node.getBool("settle") ) {
+    if ( not ekf_inited and gps_node.getBool("settle") ) {
         if ( selected == "nav15" ) {
             ekf.init(imu1, gps1);
         } else if ( selected == "nav15_mag" ) {

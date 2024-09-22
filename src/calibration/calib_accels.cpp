@@ -140,14 +140,14 @@ void calib_accels_t::update()  {
         }
      } else if ( state == 6 ) {
         for ( int i = 0; i < 6; i++ ) {
-            if ( !checked[i] ) {
+            if ( not checked[i] ) {
                 printf("Not all 6 axis calibrated, failed.\n");
                 state = -1;
                 return;
             }
         }
         Eigen::MatrixXf affine;
-        if ( ! affine_from_points(Meas, Ref, true, true, affine) ) {
+        if ( not affine_from_points(Meas, Ref, true, true, affine) ) {
             printf("Affine fit failed...\n");
             state = -1;
             return;

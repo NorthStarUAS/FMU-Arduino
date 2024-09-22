@@ -41,7 +41,7 @@ using std::ostringstream;
 
 
 void AutoPilot::init() {
-    if ( ! build() ) {
+    if ( not build() ) {
         printf("AP: Detected an internal inconsistency in the autopilot\n");
         printf("configuration.  See earlier errors for details.\n" );
         exit(-1);

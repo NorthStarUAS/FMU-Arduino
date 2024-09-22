@@ -36,7 +36,7 @@ void mixer_t::update_matrix() {
 
     if ( autocoord_node.getBool("enable") ) {
         M(3,1) = autocoord_node.getDouble("gain1");
-        if (vtail_node.getBool("enable") && !elevon_node.getBool("enable")) {
+        if (vtail_node.getBool("enable") && not elevon_node.getBool("enable")) {
             M(2,1) = -autocoord_node.getDouble("gain1");
         }
     }
@@ -45,7 +45,7 @@ void mixer_t::update_matrix() {
     }
     if ( flaptrim_node.getBool("enable") ) {
         M(2,4) = flaptrim_node.getDouble("gain1");
-        if ( vtail_node.getBool("enable") && !elevon_node.getBool("enable")) {
+        if ( vtail_node.getBool("enable") && not elevon_node.getBool("enable")) {
             M(3,4) = flaptrim_node.getDouble("gain1");
         }
     }
@@ -61,7 +61,7 @@ void mixer_t::update_matrix() {
         M(4,4) = flaperon_node.getDouble("gain2");
     }
     // vtail mixing can't work with elevon mixing
-    if ( vtail_node.getBool("enable") && !elevon_node.getBool("enable") ) {
+    if ( vtail_node.getBool("enable") && not elevon_node.getBool("enable") ) {
         M(2,2) = vtail_node.getDouble("gain1");
         M(2,3) = vtail_node.getDouble("gain2");
         M(3,2) = vtail_node.getDouble("gain1");

@@ -24,7 +24,7 @@ void gps_mgr_t::update() {
         gps_millis = millis();
         update_unix_usec();
         if ( gps_data.fixType >= 3 ) {
-            if ( !gps_acquired ) {
+            if ( not gps_acquired ) {
                 // first 3d fix
                 gps_acquired = true;
                 gps_settle_timer = 0;
@@ -32,13 +32,13 @@ void gps_mgr_t::update() {
                 Serial.println("GPS: 3d fix acquired.");
                 Serial.print("GPS: unix time = "); Serial.println((double)unix_usec / 1000000.0, 3);
                 Serial.print("Local magvar (deg) = "); Serial.println(magvar_rad*r2d, 2);
-            } else if ( !gps_settled and gps_settle_timer > 10000 ) {  // 10 seconds
+            } else if ( not gps_settled and gps_settle_timer > 10000 ) {  // 10 seconds
                 printf("GPS: settled for 10 seconds.\n");
                 gps_settled = true;
                 gps_node.setBool("settle", true);
             }
         } else {
-            if ( gps_acquired and !gps_settled ) {
+            if ( gps_acquired and not gps_settled ) {
                 // unaquire if we lose fix before settling
                 gps_acquired = false;
                 printf("lost fix before settling, unaquire gps\n");

@@ -42,7 +42,7 @@ static void init_tecs() {
     if ( config_tecs_node.getDouble("mass_kg") < 0.01 ) {
         config_tecs_node.setDouble("mass_kg", 2.5);
     }
-    if ( ! config_tecs_node.hasChild("weight_bal") ) {
+    if ( not config_tecs_node.hasChild("weight_bal") ) {
         config_tecs_node.setDouble("weight_bal", 1.0);
     }
     tecs_inited = true;
@@ -50,7 +50,7 @@ static void init_tecs() {
 
 // compute various energy metrics and errors
 void update_tecs() {
-    if ( !tecs_inited ) {
+    if ( not tecs_inited ) {
         init_tecs();
     }
 

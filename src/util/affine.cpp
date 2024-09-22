@@ -159,7 +159,7 @@ bool affine_from_points(Eigen::MatrixXf src, Eigen::MatrixXf dst, bool shear, bo
         print_matrix("M", M);
     }
 
-    if ( scale and !shear ) {
+    if ( scale and not shear ) {
         src = src.cwiseProduct(src);
         dst = dst.cwiseProduct(dst);
         print_matrix("v0", src);

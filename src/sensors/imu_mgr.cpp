@@ -141,7 +141,7 @@ void imu_mgr_t::init() {
 
 // query the imu and update the structures
 void imu_mgr_t::update() {
-    if ( !hardware_inited ) {
+    if ( not hardware_inited ) {
         return;
     }
 

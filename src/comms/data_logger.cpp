@@ -57,7 +57,7 @@ void data_logger_t::init(log_rate_t rate) {
         string log_name = log_dir_name + "/" + "flight_" + pad + val_str + ".nst";
         printf("Next log file name: %s\n", log_name.c_str());
         log_fd = SD.open(log_name.c_str(), FILE_WRITE);
-        if ( !log_fd ) {
+        if ( not log_fd ) {
             printf("Failed to open log file: %s\n", log_name.c_str());
             printf("Error - %s\n", strerror(errno));
         }

@@ -25,7 +25,7 @@ private:
 
     int raw_up_axis( float ax, float ay, float az );
     inline bool new_axis(int axis) {
-        if ( axis >= 0 and !checked[axis] ) {
+        if ( axis >= 0 and not checked[axis] ) {
             return true;
         } else {
             return false;
