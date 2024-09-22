@@ -92,7 +92,7 @@ void message_link_t::write_messages() {
         }
     }
 
-    write_chunk();
+    write_bytes();
 }
 
 // return an ack of a message received
@@ -221,12 +221,10 @@ int message_link_t::send_packet(uint8_t packet_id, uint8_t *payload, uint16_t le
         return 0;
     }
 }
-void message_link_t::write_chunk() {
+void message_link_t::write_bytes() {
     // printf("Emptying log buffer: %d\n", data_logger_t::log_buffer.size());
     int count = 0;
     uint8_t val;
-    // int max_per_update = saved_baud / (10 /*bits per byte*/ * MASTER_HZ);
-    int max_per_update = 100;
     while ( not serial_buffer.isEmpty() and serial._port->availableForWrite() ) {
         serial_buffer.pop(val);
         serial._port->write(val);
@@ -333,7 +331,14 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
 }
 
 void message_link_t::read_commands() {
+    uint32_t last_message_millis = 0;
     while ( serial.update() ) {
-        parse_message( serial.pkt_id, serial.payload, serial.pkt_len );
+        if ( parse_message( serial.pkt_id, serial.payload, serial.pkt_len ) ) {
+            last_message_millis = millis();
+        }
+    }
+    // pop out of HIL mode if we stop receiving remote sensor messages for more than 1 sec
+    if ( airdata_node.getBool("HIL_mode") and millis() > last_message_millis + 1000 ) {
+        airdata_node.setBool("HIL_mode", false);
     }
 }

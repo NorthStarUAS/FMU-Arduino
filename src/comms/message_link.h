@@ -48,7 +48,7 @@ private:
     bool parse_message( uint8_t id, uint8_t *buf, uint8_t message_size );
 
     int send_packet(uint8_t packet_id, uint8_t *payload, uint16_t len);
-    void write_chunk();
+    void write_bytes();
 
     RateLimiter limiter_50hz;
     RateLimiter limiter_10hz;
