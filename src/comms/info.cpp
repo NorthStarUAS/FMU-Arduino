@@ -18,6 +18,7 @@
 
 void write_inceptors_ascii() {
     // inceptor (sbus receiver) input data
+    Serial.print("[1] Inceptors: ");
     if ( inceptors_node.getBool("failsafe") ) {
         Serial.print("FAILSAFE! ");
     }
@@ -26,7 +27,7 @@ void write_inceptors_ascii() {
     } else {
         Serial.print("(Manual) ");
     }
-    if ( inceptors_node.getBool("throttle_safety") ) {
+    if ( inceptors_node.getBool("throttle_enable") ) {
         Serial.print("(Throttle enable) ");
     } else {
         Serial.print("(Throttle safe) ");
@@ -39,7 +40,7 @@ void write_inceptors_ascii() {
 
 void write_effectors_ascii() {
     // final effector (servo) positions
-    Serial.print("RCOUT: ");
+    Serial.print("[7] Effectors: ");
     for ( int i = 0; i < PWM_CHANNELS; i++ ) {
         Serial.print(effectors_node.getDouble("channel", i), 2); Serial.print(" ");
     }
@@ -69,7 +70,7 @@ static void write_zero_padded_int(int val, int width) {
 
 void write_imu_ascii() {
     // output imu data
-    Serial.print("IMU: ");
+    Serial.print("[4] IMU: ");
     Serial.print(imu_node.getDouble("timestamp"), 2); Serial.print(" ");
     write_padded_double(imu_node.getDouble("p_rps"), 2); Serial.print(" ");
     write_padded_double(imu_node.getDouble("q_rps"), 2); Serial.print(" ");
@@ -81,7 +82,7 @@ void write_imu_ascii() {
 }
 
 void write_gps_ascii() {
-    Serial.print("GPS:");
+    Serial.print("[2] GPS:");
     Serial.print(" Lat: "); Serial.print(gps_node.getDouble("latitude_deg"), 7);
     Serial.print(" Lon: "); Serial.print(gps_node.getDouble("longitude_deg"), 7);
     Serial.print(" Alt: "); Serial.print(gps_node.getDouble("altitude_m"), 1);
@@ -104,7 +105,7 @@ void write_gps_ascii() {
 
 void write_nav_ascii() {
     // values
-    Serial.print("Pos: ");
+    Serial.print("[5] Pos: ");
     Serial.print(nav_node.getDouble("latitude_deg"), 7); Serial.print(" ");
     Serial.print(nav_node.getDouble("longitude_deg"), 7); Serial.print(" ");
     Serial.print(nav_node.getDouble("altitude_m"), 1);
@@ -120,7 +121,7 @@ void write_nav_ascii() {
 
 void write_nav_stats_ascii() {
     // covariances
-    Serial.print("gbx: ");
+    Serial.print("[6] gbx: ");
     Serial.print(nav_node.getDouble("p_bias"), 2); Serial.print(" ");
     Serial.print(nav_node.getDouble("q_bias"), 2); Serial.print(" ");
     Serial.print(nav_node.getDouble("r_bias"), 2);
@@ -147,7 +148,7 @@ void write_nav_stats_ascii() {
 }
 
 void write_airdata_ascii() {
-    Serial.print("Baro: "); Serial.print(airdata_node.getDouble("baro_press_pa"), 0); Serial.print(" pa ");
+    Serial.print("[3] Baro: "); Serial.print(airdata_node.getDouble("baro_press_pa"), 0); Serial.print(" pa ");
     Serial.print(airdata_node.getDouble("baro_temp_C"), 1); Serial.print(" C ");
     Serial.print(airdata_node.getDouble("altitude_m"), 1); Serial.print(" m ");
     Serial.print("Pitot: ");

@@ -8,17 +8,16 @@
 #include "console.h"
 
 void console_t::display_menu() {
-    printf("%s\n",
-            "  1) Inceptors (sbus in)\n"
-            "  2) GPS\n"
-            "  3) Airdata\n"
-            "  4) IMU\n"
-            "  5) Nav/EKF\n"
-            "  6) EKF biases/covariances\n"
-            "  7) Effectors (servos out)\n"
-            "  8) Calibrate IMU strapdown\n"
-            "  9) Pretty print property tree\n"
-            "  Reboot: type \"reboot\"\n");
+    printf("[1] Inceptors (sbus in)\n"
+           "[2] GPS\n"
+           "[3] Airdata\n"
+           "[4] IMU\n"
+           "[5] Nav/EKF\n"
+           "[6] EKF biases/covariances\n"
+           "[7] Effectors (pwm out)\n"
+           "[8] Calibrate IMU strapdown\n"
+           "[9] Pretty print property tree\n"
+           "Reboot: type \"reboot\"\n");
 }
 
 void console_t::init() {
