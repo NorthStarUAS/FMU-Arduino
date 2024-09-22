@@ -24,21 +24,13 @@ void sensor_mgr_t::init() {
 void sensor_mgr_t::update() {
     sensors_prof.start();
 
-    // poll the pressure sensors
-    airdata_mgr.update();
-
-    // 2. Check for gps updates
-    gps_mgr.update();
-
-    // 1. Sense motion (top priority, used for timing sync downstream.)
-    imu_mgr.update();
-
-    if ( !status_node.getBool("HIL_mode") ) {
-        // read power values
+    if ( not status_node.getBool("HIL_mode") ) {
+        airdata_mgr.update();
+        gps_mgr.update();
+        imu_mgr.update();
         power.update();
+        inceptors.read();
     }
-
-    inceptors.read();
 
     sensors_prof.stop();
 }
