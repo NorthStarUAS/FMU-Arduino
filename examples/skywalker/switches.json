@@ -3,7 +3,7 @@
         "rc-channel": 0,
         "states": 2
     },
-    "throttle_safety": {
+    "throttle_enable": {
         "rc-channel": 1,
         "states": 2
     }

@@ -25,7 +25,7 @@
   "preflight": {
     "duration_sec": "60.0"
   },
-  "throttle_safety": {
+  "throttle_enable": {
     "safety_mode": "on_touchdown"
   },
   "task": [
