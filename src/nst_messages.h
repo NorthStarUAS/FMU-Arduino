@@ -835,7 +835,7 @@ public:
     struct _compact_t {
         uint32_t millis;
         uint16_t baro_press_pa;
-        uint16_t diff_press_pa;
+        int16_t diff_press_pa;
         int16_t air_temp_C;
         int16_t airspeed_mps;
         float altitude_agl_m;
@@ -868,7 +868,7 @@ public:
         _compact_t *_buf = (_compact_t *)payload;
         _buf->millis = millis;
         _buf->baro_press_pa = uintround(baro_press_pa * 0.5);
-        _buf->diff_press_pa = uintround(diff_press_pa * 10.0);
+        _buf->diff_press_pa = intround(diff_press_pa * 2.0);
         _buf->air_temp_C = intround(air_temp_C * 250.0);
         _buf->airspeed_mps = intround(airspeed_mps * 100.0);
         _buf->altitude_agl_m = altitude_agl_m;
@@ -888,7 +888,7 @@ public:
         len = sizeof(_compact_t);
         millis = _buf->millis;
         baro_press_pa = _buf->baro_press_pa / (float)0.5;
-        diff_press_pa = _buf->diff_press_pa / (float)10.0;
+        diff_press_pa = _buf->diff_press_pa / (float)2.0;
         air_temp_C = _buf->air_temp_C / (float)250.0;
         airspeed_mps = _buf->airspeed_mps / (float)100.0;
         altitude_agl_m = _buf->altitude_agl_m;
@@ -1516,7 +1516,7 @@ public:
     float aux1;
     float aux2;
     uint8_t master_switch;
-    uint8_t throttle_safety;
+    uint8_t throttle_enable;
 
     // internal structure for packing
     #pragma pack(push, 1)
@@ -1531,7 +1531,7 @@ public:
         int16_t aux1;
         int16_t aux2;
         uint8_t master_switch;
-        uint8_t throttle_safety;
+        uint8_t throttle_enable;
     };
     #pragma pack(pop)
 
@@ -1561,7 +1561,7 @@ public:
         _buf->aux1 = intround(aux1 * 30000.0);
         _buf->aux2 = intround(aux2 * 30000.0);
         _buf->master_switch = master_switch;
-        _buf->throttle_safety = throttle_safety;
+        _buf->throttle_enable = throttle_enable;
         return true;
     }
 
@@ -1578,7 +1578,7 @@ public:
         aux1 = _buf->aux1 / (float)30000.0;
         aux2 = _buf->aux2 / (float)30000.0;
         master_switch = _buf->master_switch;
-        throttle_safety = _buf->throttle_safety;
+        throttle_enable = _buf->throttle_enable;
         return true;
     }
 
@@ -1601,7 +1601,7 @@ public:
         node.setDouble("aux1", aux1);
         node.setDouble("aux2", aux2);
         node.setUInt("master_switch", master_switch);
-        node.setUInt("throttle_safety", throttle_safety);
+        node.setUInt("throttle_enable", throttle_enable);
     }
 
     void props2msg(string _path, int _index = -1) {
@@ -1623,7 +1623,7 @@ public:
         aux1 = node.getDouble("aux1");
         aux2 = node.getDouble("aux2");
         master_switch = node.getUInt("master_switch");
-        throttle_safety = node.getUInt("throttle_safety");
+        throttle_enable = node.getUInt("throttle_enable");
     }
 };
 
