@@ -232,6 +232,7 @@ void message_link_t::write_bytes() {
     }
 }
 
+// hil_testing_node values are set in config file
 bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_size ) {
     bool result = false;
     //printf("message id: %d  len: %d\n", id, message_size);
@@ -245,7 +246,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
         comms_node.setDouble("last_command_sec", millis() / 1000.0);
         result = true;
     } else if ( id == nst_message::airdata_v8_id ) {
-        if ( status_node.getBool("HIL_mode") ) {
+        if ( hil_testing_node.getBool("enable") ) {
             nst_message::airdata_v8_t msg;
             msg.unpack(buf, message_size);
             // don't autofill the property tree, just pick the values the flight
@@ -270,7 +271,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
             airdata_node.setUInt("error_count", msg.error_count);
         }
     } else if ( id == nst_message::gps_v5_id ) {
-        if ( status_node.getBool("HIL_mode") ) {
+        if ( hil_testing_node.getBool("enable") ) {
             nst_message::gps_v5_t msg;
             msg.unpack(buf, message_size);
             msg.msg2props(gps_node);
@@ -283,17 +284,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
             // gps_node.pretty_print();
         }
     } else if ( id == nst_message::imu_v6_id ) {
-        // special logic to switch system to HIL mode if we are receiving IMU
-        // data as external messages, but only if we aren't already flying
-        //
-        // FIXME: let's add extra protections here (somewhere?) against
-        // inadvertently switching to HIL or accepting external data while in
-        // flight.
-        if ( not airdata_node.getBool("is_airborne") ) {
-            status_node.setBool("HIL_mode", true);
-        }
-
-        if ( status_node.getBool("HIL_mode") ) {
+        if ( hil_testing_node.getBool("enable") ) {
             nst_message::imu_v6_t msg;
             msg.unpack(buf, message_size);
             msg.msg2props(imu_node);
@@ -304,7 +295,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
             // imu_node.pretty_print();
         }
     } else if ( id == nst_message::inceptors_v2_id ) {
-        if ( status_node.getBool("HIL_mode") ) {
+        if ( hil_testing_node.getBool("enable") and hil_testing_node.getString("inceptors") != "rc" ) {
             nst_message::inceptors_v2_t msg;
             msg.unpack(buf, message_size);
             msg.msg2props(inceptors_node);
@@ -316,7 +307,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
             // }
         }
     } else if ( id == nst_message::power_v1_id ) {
-        if ( status_node.getBool("HIL_mode") ) {
+        if ( hil_testing_node.getBool("enable") ) {
             nst_message::power_v1_t msg;
             msg.unpack(buf, message_size);
             msg.msg2props(power_node);
@@ -331,14 +322,7 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
 }
 
 void message_link_t::read_commands() {
-    uint32_t last_message_millis = 0;
     while ( serial.update() ) {
-        if ( parse_message( serial.pkt_id, serial.payload, serial.pkt_len ) ) {
-            last_message_millis = millis();
-        }
-    }
-    // pop out of HIL mode if we stop receiving remote sensor messages for more than 1 sec
-    if ( airdata_node.getBool("HIL_mode") and millis() > last_message_millis + 1000 ) {
-        airdata_node.setBool("HIL_mode", false);
+        parse_message( serial.pkt_id, serial.payload, serial.pkt_len );
     }
 }

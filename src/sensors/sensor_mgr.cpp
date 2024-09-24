@@ -19,16 +19,35 @@ void sensor_mgr_t::init() {
 
     // initialize the pilot interface (RC in, out & mixer)
     inceptors.init();
+
+    hil_testing_node.pretty_print();
+    printf("HIL: %d\n", hil_testing_node.getBool("enable"));
+    if ( hil_testing_node.getBool("enable") ) {
+        printf("NOTE: HIL mode enabled.");
+        if ( hil_testing_node.getString("inceptors") == "rc" ) {
+            printf("  Inceptor input from RC.");
+        }
+        printf("\n");
+    } else {
+        printf("Normal (real) sensors (no HIL)!\n");
+    }
 }
 
 void sensor_mgr_t::update() {
     sensors_prof.start();
 
-    if ( not status_node.getBool("HIL_mode") ) {
+    if ( hil_testing_node.getBool("enable") ) {
+        // sensors input from sim (via messages)
+    } else {
         airdata_mgr.update();
         gps_mgr.update();
         imu_mgr.update();
         power.update();
+    }
+
+    if ( hil_testing_node.getBool("enable") and hil_testing_node.getString("inceptors") != "rc" ) {
+        // inceptor input from sim (via messages)
+    } else {
         inceptors.read();
     }
 
