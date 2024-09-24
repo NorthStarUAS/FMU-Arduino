@@ -38,7 +38,7 @@
             "flaps",
             "gear"
         ],
-        "enable": "True"
+        "enable": true
     },
     "power": {
         "battery_cells": 4,
@@ -53,53 +53,53 @@
     },
     "mixer": {
         "auto_coordination": {
-            "enable": "True",
+            "enable": true,
             "gain1": "0.3"
         },
         "throttle_trim": {
-            "enable": "True",
+            "enable": true,
             "gain1": "-0.4"
         },
         "flap_trim": {
-            "enable": "False",
+            "enable": false,
             "gain1": "0.0"
         },
         "elevon": {
-            "enable": "False",
+            "enable": false,
             "gain1": "1.0",
             "gain2": "1.0"
         },
         "flaperon": {
-            "enable": "False",
+            "enable": false,
             "gain1": "1.0",
             "gain2": "1.0"
         },
         "vtail": {
-            "enable": "False",
+            "enable": false,
             "gain1": "1.0",
             "gain2": "1.0"
         },
         "diff_thrust": {
-            "enable": "False",
+            "enable": false,
             "gain1": "1.0",
             "gain2": "0.1"
         }
     },
     "stability_damper": {
         "roll": {
-            "enable": "True",
+            "enable": true,
             "gain": "0.15"
         },
         "pitch": {
-            "enable": "True",
+            "enable": true,
             "gain": "0.25"
         },
         "yaw": {
-            "enable": "True",
+            "enable": true,
             "gain": "0.15"
         },
         "pilot_tune": {
-            "enable": "True"
+            "enable": true
         }
     },
     "switches": {

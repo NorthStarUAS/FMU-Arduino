@@ -4,7 +4,7 @@
     "completion_agl_ft": 150,
     "roll_gain": 0.5,
     "roll_limit": 10.0,
-    "rudder_enable": "True",
+    "rudder_enable": true,
     "rudder_gain": -0.03,
     "rudder_max": 0.5,
     "ref_airspeed_kt": 20,
