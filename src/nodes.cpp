@@ -4,6 +4,7 @@
 PropertyNode config_node;
 PropertyNode config_L1_node;
 PropertyNode config_tecs_node;
+PropertyNode hil_testing_node;
 PropertyNode imu_calib_node;
 
 // Sensors
@@ -49,6 +50,7 @@ void PropertyNodes_init() {
     config_node = PropertyNode("/config");
     config_L1_node = PropertyNode("/config/fcs/L1_controller");
     config_tecs_node = PropertyNode("/config/fcs/TECS");
+    hil_testing_node = PropertyNode("/config/HIL_testing");
     imu_calib_node = PropertyNode("/config/imu/calibration");
 
     // Sensors
