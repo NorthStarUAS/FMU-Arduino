@@ -1,7 +1,7 @@
 {
     "lost_link_timeout_sec": 30,
     "gcs": {
-        "port": 2,
+        "port": 4,
         "baud": 57600
     }
 }

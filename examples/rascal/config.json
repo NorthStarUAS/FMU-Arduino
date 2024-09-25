@@ -10,6 +10,11 @@
         "cruise_kt": "40",
         "display_units": "kts"
     },
+    "HIL_testing": {
+        "enable": true,
+        "inceptors": "sim",
+        "effectors": "sim"
+    },
     "airdata": {
         "pitot_calibrate_factor": 1.0
     },
