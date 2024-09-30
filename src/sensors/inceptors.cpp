@@ -31,6 +31,7 @@ bool inceptors_t::read() {
         //     printf("%.2f ", sbus.pwm_val[i]);
         // }
         // printf("\n");
+        // Serial.println(sbus.receiver_flags, BIN);
 
         if ( sbus.receiver_flags & 1 << 3 ) {
             // super bad situation if this happens when AP not enabled!
