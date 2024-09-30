@@ -32,7 +32,6 @@ void mixer_t::update_matrix() {
     PropertyNode flaperon_node = PropertyNode("/config/mixer/flaperon");
     PropertyNode vtail_node = PropertyNode("/config/mixer/vtail");
     PropertyNode diffthrust_node = PropertyNode("/config/mixer/diff_thrust");
-    delay(100);
 
     if ( autocoord_node.getBool("enable") ) {
         M(3,1) = autocoord_node.getDouble("gain1");
@@ -104,8 +103,6 @@ void mixer_t::init() {
 
     inputs.setZero();
     outputs.setZero();
-
-    delay(100);
 }
 
 // compute the stability damping in normalized command/input space
