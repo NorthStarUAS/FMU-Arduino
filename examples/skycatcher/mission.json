@@ -11,7 +11,23 @@
     "ref_pitch_deg": 10.0,
     "mission_agl_ft": 1500
   },
-
+  "land": {
+    "alt_base_agl_ft": 0,
+    "approach_speed_kt": 25,
+    "direction": "left",
+    "extend_final_leg_m": 0,
+    "flare_pitch_deg": 4,
+    "flare_seconds": 5.0,
+    "glideslope_deg": 3.0,
+    "lateral_offset_m": 0.0,
+    "circle_radius_m": 75
+  },
+  "preflight": {
+    "duration_sec": "60.0"
+  },
+  "throttle_enable": {
+    "safety_mode": "on_touchdown"
+  },
   "task": [
     {
       "name": "lost_link",
@@ -42,10 +58,6 @@
             ]
         }
       ]
-    },
-    {
-      "name": "throttle_safety",
-      "safety_mode": "on_touchdown"
     },
     {
       "name": "is_airborne",
@@ -110,10 +122,6 @@
       "trigger": "channel5"
     },
     {
-      "name": "preflight",
-      "duration_sec": "60.0"
-    },
-    {
       "name": "route",
       "include": "../routes/bowtie-300m.json"
     },
@@ -124,18 +132,6 @@
       "veritcal_m": 15,
       "min_kt": 25,
       "max_kt": 35
-    },
-    {
-      "name": "land",
-      "alt_bias_ft": 0,
-      "approach_speed_kt": 25,
-      "direction": "left",
-      "extend_final_leg_m": 0,
-      "flare_pitch_deg": 4,
-      "flare_seconds": 5.0,
-      "glideslope_deg": 3.0,
-      "lateral_offset_m": 0.0,
-      "turn_radius_m": 75
     }
   ]
 }
