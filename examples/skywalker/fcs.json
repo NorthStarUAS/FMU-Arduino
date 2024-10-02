@@ -175,5 +175,9 @@
         "pilot_tune": {
             "enable": true
         }
+    },
+    "pwm": {
+        "pwm_hz": 50,
+        "gains": [ 1.0, 1.0, -1.0, -1.0, -1.0 ]
     }
 }
