@@ -11,7 +11,7 @@
         "display_units": "kts"
     },
     "HIL_testing": {
-        "enable": true,
+        "enable": false,
         "inceptors": "rc",
         "effectors": "sim"
     },
