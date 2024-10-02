@@ -28,10 +28,8 @@ void message_link_t::init(uint8_t port, uint32_t baud ) {
     saved_baud = baud;
     if ( serial.open(baud, port) ) {
         printf("opened message_link port: %d @ %ld baud\n", port, baud);
-        delay(100);
     } else {
         printf("ERROR opening message_link port: %d @ %ld baud\n", port, baud);
-        delay(1000);
     }
 
     limiter_50hz = RateLimiter(50);

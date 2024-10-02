@@ -74,7 +74,7 @@ void packer_t::pack_mission() {
 
     mission_msg.wp_index = route_counter;
     if ( route_counter < route_size ) {
-        // it is unfortnate that get_wp converts from raw to deg and we have to
+        // it is unfortunate that get_wp converts from raw to deg and we have to
         // convert back to raw for the message.
         coord_t coord = mission_mgr->route_mgr.get_wp(route_counter);
         mission_msg.wp_longitude_raw = coord.lon_deg * 10000000;
