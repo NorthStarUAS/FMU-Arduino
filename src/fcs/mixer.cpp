@@ -25,13 +25,13 @@ void mixer_t::update_matrix() {
     // note: M(output_channel, input_channel)
     // note: elevon and flaperon mixing are mutually exclusive
 
-    PropertyNode autocoord_node = PropertyNode("/config/mixer/auto_coordination");
-    PropertyNode throttletrim_node = PropertyNode("/config/mixer/throttle_trim");
-    PropertyNode flaptrim_node = PropertyNode("/config/mixer/flap_trim");
-    PropertyNode elevon_node = PropertyNode("/config/mixer/elevon");
-    PropertyNode flaperon_node = PropertyNode("/config/mixer/flaperon");
-    PropertyNode vtail_node = PropertyNode("/config/mixer/vtail");
-    PropertyNode diffthrust_node = PropertyNode("/config/mixer/diff_thrust");
+    PropertyNode autocoord_node = PropertyNode("/config/fcs/mixer/auto_coordination");
+    PropertyNode throttletrim_node = PropertyNode("/config/fcs/mixer/throttle_trim");
+    PropertyNode flaptrim_node = PropertyNode("/config/fcs/mixer/flap_trim");
+    PropertyNode elevon_node = PropertyNode("/config/fcs/mixer/elevon");
+    PropertyNode flaperon_node = PropertyNode("/config/fcs/mixer/flaperon");
+    PropertyNode vtail_node = PropertyNode("/config/fcs/mixer/vtail");
+    PropertyNode diffthrust_node = PropertyNode("/config/fcs/mixer/diff_thrust");
 
     if ( autocoord_node.getBool("enable") ) {
         M(3,1) = autocoord_node.getDouble("gain1");
@@ -88,10 +88,10 @@ void mixer_t::print_mixer_matrix() {
 }
 
 void mixer_t::init() {
-    stab_roll_node = PropertyNode("/config/stability_damper/roll");
-    stab_pitch_node = PropertyNode("/config/stability_damper/pitch");
-    stab_yaw_node = PropertyNode("/config/stability_damper/yaw");
-    stab_tune_node = PropertyNode("/config/stability_damper/pilot_tune");
+    stab_roll_node = PropertyNode("/config/fcs/damper/roll");
+    stab_pitch_node = PropertyNode("/config/fcs/damper/pitch");
+    stab_yaw_node = PropertyNode("/config/fcs/damper/yaw");
+    stab_tune_node = PropertyNode("/config/fcs/damper/pilot_tune");
 
     M.resize(PWM_CHANNELS, PWM_CHANNELS);
     M.setIdentity();

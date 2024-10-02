@@ -34,57 +34,6 @@
         "pwm_hz": 50,
         "gains": [ 1.0, 1.0, -1.0, -1.0, -1.0 ]
     },
-    "mixer": {
-        "auto_coordination": {
-            "enable": true,
-            "gain1": "0.3"
-        },
-        "throttle_trim": {
-            "enable": true,
-            "gain1": "-0.4"
-        },
-        "flap_trim": {
-            "enable": false,
-            "gain1": "0.0"
-        },
-        "elevon": {
-            "enable": false,
-            "gain1": "1.0",
-            "gain2": "1.0"
-        },
-        "flaperon": {
-            "enable": false,
-            "gain1": "1.0",
-            "gain2": "1.0"
-        },
-        "vtail": {
-            "enable": false,
-            "gain1": "1.0",
-            "gain2": "1.0"
-        },
-        "diff_thrust": {
-            "enable": false,
-            "gain1": "1.0",
-            "gain2": "0.1"
-        }
-    },
-    "stability_damper": {
-        "roll": {
-            "enable": true,
-            "gain": "0.15"
-        },
-        "pitch": {
-            "enable": true,
-            "gain": "0.25"
-        },
-        "yaw": {
-            "enable": true,
-            "gain": "0.15"
-        },
-        "pilot_tune": {
-            "enable": true
-        }
-    },
     "sensors": {
         "include": "sensors.json"
     },
