@@ -5,11 +5,18 @@
 
 #include "power.h"
 
+const float analogResolution = 65535.0f;
+const float battery_scale = 11.0f;
+const float avionics_scale = 2.0f;
+
 void power_t::init() {
-    config_power_node = PropertyNode("/config/power");
+    config_power_node = PropertyNode("/config/sensors/power");
 
     if ( config_power_node.hasChild("battery_cells") ) {
         cells = config_power_node.getDouble("battery_cells");
+        if ( config_power_node.hasChild("battery_calibration") ) {
+            battery_cal = config_power_node.getDouble("battery_calibration");
+        }
     }
 
 #if defined(MARMOT_V1)
@@ -32,7 +39,7 @@ void power_t::update() {
     // battery voltage
     uint16_t ain;
     ain = analogRead(source_volt_pin);
-    battery_volt = ((float)ain) * 3.3 / analogResolution * pwr_scale;
+    battery_volt = float(ain) * 3.3 / analogResolution * battery_scale * battery_cal;
     double cell_vcc = 0.0;
     if ( cells > 0 ) {
         cell_vcc = battery_volt / cells;

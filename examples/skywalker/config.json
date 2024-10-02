@@ -15,17 +15,11 @@
         "inceptors": "rc",
         "effectors": "sim"
     },
-    "airdata": {
-        "pitot": "ms55",
-        "pitot_calibrate_factor": 1.0
+    "imu-calibration": {
+        "include": "imu-calibration.json"
     },
     "comms": {
         "include": "comms.json"
-    },
-    "imu": {
-        "calibration": {
-            "include": "imu-calibration.json"
-        }
     },
     "fcs": {
         "include": "fcs.json"
@@ -35,26 +29,6 @@
     },
     "nav": {
         "include": "nav.json"
-    },
-    "pilot_input": {
-        "channel": [
-            "master-switch",
-            "throttle-safety",
-            "throttle",
-            "aileron",
-            "elevator",
-            "rudder",
-            "flaps",
-            "gear"
-        ],
-        "enable": true
-    },
-    "power": {
-        "battery_cells": 4,
-        "battery_mah": 6600,
-        "external_amp_offset": 0.0,
-        "external_amp_ratio": 15.00,
-        "batt_volt_divider": 10.278
     },
     "pwm": {
         "pwm_hz": 50,
@@ -110,6 +84,9 @@
         "pilot_tune": {
             "enable": true
         }
+    },
+    "sensors": {
+        "include": "sensors.json"
     },
     "switches": {
         "include": "switches.json"

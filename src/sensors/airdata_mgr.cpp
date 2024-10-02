@@ -27,7 +27,7 @@ static MS4525DO ms45_pitot;
 static MS5525DO ms55_pitot;
 
 void airdata_mgr_t::init() {
-    config_airdata_node = PropertyNode("/config/airdata");
+    config_airdata_node = PropertyNode("/config/sensors/airdata");
 
 #if defined(MARMOT_V1)
     barometer = 1;
@@ -53,10 +53,10 @@ void airdata_mgr_t::init() {
         }
         bme280_status = bme280.begin();
         if ( bme280_status < 0 ) {
-            printf("BME280 barometer initialization unsuccessful\n");
+            printf("BME280 init error.\n");
             printf("Check wiring or try cycling power\n");
         } else {
-            printf("BME280 barometer driver ready.\n");
+            printf("BME280 driver ready.\n");
         }
     } else if (barometer == 3 ) {
         int baro_addr = config_airdata_node.getInt("swift_baro_addr_dec");
@@ -67,17 +67,17 @@ void airdata_mgr_t::init() {
             ams_barometer.begin();
         } else {
             barometer = 0;
-            printf("/config/airdata/swift_baro_addr_dec not specified correctly.\n");
+            printf("swift_baro_addr_dec not specified correctly.\n");
         }
     } else if ( barometer == 4 ) {
         // BMP180
         printf("BMP180 on I2C\n");
         bmp180_status = bmp180.begin();
         if ( not bmp180_status ) {
-            printf("Onboard barometer initialization unsuccessful.\n");
+            printf("BMP180 init error.\n");
             printf("Check wiring or try cycling power.\n");
         } else {
-            printf("BMP180 barometer ready.\n");
+            printf("BMP180 driver ready.\n");
         }
     } else {
         printf("No barometer detected or configured.\n");
@@ -100,7 +100,7 @@ void airdata_mgr_t::init() {
             ams_pitot.begin();
         } else {
             pitot = 0;
-            printf("/config/airdata/swift_pitot_addr_dec not specified correctly.\n");
+            printf("swift_pitot_addr_dec not specified correctly.\n");
         }
     }
 }

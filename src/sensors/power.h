@@ -10,13 +10,11 @@ private:
 
     uint8_t cells = 1;
 
-    const float analogResolution = 65535.0f;
-    const float pwr_scale = 11.0f;
-    const float avionics_scale = 2.0f;
     uint8_t avionics_pin;
     uint8_t source_volt_pin;
     uint8_t atto_volts_pin = A2;
     uint8_t atto_amps_pin = A3;
+    float battery_cal = 1.0;
 
 public:
 

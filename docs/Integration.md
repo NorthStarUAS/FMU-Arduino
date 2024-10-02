@@ -3,7 +3,7 @@
 Just a quick note on philosophy and purpose.  My greatest hope for this project
 is that it can be a tool to help others learn about sensors, flight computers,
 flight control laws, and a host of supporting material.  I have made an effort
-to keep the code simple-ish, favoring clarity over performance in some cases. If
+to keep the code simple-ish, favoring clarity over performance in many cases. If
 you just want to plug things together and go fly, this project may end up a
 little daunting and frustrating.  I am willing to help and answer questions as
 much as my bandwidth allows.
@@ -95,3 +95,5 @@ calibration matrix maps the IMU sensors to the aircraft coordinate system.
   calibration.  But it is extra effort to extract and post process the flight
   data and copy the calibration back to the aircraft.  The results are great
   though for the extra effort.
+
+* Calibrate external (main input) voltage sensor: TBD.

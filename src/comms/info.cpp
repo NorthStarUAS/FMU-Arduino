@@ -160,9 +160,9 @@ void write_airdata_ascii() {
 
 void write_power_ascii() {
     Serial.print("Avionics v: ");
-    Serial.print(power_node.getDouble("avionics_vcc"));
+    Serial.print(power_node.getDouble("avionics_vcc"), 3);
     Serial.print(" Batt v: ");
-    Serial.print(power_node.getDouble("main_vcc"));
+    Serial.print(power_node.getDouble("main_vcc"), 3);
     Serial.print(" Batt amp: ");
     Serial.println(power_node.getDouble("main_amps"));
 }

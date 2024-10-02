@@ -1,0 +1,11 @@
+{
+    "airdata": {
+        "pitot": "ms55",
+        "pitot_calibrate_factor": 1.0
+    },
+    "power": {
+        "battery_cells": 4,
+        "battery_mah": 6600,
+        "battery_calibration": 1.009
+    }
+}
