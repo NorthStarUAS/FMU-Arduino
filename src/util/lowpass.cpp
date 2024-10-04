@@ -2,30 +2,30 @@
 
 #include "lowpass.h"
 
-rcLowPassFilter::rcLowPassFilter()
+LowPassFilter::LowPassFilter()
 {
     set_time_factor( 1.0 );
     filter_value = 0.0;
     inited = false;
 }
 
-rcLowPassFilter::rcLowPassFilter( double time_factor )
+LowPassFilter::LowPassFilter( double time_factor )
 {
     set_time_factor( time_factor );
     filter_value = 0.0;
     inited = false;
 }
 
-rcLowPassFilter::rcLowPassFilter( double time_factor, double init )
+LowPassFilter::LowPassFilter( double time_factor, double init )
 {
     set_time_factor( time_factor );
     filter_value = init;
     inited = true;
 }
 
-rcLowPassFilter::~rcLowPassFilter() {}
+LowPassFilter::~LowPassFilter() {}
 
-double rcLowPassFilter::update( double value, double dt ) {
+double LowPassFilter::update( double value, double dt ) {
     if ( not inited ) {
         filter_value = value;
         inited = true;
