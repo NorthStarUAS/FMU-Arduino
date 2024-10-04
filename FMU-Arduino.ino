@@ -141,7 +141,7 @@ void main_loop() {
     // 1. Aviate: This is the core "sense, compute, response" block.  We want
     //    this to run at a perfect update interval with the least possible
     //    transport delay.
-    sensor_mgr->update();
+    sensor_mgr->update(dt);
     nav_mgr->update();
     state_mgr.update(dt);
     fcs_mgr->update(dt);

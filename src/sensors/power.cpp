@@ -33,24 +33,33 @@ void power_t::init() {
  #else
     printf("Master board configuration not defined correctly.\n");
 #endif
+
+    battery_volts.set_time_factor(5.0);
+    avionics_volts.set_time_factor(5.0);
 }
 
-void power_t::update() {
+void power_t::update(float dt) {
     // battery voltage
     uint16_t ain;
+    float volts;
     ain = analogRead(source_volt_pin);
-    battery_volt = float(ain) * 3.3 / analogResolution * battery_scale * battery_cal;
+    volts = float(ain) * 3.3 / analogResolution * battery_scale * battery_cal;
+    battery_volts.update(volts, dt);
     double cell_vcc = 0.0;
     if ( cells > 0 ) {
-        cell_vcc = battery_volt / cells;
+        cell_vcc = battery_volts.get_value() / cells;
     }
-    power_node.setDouble("main_vcc", battery_volt);
+    power_node.setDouble("main_vcc", battery_volts.get_value());
     power_node.setDouble("main_amps", 0);  // fixme (attopilot?)
     power_node.setDouble("cell_vcc", cell_vcc);
 
     ain = analogRead(avionics_pin);
-    avionics_volt = ((float)ain) * 3.3 / analogResolution * avionics_scale;
-    power_node.setDouble("avionics_vcc", avionics_volt);
+    volts = ((float)ain) * 3.3 / analogResolution * avionics_scale;
+    avionics_volts.update(volts, dt);
+    // Serial.print("pin: "); Serial.print(source_volt_pin);
+    // Serial.print(" raw: "); Serial.print(ain); Serial.print(" volts: "); Serial.print(volts, 3);
+    // Serial.print(" filt: "); Serial.print(avionics_volts.get_value()); Serial.print(" "); Serial.println(dt);
+    power_node.setDouble("avionics_vcc", avionics_volts.get_value());
 
     // fixme: what about amps
 

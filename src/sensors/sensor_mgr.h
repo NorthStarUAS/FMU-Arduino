@@ -14,7 +14,7 @@ public:
     sensor_mgr_t() {};
     ~sensor_mgr_t() {};
     void init();
-    void update();
+    void update(float dt);
 
     airdata_mgr_t airdata_mgr;
     gps_mgr_t gps_mgr;

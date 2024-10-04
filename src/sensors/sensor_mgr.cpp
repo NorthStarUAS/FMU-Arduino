@@ -33,7 +33,7 @@ void sensor_mgr_t::init() {
     }
 }
 
-void sensor_mgr_t::update() {
+void sensor_mgr_t::update(float dt) {
     sensors_prof.start();
 
     if ( hil_testing_node.getBool("enable") ) {
@@ -42,7 +42,7 @@ void sensor_mgr_t::update() {
         airdata_mgr.update();
         gps_mgr.update();
         imu_mgr.update();
-        power.update();
+        power.update(dt);
     }
 
     if ( hil_testing_node.getBool("enable") and hil_testing_node.getString("inceptors") != "rc" ) {

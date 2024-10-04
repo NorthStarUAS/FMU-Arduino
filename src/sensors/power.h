@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../props2.h"
+#include "../util/lowpass.h"
 
 class power_t {
 
@@ -18,10 +19,10 @@ private:
 
 public:
 
-    float avionics_volt = 0.0;
-    float battery_volt = 0.0;
+    LowPassFilter battery_volts;
+    LowPassFilter avionics_volts;
     float battery_amp = 0.0;
 
     void init();
-    void update();
+    void update(float dt);
 };
