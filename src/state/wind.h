@@ -6,9 +6,9 @@ class wind_est_t {
 
 private:
 
-    rcLowPassFilter we_filt;
-    rcLowPassFilter wn_filt;
-    rcLowPassFilter pitot_scale_filt;
+    LowPassFilter we_filt;
+    LowPassFilter wn_filt;
+    LowPassFilter pitot_scale_filt;
 
 public:
 

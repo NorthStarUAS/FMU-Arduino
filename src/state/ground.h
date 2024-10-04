@@ -6,7 +6,7 @@ class ground_est_t {
 
 private:
 
-    rcLowPassFilter ground_alt_filt;
+    LowPassFilter ground_alt_filt;
     bool ground_alt_calibrated = false;
 
 public:
