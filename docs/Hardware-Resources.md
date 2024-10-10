@@ -12,15 +12,23 @@
   several port pass throughs.
   <https://www.beagleboard.org/boards/beaglebone-black>
 
+## Flight Computers, Sensors (GPS, Air Data), Cables and Connectors
+
 * Bolder Flight Systems: Offers a teensy "compatible" based flight management
-  computer/board with a 30x30mm footprint.
+  computer/board with a 30x30mm footprint.  They may also continue to offer
+  their marmot board which has a footprint that plugs directly into a beaglebone
+  black.
   <https://bolderflight.com/>
+
+## Sensors (GPS, Air Data), Cables and Connectors
+
+* 3DR (Jordie) sells a variety of sensors boards, and cables.  For things like
+  gps, airdata, and radio modems, this is the goto place.  Note, this project
+  uses a teensy as a flight controller, not a pixhawk-based board, so the 3dr
+  flight controllers are not compatible here.
+  <https://store.3dr.com/>
 
 ## Cables and connectors
 
 * JST-GH precrimped wires (combined with connectors you can build your own custom cables)
   <https://www.digikey.com/en/products/detail/jst-sales-america-inc/AGHGH28K51/6009448>
-
-* 3DR (Jordie) sells a variety of boards, sensors, and cables.  For things like
-  gps, airdata, and radio modems, this is the goto place.
-  <https://store.3dr.com/>
