@@ -1,5 +1,6 @@
 #include "../nodes.h"
 
+#include "inceptors.h"
 #include "switches.h"
 
 void switches_t::init() {
@@ -34,16 +35,16 @@ void switches_t::init() {
 void switches_t::update() {
     // printf("switch: ");
     for ( unsigned int i = 0; i < switch_list.size(); i++ ) {
-        int pwm_val = rcin_node.getUInt("channel", switch_list[i].rc_channel);
-        int step = 1000 / (switch_list[i].num_states - 1);
+        int sbus_val = rcin_node.getUInt("channel", switch_list[i].rc_channel);
+        int step = SBUS_RANGE / (switch_list[i].num_states - 1);
         int test_range = step * 0.4;
         int state = 0;
-        int test_point = 1000;
+        int test_point = SBUS_MIN_VALUE;
         bool valid = false;
         // printf("[%d] pwm_val: %d ", i, pwm_val);
-        while ( test_point - test_range < 2000 ) {
+        while ( test_point - test_range < SBUS_MAX_VALUE ) {
             // printf("[%d] pwm: %d  tp: %d  tr: %d\n", i, pwm_val, test_point, test_range);
-            if ( (pwm_val >= test_point - test_range) and (pwm_val <= test_point + test_range) )
+            if ( (sbus_val >= test_point - test_range) and (sbus_val <= test_point + test_range) )
             {
                 valid = true;
                 break;
