@@ -25,9 +25,6 @@
   "preflight": {
     "duration_sec": "60.0"
   },
-  "throttle_enable": {
-    "safety_mode": "on_touchdown"
-  },
   "task": [
     {
       "name": "lost_link",
