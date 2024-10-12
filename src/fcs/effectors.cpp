@@ -38,6 +38,9 @@ void effectors_t::write( PropertyNode input_node ) {
         pwm.output_pwm[i] = pwm_val;
         // printf("%d ", pwm_val);
     }
+    // pwm.output_pwm[2] = (inceptors_node.getDouble("pitch") + 1) * 500 + 1000;
+    // pwm.output_pwm[1] = (sin(imu_node.getUInt("millis") / 1000.0) + 1) * 500 + 1000;
+    // pwm.output_pwm[1] = inceptors_node.getUInt("debug");
     pwm.write();
     // printf("\n");
     // pwm_test = 1000 + (AP_HAL::millis() % 5000) / 5;
