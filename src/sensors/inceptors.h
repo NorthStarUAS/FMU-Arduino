@@ -3,8 +3,14 @@
 #include "../props2.h"
 #include "../nodes.h"
 #include "../../setup_board.h"
-#include "sbus/sbus.h"
 #include "switches.h"
+
+// for normalizing sbus channel values
+static const int SBUS_MIN_VALUE = 172;
+static const int SBUS_CENTER_VALUE = 992;
+static const int SBUS_MAX_VALUE = 1811;
+static const int SBUS_RANGE = 1640;
+static const int SBUS_HALF_RANGE = 820;
 
 class inceptors_t {
 
@@ -15,7 +21,6 @@ private:
 public:
 
     switches_t switches;
-    sbus_t sbus;
 
     void init();
     bool read();
