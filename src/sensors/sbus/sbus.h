@@ -1,70 +1,149 @@
-#pragma once
+/*
+* Brian R Taylor
+* brian.taylor@bolderflight.com
+*
+* Copyright (c) 2022 Bolder Flight Systems Inc
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the “Software”), to
+* deal in the Software without restriction, including without limitation the
+* rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+* sell copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+* FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+* IN THE SOFTWARE.
+*/
 
+#ifndef SRC_SBUS_H_
+#define SRC_SBUS_H_
+
+#if defined(ARDUINO)
 #include <Arduino.h>
+#else
+#include <cstddef>
+#include <cstdint>
+#include "core/core.h"
+#endif
 
-const int SBUS_CHANNELS = 16;
+namespace bfs {
 
-// define if an sbus input channel is symmetrical or not (i.e. mapped to
-// [0,1] for throttle, flaps, spoilers; [-1,1] for aileron, elevator, rudder
-static const bool sbus_symmetrical[SBUS_CHANNELS] = {1, 1, 0, 1, 1, 1, 1, 0, 0};
-
-class sbus_t {
-
-private:
-
-    static const uint8_t SBUS_PAYLOAD_LEN = 23;
-    static const uint8_t SBUS_FRAMELOST = (1 << 2);
-    static const uint8_t SBUS_FAILSAFE = (1 << 3);
-
-    typedef union {
-        uint8_t buf[SBUS_PAYLOAD_LEN];
-
-        // Structure defining the contents of the SBUS data payload
-        // (23 bytes).  Each of the channel fields (ch1:ch16) occupies
-        // 11 bytes.
-        struct __attribute__ ((packed)) {
-            uint32_t ch1          : 11;
-            uint32_t ch2          : 11;
-            uint32_t ch3_lo       : 10;
-
-            uint32_t ch3_hi       :  1;
-            uint32_t ch4          : 11;
-            uint32_t ch5          : 11;
-            uint32_t ch6_lo       :  9;
-
-            uint32_t ch6_hi       :  2;
-            uint32_t ch7          : 11;
-            uint32_t ch8          : 11;
-            uint32_t ch9_lo       :  8;
-
-            uint32_t ch9_hi       :  3;
-            uint32_t ch10         : 11;
-            uint32_t ch11         : 11;
-            uint32_t ch12_lo      :  7;
-
-            uint32_t ch12_hi      :  4;
-            uint32_t ch13         : 11;
-            uint32_t ch14         : 11;
-            uint32_t ch15_lo      :  6;
-
-            uint32_t ch15_hi      :  5;
-            uint32_t ch16         : 11;
-            uint32_t ch17         :  1; // digital channel
-            uint32_t ch18         :  1; // digital channel
-            uint32_t frame_lost   :  1;
-            uint32_t failsafe_act :  1;
-        };
-    } SBUS_DATA_U;
-    SBUS_DATA_U sbus_data;
-    uint16_t raw_val[SBUS_CHANNELS];
-
-public:
-
-    uint8_t receiver_flags = 0x00;
-    void init();
-    void parse();
-    bool process();
-
-    float norm_val[SBUS_CHANNELS];    // normalized value (range of -1 to 1, or 0 to 1)
-    uint16_t pwm_val[SBUS_CHANNELS];  // equivalent-ish PWM value (range of 1000-2000)
+struct SbusData {
+  bool lost_frame;
+  bool failsafe;
+  bool ch17, ch18;
+  static constexpr int8_t NUM_CH = 16;
+  int16_t ch[NUM_CH];
 };
+
+class SbusRx {
+ public:
+  #if defined(ESP32)
+  SbusRx(HardwareSerial *bus, const int8_t rxpin, const int8_t txpin,
+         const bool inv) : uart_(bus), inv_(inv), rxpin_(rxpin), txpin_(txpin)
+         {}
+  SbusRx(HardwareSerial *bus, const int8_t rxpin, const int8_t txpin,
+         const bool inv, const bool fast) : uart_(bus), inv_(inv), fast_(fast),
+                                            rxpin_(rxpin), txpin_(txpin) {}
+  #else
+  explicit SbusRx(HardwareSerial *bus) : uart_(bus) {}
+  SbusRx(HardwareSerial *bus, const bool inv) : uart_(bus), inv_(inv) {}
+  SbusRx(HardwareSerial *bus, const bool inv, const bool fast) : uart_(bus),
+                                                                 inv_(inv),
+                                                                 fast_(fast) {}
+  #endif
+  void Begin();
+  bool Read();
+  inline SbusData data() const {return data_;}
+
+ private:
+  /* Communication */
+  HardwareSerial *uart_;
+  bool inv_ = true;
+  bool fast_ = false;
+  #if defined(ESP32)
+  int8_t rxpin_, txpin_;
+  #endif
+  int32_t baud_ = 100000;
+  /* Message len */
+  static constexpr int8_t PAYLOAD_LEN_ = 23;
+  static constexpr int8_t HEADER_LEN_ = 1;
+  static constexpr int8_t FOOTER_LEN_ = 1;
+  /* SBUS message defs */
+  static constexpr int8_t NUM_SBUS_CH_ = 16;
+  static constexpr uint8_t HEADER_ = 0x0F;
+  static constexpr uint8_t FOOTER_ = 0x00;
+  static constexpr uint8_t FOOTER2_ = 0x04;
+  static constexpr uint8_t CH17_MASK_ = 0x01;
+  static constexpr uint8_t CH18_MASK_ = 0x02;
+  static constexpr uint8_t LOST_FRAME_MASK_ = 0x04;
+  static constexpr uint8_t FAILSAFE_MASK_ = 0x08;
+  /* Parsing state tracking */
+  int8_t state_ = 0;
+  uint8_t prev_byte_ = FOOTER_;
+  uint8_t cur_byte_;
+  /* Buffer for storing messages */
+  uint8_t buf_[25];
+  /* Data */
+  bool new_data_;
+  SbusData data_;
+  bool Parse();
+};
+
+class SbusTx {
+ public:
+  #if defined(ESP32)
+  SbusTx(HardwareSerial *bus, const int8_t rxpin, const int8_t txpin,
+         const bool inv) : uart_(bus), inv_(inv), rxpin_(rxpin), txpin_(txpin)
+         {}
+  SbusTx(HardwareSerial *bus, const int8_t rxpin, const int8_t txpin,
+         const bool inv, const bool fast) : uart_(bus), inv_(inv), fast_(fast),
+                                            rxpin_(rxpin), txpin_(txpin) {}
+  #else
+  explicit SbusTx(HardwareSerial *bus) : uart_(bus) {}
+  SbusTx(HardwareSerial *bus, const bool inv) : uart_(bus), inv_(inv) {}
+  SbusTx(HardwareSerial *bus, const bool inv, const bool fast) : uart_(bus),
+                                                                 inv_(inv),
+                                                                 fast_(fast) {}
+  #endif
+  void Begin();
+  void Write();
+  inline void data(const SbusData &data) {data_ = data;}
+  inline SbusData data() const {return data_;}
+
+ private:
+  /* Communication */
+  HardwareSerial *uart_;
+  bool inv_ = true;
+  bool fast_ = false;
+  #if defined(ESP32)
+  int8_t rxpin_, txpin_;
+  #endif
+  int32_t baud_ = 100000;
+  /* Message len */
+  static constexpr int8_t BUF_LEN_ = 25;
+  /* SBUS message defs */
+  static constexpr int8_t NUM_SBUS_CH_ = 16;
+  static constexpr uint8_t HEADER_ = 0x0F;
+  static constexpr uint8_t FOOTER_ = 0x00;
+  static constexpr uint8_t FOOTER2_ = 0x04;
+  static constexpr uint8_t CH17_MASK_ = 0x01;
+  static constexpr uint8_t CH18_MASK_ = 0x02;
+  static constexpr uint8_t LOST_FRAME_MASK_ = 0x04;
+  static constexpr uint8_t FAILSAFE_MASK_ = 0x08;
+  /* Data */
+  uint8_t buf_[BUF_LEN_];
+  SbusData data_;
+};
+
+}  // namespace bfs
+
+#endif  // SRC_SBUS_H_
