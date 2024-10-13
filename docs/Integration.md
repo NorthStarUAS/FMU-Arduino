@@ -70,6 +70,15 @@ gps, sbus, airdata) first.  Then validate the EKF is working.  And finally
 validate you are getting reasonable values written out to the servos (effectors
 ... your mixing matrix is configured reasonably.)
 
+## Calibrate main battery source voltage
+
+* This is important for accurate battery usage reporting in flight.
+* /config/sensors/power/battery_calibration (in sensors.json)
+* Set as a multiplier (for example 1.x) to compute the true voltage.
+* You will want to accurately measure the voltage with a volt meter, compute the
+  multiplyer needed, edit the sensors.json file for your aircraft, and then copy
+  it to the FMU.
+
 ## Calibrate strapdown matrix (and accelerometers)
 
 The IMU is mounted to a board which is then mounted in the aircraft (often on
@@ -97,3 +106,10 @@ calibration matrix maps the IMU sensors to the aircraft coordinate system.
   though for the extra effort.
 
 * Calibrate external (main input) voltage sensor: TBD.
+
+## Setup RC Transmitter/Receiver failsafe (typically on transmitter)
+
+* Set receiver failsafe (from transmitter) to "hold".
+
+  Without this your controls could go hard over or do unexpected things if you
+  lose transmitter connection in flight.
