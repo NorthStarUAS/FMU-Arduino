@@ -22,10 +22,11 @@ void idle_task_t::activate() {
 
 void idle_task_t::update(float dt) {
     // if we find ourselves airborne and idle (and know our position) switch to
-    // a circle task
+    // a launch task which will ensure we are clear of the ground and then
+    // launch will hand off to the circle task.
     if ( airdata_node.getBool("is_airborne") ) {
         if ( gps_node.getInt("status") == 3 ) {
-            mission_node.setString("request", "circle_here");
+            mission_node.setString("request", "launch");
         }
     }
 }
