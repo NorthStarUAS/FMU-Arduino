@@ -69,7 +69,9 @@ void mission_mgr_t::process_command_request() {
     if ( command.length() ) {
         event_mgr->add_event("mission request", command);
     }
-    if ( command == "circle_here" ) {
+    if ( command == "launch") {
+        start_launch_task();
+    } else if ( command == "circle_here" ) {
         if ( gps_node.getInt("status") == 3 ) {
             double lon_deg = gps_node.getDouble("longitude_deg");
             double lat_deg = gps_node.getDouble("latitude_deg");
