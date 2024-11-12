@@ -1,5 +1,6 @@
 #include "../nodes.h"
 
+#include "../comms/events.h"
 #include "inceptors.h"
 #include "switches.h"
 
@@ -60,6 +61,7 @@ void switches_t::update() {
                 // we transitioned, update the switch value
                 switch_list[i].value = state;
                 printf("Switch: %s = %d\n", switch_list[i].name.c_str(), switch_list[i].value);
+                event_mgr->add_event("switch", switch_list[i].name + " = " + std::to_string(switch_list[i].value));
                 inceptors_node.setInt(switch_list[i].name.c_str(), switch_list[i].value);
             }
         }
