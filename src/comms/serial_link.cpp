@@ -43,6 +43,12 @@ bool SerialLink::open( int baud, int port ) {
         Serial.begin(baud);
         _port = &Serial;
     }
+    if ( _port->availableForWrite() < 128 ) {
+        printf("ERROR: Serial %d TX/RX buffer size not configured correctly, see note in docs.\n", port);
+        printf("buffer size available for write: %d\n", _port->availableForWrite());
+        delay(5000);
+    }
+
     return true;
 }
 
