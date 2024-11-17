@@ -30,7 +30,7 @@ void power_t::init() {
         atto_volts_pin = A2;
         atto_amps_pin = A3;
     }
- #else
+#else
     printf("Master board configuration not defined correctly.\n");
 #endif
 
