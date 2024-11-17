@@ -20,7 +20,6 @@ void packer_t::update() {
 
 void packer_t::pack_airdata() {
     air_msg.props2msg(airdata_node);
-    air_msg.altitude_ground_m = nav_node.getDouble("altitude_ground_m");
     air_msg.pack();
 }
 
