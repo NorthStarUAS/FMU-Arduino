@@ -33,18 +33,18 @@ void comms_mgr_t::init() {
         printf("No gcs comms link configured.\n");
     }
 
-    if ( config_comms_node.hasChild("host") ) {
-        PropertyNode host_node = config_comms_node.getChild("host");
-        int port = host_node.getUInt("port");
-        int baud = host_node.getUInt("baud");
-        if ( port > 0 and baud > 0 ) {
-            host_link.init(port, baud);
-        } else {
-            printf("comms config error in host link section!\n");
-        }
-    } else {
-        printf("No host comms link configured.\n");
-    }
+    // if ( config_comms_node.hasChild("host") ) {
+    //     PropertyNode host_node = config_comms_node.getChild("host");
+    //     int port = host_node.getUInt("port");
+    //     int baud = host_node.getUInt("baud");
+    //     if ( port > 0 and baud > 0 ) {
+    //         host_link.init(port, baud);
+    //     } else {
+    //         printf("comms config error in host link section!\n");
+    //     }
+    // } else {
+    //     printf("No host comms link configured.\n");
+    // }
 
     console.init();
     data_logger.init(data_logger_t::MID_RATE);
@@ -94,14 +94,9 @@ void comms_mgr_t::update() {
         gcs_link.output_counter = 0;
     }
 
-    if ( host_link.is_inited() ) {
-        host_link.read_commands();
-	    host_link.write_messages();
-    }
-
-    // human console interaction begins when gyros finish calibrating
-    // if ( imu_node.getUInt("gyros_calibrated") != 2 ) {
-    //     return;
+    // if ( host_link.is_inited() ) {
+    //     host_link.read_commands();
+	//     host_link.write_messages();
     // }
 
     console.update();

@@ -15,7 +15,7 @@ class comms_mgr_t {
 private:
 
     message_link_t gcs_link;
-    message_link_t host_link;
+    // message_link_t host_link;
     console_t console;
 
     RateLimiter status;
