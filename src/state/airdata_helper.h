@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../util/constants.h"
+#include "../util/lowpass.h"
 
 class airdata_helper_t {
 
@@ -17,9 +18,11 @@ private:
     uint32_t last_millis = 0;
     uint32_t flight_millis = 0;
 
+    LowPassFilter baro_error;
+
 public:
 
     void init();
-    void update();
+    void update(float dt);
 
 };
