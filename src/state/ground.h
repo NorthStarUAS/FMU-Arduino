@@ -6,8 +6,9 @@ class ground_est_t {
 
 private:
 
-    LowPassFilter ground_alt_filt;
-    bool ground_alt_calibrated = false;
+    LowPassFilter airdata_ground_alt;
+    LowPassFilter nav_ground_alt;
+    bool ground_inited = false;
 
 public:
 

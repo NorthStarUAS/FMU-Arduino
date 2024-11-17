@@ -4,28 +4,41 @@
 
 // initialize ground estimator variables
 void ground_est_t::init() {
-    ground_alt_filt.set_time_factor(30.0);
-    ground_alt_calibrated = false;
+    airdata_ground_alt.set_time_factor(30.0);
+    nav_ground_alt.set_time_factor(30.0);
 }
 
 void ground_est_t::update(float dt) {
-    // determine ground reference altitude.  Average gps altitude over
+    // determine ground reference altitude.  Average baro and nav altitude over
     // the most recent 30 seconds that we are !is_airborne
-    if ( gps_node.getInt("status") >= 3 ) {
-        if ( not ground_alt_calibrated ) {
-            ground_alt_calibrated = true;
-            // subtract out airdata agl in case we somehow we are initing
-            // in air (i.e. took off before gps had a good fix?)
-            double ground_m = gps_node.getDouble("altitude_m")
-                - airdata_node.getDouble("altitude_agl_m");
-            ground_alt_filt.init( ground_m );
-        }
 
+    // note there is a chance of being a bit self referential here ... ground
+    // altitude informs is_airborne and is_airborne informs ground altitude.  It
+    // will help to follow a careful procedure of starting up and calibrating on
+    // the ground, versus starting up in the air!
+
+    // make sure airdata_ground_alt is inited to something even if we manage to
+    // startup with is_airborne = true
+    if ( not ground_inited ) {
+        ground_inited = true;
+        airdata_ground_alt.init( airdata_node.getDouble("altitude_m") );
+    }
+
+    // update ground altitude estimates while not airborne
+    // fixme: create a settled (not moving) parameter and use that?
+    if ( not airdata_node.getBool("is_airborne") ) {
+        airdata_ground_alt.update( airdata_node.getDouble("altitude_m"), dt );
+        // ok it's a bit weird, but we just save agl here, we don't need to
+        // publish the baro ground altitude, just the difference
+    }
+    airdata_node.setDouble("altitude_agl_m", airdata_node.getDouble("altitude_m") - airdata_ground_alt.get_value());
+
+    if ( nav_node.getInt("status") >= 2 ) {
         if ( not airdata_node.getBool("is_airborne") ) {
-            // update ground altitude estimate while not airborne
-            // fixme: create a settled (not moving) parameter and use that?
-            ground_alt_filt.update( gps_node.getDouble("altitude_m"), dt );
-            nav_node.setDouble( "altitude_ground_m", ground_alt_filt.get_value() );
+            nav_ground_alt.update( nav_node.getDouble("altitude_m"), dt );
+            // ok it's a bit weird, but we save 'abs' ground altitude computed
+            // from the nav solution in the airdata node
+            airdata_node.setDouble( "altitude_ground_m", nav_ground_alt.get_value() );
         }
     }
 }
