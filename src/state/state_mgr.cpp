@@ -10,7 +10,7 @@ void state_mgr_t::init() {
 }
 
 void state_mgr_t::update(float dt) {
-    airdata.update();
+    airdata.update(dt);
     ground.update(dt);
     wind.update(dt);
 }
