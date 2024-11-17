@@ -15,6 +15,11 @@ void gps_mgr_t::init() {
 
     // initialize the gps receiver
     m8n.begin(115200);
+
+    if ( Serial3.availableForWrite() < 128 ) {
+        printf("ERROR: Serial3 TX/RX buffer size not configured correctly, see note in docs.\n");
+        delay(5000);
+    }
 }
 
 void gps_mgr_t::update() {
