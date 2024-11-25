@@ -183,6 +183,7 @@ void airdata_mgr_t::compute_airspeed() {
 }
 
 void airdata_mgr_t::update() {
+    airdata_node.setUInt("millis", millis())
 
     // read barometer (static pressure sensor)
     if ( barometer == 1 || barometer == 2 ) {
