@@ -825,8 +825,8 @@ public:
     float altitude_ground_m;
     uint8_t is_airborne;
     uint32_t flight_timer_millis;
-    float wind_dir_deg;
-    float wind_speed_mps;
+    float wind_deg;
+    float wind_mps;
     float pitot_scale_factor;
     uint16_t error_count;
 
@@ -843,8 +843,8 @@ public:
         float altitude_ground_m;
         uint8_t is_airborne;
         uint32_t flight_timer_millis;
-        uint16_t wind_dir_deg;
-        uint8_t wind_speed_mps;
+        uint16_t wind_deg;
+        uint8_t wind_mps;
         uint8_t pitot_scale_factor;
         uint16_t error_count;
     };
@@ -876,8 +876,8 @@ public:
         _buf->altitude_ground_m = altitude_ground_m;
         _buf->is_airborne = is_airborne;
         _buf->flight_timer_millis = flight_timer_millis;
-        _buf->wind_dir_deg = uintround(wind_dir_deg * 100.0);
-        _buf->wind_speed_mps = uintround(wind_speed_mps * 10.0);
+        _buf->wind_deg = uintround(wind_deg * 100.0);
+        _buf->wind_mps = uintround(wind_mps * 10.0);
         _buf->pitot_scale_factor = uintround(pitot_scale_factor * 100.0);
         _buf->error_count = error_count;
         return true;
@@ -896,8 +896,8 @@ public:
         altitude_ground_m = _buf->altitude_ground_m;
         is_airborne = _buf->is_airborne;
         flight_timer_millis = _buf->flight_timer_millis;
-        wind_dir_deg = _buf->wind_dir_deg / (float)100.0;
-        wind_speed_mps = _buf->wind_speed_mps / (float)10.0;
+        wind_deg = _buf->wind_deg / (float)100.0;
+        wind_mps = _buf->wind_mps / (float)10.0;
         pitot_scale_factor = _buf->pitot_scale_factor / (float)100.0;
         error_count = _buf->error_count;
         return true;
@@ -922,8 +922,8 @@ public:
         node.setDouble("altitude_ground_m", altitude_ground_m);
         node.setUInt("is_airborne", is_airborne);
         node.setUInt("flight_timer_millis", flight_timer_millis);
-        node.setDouble("wind_dir_deg", wind_dir_deg);
-        node.setDouble("wind_speed_mps", wind_speed_mps);
+        node.setDouble("wind_deg", wind_deg);
+        node.setDouble("wind_mps", wind_mps);
         node.setDouble("pitot_scale_factor", pitot_scale_factor);
         node.setUInt("error_count", error_count);
     }
@@ -947,8 +947,8 @@ public:
         altitude_ground_m = node.getDouble("altitude_ground_m");
         is_airborne = node.getUInt("is_airborne");
         flight_timer_millis = node.getUInt("flight_timer_millis");
-        wind_dir_deg = node.getDouble("wind_dir_deg");
-        wind_speed_mps = node.getDouble("wind_speed_mps");
+        wind_deg = node.getDouble("wind_deg");
+        wind_mps = node.getDouble("wind_mps");
         pitot_scale_factor = node.getDouble("pitot_scale_factor");
         error_count = node.getUInt("error_count");
     }
@@ -1516,7 +1516,7 @@ public:
     float aux1;
     float aux2;
     uint8_t master_switch;
-    uint8_t throttle_enable;
+    uint8_t motor_enable;
 
     // internal structure for packing
     #pragma pack(push, 1)
@@ -1531,7 +1531,7 @@ public:
         int16_t aux1;
         int16_t aux2;
         uint8_t master_switch;
-        uint8_t throttle_enable;
+        uint8_t motor_enable;
     };
     #pragma pack(pop)
 
@@ -1561,7 +1561,7 @@ public:
         _buf->aux1 = intround(aux1 * 30000.0);
         _buf->aux2 = intround(aux2 * 30000.0);
         _buf->master_switch = master_switch;
-        _buf->throttle_enable = throttle_enable;
+        _buf->motor_enable = motor_enable;
         return true;
     }
 
@@ -1578,7 +1578,7 @@ public:
         aux1 = _buf->aux1 / (float)30000.0;
         aux2 = _buf->aux2 / (float)30000.0;
         master_switch = _buf->master_switch;
-        throttle_enable = _buf->throttle_enable;
+        motor_enable = _buf->motor_enable;
         return true;
     }
 
@@ -1601,7 +1601,7 @@ public:
         node.setDouble("aux1", aux1);
         node.setDouble("aux2", aux2);
         node.setUInt("master_switch", master_switch);
-        node.setUInt("throttle_enable", throttle_enable);
+        node.setUInt("motor_enable", motor_enable);
     }
 
     void props2msg(string _path, int _index = -1) {
@@ -1623,7 +1623,7 @@ public:
         aux1 = node.getDouble("aux1");
         aux2 = node.getDouble("aux2");
         master_switch = node.getUInt("master_switch");
-        throttle_enable = node.getUInt("throttle_enable");
+        motor_enable = node.getUInt("motor_enable");
     }
 };
 
@@ -1635,8 +1635,7 @@ public:
     float avionics_vcc;
     float main_vcc;
     float cell_vcc;
-    float main_amps;
-    float total_mah;
+    float pwm_vcc;
 
     // internal structure for packing
     #pragma pack(push, 1)
@@ -1645,8 +1644,7 @@ public:
         uint16_t avionics_vcc;
         uint16_t main_vcc;
         uint16_t cell_vcc;
-        uint16_t main_amps;
-        uint16_t total_mah;
+        uint16_t pwm_vcc;
     };
     #pragma pack(pop)
 
@@ -1670,8 +1668,7 @@ public:
         _buf->avionics_vcc = uintround(avionics_vcc * 1000.0);
         _buf->main_vcc = uintround(main_vcc * 1000.0);
         _buf->cell_vcc = uintround(cell_vcc * 1000.0);
-        _buf->main_amps = uintround(main_amps * 1000.0);
-        _buf->total_mah = uintround(total_mah * 0.5);
+        _buf->pwm_vcc = uintround(pwm_vcc * 1000.0);
         return true;
     }
 
@@ -1682,8 +1679,7 @@ public:
         avionics_vcc = _buf->avionics_vcc / (float)1000.0;
         main_vcc = _buf->main_vcc / (float)1000.0;
         cell_vcc = _buf->cell_vcc / (float)1000.0;
-        main_amps = _buf->main_amps / (float)1000.0;
-        total_mah = _buf->total_mah / (float)0.5;
+        pwm_vcc = _buf->pwm_vcc / (float)1000.0;
         return true;
     }
 
@@ -1700,8 +1696,7 @@ public:
         node.setDouble("avionics_vcc", avionics_vcc);
         node.setDouble("main_vcc", main_vcc);
         node.setDouble("cell_vcc", cell_vcc);
-        node.setDouble("main_amps", main_amps);
-        node.setDouble("total_mah", total_mah);
+        node.setDouble("pwm_vcc", pwm_vcc);
     }
 
     void props2msg(string _path, int _index = -1) {
@@ -1717,8 +1712,7 @@ public:
         avionics_vcc = node.getDouble("avionics_vcc");
         main_vcc = node.getDouble("main_vcc");
         cell_vcc = node.getDouble("cell_vcc");
-        main_amps = node.getDouble("main_amps");
-        total_mah = node.getDouble("total_mah");
+        pwm_vcc = node.getDouble("pwm_vcc");
     }
 };
 
@@ -1825,10 +1819,10 @@ public:
     string task_name;
     uint16_t task_attribute;
     uint16_t route_size;
-    uint16_t target_waypoint_idx;
-    uint16_t wp_index;
-    int32_t wp_longitude_raw;
-    int32_t wp_latitude_raw;
+    uint16_t target_wpt_idx;
+    uint16_t wpt_index;
+    int32_t wpt_longitude_raw;
+    int32_t wpt_latitude_raw;
 
     // internal structure for packing
     #pragma pack(push, 1)
@@ -1837,10 +1831,10 @@ public:
         uint16_t task_name_len;
         uint16_t task_attribute;
         uint16_t route_size;
-        uint16_t target_waypoint_idx;
-        uint16_t wp_index;
-        int32_t wp_longitude_raw;
-        int32_t wp_latitude_raw;
+        uint16_t target_wpt_idx;
+        uint16_t wpt_index;
+        int32_t wpt_longitude_raw;
+        int32_t wpt_latitude_raw;
     };
     #pragma pack(pop)
 
@@ -1865,10 +1859,10 @@ public:
         _buf->task_name_len = task_name.length();
         _buf->task_attribute = task_attribute;
         _buf->route_size = route_size;
-        _buf->target_waypoint_idx = target_waypoint_idx;
-        _buf->wp_index = wp_index;
-        _buf->wp_longitude_raw = wp_longitude_raw;
-        _buf->wp_latitude_raw = wp_latitude_raw;
+        _buf->target_wpt_idx = target_wpt_idx;
+        _buf->wpt_index = wpt_index;
+        _buf->wpt_longitude_raw = wpt_longitude_raw;
+        _buf->wpt_latitude_raw = wpt_latitude_raw;
         memcpy(&(payload[len]), task_name.c_str(), task_name.length());
         len += task_name.length();
         return true;
@@ -1880,10 +1874,10 @@ public:
         millis = _buf->millis;
         task_attribute = _buf->task_attribute;
         route_size = _buf->route_size;
-        target_waypoint_idx = _buf->target_waypoint_idx;
-        wp_index = _buf->wp_index;
-        wp_longitude_raw = _buf->wp_longitude_raw;
-        wp_latitude_raw = _buf->wp_latitude_raw;
+        target_wpt_idx = _buf->target_wpt_idx;
+        wpt_index = _buf->wpt_index;
+        wpt_longitude_raw = _buf->wpt_longitude_raw;
+        wpt_latitude_raw = _buf->wpt_latitude_raw;
         task_name = string((char *)&(external_message[len]), _buf->task_name_len);
         len += _buf->task_name_len;
         return true;
@@ -1902,10 +1896,10 @@ public:
         node.setString("task_name", task_name);
         node.setUInt("task_attribute", task_attribute);
         node.setUInt("route_size", route_size);
-        node.setUInt("target_waypoint_idx", target_waypoint_idx);
-        node.setUInt("wp_index", wp_index);
-        node.setInt("wp_longitude_raw", wp_longitude_raw);
-        node.setInt("wp_latitude_raw", wp_latitude_raw);
+        node.setUInt("target_wpt_idx", target_wpt_idx);
+        node.setUInt("wpt_index", wpt_index);
+        node.setInt("wpt_longitude_raw", wpt_longitude_raw);
+        node.setInt("wpt_latitude_raw", wpt_latitude_raw);
     }
 
     void props2msg(string _path, int _index = -1) {
@@ -1921,10 +1915,10 @@ public:
         task_name = node.getString("task_name");
         task_attribute = node.getUInt("task_attribute");
         route_size = node.getUInt("route_size");
-        target_waypoint_idx = node.getUInt("target_waypoint_idx");
-        wp_index = node.getUInt("wp_index");
-        wp_longitude_raw = node.getInt("wp_longitude_raw");
-        wp_latitude_raw = node.getInt("wp_latitude_raw");
+        target_wpt_idx = node.getUInt("target_wpt_idx");
+        wpt_index = node.getUInt("wpt_index");
+        wpt_longitude_raw = node.getInt("wpt_longitude_raw");
+        wpt_latitude_raw = node.getInt("wpt_latitude_raw");
     }
 };
 
