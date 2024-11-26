@@ -41,6 +41,8 @@ void power_t::init() {
 }
 
 void power_t::update(float dt) {
+    power_node.setUInt("millis", millis());
+
     // battery voltage
     uint16_t ain;
     float volts;
