@@ -27,43 +27,6 @@
   },
   "task": [
     {
-      "name": "lost_link",
-      "altitude_agl_ft": 400,
-      "radius_m": 100,
-      "speed_kt": 30
-    },
-    {
-      "name": "switches",
-      "switch": [
-        {
-          "input": "/sensors/pilot_input/ap_master_switch",
-          "output": "/autopilot/master_switch",
-          "type": "boolean"
-        },
-        {
-          "input": "/sensors/pilot_input/ap_flight_mode",
-          "output": "/task/chirp/trigger_junk",
-          "type": "boolean"
-        },
-        {
-            "input": "/sensors/pilot_input/fcs_switch",
-            "type": "choice",
-            "outputs": [
-              "/autopilot/fcs_pid",
-              "/autopilot/fcs_dtss_pid",
-              "/autopilot/fcs_dtss_hinf"
-            ]
-        }
-      ]
-    },
-    {
-      "name": "is_airborne",
-      "off_airspeed_kt": 15,
-      "off_alt_agl_ft": 10,
-      "on_airspeed_kt": 10,
-      "on_alt_agl_ft": 30
-    },
-    {
       "name": "flaps_manager",
       "speed_secs": 5.0
     },
