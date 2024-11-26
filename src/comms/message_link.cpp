@@ -263,8 +263,8 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
             airdata_node.setDouble("altitude_ground_m", msg.altitude_ground_m);
             // node.setUInt("is_airborne", self.is_airborne)
             // node.setUInt("flight_timer_millis", self.flight_timer_millis)
-            // node.setDouble("wind_dir_deg", self.wind_dir_deg)
-            // node.setDouble("wind_speed_mps", self.wind_speed_mps)
+            // node.setDouble("wind_deg", self.wind_deg)
+            // node.setDouble("wind_mps", self.wind_mps)
             // node.setDouble("pitot_scale_factor", self.pitot_scale_factor)
             airdata_node.setUInt("error_count", msg.error_count);
         }

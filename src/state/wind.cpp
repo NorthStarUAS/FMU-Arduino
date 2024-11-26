@@ -41,11 +41,10 @@ void wind_est_t::update( double dt ) {
     if ( wind_deg < 0 ) {
         wind_deg += 360.0;
     }
-    double wind_speed_mps = sqrt( we_filt_val*we_filt_val
-                                  + wn_filt_val*wn_filt_val );
+    double wind_mps = sqrt( we_filt_val*we_filt_val + wn_filt_val*wn_filt_val );
 
-    airdata_node.setDouble( "wind_speed_mps", wind_speed_mps );
-    airdata_node.setDouble( "wind_dir_deg", wind_deg );
+    airdata_node.setDouble( "wind_mps", wind_mps );
+    airdata_node.setDouble( "wind_deg", wind_deg );
     //airdata_node.setDouble( "we_mps", we_filt_val );
     //airdata_node.setDouble( "wn_mps", wn_filt_val );
 

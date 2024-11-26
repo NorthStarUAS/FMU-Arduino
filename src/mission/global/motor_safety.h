@@ -3,7 +3,7 @@
 #include <string>
 using std::string;
 
-class throttle_safety_task_t {
+class motor_safety_task_t {
 
 public:
 

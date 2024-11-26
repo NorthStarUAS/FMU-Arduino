@@ -238,9 +238,9 @@ float route_mgr_t::get_remaining_distance_from_next_waypoint() {
 // about the relative heading error, so this function will produce the
 // "correct" heading error.
 float route_mgr_t::wind_heading_error( float current_crs_deg, float target_crs_deg ) {
-    float ws_kt = airdata_node.getDouble("wind_speed_mps") * mps2kt;
+    float ws_kt = airdata_node.getDouble("wind_mps") * mps2kt;
     float tas_kt = airdata_node.getDouble("true_airspeed_mps") * mps2kt;
-    float wd_deg = airdata_node.getDouble("wind_dir_deg");
+    float wd_deg = airdata_node.getDouble("wind_deg");
     float est_cur_hdg_deg = 0.0;
     float gs1_kt = 0.0;
     float est_nav_hdg_deg = 0.0;
@@ -500,7 +500,7 @@ void route_mgr_t::update() {
             }
 
             // publish current target waypoint
-            route_node.setInt("target_waypoint_idx", current_wp);
+            route_node.setInt("target_wpt_idx", current_wp);
 
             // if ( display_on ) {
             // printf("route dist = %0f\n", dist_remaining_m)

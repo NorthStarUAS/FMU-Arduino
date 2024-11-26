@@ -69,26 +69,26 @@ void packer_t::pack_mission() {
     mission_msg.task_attribute = 0; // fixme task attribute?
     unsigned int route_size = route_node.getUInt("route_size");
     mission_msg.route_size = route_size;
-    mission_msg.target_waypoint_idx = route_node.getUInt("target_waypoint_idx");;
+    mission_msg.target_wpt_idx = route_node.getUInt("target_wpt_idx");;
 
-    mission_msg.wp_index = route_counter;
+    mission_msg.wpt_index = route_counter;
     if ( route_counter < route_size ) {
         // it is unfortunate that get_wp converts from raw to deg and we have to
         // convert back to raw for the message.
         coord_t coord = mission_mgr->route_mgr.get_wp(route_counter);
-        mission_msg.wp_longitude_raw = coord.lon_deg * 10000000;
-        mission_msg.wp_latitude_raw = coord.lat_deg * 10000000;
+        mission_msg.wpt_longitude_raw = coord.lon_deg * 10000000;
+        mission_msg.wpt_latitude_raw = coord.lat_deg * 10000000;
         mission_msg.task_attribute = 0;
         route_counter++;
     } else if ( route_counter >= route_size and route_counter < 65534 ) {
         // eat a null message if we get caught in this condition
-        mission_msg.wp_longitude_raw = 0;
-        mission_msg.wp_latitude_raw = 0;
+        mission_msg.wpt_longitude_raw = 0;
+        mission_msg.wpt_latitude_raw = 0;
         mission_msg.task_attribute = 0;
         route_counter = 65534;
     } else if ( route_counter == 65534 ) {
-        mission_msg.wp_longitude_raw = circle_node.getDouble("longitude_deg") * 10000000;
-        mission_msg.wp_latitude_raw = circle_node.getDouble("latitude_deg") * 10000000;
+        mission_msg.wpt_longitude_raw = circle_node.getDouble("longitude_deg") * 10000000;
+        mission_msg.wpt_latitude_raw = circle_node.getDouble("latitude_deg") * 10000000;
         mission_msg.task_attribute = circle_node.getDouble("radius_m");
         if ( circle_node.getString("direction") == "right" ) {
             mission_msg.task_attribute += 30000;
@@ -96,12 +96,12 @@ void packer_t::pack_mission() {
         route_counter = 65535;
     } else if ( route_counter == 65535 ) {
         if ( home_node.getBool("valid") ) {
-            mission_msg.wp_longitude_raw = home_node.getDouble("longitude_deg") * 10000000;
-            mission_msg.wp_latitude_raw = home_node.getDouble("latitude_deg") * 10000000;
+            mission_msg.wpt_longitude_raw = home_node.getDouble("longitude_deg") * 10000000;
+            mission_msg.wpt_latitude_raw = home_node.getDouble("latitude_deg") * 10000000;
             mission_msg.task_attribute = home_node.getDouble("azimuth_deg");
         } else {
-            mission_msg.wp_longitude_raw = 0;
-            mission_msg.wp_latitude_raw = 0;
+            mission_msg.wpt_longitude_raw = 0;
+            mission_msg.wpt_latitude_raw = 0;
             mission_msg.task_attribute = 0;
         }
         route_counter = 0;

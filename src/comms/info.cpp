@@ -27,10 +27,10 @@ void write_inceptors_ascii() {
     } else {
         Serial.print("(Manual) ");
     }
-    if ( inceptors_node.getBool("throttle_enable") ) {
-        Serial.print("(Throttle enable) ");
+    if ( inceptors_node.getBool("motor_enable") ) {
+        Serial.print("(Motor enable) ");
     } else {
-        Serial.print("(Throttle safe) ");
+        Serial.print("(Motor disable/safe) ");
     }
     Serial.print(inceptors_node.getDouble("power"), 2); Serial.print(" ");
     Serial.print(inceptors_node.getDouble("roll"), 2); Serial.print(" ");
