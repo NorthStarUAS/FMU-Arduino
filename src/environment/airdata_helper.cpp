@@ -29,7 +29,7 @@ void airdata_helper_t::update(float dt) {
         is_airborne = true;
         environment_node.setBool("is_airborne", true);
         event_mgr->add_event("airdata", "airborne");
-    } else if ( is_airborne and altitude_agl_m <= down_m and airspeed_mps <= down_mps ) {
+    } else if ( is_airborne and (altitude_agl_m <= down_m or airspeed_mps <= down_mps) ) {
         // if all conditions under their threshold, we are on the ground
         is_airborne = false;
         environment_node.setBool("is_airborne", false);
