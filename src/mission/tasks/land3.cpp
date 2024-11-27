@@ -16,7 +16,7 @@ land_task_t::land_task_t() {
 void land_task_t::activate() {
     active = true;
 
-    if ( not airdata_node.getBool("is_airborne") ) {
+    if ( not environment_node.getBool("is_airborne") ) {
         // not airborne, nothing to do, fixme: we want to immediately complete?
         return;
     }
@@ -205,7 +205,7 @@ void land_task_t::update(float dt) {
     // printf(" %s dist = %.1f alt = %.1f\n", mode, dist_rem_m, alt_m);
 
     // Compute target altitude.
-    float cur_alt = airdata_node.getDouble("altitude_agl_m") * m2ft;
+    float cur_alt = environment_node.getDouble("altitude_agl_m") * m2ft;
     float cur_ref_alt = refs_node.getDouble("altitude_agl_ft");
     float new_ref_alt = alt_m * m2ft + alt_bias_ft;
 
@@ -291,7 +291,7 @@ bool land_task_t::is_complete() {
     if ( not active ) {
         // not active == complete
         return true;
-    } else if ( not airdata_node.getBool("is_airborne") ) {
+    } else if ( not environment_node.getBool("is_airborne") ) {
         return true;
     }
     return false;

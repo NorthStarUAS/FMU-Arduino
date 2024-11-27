@@ -6,7 +6,7 @@
 #include "ground.h"
 #include "wind.h"
 
-class state_mgr_t {
+class env_mgr_t {
 
 private:
 
@@ -21,4 +21,4 @@ public:
 
 };
 
-extern state_mgr_t state_mgr;
+extern env_mgr_t env_mgr;

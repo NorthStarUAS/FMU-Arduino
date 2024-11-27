@@ -238,16 +238,16 @@ float route_mgr_t::get_remaining_distance_from_next_waypoint() {
 // about the relative heading error, so this function will produce the
 // "correct" heading error.
 float route_mgr_t::wind_heading_error( float current_crs_deg, float target_crs_deg ) {
-    float ws_kt = airdata_node.getDouble("wind_mps") * mps2kt;
+    float wind_kt = environment_node.getDouble("wind_mps") * mps2kt;
     float tas_kt = airdata_node.getDouble("true_airspeed_mps") * mps2kt;
-    float wd_deg = airdata_node.getDouble("wind_deg");
+    float wind_deg = environment_node.getDouble("wind_deg");
     float est_cur_hdg_deg = 0.0;
     float gs1_kt = 0.0;
     float est_nav_hdg_deg = 0.0;
     float gs2_kt = 0.0;
-    wind_course( ws_kt, tas_kt, wd_deg, current_crs_deg,
+    wind_course( wind_kt, tas_kt, wind_deg, current_crs_deg,
                  &est_cur_hdg_deg, &gs1_kt );
-    wind_course( ws_kt, tas_kt, wd_deg, target_crs_deg,
+    wind_course( wind_kt, tas_kt, wind_deg, target_crs_deg,
                  &est_nav_hdg_deg, &gs2_kt );
     // print("est cur body:", est_cur_hdg_deg, "est nav body:", est_nav_hdg_deg)
     float hdg_error = 0.0;
@@ -257,12 +257,12 @@ float route_mgr_t::wind_heading_error( float current_crs_deg, float target_crs_d
         // print " nav:", est_nav_hdg_deg, "gs2:", gs2_kt
         hdg_error = est_cur_hdg_deg - est_nav_hdg_deg;
     } else {
-	// Yikes, course cannot be flown, wind too strong!  Compute a
-	// heading error relative to the wind "from" direction.  This
-	// will cause the aircraft to point it's nose into the wind and
-	// kite.  This minimizes a bad situation and gives the operator
-	// maximum time to take corrective action.  But hurry and do
-	// something!
+        // Yikes, course cannot be flown, wind too strong!  Compute a
+        // heading error relative to the wind "from" direction.  This
+        // will cause the aircraft to point it's nose into the wind and
+        // kite.  This minimizes a bad situation and gives the operator
+        // maximum time to take corrective action.  But hurry and do
+        // something!
 
         // point to next waypoint (probably less good than pointing into
         // the wind.)
@@ -270,7 +270,7 @@ float route_mgr_t::wind_heading_error( float current_crs_deg, float target_crs_d
 
         // point to wind (will probably slide laterally due to some
         // inevitable assymetries in bank angle verus turn rate):
-        hdg_error = nav_node.getDouble("heading_deg") - wd_deg;
+        hdg_error = nav_node.getDouble("heading_deg") - wind_deg;
     }
     if ( hdg_error < -180 ) { hdg_error += 360; }
     if ( hdg_error > 180 ) { hdg_error -= 360; }

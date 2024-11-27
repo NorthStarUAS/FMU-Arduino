@@ -26,19 +26,19 @@ void ground_est_t::update(float dt) {
 
     // update ground altitude estimates while not airborne
     // fixme: create a settled (not moving) parameter and use that?
-    if ( not airdata_node.getBool("is_airborne") ) {
+    if ( not environment_node.getBool("is_airborne") ) {
         airdata_ground_alt.update( airdata_node.getDouble("altitude_m"), dt );
         // ok it's a bit weird, but we just save agl here, we don't need to
         // publish the baro ground altitude, just the difference
     }
-    airdata_node.setDouble("altitude_agl_m", airdata_node.getDouble("altitude_m") - airdata_ground_alt.get_value());
+    environment_node.setDouble("altitude_agl_m", airdata_node.getDouble("altitude_m") - airdata_ground_alt.get_value());
 
     if ( nav_node.getInt("status") >= 2 ) {
-        if ( not airdata_node.getBool("is_airborne") ) {
+        if ( not environment_node.getBool("is_airborne") ) {
             nav_ground_alt.update( nav_node.getDouble("altitude_m"), dt );
             // ok it's a bit weird, but we save 'abs' ground altitude computed
             // from the nav solution in the airdata node
-            airdata_node.setDouble( "altitude_ground_m", nav_ground_alt.get_value() );
+            environment_node.setDouble( "altitude_ground_m", nav_ground_alt.get_value() );
         }
     }
 }

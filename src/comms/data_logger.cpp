@@ -75,7 +75,7 @@ void data_logger_t::log_messages() {
             output_counter += write_inceptors();
             output_counter += write_gps();
             output_counter += write_airdata();
-            output_counter += write_env_state();
+            output_counter += write_environment();
             output_counter += write_refs();
             output_counter += write_mission();
         }
@@ -97,7 +97,7 @@ void data_logger_t::log_messages() {
             output_counter += write_inceptors();
             output_counter += write_gps();
             output_counter += write_airdata();
-            output_counter += write_env_state();
+            output_counter += write_environment();
             output_counter += write_refs();
             output_counter += write_mission();
         }
@@ -119,7 +119,7 @@ void data_logger_t::log_messages() {
             output_counter += write_inceptors();
             output_counter += write_gps();
             output_counter += write_airdata();
-            output_counter += write_env_state();
+            output_counter += write_environment();
             output_counter += write_refs();
             output_counter += write_mission();
         }
@@ -140,8 +140,8 @@ int data_logger_t::write_airdata() {
     return log_packet( air_msg.id, air_msg.payload, air_msg.len );
 }
 
-int data_logger_t::write_env_state() {
-    nst_message::env_state_v1_t &env_msg = comms_mgr->packer.env_state_msg;
+int data_logger_t::write_environment() {
+    nst_message::environment_v1_t &env_msg = comms_mgr->packer.environment_msg;
     return log_packet( env_msg.id, env_msg.payload, env_msg.len );
 }
 

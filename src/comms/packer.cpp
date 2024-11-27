@@ -5,6 +5,7 @@
 
 void packer_t::update() {
     pack_airdata();
+    pack_environment();
     pack_effectors();
     pack_event();
     pack_gps();
@@ -21,6 +22,11 @@ void packer_t::update() {
 void packer_t::pack_airdata() {
     air_msg.props2msg(airdata_node);
     air_msg.pack();
+}
+
+void packer_t::pack_environment() {
+    environment_msg.props2msg(environment_node);
+    environment_msg.pack();
 }
 
 // final effector commands

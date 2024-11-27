@@ -31,7 +31,7 @@ static inline uint32_t uintround(float f) {
 // Message id constants
 const uint8_t airdata_v8_id = 54;
 const uint8_t airdata_v9_id = 66;
-const uint8_t env_state_v1_id = 67;
+const uint8_t environment_v1_id = 70;
 const uint8_t gps_v5_id = 49;
 const uint8_t imu_v6_id = 50;
 const uint8_t power_v2_id = 68;
@@ -294,8 +294,8 @@ public:
     }
 };
 
-// Message: env_state_v1 (id: 67)
-class env_state_v1_t {
+// Message: environment_v1 (id: 70)
+class environment_v1_t {
 public:
 
     uint32_t millis;
@@ -324,11 +324,11 @@ public:
     #pragma pack(pop)
 
     // id, ptr to payload and len
-    static const uint8_t id = 67;
+    static const uint8_t id = 70;
     uint8_t *payload = nullptr;
     int len = 0;
 
-    ~env_state_v1_t() {
+    ~environment_v1_t() {
         free(payload);
     }
 

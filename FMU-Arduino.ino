@@ -13,7 +13,7 @@
 #include "src/mission/mission_mgr.h"
 #include "src/nav/nav_mgr.h"
 #include "src/sensors/sensor_mgr.h"
-#include "src/state/state_mgr.h"
+#include "src/environment/env_mgr.h"
 #include "src/util/freeram.h"
 #include "src/util/profile.h"
 
@@ -103,7 +103,7 @@ void setup() {
     nav_mgr->init();
 
     // additional derived/computed/estimated values
-    state_mgr.init();
+    env_mgr.init();
 
     fcs_mgr = new fcs_mgr_t();
     fcs_mgr->init();
@@ -143,7 +143,7 @@ void main_loop() {
     //    transport delay.
     sensor_mgr->update(dt);
     nav_mgr->update();
-    state_mgr.update(dt);
+    env_mgr.update(dt);
     fcs_mgr->update(dt);
 
     // 2. Navigate: These are the higher level tasks and objectives

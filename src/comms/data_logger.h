@@ -32,7 +32,7 @@ private:
     uint32_t buffer_overrun_count = 0;
 
     int write_airdata();
-    int write_env_state();
+    int write_environment();
     int write_refs();
     int write_mission();
     int write_inceptors();

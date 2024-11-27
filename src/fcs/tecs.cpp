@@ -58,7 +58,7 @@ void update_tecs() {
     double wb = config_tecs_node.getDouble("weight_bal");
 
     // Current energy
-    double alt_m = airdata_node.getDouble("altitude_agl_m");
+    double alt_m = environment_node.getDouble("altitude_agl_m");
     double vel_mps = airdata_node.getDouble("airspeed_mps");
     double energy_pot = mass_kg * g * alt_m;
     double energy_kin = 0.5 * mass_kg * vel_mps * vel_mps;

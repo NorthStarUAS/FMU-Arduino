@@ -1,18 +1,20 @@
 // This is the section of code that derives, computes, and estimates
 // things that aren't directly sensed.
 
-#include "state_mgr.h"
+#include "../nodes.h"
+#include "env_mgr.h"
 
-void state_mgr_t::init() {
+void env_mgr_t::init() {
     airdata.init();
     ground.init();
     wind.init();
 }
 
-void state_mgr_t::update(float dt) {
+void env_mgr_t::update(float dt) {
     airdata.update(dt);
     ground.update(dt);
     wind.update(dt);
+    environment_node.setUInt("millis", millis());
 }
 
-state_mgr_t state_mgr;
+env_mgr_t env_mgr;

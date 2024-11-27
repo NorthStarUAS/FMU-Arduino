@@ -7,7 +7,7 @@ void motor_safety_task_t::init() {
 }
 
 void motor_safety_task_t::update() {
-    bool is_airborne = airdata_node.getBool("is_airborne");
+    bool is_airborne = environment_node.getBool("is_airborne");
     if ( not airborne_latch and is_airborne ) {
         // aloft
         airborne_latch = true;

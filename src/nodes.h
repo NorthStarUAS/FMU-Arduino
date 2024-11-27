@@ -55,7 +55,8 @@ extern PropertyNode inceptors_node;
 extern PropertyNode power_node;
 extern PropertyNode rcin_node;
 
-// INS/GNSS
+// Filters, Env, INS/GNSS
+extern PropertyNode environment_node;
 extern PropertyNode nav_node;
 
 // Status and Comms

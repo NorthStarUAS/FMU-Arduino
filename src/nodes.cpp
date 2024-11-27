@@ -15,11 +15,9 @@ PropertyNode inceptors_node;
 PropertyNode power_node;
 PropertyNode rcin_node;
 
-// INS/GNSS
+// Filters, Env, INS/GNSS
+PropertyNode environment_node;
 PropertyNode nav_node;
-
-// State
-PropertyNode wind_node;
 
 // Status and Comms
 PropertyNode comms_node;
@@ -61,7 +59,8 @@ void PropertyNodes_init() {
     power_node = PropertyNode("/sensors/power");
     rcin_node = PropertyNode("/sensors/rc_input");
 
-    // INS/GNSS
+    // // Filters, Env, INS/GNSS
+    environment_node = PropertyNode("/filters/env");
     nav_node = PropertyNode("/filters/nav");
 
     // Status and Comms

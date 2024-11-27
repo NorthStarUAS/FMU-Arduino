@@ -13,7 +13,7 @@ preflight_task_t::preflight_task_t() {
 void preflight_task_t::activate() {
     active = true;
 
-    if ( not airdata_node.getBool("is_airborne") ) {
+    if ( not environment_node.getBool("is_airborne") ) {
         // set fcs mode to roll+pitch
         fcs_mgr->set_mode("roll+pitch");
         refs_node.setDouble("roll_deg", 0.0);
@@ -35,7 +35,7 @@ void preflight_task_t::update(float dt) {
 bool preflight_task_t::is_complete() {
     // print "timer=%.1f duration=%.1f" % (self.timer, self.duration_sec)
     // complete when timer expires or we sense we are airborne (sanity check!)
-    if ( timer >= duration_sec or airdata_node.getBool("is_airborne") ) {
+    if ( timer >= duration_sec or environment_node.getBool("is_airborne") ) {
         return true;
     } else {
         return false;

@@ -59,7 +59,7 @@ void message_link_t::write_messages() {
         }
         if ( limiter_2hz.update() ) {
             write_airdata();
-            write_env_state();
+            write_environment();
             write_refs();
             write_mission();
         }
@@ -76,7 +76,7 @@ void message_link_t::write_messages() {
         write_events();
         if ( limiter_50hz.update() ) {
             write_airdata();
-            write_env_state();
+            write_environment();
             write_effectors();
             write_gps();
             write_imu();
@@ -109,8 +109,8 @@ void message_link_t::write_airdata() {
     send_packet( air_msg.id, air_msg.payload, air_msg.len );
 }
 
-void message_link_t::write_env_state() {
-    nst_message::env_state_v1_t &env_msg = comms_mgr->packer.env_state_msg;
+void message_link_t::write_environment() {
+    nst_message::environment_v1_t &env_msg = comms_mgr->packer.environment_msg;
     send_packet( env_msg.id, env_msg.payload, env_msg.len );
 }
 
@@ -256,22 +256,6 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
             msg.unpack(buf, message_size);
             msg.msg2props(airdata_node);
             airdata_node.setUInt("millis", millis());
-            // code from before when we glommed too much into the sensor packet
-            // uint32_t airdata_millis = millis();  // force our own timestamp
-            // airdata_node.setUInt("millis", airdata_millis);
-            // airdata_node.setDouble("baro_press_pa", msg.baro_press_pa);
-            // airdata_node.setDouble("diff_press_pa", msg.diff_press_pa);
-            // airdata_node.setDouble("air_temp_C", msg.air_temp_C);
-            // airdata_node.setDouble("airspeed_mps", msg.airspeed_mps);
-            // airdata_node.setDouble("altitude_agl_m", msg.altitude_agl_m);
-            // airdata_node.setDouble("altitude_true_m", msg.altitude_true_m);
-            // airdata_node.setDouble("altitude_ground_m", msg.altitude_ground_m);
-            // node.setUInt("is_airborne", self.is_airborne)
-            // node.setUInt("flight_timer_millis", self.flight_timer_millis)
-            // node.setDouble("wind_deg", self.wind_deg)
-            // node.setDouble("wind_mps", self.wind_mps)
-            // node.setDouble("pitot_scale_factor", self.pitot_scale_factor)
-            // airdata_node.setUInt("error_count", msg.error_count);
         }
     } else if ( id == nst_message::gps_v5_id ) {
         if ( hil_testing_node.getBool("enable") ) {

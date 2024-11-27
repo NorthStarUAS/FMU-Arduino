@@ -48,7 +48,7 @@ launch_task_t::launch_task_t() {
 void launch_task_t::activate() {
     active = true;
 
-    if ( airdata_node.getBool("is_airborne") ) {
+    if ( environment_node.getBool("is_airborne") ) {
         launch_mode = "airborne";  // force in-air launch if we are airborne
     }
 
@@ -75,7 +75,7 @@ void launch_task_t::update(float dt) {
     float throttle_time_sec = 2.0;  // hard code for now (fixme: move to config)
     float feather_time = 5.0;       // fixme: make this a configurable option
 
-    bool is_airborne = airdata_node.getBool("is_airborne");
+    bool is_airborne = environment_node.getBool("is_airborne");
 
     // For wheeled take offs, track relative heading (initialized to zero) when
     // autopilot mode is engaged and steer that error to zero with the rudder
@@ -160,7 +160,7 @@ bool launch_task_t::is_complete() {
     if ( not active ) {
         // not active == complete
         return true;
-    } else if ( airdata_node.getDouble("altitude_agl_m") * m2ft >= completion_agl_ft ) {
+    } else if ( environment_node.getDouble("altitude_agl_m") * m2ft >= completion_agl_ft ) {
         refs_node.setDouble("flaps_setpoint", 0.0);  // raise flaps
         // in case we get to the completion altitude before we've feathered
         // the rudder input, let's center the rudder.

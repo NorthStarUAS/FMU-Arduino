@@ -13,7 +13,7 @@ void idle_task_t::activate() {
     active = true;
 
     // set modes
-    if ( not airdata_node.getBool("is_airborne") ) {
+    if ( not environment_node.getBool("is_airborne") ) {
         fcs_mgr->set_mode("basic");
         mission_node.setString("mode", "none");
         outputs_node.setDouble("power", 0.0);
@@ -24,7 +24,7 @@ void idle_task_t::update(float dt) {
     // if we find ourselves airborne and idle (and know our position) switch to
     // a launch task which will ensure we are clear of the ground and then
     // launch will hand off to the circle task.
-    if ( airdata_node.getBool("is_airborne") ) {
+    if ( environment_node.getBool("is_airborne") ) {
         if ( gps_node.getInt("status") == 3 ) {
             mission_node.setString("request", "launch");
         }

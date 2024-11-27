@@ -7,7 +7,7 @@
 
 // initialize wind estimator variables
 void wind_est_t::init() {
-    airdata_node.setDouble( "pitot_scale_factor", 1.0 );
+    environment_node.setDouble( "pitot_scale_factor", 1.0 );
 
     we_filt.set_time_factor(60.0);
     wn_filt.set_time_factor(60.0);
@@ -23,7 +23,7 @@ void wind_est_t::update( double dt ) {
     double airspeed_mps = airdata_node.getDouble("airspeed_mps");
     double pitot_scale = pitot_scale_filt.get_value();
 
-    if ( airdata_node.getBool("is_airborne") ) {
+    if ( environment_node.getBool("is_airborne") ) {
         // only update wind estimate when airborne
         double psi = M_PI_2 - nav_node.getDouble("yaw_deg") * d2r;
         double ue = cos(psi) * (airspeed_mps * pitot_scale);
@@ -43,8 +43,8 @@ void wind_est_t::update( double dt ) {
     }
     double wind_mps = sqrt( we_filt_val*we_filt_val + wn_filt_val*wn_filt_val );
 
-    airdata_node.setDouble( "wind_mps", wind_mps );
-    airdata_node.setDouble( "wind_deg", wind_deg );
+    environment_node.setDouble( "wind_mps", wind_mps );
+    environment_node.setDouble( "wind_deg", wind_deg );
     //airdata_node.setDouble( "we_mps", we_filt_val );
     //airdata_node.setDouble( "wn_mps", wn_filt_val );
 
@@ -70,8 +70,7 @@ void wind_est_t::update( double dt ) {
     }
 
     pitot_scale_filt.update(ps, dt);
-    airdata_node.setDouble( "pitot_scale_factor",
-                            pitot_scale_filt.get_value() );
+    environment_node.setDouble( "pitot_scale_factor", pitot_scale_filt.get_value() );
 
     // printf("true: %.2f kt  %.1f deg (scale = %.4f)\n",
     //        true_speed_kt, true_deg, pitot_scale_filt);
