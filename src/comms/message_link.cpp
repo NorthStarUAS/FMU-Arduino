@@ -59,6 +59,7 @@ void message_link_t::write_messages() {
         }
         if ( limiter_2hz.update() ) {
             write_airdata();
+            write_env_state();
             write_refs();
             write_mission();
         }
@@ -75,6 +76,7 @@ void message_link_t::write_messages() {
         write_events();
         if ( limiter_50hz.update() ) {
             write_airdata();
+            write_env_state();
             write_effectors();
             write_gps();
             write_imu();
@@ -103,8 +105,13 @@ void message_link_t::write_ack( uint16_t sequence_num, uint8_t result ) {
 }
 
 void message_link_t::write_airdata() {
-    nst_message::airdata_v8_t &air_msg = comms_mgr->packer.air_msg;
+    nst_message::airdata_v9_t &air_msg = comms_mgr->packer.air_msg;
     send_packet( air_msg.id, air_msg.payload, air_msg.len );
+}
+
+void message_link_t::write_env_state() {
+    nst_message::env_state_v1_t &env_msg = comms_mgr->packer.env_state_msg;
+    send_packet( env_msg.id, env_msg.payload, env_msg.len );
 }
 
 // final effector commands
@@ -168,13 +175,13 @@ void message_link_t::write_mission() {
 }
 
 void message_link_t::write_power() {
-    nst_message::power_v1_t &power_msg = comms_mgr->packer.power_msg;
+    nst_message::power_v2_t &power_msg = comms_mgr->packer.power_msg;
     send_packet( power_msg.id, power_msg.payload, power_msg.len );
 }
 
 // system status
 void message_link_t::write_status() {
-    nst_message::status_v7_t &status_msg = comms_mgr->packer.status_msg;
+    nst_message::status_v8_t &status_msg = comms_mgr->packer.status_msg;
     if ( status_msg.millis > status_last_millis ) {
         status_last_millis = status_msg.millis;
         send_packet( status_msg.id, status_msg.payload, status_msg.len );
@@ -243,40 +250,37 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
         write_ack( msg.sequence_num, command_result );
         comms_node.setDouble("last_command_sec", millis() / 1000.0);
         result = true;
-    } else if ( id == nst_message::airdata_v8_id ) {
+    } else if ( id == nst_message::airdata_v9_id ) {
         if ( hil_testing_node.getBool("enable") ) {
-            nst_message::airdata_v8_t msg;
+            nst_message::airdata_v9_t msg;
             msg.unpack(buf, message_size);
-            // don't autofill the property tree, just pick the values the flight
-            // computer needs so we can compute the rest ourselves as if we are
-            // running with real sensors
-            // msg.msg2props(airdata_node);
-            uint32_t airdata_millis = millis();  // force our own timestamp
-            airdata_node.setUInt("millis", airdata_millis);
-            airdata_node.setDouble("timestamp", airdata_millis / 1000.0);
-            airdata_node.setDouble("baro_press_pa", msg.baro_press_pa);
-            airdata_node.setDouble("diff_press_pa", msg.diff_press_pa);
-            airdata_node.setDouble("air_temp_C", msg.air_temp_C);
-            airdata_node.setDouble("airspeed_mps", msg.airspeed_mps);
-            airdata_node.setDouble("altitude_agl_m", msg.altitude_agl_m);
-            airdata_node.setDouble("altitude_true_m", msg.altitude_true_m);
-            airdata_node.setDouble("altitude_ground_m", msg.altitude_ground_m);
+            msg.msg2props(airdata_node);
+            airdata_node.setUInt("millis", millis());
+            // code from before when we glommed too much into the sensor packet
+            // uint32_t airdata_millis = millis();  // force our own timestamp
+            // airdata_node.setUInt("millis", airdata_millis);
+            // airdata_node.setDouble("baro_press_pa", msg.baro_press_pa);
+            // airdata_node.setDouble("diff_press_pa", msg.diff_press_pa);
+            // airdata_node.setDouble("air_temp_C", msg.air_temp_C);
+            // airdata_node.setDouble("airspeed_mps", msg.airspeed_mps);
+            // airdata_node.setDouble("altitude_agl_m", msg.altitude_agl_m);
+            // airdata_node.setDouble("altitude_true_m", msg.altitude_true_m);
+            // airdata_node.setDouble("altitude_ground_m", msg.altitude_ground_m);
             // node.setUInt("is_airborne", self.is_airborne)
             // node.setUInt("flight_timer_millis", self.flight_timer_millis)
             // node.setDouble("wind_deg", self.wind_deg)
             // node.setDouble("wind_mps", self.wind_mps)
             // node.setDouble("pitot_scale_factor", self.pitot_scale_factor)
-            airdata_node.setUInt("error_count", msg.error_count);
+            // airdata_node.setUInt("error_count", msg.error_count);
         }
     } else if ( id == nst_message::gps_v5_id ) {
         if ( hil_testing_node.getBool("enable") ) {
             nst_message::gps_v5_t msg;
             msg.unpack(buf, message_size);
             msg.msg2props(gps_node);
-            uint32_t gps_millis = millis();  // force our own timestamp
-            gps_node.setUInt("millis", gps_millis);
+            gps_node.setUInt("millis", millis());
             gps_node.setBool("settle", true);
-            gps_node.setDouble("timestamp", gps_millis / 1000.0);
+            gps_node.setDouble("timestamp", millis() / 1000.0); // fixme: can we adjust remaining code to not use this field?
             gps_node.setDouble("latitude_deg", (double)(gps_node.getInt("latitude_raw")) / 10000000.0l);
             gps_node.setDouble("longitude_deg", (double)(gps_node.getInt("longitude_raw")) / 10000000.0l);
             // gps_node.pretty_print();
@@ -286,9 +290,8 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
             nst_message::imu_v6_t msg;
             msg.unpack(buf, message_size);
             msg.msg2props(imu_node);
-            uint32_t imu_millis = millis();  // force our own timestamp
-            imu_node.setUInt("millis", imu_millis); // force our own timestamp
-            imu_node.setDouble("timestamp", imu_millis / 1000.0);
+            imu_node.setUInt("millis", millis()); // force our own timestamp
+            imu_node.setDouble("timestamp", millis() / 1000.0); // fixme: can we adjust remaining code to not use this field?
             imu_node.setUInt("gyros_calibrated", 2);  // flag gyros from external source as calibrated
             // imu_node.pretty_print();
         }
@@ -297,21 +300,14 @@ bool message_link_t::parse_message( uint8_t id, uint8_t *buf, uint8_t message_si
             nst_message::inceptors_v2_t msg;
             msg.unpack(buf, message_size);
             msg.msg2props(inceptors_node);
-            uint32_t inc_millis = millis();  // force our own timestamp
-            inceptors_node.setUInt("millis", inc_millis);
-            // if ( message_size == msg.len ) {
-            //     pilot.update_ap(&msg);
-            //     result = true;
-            // }
+            inceptors_node.setUInt("millis", millis());
         }
-    } else if ( id == nst_message::power_v1_id ) {
+    } else if ( id == nst_message::power_v2_id ) {
         if ( hil_testing_node.getBool("enable") ) {
-            nst_message::power_v1_t msg;
+            nst_message::power_v2_t msg;
             msg.unpack(buf, message_size);
             msg.msg2props(power_node);
-            uint32_t power_millis = millis();  // force our own timestamp
-            power_node.setUInt("millis", power_millis); // force our own timestamp
-            power_node.setDouble("timestamp", power_millis / 1000.0);
+            power_node.setUInt("millis", millis()); // force our own timestamp
         }
     } else {
         printf("unknown/unexpected message id: %d len: %d\n", id, message_size);

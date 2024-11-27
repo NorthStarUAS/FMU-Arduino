@@ -29,23 +29,19 @@ static inline uint32_t uintround(float f) {
 }
 
 // Message id constants
-const uint8_t gps_v4_id = 34;
-const uint8_t gps_v5_id = 49;
-const uint8_t imu_v5_id = 45;
-const uint8_t imu_v6_id = 50;
-const uint8_t airdata_v7_id = 43;
 const uint8_t airdata_v8_id = 54;
-const uint8_t filter_v5_id = 47;
+const uint8_t airdata_v9_id = 66;
+const uint8_t env_state_v1_id = 67;
+const uint8_t gps_v5_id = 49;
+const uint8_t imu_v6_id = 50;
+const uint8_t power_v2_id = 68;
 const uint8_t nav_v6_id = 52;
 const uint8_t nav_metrics_v6_id = 53;
-const uint8_t effectors_v1_id = 61;
 const uint8_t inceptors_v2_id = 63;
-const uint8_t power_v1_id = 55;
+const uint8_t effectors_v1_id = 61;
 const uint8_t fcs_refs_v1_id = 65;
 const uint8_t mission_v1_id = 60;
-const uint8_t system_health_v6_id = 46;
-const uint8_t status_v7_id = 56;
-const uint8_t event_v2_id = 44;
+const uint8_t status_v8_id = 69;
 const uint8_t event_v3_id = 64;
 const uint8_t command_v1_id = 28;
 const uint8_t ack_v1_id = 57;
@@ -54,51 +50,51 @@ const uint8_t ack_v1_id = 57;
 static const uint8_t sbus_channels = 16;  // number of sbus channels
 static const uint8_t ap_channels = 6;  // number of sbus channels
 
-// Message: gps_v4 (id: 34)
-class gps_v4_t {
+// Message: airdata_v8 (id: 54)
+class airdata_v8_t {
 public:
 
-    uint8_t index;
-    float timestamp_sec;
-    double latitude_deg;
-    double longitude_deg;
-    float altitude_m;
-    float vn_ms;
-    float ve_ms;
-    float vd_ms;
-    double unixtime_sec;
-    uint8_t satellites;
-    float horiz_accuracy_m;
-    float vert_accuracy_m;
-    float pdop;
-    uint8_t fix_type;
+    uint32_t millis;
+    float baro_press_pa;
+    float diff_press_pa;
+    float air_temp_C;
+    float airspeed_mps;
+    float altitude_agl_m;
+    float altitude_true_m;
+    float altitude_ground_m;
+    uint8_t is_airborne;
+    uint32_t flight_timer_millis;
+    float wind_deg;
+    float wind_mps;
+    float pitot_scale_factor;
+    uint16_t error_count;
 
     // internal structure for packing
     #pragma pack(push, 1)
     struct _compact_t {
-        uint8_t index;
-        float timestamp_sec;
-        double latitude_deg;
-        double longitude_deg;
-        float altitude_m;
-        int16_t vn_ms;
-        int16_t ve_ms;
-        int16_t vd_ms;
-        double unixtime_sec;
-        uint8_t satellites;
-        uint16_t horiz_accuracy_m;
-        uint16_t vert_accuracy_m;
-        uint16_t pdop;
-        uint8_t fix_type;
+        uint32_t millis;
+        uint16_t baro_press_pa;
+        int16_t diff_press_pa;
+        int16_t air_temp_C;
+        int16_t airspeed_mps;
+        float altitude_agl_m;
+        float altitude_true_m;
+        float altitude_ground_m;
+        uint8_t is_airborne;
+        uint32_t flight_timer_millis;
+        uint16_t wind_deg;
+        uint8_t wind_mps;
+        uint8_t pitot_scale_factor;
+        uint16_t error_count;
     };
     #pragma pack(pop)
 
     // id, ptr to payload and len
-    static const uint8_t id = 34;
+    static const uint8_t id = 54;
     uint8_t *payload = nullptr;
     int len = 0;
 
-    ~gps_v4_t() {
+    ~airdata_v8_t() {
         free(payload);
     }
 
@@ -109,40 +105,40 @@ public:
         payload = (uint8_t *)REALLOC(payload, size);
         // copy values
         _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
-        _buf->timestamp_sec = timestamp_sec;
-        _buf->latitude_deg = latitude_deg;
-        _buf->longitude_deg = longitude_deg;
-        _buf->altitude_m = altitude_m;
-        _buf->vn_ms = intround(vn_ms * 100.0);
-        _buf->ve_ms = intround(ve_ms * 100.0);
-        _buf->vd_ms = intround(vd_ms * 100.0);
-        _buf->unixtime_sec = unixtime_sec;
-        _buf->satellites = satellites;
-        _buf->horiz_accuracy_m = uintround(horiz_accuracy_m * 100.0);
-        _buf->vert_accuracy_m = uintround(vert_accuracy_m * 100.0);
-        _buf->pdop = uintround(pdop * 100.0);
-        _buf->fix_type = fix_type;
+        _buf->millis = millis;
+        _buf->baro_press_pa = uintround(baro_press_pa * 0.5);
+        _buf->diff_press_pa = intround(diff_press_pa * 2.0);
+        _buf->air_temp_C = intround(air_temp_C * 250.0);
+        _buf->airspeed_mps = intround(airspeed_mps * 100.0);
+        _buf->altitude_agl_m = altitude_agl_m;
+        _buf->altitude_true_m = altitude_true_m;
+        _buf->altitude_ground_m = altitude_ground_m;
+        _buf->is_airborne = is_airborne;
+        _buf->flight_timer_millis = flight_timer_millis;
+        _buf->wind_deg = uintround(wind_deg * 100.0);
+        _buf->wind_mps = uintround(wind_mps * 10.0);
+        _buf->pitot_scale_factor = uintround(pitot_scale_factor * 100.0);
+        _buf->error_count = error_count;
         return true;
     }
 
     bool unpack(uint8_t *external_message, int message_size) {
         _compact_t *_buf = (_compact_t *)external_message;
         len = sizeof(_compact_t);
-        index = _buf->index;
-        timestamp_sec = _buf->timestamp_sec;
-        latitude_deg = _buf->latitude_deg;
-        longitude_deg = _buf->longitude_deg;
-        altitude_m = _buf->altitude_m;
-        vn_ms = _buf->vn_ms / (float)100.0;
-        ve_ms = _buf->ve_ms / (float)100.0;
-        vd_ms = _buf->vd_ms / (float)100.0;
-        unixtime_sec = _buf->unixtime_sec;
-        satellites = _buf->satellites;
-        horiz_accuracy_m = _buf->horiz_accuracy_m / (float)100.0;
-        vert_accuracy_m = _buf->vert_accuracy_m / (float)100.0;
-        pdop = _buf->pdop / (float)100.0;
-        fix_type = _buf->fix_type;
+        millis = _buf->millis;
+        baro_press_pa = _buf->baro_press_pa / (float)0.5;
+        diff_press_pa = _buf->diff_press_pa / (float)2.0;
+        air_temp_C = _buf->air_temp_C / (float)250.0;
+        airspeed_mps = _buf->airspeed_mps / (float)100.0;
+        altitude_agl_m = _buf->altitude_agl_m;
+        altitude_true_m = _buf->altitude_true_m;
+        altitude_ground_m = _buf->altitude_ground_m;
+        is_airborne = _buf->is_airborne;
+        flight_timer_millis = _buf->flight_timer_millis;
+        wind_deg = _buf->wind_deg / (float)100.0;
+        wind_mps = _buf->wind_mps / (float)10.0;
+        pitot_scale_factor = _buf->pitot_scale_factor / (float)100.0;
+        error_count = _buf->error_count;
         return true;
     }
 
@@ -155,20 +151,20 @@ public:
     }
 
     void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
-        node.setDouble("timestamp_sec", timestamp_sec);
-        node.setDouble("latitude_deg", latitude_deg);
-        node.setDouble("longitude_deg", longitude_deg);
-        node.setDouble("altitude_m", altitude_m);
-        node.setDouble("vn_ms", vn_ms);
-        node.setDouble("ve_ms", ve_ms);
-        node.setDouble("vd_ms", vd_ms);
-        node.setDouble("unixtime_sec", unixtime_sec);
-        node.setUInt("satellites", satellites);
-        node.setDouble("horiz_accuracy_m", horiz_accuracy_m);
-        node.setDouble("vert_accuracy_m", vert_accuracy_m);
-        node.setDouble("pdop", pdop);
-        node.setUInt("fix_type", fix_type);
+        node.setUInt("millis", millis);
+        node.setDouble("baro_press_pa", baro_press_pa);
+        node.setDouble("diff_press_pa", diff_press_pa);
+        node.setDouble("air_temp_C", air_temp_C);
+        node.setDouble("airspeed_mps", airspeed_mps);
+        node.setDouble("altitude_agl_m", altitude_agl_m);
+        node.setDouble("altitude_true_m", altitude_true_m);
+        node.setDouble("altitude_ground_m", altitude_ground_m);
+        node.setUInt("is_airborne", is_airborne);
+        node.setUInt("flight_timer_millis", flight_timer_millis);
+        node.setDouble("wind_deg", wind_deg);
+        node.setDouble("wind_mps", wind_mps);
+        node.setDouble("pitot_scale_factor", pitot_scale_factor);
+        node.setUInt("error_count", error_count);
     }
 
     void props2msg(string _path, int _index = -1) {
@@ -180,20 +176,234 @@ public:
     }
 
     void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
-        timestamp_sec = node.getDouble("timestamp_sec");
-        latitude_deg = node.getDouble("latitude_deg");
-        longitude_deg = node.getDouble("longitude_deg");
+        millis = node.getUInt("millis");
+        baro_press_pa = node.getDouble("baro_press_pa");
+        diff_press_pa = node.getDouble("diff_press_pa");
+        air_temp_C = node.getDouble("air_temp_C");
+        airspeed_mps = node.getDouble("airspeed_mps");
+        altitude_agl_m = node.getDouble("altitude_agl_m");
+        altitude_true_m = node.getDouble("altitude_true_m");
+        altitude_ground_m = node.getDouble("altitude_ground_m");
+        is_airborne = node.getUInt("is_airborne");
+        flight_timer_millis = node.getUInt("flight_timer_millis");
+        wind_deg = node.getDouble("wind_deg");
+        wind_mps = node.getDouble("wind_mps");
+        pitot_scale_factor = node.getDouble("pitot_scale_factor");
+        error_count = node.getUInt("error_count");
+    }
+};
+
+// Message: airdata_v9 (id: 66)
+class airdata_v9_t {
+public:
+
+    uint32_t millis;
+    float baro_press_pa;
+    float diff_press_pa;
+    float air_temp_C;
+    float airspeed_mps;
+    float altitude_m;
+    uint16_t error_count;
+
+    // internal structure for packing
+    #pragma pack(push, 1)
+    struct _compact_t {
+        uint32_t millis;
+        uint16_t baro_press_pa;
+        int16_t diff_press_pa;
+        int16_t air_temp_C;
+        int16_t airspeed_mps;
+        float altitude_m;
+        uint16_t error_count;
+    };
+    #pragma pack(pop)
+
+    // id, ptr to payload and len
+    static const uint8_t id = 66;
+    uint8_t *payload = nullptr;
+    int len = 0;
+
+    ~airdata_v9_t() {
+        free(payload);
+    }
+
+    bool pack() {
+        len = sizeof(_compact_t);
+        // compute dynamic packet size (if neede)
+        int size = len;
+        payload = (uint8_t *)REALLOC(payload, size);
+        // copy values
+        _compact_t *_buf = (_compact_t *)payload;
+        _buf->millis = millis;
+        _buf->baro_press_pa = uintround(baro_press_pa * 0.5);
+        _buf->diff_press_pa = intround(diff_press_pa * 2.0);
+        _buf->air_temp_C = intround(air_temp_C * 250.0);
+        _buf->airspeed_mps = intround(airspeed_mps * 100.0);
+        _buf->altitude_m = altitude_m;
+        _buf->error_count = error_count;
+        return true;
+    }
+
+    bool unpack(uint8_t *external_message, int message_size) {
+        _compact_t *_buf = (_compact_t *)external_message;
+        len = sizeof(_compact_t);
+        millis = _buf->millis;
+        baro_press_pa = _buf->baro_press_pa / (float)0.5;
+        diff_press_pa = _buf->diff_press_pa / (float)2.0;
+        air_temp_C = _buf->air_temp_C / (float)250.0;
+        airspeed_mps = _buf->airspeed_mps / (float)100.0;
+        altitude_m = _buf->altitude_m;
+        error_count = _buf->error_count;
+        return true;
+    }
+
+    void msg2props(string _path, int _index = -1) {
+        if ( _index >= 0 ) {
+            _path += "/" + std::to_string(_index);
+        }
+        PropertyNode node(_path.c_str());
+        msg2props(node);
+    }
+
+    void msg2props(PropertyNode &node) {
+        node.setUInt("millis", millis);
+        node.setDouble("baro_press_pa", baro_press_pa);
+        node.setDouble("diff_press_pa", diff_press_pa);
+        node.setDouble("air_temp_C", air_temp_C);
+        node.setDouble("airspeed_mps", airspeed_mps);
+        node.setDouble("altitude_m", altitude_m);
+        node.setUInt("error_count", error_count);
+    }
+
+    void props2msg(string _path, int _index = -1) {
+        if ( _index >= 0 ) {
+            _path += "/" + std::to_string(_index);
+        }
+        PropertyNode node(_path.c_str());
+        props2msg(node);
+    }
+
+    void props2msg(PropertyNode &node) {
+        millis = node.getUInt("millis");
+        baro_press_pa = node.getDouble("baro_press_pa");
+        diff_press_pa = node.getDouble("diff_press_pa");
+        air_temp_C = node.getDouble("air_temp_C");
+        airspeed_mps = node.getDouble("airspeed_mps");
         altitude_m = node.getDouble("altitude_m");
-        vn_ms = node.getDouble("vn_ms");
-        ve_ms = node.getDouble("ve_ms");
-        vd_ms = node.getDouble("vd_ms");
-        unixtime_sec = node.getDouble("unixtime_sec");
-        satellites = node.getUInt("satellites");
-        horiz_accuracy_m = node.getDouble("horiz_accuracy_m");
-        vert_accuracy_m = node.getDouble("vert_accuracy_m");
-        pdop = node.getDouble("pdop");
-        fix_type = node.getUInt("fix_type");
+        error_count = node.getUInt("error_count");
+    }
+};
+
+// Message: env_state_v1 (id: 67)
+class env_state_v1_t {
+public:
+
+    uint32_t millis;
+    float altitude_agl_m;
+    float altitude_true_m;
+    float altitude_ground_m;
+    uint8_t is_airborne;
+    uint32_t flight_timer_millis;
+    float wind_deg;
+    float wind_mps;
+    float pitot_scale_factor;
+
+    // internal structure for packing
+    #pragma pack(push, 1)
+    struct _compact_t {
+        uint32_t millis;
+        float altitude_agl_m;
+        float altitude_true_m;
+        float altitude_ground_m;
+        uint8_t is_airborne;
+        uint32_t flight_timer_millis;
+        uint16_t wind_deg;
+        uint8_t wind_mps;
+        uint8_t pitot_scale_factor;
+    };
+    #pragma pack(pop)
+
+    // id, ptr to payload and len
+    static const uint8_t id = 67;
+    uint8_t *payload = nullptr;
+    int len = 0;
+
+    ~env_state_v1_t() {
+        free(payload);
+    }
+
+    bool pack() {
+        len = sizeof(_compact_t);
+        // compute dynamic packet size (if neede)
+        int size = len;
+        payload = (uint8_t *)REALLOC(payload, size);
+        // copy values
+        _compact_t *_buf = (_compact_t *)payload;
+        _buf->millis = millis;
+        _buf->altitude_agl_m = altitude_agl_m;
+        _buf->altitude_true_m = altitude_true_m;
+        _buf->altitude_ground_m = altitude_ground_m;
+        _buf->is_airborne = is_airborne;
+        _buf->flight_timer_millis = flight_timer_millis;
+        _buf->wind_deg = uintround(wind_deg * 100.0);
+        _buf->wind_mps = uintround(wind_mps * 10.0);
+        _buf->pitot_scale_factor = uintround(pitot_scale_factor * 100.0);
+        return true;
+    }
+
+    bool unpack(uint8_t *external_message, int message_size) {
+        _compact_t *_buf = (_compact_t *)external_message;
+        len = sizeof(_compact_t);
+        millis = _buf->millis;
+        altitude_agl_m = _buf->altitude_agl_m;
+        altitude_true_m = _buf->altitude_true_m;
+        altitude_ground_m = _buf->altitude_ground_m;
+        is_airborne = _buf->is_airborne;
+        flight_timer_millis = _buf->flight_timer_millis;
+        wind_deg = _buf->wind_deg / (float)100.0;
+        wind_mps = _buf->wind_mps / (float)10.0;
+        pitot_scale_factor = _buf->pitot_scale_factor / (float)100.0;
+        return true;
+    }
+
+    void msg2props(string _path, int _index = -1) {
+        if ( _index >= 0 ) {
+            _path += "/" + std::to_string(_index);
+        }
+        PropertyNode node(_path.c_str());
+        msg2props(node);
+    }
+
+    void msg2props(PropertyNode &node) {
+        node.setUInt("millis", millis);
+        node.setDouble("altitude_agl_m", altitude_agl_m);
+        node.setDouble("altitude_true_m", altitude_true_m);
+        node.setDouble("altitude_ground_m", altitude_ground_m);
+        node.setUInt("is_airborne", is_airborne);
+        node.setUInt("flight_timer_millis", flight_timer_millis);
+        node.setDouble("wind_deg", wind_deg);
+        node.setDouble("wind_mps", wind_mps);
+        node.setDouble("pitot_scale_factor", pitot_scale_factor);
+    }
+
+    void props2msg(string _path, int _index = -1) {
+        if ( _index >= 0 ) {
+            _path += "/" + std::to_string(_index);
+        }
+        PropertyNode node(_path.c_str());
+        props2msg(node);
+    }
+
+    void props2msg(PropertyNode &node) {
+        millis = node.getUInt("millis");
+        altitude_agl_m = node.getDouble("altitude_agl_m");
+        altitude_true_m = node.getDouble("altitude_true_m");
+        altitude_ground_m = node.getDouble("altitude_ground_m");
+        is_airborne = node.getUInt("is_airborne");
+        flight_timer_millis = node.getUInt("flight_timer_millis");
+        wind_deg = node.getDouble("wind_deg");
+        wind_mps = node.getDouble("wind_mps");
+        pitot_scale_factor = node.getDouble("pitot_scale_factor");
     }
 };
 
@@ -337,179 +547,6 @@ public:
         vAcc_m = node.getDouble("vAcc_m");
         hdop = node.getDouble("hdop");
         vdop = node.getDouble("vdop");
-    }
-};
-
-// Message: imu_v5 (id: 45)
-class imu_v5_t {
-public:
-
-    uint8_t index;
-    float timestamp_sec;
-    float p_rad_sec;
-    float q_rad_sec;
-    float r_rad_sec;
-    float ax_mps_sec;
-    float ay_mps_sec;
-    float az_mps_sec;
-    float hx;
-    float hy;
-    float hz;
-    float ax_raw;
-    float ay_raw;
-    float az_raw;
-    float hx_raw;
-    float hy_raw;
-    float hz_raw;
-    float temp_C;
-    uint8_t status;
-
-    // internal structure for packing
-    #pragma pack(push, 1)
-    struct _compact_t {
-        uint8_t index;
-        float timestamp_sec;
-        float p_rad_sec;
-        float q_rad_sec;
-        float r_rad_sec;
-        float ax_mps_sec;
-        float ay_mps_sec;
-        float az_mps_sec;
-        float hx;
-        float hy;
-        float hz;
-        float ax_raw;
-        float ay_raw;
-        float az_raw;
-        float hx_raw;
-        float hy_raw;
-        float hz_raw;
-        int16_t temp_C;
-        uint8_t status;
-    };
-    #pragma pack(pop)
-
-    // id, ptr to payload and len
-    static const uint8_t id = 45;
-    uint8_t *payload = nullptr;
-    int len = 0;
-
-    ~imu_v5_t() {
-        free(payload);
-    }
-
-    bool pack() {
-        len = sizeof(_compact_t);
-        // compute dynamic packet size (if neede)
-        int size = len;
-        payload = (uint8_t *)REALLOC(payload, size);
-        // copy values
-        _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
-        _buf->timestamp_sec = timestamp_sec;
-        _buf->p_rad_sec = p_rad_sec;
-        _buf->q_rad_sec = q_rad_sec;
-        _buf->r_rad_sec = r_rad_sec;
-        _buf->ax_mps_sec = ax_mps_sec;
-        _buf->ay_mps_sec = ay_mps_sec;
-        _buf->az_mps_sec = az_mps_sec;
-        _buf->hx = hx;
-        _buf->hy = hy;
-        _buf->hz = hz;
-        _buf->ax_raw = ax_raw;
-        _buf->ay_raw = ay_raw;
-        _buf->az_raw = az_raw;
-        _buf->hx_raw = hx_raw;
-        _buf->hy_raw = hy_raw;
-        _buf->hz_raw = hz_raw;
-        _buf->temp_C = intround(temp_C * 10.0);
-        _buf->status = status;
-        return true;
-    }
-
-    bool unpack(uint8_t *external_message, int message_size) {
-        _compact_t *_buf = (_compact_t *)external_message;
-        len = sizeof(_compact_t);
-        index = _buf->index;
-        timestamp_sec = _buf->timestamp_sec;
-        p_rad_sec = _buf->p_rad_sec;
-        q_rad_sec = _buf->q_rad_sec;
-        r_rad_sec = _buf->r_rad_sec;
-        ax_mps_sec = _buf->ax_mps_sec;
-        ay_mps_sec = _buf->ay_mps_sec;
-        az_mps_sec = _buf->az_mps_sec;
-        hx = _buf->hx;
-        hy = _buf->hy;
-        hz = _buf->hz;
-        ax_raw = _buf->ax_raw;
-        ay_raw = _buf->ay_raw;
-        az_raw = _buf->az_raw;
-        hx_raw = _buf->hx_raw;
-        hy_raw = _buf->hy_raw;
-        hz_raw = _buf->hz_raw;
-        temp_C = _buf->temp_C / (float)10.0;
-        status = _buf->status;
-        return true;
-    }
-
-    void msg2props(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        msg2props(node);
-    }
-
-    void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
-        node.setDouble("timestamp_sec", timestamp_sec);
-        node.setDouble("p_rad_sec", p_rad_sec);
-        node.setDouble("q_rad_sec", q_rad_sec);
-        node.setDouble("r_rad_sec", r_rad_sec);
-        node.setDouble("ax_mps_sec", ax_mps_sec);
-        node.setDouble("ay_mps_sec", ay_mps_sec);
-        node.setDouble("az_mps_sec", az_mps_sec);
-        node.setDouble("hx", hx);
-        node.setDouble("hy", hy);
-        node.setDouble("hz", hz);
-        node.setDouble("ax_raw", ax_raw);
-        node.setDouble("ay_raw", ay_raw);
-        node.setDouble("az_raw", az_raw);
-        node.setDouble("hx_raw", hx_raw);
-        node.setDouble("hy_raw", hy_raw);
-        node.setDouble("hz_raw", hz_raw);
-        node.setDouble("temp_C", temp_C);
-        node.setUInt("status", status);
-    }
-
-    void props2msg(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        props2msg(node);
-    }
-
-    void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
-        timestamp_sec = node.getDouble("timestamp_sec");
-        p_rad_sec = node.getDouble("p_rad_sec");
-        q_rad_sec = node.getDouble("q_rad_sec");
-        r_rad_sec = node.getDouble("r_rad_sec");
-        ax_mps_sec = node.getDouble("ax_mps_sec");
-        ay_mps_sec = node.getDouble("ay_mps_sec");
-        az_mps_sec = node.getDouble("az_mps_sec");
-        hx = node.getDouble("hx");
-        hy = node.getDouble("hy");
-        hz = node.getDouble("hz");
-        ax_raw = node.getDouble("ax_raw");
-        ay_raw = node.getDouble("ay_raw");
-        az_raw = node.getDouble("az_raw");
-        hx_raw = node.getDouble("hx_raw");
-        hy_raw = node.getDouble("hy_raw");
-        hz_raw = node.getDouble("hz_raw");
-        temp_C = node.getDouble("temp_C");
-        status = node.getUInt("status");
     }
 };
 
@@ -674,188 +711,33 @@ public:
     }
 };
 
-// Message: airdata_v7 (id: 43)
-class airdata_v7_t {
-public:
-
-    uint8_t index;
-    float timestamp_sec;
-    float pressure_mbar;
-    float temp_C;
-    float airspeed_smoothed_kt;
-    float altitude_smoothed_m;
-    float altitude_true_m;
-    float pressure_vertical_speed_fps;
-    float wind_dir_deg;
-    float wind_speed_kt;
-    float pitot_scale_factor;
-    uint16_t error_count;
-    uint8_t status;
-
-    // internal structure for packing
-    #pragma pack(push, 1)
-    struct _compact_t {
-        uint8_t index;
-        float timestamp_sec;
-        uint16_t pressure_mbar;
-        int16_t temp_C;
-        int16_t airspeed_smoothed_kt;
-        float altitude_smoothed_m;
-        float altitude_true_m;
-        int16_t pressure_vertical_speed_fps;
-        uint16_t wind_dir_deg;
-        uint8_t wind_speed_kt;
-        uint8_t pitot_scale_factor;
-        uint16_t error_count;
-        uint8_t status;
-    };
-    #pragma pack(pop)
-
-    // id, ptr to payload and len
-    static const uint8_t id = 43;
-    uint8_t *payload = nullptr;
-    int len = 0;
-
-    ~airdata_v7_t() {
-        free(payload);
-    }
-
-    bool pack() {
-        len = sizeof(_compact_t);
-        // compute dynamic packet size (if neede)
-        int size = len;
-        payload = (uint8_t *)REALLOC(payload, size);
-        // copy values
-        _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
-        _buf->timestamp_sec = timestamp_sec;
-        _buf->pressure_mbar = uintround(pressure_mbar * 10.0);
-        _buf->temp_C = intround(temp_C * 100.0);
-        _buf->airspeed_smoothed_kt = intround(airspeed_smoothed_kt * 100.0);
-        _buf->altitude_smoothed_m = altitude_smoothed_m;
-        _buf->altitude_true_m = altitude_true_m;
-        _buf->pressure_vertical_speed_fps = intround(pressure_vertical_speed_fps * 600.0);
-        _buf->wind_dir_deg = uintround(wind_dir_deg * 100.0);
-        _buf->wind_speed_kt = uintround(wind_speed_kt * 4.0);
-        _buf->pitot_scale_factor = uintround(pitot_scale_factor * 100.0);
-        _buf->error_count = error_count;
-        _buf->status = status;
-        return true;
-    }
-
-    bool unpack(uint8_t *external_message, int message_size) {
-        _compact_t *_buf = (_compact_t *)external_message;
-        len = sizeof(_compact_t);
-        index = _buf->index;
-        timestamp_sec = _buf->timestamp_sec;
-        pressure_mbar = _buf->pressure_mbar / (float)10.0;
-        temp_C = _buf->temp_C / (float)100.0;
-        airspeed_smoothed_kt = _buf->airspeed_smoothed_kt / (float)100.0;
-        altitude_smoothed_m = _buf->altitude_smoothed_m;
-        altitude_true_m = _buf->altitude_true_m;
-        pressure_vertical_speed_fps = _buf->pressure_vertical_speed_fps / (float)600.0;
-        wind_dir_deg = _buf->wind_dir_deg / (float)100.0;
-        wind_speed_kt = _buf->wind_speed_kt / (float)4.0;
-        pitot_scale_factor = _buf->pitot_scale_factor / (float)100.0;
-        error_count = _buf->error_count;
-        status = _buf->status;
-        return true;
-    }
-
-    void msg2props(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        msg2props(node);
-    }
-
-    void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
-        node.setDouble("timestamp_sec", timestamp_sec);
-        node.setDouble("pressure_mbar", pressure_mbar);
-        node.setDouble("temp_C", temp_C);
-        node.setDouble("airspeed_smoothed_kt", airspeed_smoothed_kt);
-        node.setDouble("altitude_smoothed_m", altitude_smoothed_m);
-        node.setDouble("altitude_true_m", altitude_true_m);
-        node.setDouble("pressure_vertical_speed_fps", pressure_vertical_speed_fps);
-        node.setDouble("wind_dir_deg", wind_dir_deg);
-        node.setDouble("wind_speed_kt", wind_speed_kt);
-        node.setDouble("pitot_scale_factor", pitot_scale_factor);
-        node.setUInt("error_count", error_count);
-        node.setUInt("status", status);
-    }
-
-    void props2msg(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        props2msg(node);
-    }
-
-    void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
-        timestamp_sec = node.getDouble("timestamp_sec");
-        pressure_mbar = node.getDouble("pressure_mbar");
-        temp_C = node.getDouble("temp_C");
-        airspeed_smoothed_kt = node.getDouble("airspeed_smoothed_kt");
-        altitude_smoothed_m = node.getDouble("altitude_smoothed_m");
-        altitude_true_m = node.getDouble("altitude_true_m");
-        pressure_vertical_speed_fps = node.getDouble("pressure_vertical_speed_fps");
-        wind_dir_deg = node.getDouble("wind_dir_deg");
-        wind_speed_kt = node.getDouble("wind_speed_kt");
-        pitot_scale_factor = node.getDouble("pitot_scale_factor");
-        error_count = node.getUInt("error_count");
-        status = node.getUInt("status");
-    }
-};
-
-// Message: airdata_v8 (id: 54)
-class airdata_v8_t {
+// Message: power_v2 (id: 68)
+class power_v2_t {
 public:
 
     uint32_t millis;
-    float baro_press_pa;
-    float diff_press_pa;
-    float air_temp_C;
-    float airspeed_mps;
-    float altitude_agl_m;
-    float altitude_true_m;
-    float altitude_ground_m;
-    uint8_t is_airborne;
-    uint32_t flight_timer_millis;
-    float wind_deg;
-    float wind_mps;
-    float pitot_scale_factor;
-    uint16_t error_count;
+    float avionics_vcc;
+    float main_vcc;
+    float cell_vcc;
+    float pwm_vcc;
 
     // internal structure for packing
     #pragma pack(push, 1)
     struct _compact_t {
         uint32_t millis;
-        uint16_t baro_press_pa;
-        int16_t diff_press_pa;
-        int16_t air_temp_C;
-        int16_t airspeed_mps;
-        float altitude_agl_m;
-        float altitude_true_m;
-        float altitude_ground_m;
-        uint8_t is_airborne;
-        uint32_t flight_timer_millis;
-        uint16_t wind_deg;
-        uint8_t wind_mps;
-        uint8_t pitot_scale_factor;
-        uint16_t error_count;
+        uint16_t avionics_vcc;
+        uint16_t main_vcc;
+        uint16_t cell_vcc;
+        uint16_t pwm_vcc;
     };
     #pragma pack(pop)
 
     // id, ptr to payload and len
-    static const uint8_t id = 54;
+    static const uint8_t id = 68;
     uint8_t *payload = nullptr;
     int len = 0;
 
-    ~airdata_v8_t() {
+    ~power_v2_t() {
         free(payload);
     }
 
@@ -867,19 +749,10 @@ public:
         // copy values
         _compact_t *_buf = (_compact_t *)payload;
         _buf->millis = millis;
-        _buf->baro_press_pa = uintround(baro_press_pa * 0.5);
-        _buf->diff_press_pa = intround(diff_press_pa * 2.0);
-        _buf->air_temp_C = intround(air_temp_C * 250.0);
-        _buf->airspeed_mps = intround(airspeed_mps * 100.0);
-        _buf->altitude_agl_m = altitude_agl_m;
-        _buf->altitude_true_m = altitude_true_m;
-        _buf->altitude_ground_m = altitude_ground_m;
-        _buf->is_airborne = is_airborne;
-        _buf->flight_timer_millis = flight_timer_millis;
-        _buf->wind_deg = uintround(wind_deg * 100.0);
-        _buf->wind_mps = uintround(wind_mps * 10.0);
-        _buf->pitot_scale_factor = uintround(pitot_scale_factor * 100.0);
-        _buf->error_count = error_count;
+        _buf->avionics_vcc = uintround(avionics_vcc * 1000.0);
+        _buf->main_vcc = uintround(main_vcc * 1000.0);
+        _buf->cell_vcc = uintround(cell_vcc * 1000.0);
+        _buf->pwm_vcc = uintround(pwm_vcc * 1000.0);
         return true;
     }
 
@@ -887,19 +760,10 @@ public:
         _compact_t *_buf = (_compact_t *)external_message;
         len = sizeof(_compact_t);
         millis = _buf->millis;
-        baro_press_pa = _buf->baro_press_pa / (float)0.5;
-        diff_press_pa = _buf->diff_press_pa / (float)2.0;
-        air_temp_C = _buf->air_temp_C / (float)250.0;
-        airspeed_mps = _buf->airspeed_mps / (float)100.0;
-        altitude_agl_m = _buf->altitude_agl_m;
-        altitude_true_m = _buf->altitude_true_m;
-        altitude_ground_m = _buf->altitude_ground_m;
-        is_airborne = _buf->is_airborne;
-        flight_timer_millis = _buf->flight_timer_millis;
-        wind_deg = _buf->wind_deg / (float)100.0;
-        wind_mps = _buf->wind_mps / (float)10.0;
-        pitot_scale_factor = _buf->pitot_scale_factor / (float)100.0;
-        error_count = _buf->error_count;
+        avionics_vcc = _buf->avionics_vcc / (float)1000.0;
+        main_vcc = _buf->main_vcc / (float)1000.0;
+        cell_vcc = _buf->cell_vcc / (float)1000.0;
+        pwm_vcc = _buf->pwm_vcc / (float)1000.0;
         return true;
     }
 
@@ -913,19 +777,10 @@ public:
 
     void msg2props(PropertyNode &node) {
         node.setUInt("millis", millis);
-        node.setDouble("baro_press_pa", baro_press_pa);
-        node.setDouble("diff_press_pa", diff_press_pa);
-        node.setDouble("air_temp_C", air_temp_C);
-        node.setDouble("airspeed_mps", airspeed_mps);
-        node.setDouble("altitude_agl_m", altitude_agl_m);
-        node.setDouble("altitude_true_m", altitude_true_m);
-        node.setDouble("altitude_ground_m", altitude_ground_m);
-        node.setUInt("is_airborne", is_airborne);
-        node.setUInt("flight_timer_millis", flight_timer_millis);
-        node.setDouble("wind_deg", wind_deg);
-        node.setDouble("wind_mps", wind_mps);
-        node.setDouble("pitot_scale_factor", pitot_scale_factor);
-        node.setUInt("error_count", error_count);
+        node.setDouble("avionics_vcc", avionics_vcc);
+        node.setDouble("main_vcc", main_vcc);
+        node.setDouble("cell_vcc", cell_vcc);
+        node.setDouble("pwm_vcc", pwm_vcc);
     }
 
     void props2msg(string _path, int _index = -1) {
@@ -938,210 +793,10 @@ public:
 
     void props2msg(PropertyNode &node) {
         millis = node.getUInt("millis");
-        baro_press_pa = node.getDouble("baro_press_pa");
-        diff_press_pa = node.getDouble("diff_press_pa");
-        air_temp_C = node.getDouble("air_temp_C");
-        airspeed_mps = node.getDouble("airspeed_mps");
-        altitude_agl_m = node.getDouble("altitude_agl_m");
-        altitude_true_m = node.getDouble("altitude_true_m");
-        altitude_ground_m = node.getDouble("altitude_ground_m");
-        is_airborne = node.getUInt("is_airborne");
-        flight_timer_millis = node.getUInt("flight_timer_millis");
-        wind_deg = node.getDouble("wind_deg");
-        wind_mps = node.getDouble("wind_mps");
-        pitot_scale_factor = node.getDouble("pitot_scale_factor");
-        error_count = node.getUInt("error_count");
-    }
-};
-
-// Message: filter_v5 (id: 47)
-class filter_v5_t {
-public:
-
-    uint8_t index;
-    float timestamp_sec;
-    double latitude_deg;
-    double longitude_deg;
-    float altitude_m;
-    float vn_ms;
-    float ve_ms;
-    float vd_ms;
-    float roll_deg;
-    float pitch_deg;
-    float yaw_deg;
-    float p_bias;
-    float q_bias;
-    float r_bias;
-    float ax_bias;
-    float ay_bias;
-    float az_bias;
-    float max_pos_cov;
-    float max_vel_cov;
-    float max_att_cov;
-    uint8_t sequence_num;
-    uint8_t status;
-
-    // internal structure for packing
-    #pragma pack(push, 1)
-    struct _compact_t {
-        uint8_t index;
-        float timestamp_sec;
-        double latitude_deg;
-        double longitude_deg;
-        float altitude_m;
-        int16_t vn_ms;
-        int16_t ve_ms;
-        int16_t vd_ms;
-        int16_t roll_deg;
-        int16_t pitch_deg;
-        int16_t yaw_deg;
-        int16_t p_bias;
-        int16_t q_bias;
-        int16_t r_bias;
-        int16_t ax_bias;
-        int16_t ay_bias;
-        int16_t az_bias;
-        uint16_t max_pos_cov;
-        uint16_t max_vel_cov;
-        uint16_t max_att_cov;
-        uint8_t sequence_num;
-        uint8_t status;
-    };
-    #pragma pack(pop)
-
-    // id, ptr to payload and len
-    static const uint8_t id = 47;
-    uint8_t *payload = nullptr;
-    int len = 0;
-
-    ~filter_v5_t() {
-        free(payload);
-    }
-
-    bool pack() {
-        len = sizeof(_compact_t);
-        // compute dynamic packet size (if neede)
-        int size = len;
-        payload = (uint8_t *)REALLOC(payload, size);
-        // copy values
-        _compact_t *_buf = (_compact_t *)payload;
-        _buf->index = index;
-        _buf->timestamp_sec = timestamp_sec;
-        _buf->latitude_deg = latitude_deg;
-        _buf->longitude_deg = longitude_deg;
-        _buf->altitude_m = altitude_m;
-        _buf->vn_ms = intround(vn_ms * 100.0);
-        _buf->ve_ms = intround(ve_ms * 100.0);
-        _buf->vd_ms = intround(vd_ms * 100.0);
-        _buf->roll_deg = intround(roll_deg * 10.0);
-        _buf->pitch_deg = intround(pitch_deg * 10.0);
-        _buf->yaw_deg = intround(yaw_deg * 10.0);
-        _buf->p_bias = intround(p_bias * 10000.0);
-        _buf->q_bias = intround(q_bias * 10000.0);
-        _buf->r_bias = intround(r_bias * 10000.0);
-        _buf->ax_bias = intround(ax_bias * 1000.0);
-        _buf->ay_bias = intround(ay_bias * 1000.0);
-        _buf->az_bias = intround(az_bias * 1000.0);
-        _buf->max_pos_cov = uintround(max_pos_cov * 100.0);
-        _buf->max_vel_cov = uintround(max_vel_cov * 1000.0);
-        _buf->max_att_cov = uintround(max_att_cov * 10000.0);
-        _buf->sequence_num = sequence_num;
-        _buf->status = status;
-        return true;
-    }
-
-    bool unpack(uint8_t *external_message, int message_size) {
-        _compact_t *_buf = (_compact_t *)external_message;
-        len = sizeof(_compact_t);
-        index = _buf->index;
-        timestamp_sec = _buf->timestamp_sec;
-        latitude_deg = _buf->latitude_deg;
-        longitude_deg = _buf->longitude_deg;
-        altitude_m = _buf->altitude_m;
-        vn_ms = _buf->vn_ms / (float)100.0;
-        ve_ms = _buf->ve_ms / (float)100.0;
-        vd_ms = _buf->vd_ms / (float)100.0;
-        roll_deg = _buf->roll_deg / (float)10.0;
-        pitch_deg = _buf->pitch_deg / (float)10.0;
-        yaw_deg = _buf->yaw_deg / (float)10.0;
-        p_bias = _buf->p_bias / (float)10000.0;
-        q_bias = _buf->q_bias / (float)10000.0;
-        r_bias = _buf->r_bias / (float)10000.0;
-        ax_bias = _buf->ax_bias / (float)1000.0;
-        ay_bias = _buf->ay_bias / (float)1000.0;
-        az_bias = _buf->az_bias / (float)1000.0;
-        max_pos_cov = _buf->max_pos_cov / (float)100.0;
-        max_vel_cov = _buf->max_vel_cov / (float)1000.0;
-        max_att_cov = _buf->max_att_cov / (float)10000.0;
-        sequence_num = _buf->sequence_num;
-        status = _buf->status;
-        return true;
-    }
-
-    void msg2props(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        msg2props(node);
-    }
-
-    void msg2props(PropertyNode &node) {
-        node.setUInt("index", index);
-        node.setDouble("timestamp_sec", timestamp_sec);
-        node.setDouble("latitude_deg", latitude_deg);
-        node.setDouble("longitude_deg", longitude_deg);
-        node.setDouble("altitude_m", altitude_m);
-        node.setDouble("vn_ms", vn_ms);
-        node.setDouble("ve_ms", ve_ms);
-        node.setDouble("vd_ms", vd_ms);
-        node.setDouble("roll_deg", roll_deg);
-        node.setDouble("pitch_deg", pitch_deg);
-        node.setDouble("yaw_deg", yaw_deg);
-        node.setDouble("p_bias", p_bias);
-        node.setDouble("q_bias", q_bias);
-        node.setDouble("r_bias", r_bias);
-        node.setDouble("ax_bias", ax_bias);
-        node.setDouble("ay_bias", ay_bias);
-        node.setDouble("az_bias", az_bias);
-        node.setDouble("max_pos_cov", max_pos_cov);
-        node.setDouble("max_vel_cov", max_vel_cov);
-        node.setDouble("max_att_cov", max_att_cov);
-        node.setUInt("sequence_num", sequence_num);
-        node.setUInt("status", status);
-    }
-
-    void props2msg(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        props2msg(node);
-    }
-
-    void props2msg(PropertyNode &node) {
-        index = node.getUInt("index");
-        timestamp_sec = node.getDouble("timestamp_sec");
-        latitude_deg = node.getDouble("latitude_deg");
-        longitude_deg = node.getDouble("longitude_deg");
-        altitude_m = node.getDouble("altitude_m");
-        vn_ms = node.getDouble("vn_ms");
-        ve_ms = node.getDouble("ve_ms");
-        vd_ms = node.getDouble("vd_ms");
-        roll_deg = node.getDouble("roll_deg");
-        pitch_deg = node.getDouble("pitch_deg");
-        yaw_deg = node.getDouble("yaw_deg");
-        p_bias = node.getDouble("p_bias");
-        q_bias = node.getDouble("q_bias");
-        r_bias = node.getDouble("r_bias");
-        ax_bias = node.getDouble("ax_bias");
-        ay_bias = node.getDouble("ay_bias");
-        az_bias = node.getDouble("az_bias");
-        max_pos_cov = node.getDouble("max_pos_cov");
-        max_vel_cov = node.getDouble("max_vel_cov");
-        max_att_cov = node.getDouble("max_att_cov");
-        sequence_num = node.getUInt("sequence_num");
-        status = node.getUInt("status");
+        avionics_vcc = node.getDouble("avionics_vcc");
+        main_vcc = node.getDouble("main_vcc");
+        cell_vcc = node.getDouble("cell_vcc");
+        pwm_vcc = node.getDouble("pwm_vcc");
     }
 };
 
@@ -1431,77 +1086,6 @@ public:
     }
 };
 
-// Message: effectors_v1 (id: 61)
-class effectors_v1_t {
-public:
-
-    uint32_t millis;
-    float channel[8];
-
-    // internal structure for packing
-    #pragma pack(push, 1)
-    struct _compact_t {
-        uint32_t millis;
-        int16_t channel[8];
-    };
-    #pragma pack(pop)
-
-    // id, ptr to payload and len
-    static const uint8_t id = 61;
-    uint8_t *payload = nullptr;
-    int len = 0;
-
-    ~effectors_v1_t() {
-        free(payload);
-    }
-
-    bool pack() {
-        len = sizeof(_compact_t);
-        // compute dynamic packet size (if neede)
-        int size = len;
-        payload = (uint8_t *)REALLOC(payload, size);
-        // copy values
-        _compact_t *_buf = (_compact_t *)payload;
-        _buf->millis = millis;
-        for (int _i=0; _i<8; _i++) _buf->channel[_i] = intround(channel[_i] * 20000.0);
-        return true;
-    }
-
-    bool unpack(uint8_t *external_message, int message_size) {
-        _compact_t *_buf = (_compact_t *)external_message;
-        len = sizeof(_compact_t);
-        millis = _buf->millis;
-        for (int _i=0; _i<8; _i++) channel[_i] = _buf->channel[_i] / (float)20000.0;
-        return true;
-    }
-
-    void msg2props(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        msg2props(node);
-    }
-
-    void msg2props(PropertyNode &node) {
-        node.setUInt("millis", millis);
-        for (int _i=0; _i<8; _i++) node.setDouble("channel", channel[_i], _i);
-    }
-
-    void props2msg(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        props2msg(node);
-    }
-
-    void props2msg(PropertyNode &node) {
-        millis = node.getUInt("millis");
-        for (int _i=0; _i<8; _i++) channel[_i] = node.getDouble("channel", _i);
-    }
-};
-
 // Message: inceptors_v2 (id: 63)
 class inceptors_v2_t {
 public:
@@ -1627,33 +1211,27 @@ public:
     }
 };
 
-// Message: power_v1 (id: 55)
-class power_v1_t {
+// Message: effectors_v1 (id: 61)
+class effectors_v1_t {
 public:
 
     uint32_t millis;
-    float avionics_vcc;
-    float main_vcc;
-    float cell_vcc;
-    float pwm_vcc;
+    float channel[8];
 
     // internal structure for packing
     #pragma pack(push, 1)
     struct _compact_t {
         uint32_t millis;
-        uint16_t avionics_vcc;
-        uint16_t main_vcc;
-        uint16_t cell_vcc;
-        uint16_t pwm_vcc;
+        int16_t channel[8];
     };
     #pragma pack(pop)
 
     // id, ptr to payload and len
-    static const uint8_t id = 55;
+    static const uint8_t id = 61;
     uint8_t *payload = nullptr;
     int len = 0;
 
-    ~power_v1_t() {
+    ~effectors_v1_t() {
         free(payload);
     }
 
@@ -1665,10 +1243,7 @@ public:
         // copy values
         _compact_t *_buf = (_compact_t *)payload;
         _buf->millis = millis;
-        _buf->avionics_vcc = uintround(avionics_vcc * 1000.0);
-        _buf->main_vcc = uintround(main_vcc * 1000.0);
-        _buf->cell_vcc = uintround(cell_vcc * 1000.0);
-        _buf->pwm_vcc = uintround(pwm_vcc * 1000.0);
+        for (int _i=0; _i<8; _i++) _buf->channel[_i] = intround(channel[_i] * 20000.0);
         return true;
     }
 
@@ -1676,10 +1251,7 @@ public:
         _compact_t *_buf = (_compact_t *)external_message;
         len = sizeof(_compact_t);
         millis = _buf->millis;
-        avionics_vcc = _buf->avionics_vcc / (float)1000.0;
-        main_vcc = _buf->main_vcc / (float)1000.0;
-        cell_vcc = _buf->cell_vcc / (float)1000.0;
-        pwm_vcc = _buf->pwm_vcc / (float)1000.0;
+        for (int _i=0; _i<8; _i++) channel[_i] = _buf->channel[_i] / (float)20000.0;
         return true;
     }
 
@@ -1693,10 +1265,7 @@ public:
 
     void msg2props(PropertyNode &node) {
         node.setUInt("millis", millis);
-        node.setDouble("avionics_vcc", avionics_vcc);
-        node.setDouble("main_vcc", main_vcc);
-        node.setDouble("cell_vcc", cell_vcc);
-        node.setDouble("pwm_vcc", pwm_vcc);
+        for (int _i=0; _i<8; _i++) node.setDouble("channel", channel[_i], _i);
     }
 
     void props2msg(string _path, int _index = -1) {
@@ -1709,10 +1278,7 @@ public:
 
     void props2msg(PropertyNode &node) {
         millis = node.getUInt("millis");
-        avionics_vcc = node.getDouble("avionics_vcc");
-        main_vcc = node.getDouble("main_vcc");
-        cell_vcc = node.getDouble("cell_vcc");
-        pwm_vcc = node.getDouble("pwm_vcc");
+        for (int _i=0; _i<8; _i++) channel[_i] = node.getDouble("channel", _i);
     }
 };
 
@@ -1922,115 +1488,8 @@ public:
     }
 };
 
-// Message: system_health_v6 (id: 46)
-class system_health_v6_t {
-public:
-
-    float timestamp_sec;
-    float system_load_avg;
-    uint16_t fmu_timer_misses;
-    float avionics_vcc;
-    float main_vcc;
-    float cell_vcc;
-    float main_amps;
-    float total_mah;
-
-    // internal structure for packing
-    #pragma pack(push, 1)
-    struct _compact_t {
-        float timestamp_sec;
-        uint16_t system_load_avg;
-        uint16_t fmu_timer_misses;
-        uint16_t avionics_vcc;
-        uint16_t main_vcc;
-        uint16_t cell_vcc;
-        uint16_t main_amps;
-        uint16_t total_mah;
-    };
-    #pragma pack(pop)
-
-    // id, ptr to payload and len
-    static const uint8_t id = 46;
-    uint8_t *payload = nullptr;
-    int len = 0;
-
-    ~system_health_v6_t() {
-        free(payload);
-    }
-
-    bool pack() {
-        len = sizeof(_compact_t);
-        // compute dynamic packet size (if neede)
-        int size = len;
-        payload = (uint8_t *)REALLOC(payload, size);
-        // copy values
-        _compact_t *_buf = (_compact_t *)payload;
-        _buf->timestamp_sec = timestamp_sec;
-        _buf->system_load_avg = uintround(system_load_avg * 100.0);
-        _buf->fmu_timer_misses = fmu_timer_misses;
-        _buf->avionics_vcc = uintround(avionics_vcc * 1000.0);
-        _buf->main_vcc = uintround(main_vcc * 1000.0);
-        _buf->cell_vcc = uintround(cell_vcc * 1000.0);
-        _buf->main_amps = uintround(main_amps * 1000.0);
-        _buf->total_mah = uintround(total_mah * 0.1);
-        return true;
-    }
-
-    bool unpack(uint8_t *external_message, int message_size) {
-        _compact_t *_buf = (_compact_t *)external_message;
-        len = sizeof(_compact_t);
-        timestamp_sec = _buf->timestamp_sec;
-        system_load_avg = _buf->system_load_avg / (float)100.0;
-        fmu_timer_misses = _buf->fmu_timer_misses;
-        avionics_vcc = _buf->avionics_vcc / (float)1000.0;
-        main_vcc = _buf->main_vcc / (float)1000.0;
-        cell_vcc = _buf->cell_vcc / (float)1000.0;
-        main_amps = _buf->main_amps / (float)1000.0;
-        total_mah = _buf->total_mah / (float)0.1;
-        return true;
-    }
-
-    void msg2props(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        msg2props(node);
-    }
-
-    void msg2props(PropertyNode &node) {
-        node.setDouble("timestamp_sec", timestamp_sec);
-        node.setDouble("system_load_avg", system_load_avg);
-        node.setUInt("fmu_timer_misses", fmu_timer_misses);
-        node.setDouble("avionics_vcc", avionics_vcc);
-        node.setDouble("main_vcc", main_vcc);
-        node.setDouble("cell_vcc", cell_vcc);
-        node.setDouble("main_amps", main_amps);
-        node.setDouble("total_mah", total_mah);
-    }
-
-    void props2msg(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        props2msg(node);
-    }
-
-    void props2msg(PropertyNode &node) {
-        timestamp_sec = node.getDouble("timestamp_sec");
-        system_load_avg = node.getDouble("system_load_avg");
-        fmu_timer_misses = node.getUInt("fmu_timer_misses");
-        avionics_vcc = node.getDouble("avionics_vcc");
-        main_vcc = node.getDouble("main_vcc");
-        cell_vcc = node.getDouble("cell_vcc");
-        main_amps = node.getDouble("main_amps");
-        total_mah = node.getDouble("total_mah");
-    }
-};
-
-// Message: status_v7 (id: 56)
-class status_v7_t {
+// Message: status_v8 (id: 69)
+class status_v8_t {
 public:
 
     uint32_t millis;
@@ -2042,6 +1501,8 @@ public:
     uint16_t link_state;
     uint16_t byte_rate;
     uint16_t main_loop_timer_misses;
+    uint16_t max_log_buf;
+    uint16_t log_buf_overruns;
 
     // internal structure for packing
     #pragma pack(push, 1)
@@ -2055,15 +1516,17 @@ public:
         uint16_t link_state;
         uint16_t byte_rate;
         uint16_t main_loop_timer_misses;
+        uint16_t max_log_buf;
+        uint16_t log_buf_overruns;
     };
     #pragma pack(pop)
 
     // id, ptr to payload and len
-    static const uint8_t id = 56;
+    static const uint8_t id = 69;
     uint8_t *payload = nullptr;
     int len = 0;
 
-    ~status_v7_t() {
+    ~status_v8_t() {
         free(payload);
     }
 
@@ -2083,6 +1546,8 @@ public:
         _buf->link_state = link_state;
         _buf->byte_rate = byte_rate;
         _buf->main_loop_timer_misses = main_loop_timer_misses;
+        _buf->max_log_buf = max_log_buf;
+        _buf->log_buf_overruns = log_buf_overruns;
         return true;
     }
 
@@ -2098,6 +1563,8 @@ public:
         link_state = _buf->link_state;
         byte_rate = _buf->byte_rate;
         main_loop_timer_misses = _buf->main_loop_timer_misses;
+        max_log_buf = _buf->max_log_buf;
+        log_buf_overruns = _buf->log_buf_overruns;
         return true;
     }
 
@@ -2119,6 +1586,8 @@ public:
         node.setUInt("link_state", link_state);
         node.setUInt("byte_rate", byte_rate);
         node.setUInt("main_loop_timer_misses", main_loop_timer_misses);
+        node.setUInt("max_log_buf", max_log_buf);
+        node.setUInt("log_buf_overruns", log_buf_overruns);
     }
 
     void props2msg(string _path, int _index = -1) {
@@ -2139,87 +1608,8 @@ public:
         link_state = node.getUInt("link_state");
         byte_rate = node.getUInt("byte_rate");
         main_loop_timer_misses = node.getUInt("main_loop_timer_misses");
-    }
-};
-
-// Message: event_v2 (id: 44)
-class event_v2_t {
-public:
-
-    float timestamp_sec;
-    uint8_t sequence_num;
-    string message;
-
-    // internal structure for packing
-    #pragma pack(push, 1)
-    struct _compact_t {
-        float timestamp_sec;
-        uint8_t sequence_num;
-        uint16_t message_len;
-    };
-    #pragma pack(pop)
-
-    // id, ptr to payload and len
-    static const uint8_t id = 44;
-    uint8_t *payload = nullptr;
-    int len = 0;
-
-    ~event_v2_t() {
-        free(payload);
-    }
-
-    bool pack() {
-        len = sizeof(_compact_t);
-        // compute dynamic packet size (if neede)
-        int size = len;
-        size += message.length();
-        payload = (uint8_t *)REALLOC(payload, size);
-        // copy values
-        _compact_t *_buf = (_compact_t *)payload;
-        _buf->timestamp_sec = timestamp_sec;
-        _buf->sequence_num = sequence_num;
-        _buf->message_len = message.length();
-        memcpy(&(payload[len]), message.c_str(), message.length());
-        len += message.length();
-        return true;
-    }
-
-    bool unpack(uint8_t *external_message, int message_size) {
-        _compact_t *_buf = (_compact_t *)external_message;
-        len = sizeof(_compact_t);
-        timestamp_sec = _buf->timestamp_sec;
-        sequence_num = _buf->sequence_num;
-        message = string((char *)&(external_message[len]), _buf->message_len);
-        len += _buf->message_len;
-        return true;
-    }
-
-    void msg2props(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        msg2props(node);
-    }
-
-    void msg2props(PropertyNode &node) {
-        node.setDouble("timestamp_sec", timestamp_sec);
-        node.setUInt("sequence_num", sequence_num);
-        node.setString("message", message);
-    }
-
-    void props2msg(string _path, int _index = -1) {
-        if ( _index >= 0 ) {
-            _path += "/" + std::to_string(_index);
-        }
-        PropertyNode node(_path.c_str());
-        props2msg(node);
-    }
-
-    void props2msg(PropertyNode &node) {
-        timestamp_sec = node.getDouble("timestamp_sec");
-        sequence_num = node.getUInt("sequence_num");
-        message = node.getString("message");
+        max_log_buf = node.getUInt("max_log_buf");
+        log_buf_overruns = node.getUInt("log_buf_overruns");
     }
 };
 

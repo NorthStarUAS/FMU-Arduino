@@ -34,6 +34,7 @@ private:
 
     void write_ack( uint16_t sequence_num, uint8_t result );
     void write_airdata();
+    void write_env_state();
     void write_refs();
     void write_mission();
     void write_inceptors();

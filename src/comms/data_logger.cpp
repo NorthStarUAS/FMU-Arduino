@@ -75,6 +75,7 @@ void data_logger_t::log_messages() {
             output_counter += write_inceptors();
             output_counter += write_gps();
             output_counter += write_airdata();
+            output_counter += write_env_state();
             output_counter += write_refs();
             output_counter += write_mission();
         }
@@ -96,6 +97,7 @@ void data_logger_t::log_messages() {
             output_counter += write_inceptors();
             output_counter += write_gps();
             output_counter += write_airdata();
+            output_counter += write_env_state();
             output_counter += write_refs();
             output_counter += write_mission();
         }
@@ -117,6 +119,7 @@ void data_logger_t::log_messages() {
             output_counter += write_inceptors();
             output_counter += write_gps();
             output_counter += write_airdata();
+            output_counter += write_env_state();
             output_counter += write_refs();
             output_counter += write_mission();
         }
@@ -133,8 +136,13 @@ void data_logger_t::log_messages() {
 }
 
 int data_logger_t::write_airdata() {
-    nst_message::airdata_v8_t &air_msg = comms_mgr->packer.air_msg;
+    nst_message::airdata_v9_t &air_msg = comms_mgr->packer.air_msg;
     return log_packet( air_msg.id, air_msg.payload, air_msg.len );
+}
+
+int data_logger_t::write_env_state() {
+    nst_message::env_state_v1_t &env_msg = comms_mgr->packer.env_state_msg;
+    return log_packet( env_msg.id, env_msg.payload, env_msg.len );
 }
 
 // final effector commands
@@ -204,13 +212,13 @@ int data_logger_t::write_mission() {
 }
 
 int data_logger_t::write_power() {
-    nst_message::power_v1_t &power_msg = comms_mgr->packer.power_msg;
+    nst_message::power_v2_t &power_msg = comms_mgr->packer.power_msg;
     return log_packet( power_msg.id, power_msg.payload, power_msg.len );
 }
 
 // system status
 int data_logger_t::write_status() {
-    nst_message::status_v7_t &status_msg = comms_mgr->packer.status_msg;
+    nst_message::status_v8_t &status_msg = comms_mgr->packer.status_msg;
     if ( status_msg.millis > status_last_millis ) {
         status_last_millis = status_msg.millis;
         return log_packet( status_msg.id, status_msg.payload, status_msg.len );
@@ -247,13 +255,13 @@ int data_logger_t::log_packet(uint8_t packet_id, uint8_t *payload, uint16_t len)
 
         if ( log_buffer.size() > max_buffer_used ) {
             max_buffer_used = log_buffer.size();
-            comms_node.setUInt("datalog_max_buffer_used", max_buffer_used);
+            status_node.setUInt("max_log_buf", max_buffer_used);
         }
 
         return len + 7;
     } else {
         buffer_overrun_count++;
-        comms_node.setUInt("datalog_buffer_overruns", buffer_overrun_count);
+        status_node.setUInt("log_buf_overruns", buffer_overrun_count);
         return 0;
     }
 }
