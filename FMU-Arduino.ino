@@ -82,7 +82,7 @@ void setup() {
     // The following code (when enabled) will force setting a specific
     // device serial number when the device boots:
     if ( false ) {
-        config->set_serial_number(124);
+        config->set_serial_number(125);
     }
     config->read_serial_number();
     printf("Serial Number: %d\n", config->read_serial_number());
