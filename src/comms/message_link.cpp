@@ -53,6 +53,7 @@ void message_link_t::write_messages() {
             write_effectors();
             write_imu();
             write_inceptors();
+            write_outputs();
         }
         if ( limiter_2_5hz.update() ) {
             write_gps();
@@ -81,6 +82,7 @@ void message_link_t::write_messages() {
             write_gps();
             write_imu();
             write_inceptors();
+            write_outputs();
             write_mission();
             write_nav();
             write_power();
@@ -145,6 +147,12 @@ void message_link_t::write_imu() {
 void message_link_t::write_inceptors() {
     nst_message::inceptors_v2_t &inceptor_msg = comms_mgr->packer.inceptor_msg;
     send_packet( inceptor_msg.id, inceptor_msg.payload, inceptor_msg.len);
+}
+
+// fcs outputs
+void message_link_t::write_outputs() {
+    nst_message::fcs_outputs_v1_t &outputs_msg = comms_mgr->packer.outputs_msg;
+    send_packet( outputs_msg.id, outputs_msg.payload, outputs_msg.len);
 }
 
 // nav (ekf) data

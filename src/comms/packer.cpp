@@ -11,6 +11,7 @@ void packer_t::update() {
     pack_gps();
     pack_imu();
     pack_inceptors();
+    pack_outputs();
     pack_mission();
     pack_nav();
     pack_nav_metrics();
@@ -65,6 +66,12 @@ void packer_t::pack_imu() {
 void packer_t::pack_inceptors() {
     inceptor_msg.props2msg(inceptors_node);
     inceptor_msg.pack();
+}
+
+// fcs outputs
+void packer_t::pack_outputs() {
+    outputs_msg.props2msg(outputs_node);
+    outputs_msg.pack();
 }
 
 // mission values

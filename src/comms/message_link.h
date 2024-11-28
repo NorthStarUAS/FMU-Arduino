@@ -38,6 +38,7 @@ private:
     void write_refs();
     void write_mission();
     void write_inceptors();
+    void write_outputs();
     void write_effectors();
     void write_imu();
     void write_gps();

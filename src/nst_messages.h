@@ -38,6 +38,7 @@ const uint8_t power_v2_id = 68;
 const uint8_t nav_v6_id = 52;
 const uint8_t nav_metrics_v6_id = 53;
 const uint8_t inceptors_v2_id = 63;
+const uint8_t fcs_outputs_v1_id = 71;
 const uint8_t effectors_v1_id = 61;
 const uint8_t fcs_refs_v1_id = 65;
 const uint8_t mission_v1_id = 60;
@@ -1208,6 +1209,107 @@ public:
         aux2 = node.getDouble("aux2");
         master_switch = node.getUInt("master_switch");
         motor_enable = node.getUInt("motor_enable");
+    }
+};
+
+// Message: fcs_outputs_v1 (id: 71)
+class fcs_outputs_v1_t {
+public:
+
+    uint32_t millis;
+    float roll;
+    float pitch;
+    float yaw;
+    float power;
+    float flaps;
+    uint8_t gear;
+
+    // internal structure for packing
+    #pragma pack(push, 1)
+    struct _compact_t {
+        uint32_t millis;
+        int16_t roll;
+        int16_t pitch;
+        int16_t yaw;
+        uint16_t power;
+        uint16_t flaps;
+        uint8_t gear;
+    };
+    #pragma pack(pop)
+
+    // id, ptr to payload and len
+    static const uint8_t id = 71;
+    uint8_t *payload = nullptr;
+    int len = 0;
+
+    ~fcs_outputs_v1_t() {
+        free(payload);
+    }
+
+    bool pack() {
+        len = sizeof(_compact_t);
+        // compute dynamic packet size (if neede)
+        int size = len;
+        payload = (uint8_t *)REALLOC(payload, size);
+        // copy values
+        _compact_t *_buf = (_compact_t *)payload;
+        _buf->millis = millis;
+        _buf->roll = intround(roll * 30000.0);
+        _buf->pitch = intround(pitch * 30000.0);
+        _buf->yaw = intround(yaw * 30000.0);
+        _buf->power = uintround(power * 60000.0);
+        _buf->flaps = uintround(flaps * 60000.0);
+        _buf->gear = gear;
+        return true;
+    }
+
+    bool unpack(uint8_t *external_message, int message_size) {
+        _compact_t *_buf = (_compact_t *)external_message;
+        len = sizeof(_compact_t);
+        millis = _buf->millis;
+        roll = _buf->roll / (float)30000.0;
+        pitch = _buf->pitch / (float)30000.0;
+        yaw = _buf->yaw / (float)30000.0;
+        power = _buf->power / (float)60000.0;
+        flaps = _buf->flaps / (float)60000.0;
+        gear = _buf->gear;
+        return true;
+    }
+
+    void msg2props(string _path, int _index = -1) {
+        if ( _index >= 0 ) {
+            _path += "/" + std::to_string(_index);
+        }
+        PropertyNode node(_path.c_str());
+        msg2props(node);
+    }
+
+    void msg2props(PropertyNode &node) {
+        node.setUInt("millis", millis);
+        node.setDouble("roll", roll);
+        node.setDouble("pitch", pitch);
+        node.setDouble("yaw", yaw);
+        node.setDouble("power", power);
+        node.setDouble("flaps", flaps);
+        node.setUInt("gear", gear);
+    }
+
+    void props2msg(string _path, int _index = -1) {
+        if ( _index >= 0 ) {
+            _path += "/" + std::to_string(_index);
+        }
+        PropertyNode node(_path.c_str());
+        props2msg(node);
+    }
+
+    void props2msg(PropertyNode &node) {
+        millis = node.getUInt("millis");
+        roll = node.getDouble("roll");
+        pitch = node.getDouble("pitch");
+        yaw = node.getDouble("yaw");
+        power = node.getDouble("power");
+        flaps = node.getDouble("flaps");
+        gear = node.getUInt("gear");
     }
 };
 

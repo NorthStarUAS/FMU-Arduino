@@ -73,6 +73,7 @@ void data_logger_t::log_messages() {
             output_counter += write_effectors();
             output_counter += write_imu();
             output_counter += write_inceptors();
+            output_counter += write_outputs();
             output_counter += write_gps();
             output_counter += write_airdata();
             output_counter += write_environment();
@@ -95,6 +96,7 @@ void data_logger_t::log_messages() {
             output_counter += write_effectors();
             output_counter += write_imu();
             output_counter += write_inceptors();
+            output_counter += write_outputs();
             output_counter += write_gps();
             output_counter += write_airdata();
             output_counter += write_environment();
@@ -117,6 +119,7 @@ void data_logger_t::log_messages() {
             output_counter += write_effectors();
             output_counter += write_imu();
             output_counter += write_inceptors();
+            output_counter += write_outputs();
             output_counter += write_gps();
             output_counter += write_airdata();
             output_counter += write_environment();
@@ -180,6 +183,12 @@ int data_logger_t::write_imu() {
 int data_logger_t::write_inceptors() {
     nst_message::inceptors_v2_t &inceptor_msg = comms_mgr->packer.inceptor_msg;
     return log_packet( inceptor_msg.id, inceptor_msg.payload, inceptor_msg.len);
+}
+
+// fcs outputs
+int data_logger_t::write_outputs() {
+    nst_message::fcs_outputs_v1_t &outputs_msg = comms_mgr->packer.outputs_msg;
+    return log_packet( outputs_msg.id, outputs_msg.payload, outputs_msg.len);
 }
 
 // nav (ekf) data

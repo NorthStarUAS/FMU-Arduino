@@ -12,6 +12,7 @@ public:
     nst_message::gps_v5_t gps_msg;
     nst_message::imu_v6_t imu_msg;
     nst_message::inceptors_v2_t inceptor_msg;
+    nst_message::fcs_outputs_v1_t outputs_msg;
     uint16_t route_counter = 0;
     nst_message::mission_v1_t mission_msg;
     nst_message::nav_v6_t nav_msg;
@@ -32,6 +33,7 @@ private:
     void pack_gps();
     void pack_imu();
     void pack_inceptors();
+    void pack_outputs();
     void pack_mission();
     void pack_nav();
     void pack_nav_metrics();

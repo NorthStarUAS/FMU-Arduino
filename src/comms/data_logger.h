@@ -6,7 +6,7 @@
 #include "../logs/RingBuf.h"
 #include "../util/ratelimiter.h"
 
-static const unsigned int max_buf_size = 2048;
+static const unsigned int max_buf_size = 4096;
 
 class data_logger_t {
 
@@ -36,6 +36,7 @@ private:
     int write_refs();
     int write_mission();
     int write_inceptors();
+    int write_outputs();
     int write_effectors();
     int write_imu();
     int write_gps();
