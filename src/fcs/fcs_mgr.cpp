@@ -72,6 +72,7 @@ void fcs_mgr_t::update(float dt) {
     // differential value up to date, tracks manual inputs, and keeps more
     // continuity in the flight when the mode is switched to autopilot.
     ap.update( dt );
+    outputs_node.setUInt("millis", millis());
 
     // copy pilot inputs (inceptors) to flight control outputs when not in
     // autopilot mode
