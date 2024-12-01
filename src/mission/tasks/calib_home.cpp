@@ -4,10 +4,19 @@
 
 calib_home_task_t::calib_home_task_t() {
     name = "calib_home";
+    PropertyNode config_node = PropertyNode("/config/mission/calib_home");
+    if ( config_node.hasChild("duration_sec") ) {
+        duration_sec = config_node.getDouble("duration_sec");
+    }
 }
 
 void calib_home_task_t::activate() {
     active = true;
+
+    latitude_sum = 0.0;
+    longitude_sum = 0.0;
+    altitude_sum = 0.0;
+    counter = 0;
 
     if ( not environment_node.getBool("is_airborne") ) {
         // set fcs mode to roll+pitch
@@ -25,6 +34,20 @@ void calib_home_task_t::activate() {
 }
 
 void calib_home_task_t::update(float dt) {
+    // sample current position
+    latitude_sum += gps_node.getDouble("latitude_deg");
+    longitude_sum += gps_node.getDouble("longitude_deg");
+    altitude_sum += gps_node.getDouble("altitude_m");
+    counter += 1;
+
+    // refine home location continuously (note that the landing task /
+    // glideslope math uses ground and agl altitude computed in the environment
+    // section.)
+    home_node.setDouble("longitude_deg", longitude_sum / (double)counter);
+    home_node.setDouble("latitude_deg", latitude_sum / (double)counter);
+    home_node.setDouble("altitude_m", altitude_sum / (float)counter);
+    home_node.setBool("valid", true);
+
     timer += dt;
 }
 

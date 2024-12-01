@@ -18,6 +18,10 @@ public:
 private:
 
     float timer = 0.0;
-    float duration_sec = 0.0;
+    float duration_sec = 30.0;
+    int counter = 0;
+    double longitude_sum = 0.0;
+    double latitude_sum = 0.0;
+    float altitude_sum = 0.0;
 
 };
