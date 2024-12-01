@@ -58,8 +58,8 @@ void gps_mgr_t::update() {
         gps_node.setInt("longitude_raw", gps_data.lon);
         gps_node.setDouble("latitude_deg", (double)(gps_data.lat) / 10000000.0l);
         gps_node.setDouble("longitude_deg", (double)(gps_data.lon) / 10000000.0l);
-        gps_node.setDouble("altitude_m", gps_data.height / 1000.0);
-        gps_node.setDouble("alt_msl_m", gps_data.hMSL / 1000.0);
+        gps_node.setDouble("altitude_wgs84_m", gps_data.height / 1000.0);
+        gps_node.setDouble("altitude_m", gps_data.hMSL / 1000.0);
         gps_node.setDouble("vn_mps", gps_data.velN / 1000.0);
         gps_node.setDouble("ve_mps", gps_data.velE / 1000.0);
         gps_node.setDouble("vd_mps", gps_data.velD / 1000.0);
