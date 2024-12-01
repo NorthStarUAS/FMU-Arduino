@@ -22,9 +22,6 @@
     "lateral_offset_m": 0.0,
     "circle_radius_m": 75
   },
-  "preflight": {
-    "duration_sec": "60.0"
-  },
   "task": [
     {
       "name": "flaps_manager",
