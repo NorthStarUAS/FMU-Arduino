@@ -18,6 +18,6 @@ public:
 private:
 
     float timer = 0.0;
-    float duration_sec = 0.0;
+    float duration_sec = 30.0;
 
 };
