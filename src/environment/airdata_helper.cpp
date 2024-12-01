@@ -21,7 +21,7 @@ void airdata_helper_t::update(float dt) {
     float altitude_agl_m = environment_node.getDouble("altitude_agl_m");
     float airspeed_mps = airdata_node.getDouble("airspeed_mps");
     float airdata_alt_m = airdata_node.getDouble("altitude_m");
-    float nav_alt_m = nav_node.getDouble("altitude_m");
+    float gps_alt_m = gps_node.getDouble("altitude_m");
 
     // determine if aircraft is flying or not
     if ( not is_airborne and altitude_agl_m >= up_m and airspeed_mps >= up_mps ) {
@@ -44,8 +44,8 @@ void airdata_helper_t::update(float dt) {
     last_millis = millis();
 
     // compute "true altitude" with baro sensitivity
-    if ( nav_node.getInt("status") >= 2 ) {
-        float diff = airdata_alt_m - nav_alt_m;
+    if ( gps_node.getInt("status") >= 3 ) {
+        float diff = airdata_alt_m - gps_alt_m;
         baro_error.update(diff, dt);
     }
     environment_node.setDouble("altitude_true_m", airdata_alt_m - baro_error.get_value());
