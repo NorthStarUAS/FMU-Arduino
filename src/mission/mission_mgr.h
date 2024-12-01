@@ -25,6 +25,7 @@ public:
     void start_launch_task();
     void start_land_task();
     void start_preflight_task();
+    void start_calib_home_task();
     void start_route_task();
     void start_idle_task();
 

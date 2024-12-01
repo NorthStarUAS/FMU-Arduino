@@ -127,24 +127,19 @@ int execute_command(nst_message::command_v1_t *msg, SerialLink *serial) {
             }
             result = 1;
         } else if ( tokens[1] == "launch" ) {
-            if ( mission_mgr != nullptr ) {
-                mission_mgr->start_launch_task();
-            }
+            mission_node.setString("request", tokens[1]);
             result = 1;
         } else if ( tokens[1] == "land" ) {
-            if ( mission_mgr != nullptr ) {
-                mission_mgr->start_land_task();
-            }
+            mission_node.setString("request", tokens[1]);
             result = 1;
         } else if ( tokens[1] == "preflight" ) {
-            if ( mission_mgr != nullptr ) {
-                mission_mgr->start_preflight_task();
-            }
+            mission_node.setString("request", tokens[1]);
+            result = 1;
+        } else if ( tokens[1] == "calib_home" ) {
+            mission_node.setString("request", tokens[1]);
             result = 1;
         } else if ( tokens[1] == "route" ) {
-            if ( mission_mgr != nullptr ) {
-                mission_mgr->start_route_task();
-            }
+            mission_node.setString("request", tokens[1]);
             result = 1;
         }
 

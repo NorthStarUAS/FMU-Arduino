@@ -7,6 +7,7 @@
 #include "tasks/launch.h"
 #include "tasks/land3.h"
 #include "tasks/preflight.h"
+#include "tasks/calib_home.h"
 #include "tasks/route.h"
 #include "mission_mgr.h"
 
@@ -65,33 +66,43 @@ void mission_mgr_t::update(float dt) {
 
 void mission_mgr_t::process_command_request() {
     string command = mission_node.getString("request");
-    mission_node.setString("request", "");
     if ( command.length() ) {
-        event_mgr->add_event("mission request", command);
-    }
-    if ( command == "launch") {
-        start_launch_task();
-    } else if ( command == "circle_here" ) {
-        if ( gps_node.getInt("status") == 3 ) {
-            double lon_deg = gps_node.getDouble("longitude_deg");
-            double lat_deg = gps_node.getDouble("latitude_deg");
-            start_circle_task(lon_deg, lat_deg);
+        mission_node.setString("request", "");
+        event_mgr->add_event("mission_mgr request", command);
+        if ( command == "preflight") {
+            start_preflight_task();
+        } else if ( command == "calib_home") {
+            start_calib_home_task();
+        } else if ( command == "launch") {
+            start_launch_task();
+        } else if ( command == "land") {
+            start_land_task();
+        } else if ( command == "circle_here" ) {
+            if ( gps_node.getInt("status") == 3 ) {
+                double lon_deg = gps_node.getDouble("longitude_deg");
+                double lat_deg = gps_node.getDouble("latitude_deg");
+                start_circle_task(lon_deg, lat_deg);
+            } else {
+                // fixme: we are lost and kinda screwed!
+            }
+        } else if ( command == "circle_home" ) {
+            if ( home_node.getBool("valid") ) {
+                // if we have a valid home location
+                double lon_deg = home_node.getDouble("longitude_deg");
+                double lat_deg = home_node.getDouble("latitude_deg");
+                start_circle_task(lon_deg, lat_deg);
+            } else if ( gps_node.getInt("status") == 3 ) {
+                // plan b, circle here
+                double lon_deg = gps_node.getDouble("longitude_deg");
+                double lat_deg = gps_node.getDouble("latitude_deg");
+                start_circle_task(lon_deg, lat_deg);
+            } else {
+                // fixme: we are lost and kinda screwed!
+            }
+        } else if ( command == "route") {
+            start_route_task();
         } else {
-            // fixme: we are lost and kinda screwed!
-        }
-    } else if ( command == "circle_home" ) {
-        if ( home_node.getBool("valid") ) {
-            // if we have a valid home location
-            double lon_deg = home_node.getDouble("longitude_deg");
-            double lat_deg = home_node.getDouble("latitude_deg");
-            start_circle_task(lon_deg, lat_deg);
-        } else if ( gps_node.getInt("status") == 3 ) {
-            // plan b, circle here
-            double lon_deg = gps_node.getDouble("longitude_deg");
-            double lat_deg = gps_node.getDouble("latitude_deg");
-            start_circle_task(lon_deg, lat_deg);
-        } else {
-            // fixme: we are lost and kinda screwed!
+            event_mgr->add_event("mission_mgr task unknown", command);
         }
     }
 }
@@ -167,6 +178,17 @@ void mission_mgr_t::start_preflight_task() {
         // create and activate task
         preflight_task_t *preflight = new preflight_task_t();
         new_task(preflight);
+    }
+}
+
+void mission_mgr_t::start_calib_home_task() {
+    // sanity check, are we already running the requested task
+    if ( current_task != nullptr and current_task->name == "calib_home" ) {
+        event_mgr->add_event("mission", current_task->name + " already active");
+    } else {
+        // create and activate task
+        calib_home_task_t *calib_home = new calib_home_task_t();
+        new_task(calib_home);
     }
 }
 
