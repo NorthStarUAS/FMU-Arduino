@@ -16,26 +16,27 @@
 
 #pragma once
 
-#include <Arduino.h>
-#include <math.h>
-#include <eigen.h>
-// #include "eigen3/Eigen/Core"
-// #include "eigen3/Eigen/Geometry"
-// #include "eigen3/Eigen/LU"
+#if defined(ARDUINO)
+# include <eigen.h>
+# include <Eigen/Geometry>
+#else
+# include <math.h>
+# include <eigen3/Eigen/Core>
+# include <eigen3/Eigen/Geometry>
+# include <eigen3/Eigen/LU>
+#endif
+
+using namespace Eigen;
 
 #include "nav_structs.h"
 
+#if defined(ARDUINO)
 #undef F
+#endif
 
 // define some types for notational convenience and consistency
-//typedef Eigen::Matrix<float,9,9>   Matrix9f;
-//typedef Eigen::Matrix<float,12,12> Matrix12f;
-//typedef Eigen::Matrix<float,15,15> Matrix15f;
-//typedef Eigen::Matrix<float,9,15>  Matrix9x15f;
-//typedef Eigen::Matrix<float,15,9>  Matrix15x9f;
-//typedef Eigen::Matrix<float,15,12> Matrix15x12f;
-typedef Eigen::Matrix<float,9,1> Vector9f;
-typedef Eigen::Matrix<float,15,1> Vector15f;
+typedef Matrix<float,9,1> Vector9f;
+typedef Matrix<float,15,1> Vector15f;
 
 class EKF15_mag {
 
@@ -53,7 +54,6 @@ public:
 
     // main interface
     void init(IMUdata imu, GPSdata gps);
-    void set_ideal_mag_vector_ned(Eigen::Vector3f v);
     void time_update(IMUdata imu);
     void measurement_update(IMUdata imu, GPSdata gps);
 
@@ -63,18 +63,18 @@ private:
 
     // make our big matrices dynamic (so they get allocated on the
     // heap) to play nice on embedded systems with small stacks.
-    Eigen::MatrixXf F, PHI, P, Qw, Q, ImKH, KRKt, I15; // 15x15
-    Eigen::MatrixXf G;                                 // 15x12
-    Eigen::MatrixXf K;                                 // 15x9
-    Eigen::MatrixXf Rw;                                // 12x12
-    Eigen::MatrixXf H;                                 // 9x15
-    Eigen::MatrixXf R;                                 // 6x6
-    Vector15f x;                                       // 15x11
-    Vector9f y;                                        // 9x1
-    Eigen::Matrix3f C_N2B, C_B2N, I3 /* identity */, temp33;
-    Eigen::Vector3f grav, f_b, om_ib, pos_ins_ned, pos_gps_ned, dx, mag_ned;
+    MatrixXf F, PHI, P, Qw, Q, ImKH, KRKt, I15; // 15x15
+    MatrixXf G;                                 // 15x12
+    MatrixXf K;                                 // 15x9
+    MatrixXf Rw;                                // 12x12
+    MatrixXf H;                                 // 9x15
+    MatrixXf R;                                 // 6x6
+    Vector15f x;                                // 15x11
+    Vector9f y;                                 // 9x1
+    Matrix3f C_N2B, C_B2N, I3, temp33;
+    Vector3f grav, f_b, om_ib, dx, mag_ned;
 
-    Eigen::Quaternionf quat;
+    Quaternionf quat;
 
     IMUdata imu_last;
     NAVconfig config;

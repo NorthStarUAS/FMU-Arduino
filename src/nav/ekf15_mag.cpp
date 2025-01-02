@@ -14,8 +14,6 @@
  *
  */
 
-#include <Arduino.h>
-
 #include "nav_constants.h"
 #include "nav_functions.h"
 #include "coremag.h"
@@ -30,8 +28,6 @@ const float P_GB_INIT = 0.01745;  // 5 deg/s
 
 const double Rew = 6.359058719353925e+006; // earth radius
 const double Rns = 6.386034030458164e+006; // earth radius
-
-const float g = 9.814;
 
 // BRT: (1) I think there are some several identity and sparse
 // matrices, so probably some optimization still left there.  (2)
@@ -92,7 +88,7 @@ void EKF15_mag::init(IMUdata imu, GPSdata gps) {
 
     // Assemble the matrices
     // .... gravity, g
-    grav = Eigen::Vector3f(0.0, 0.0, g);
+    grav = Vector3f(0.0, 0.0, g);
 
     // ... H
     H.setZero();
@@ -141,7 +137,7 @@ void EKF15_mag::init(IMUdata imu, GPSdata gps) {
     nav.vd = gps.vd;
 
     // ideal magnetic vector
-    //printf("EKF: unix_sec = %d\n", gps.unix_sec);
+    // printf("EKF: unix_sec = %d\n", gps.unix_sec);
     long int jd = unixdate_to_julian_days(gps.unix_sec);
     double field[6];
     calc_magvar( nav.lat, nav.lon,
@@ -186,20 +182,20 @@ void EKF15_mag::init(IMUdata imu, GPSdata gps) {
     nav.aby = 0.0;
     nav.abz = 0.0;
 
-    // I might want to initialize these to zero assuming imu driver
-    // has made some plausible attempt to zero it's own gyro biases.
-    nav.gbx = imu.p;
-    nav.gby = imu.q;
-    nav.gbz = imu.r;
+    // Assume IMU has made no attempt to zero its biases
+    // nav.gbx = imu.p;
+    // nav.gby = imu.q;
+    // nav.gbz = imu.r;
+
+    // Assume IMU has already zero'd its biases
+    nav.gbx = 0;
+    nav.gby = 0;
+    nav.gbz = 0;
 
     imu_last = imu;
 
     nav.time = imu.time;
     nav.err_type = data_valid;
-}
-
-void EKF15_mag::set_ideal_mag_vector_ned(Eigen::Vector3f v) {
-    mag_ned = v;
 }
 
 // Main get_nav filter function
@@ -208,15 +204,15 @@ void EKF15_mag::time_update(IMUdata imu) {
     // This compute the navigation state at the DAQ's Time Stamp
     float imu_dt = imu.time - imu_last.time;
     if ( imu_dt < 0.0 ) { imu_dt = 0.0; }
-    if ( imu_dt > 1.0 ) { imu_dt = 1.0; }
+    if ( imu_dt > 0.1 ) { imu_dt = 0.1; }
     nav.time = imu.time;
 
     // ==================  Time Update  ===================
 
     // Attitude Update
     // ... Calculate Navigation Rate
-    Eigen::Vector3f vel_vec(nav.vn, nav.ve, nav.vd);
-    Eigen::Vector3d pos_ref(nav.lat, nav.lon, nav.alt);
+    Vector3f vel_vec(nav.vn, nav.ve, nav.vd);
+    Vector3d pos_ref(nav.lat, nav.lon, nav.alt);
 
     if ( false ) {
         // Get the new Specific forces and Rotation Rate from previous
@@ -253,15 +249,15 @@ void EKF15_mag::time_update(IMUdata imu) {
 
     imu_last = imu;
 
-    Eigen::Quaternionf dq = Eigen::Quaternionf(1.0, 0.5*om_ib(0)*imu_dt, 0.5*om_ib(1)*imu_dt, 0.5*om_ib(2)*imu_dt);
+    Quaternionf dq = Quaternionf(1.0, 0.5*om_ib(0)*imu_dt, 0.5*om_ib(1)*imu_dt, 0.5*om_ib(2)*imu_dt);
     quat = (quat * dq).normalized();
 
     if (quat.w() < 0) {
         // Avoid quaternion flips sign
-        quat = Eigen::Quaternionf(-quat.w(), -quat.x(), -quat.y(), -quat.z());
+        quat = Quaternionf(-quat.w(), -quat.x(), -quat.y(), -quat.z());
     }
 
-    Eigen::Vector3f att_vec = quat2eul(quat);
+    Vector3f att_vec = quat2eul(quat);
     nav.phi = att_vec(0);
     nav.the = att_vec(1);
     nav.psi = att_vec(2);
@@ -356,39 +352,39 @@ void EKF15_mag::measurement_update(IMUdata imu, GPSdata gps) {
     // ==================  GPS Update  ===================
 
     // Position, converted to NED
-    Eigen::Vector3d pos_ref(nav.lat, nav.lon, nav.alt);
-    Eigen::Vector3d pos_ins_ecef = lla2ecef(pos_ref);
+    Vector3d pos_ref(nav.lat, nav.lon, nav.alt);
+    Vector3d pos_ins_ecef = lla2ecef(pos_ref);
 
-    Eigen::Vector3d pos_gps(gps.lat*D2R, gps.lon*D2R, gps.alt);
-    Eigen::Vector3d pos_gps_ecef = lla2ecef(pos_gps);
+    Vector3d pos_gps(gps.lat*D2R, gps.lon*D2R, gps.alt);
+    Vector3d pos_gps_ecef = lla2ecef(pos_gps);
 
-    Eigen::Vector3d pos_error_ecef = pos_gps_ecef - pos_ins_ecef;
+    Vector3d pos_error_ecef = pos_gps_ecef - pos_ins_ecef;
 
-    Eigen::Vector3f pos_error_ned = ecef2ned(pos_error_ecef, pos_ref);
+    Vector3f pos_error_ned = ecef2ned(pos_error_ecef, pos_ref);
 
     // measured mag vector (body frame)
-    Eigen::Vector3f mag_sense;
+    Vector3f mag_sense;
     mag_sense(0) = imu.hx;
     mag_sense(1) = imu.hy;
     mag_sense(2) = imu.hz;
     mag_sense.normalize();
 
-    Eigen::Vector3f mag_error; // magnetometer measurement error
+    Vector3f mag_error; // magnetometer measurement error
     bool mag_error_in_ned = false;
     if ( mag_error_in_ned ) {
         // rotate measured mag vector into ned frame (then normalized)
-        Eigen::Vector3f mag_sense_ned = C_B2N * mag_sense;
+        Vector3f mag_sense_ned = C_B2N * mag_sense;
         mag_sense_ned.normalize();
         mag_error = mag_sense_ned - mag_ned;
     } else {
         // rotate ideal mag vector into body frame (then normalized)
-        Eigen::Vector3f mag_ideal = C_N2B * mag_ned;
+        Vector3f mag_ideal = C_N2B * mag_ned;
         mag_ideal.normalize();
         mag_error = mag_sense - mag_ideal;
         // cout << "mag_error:" << mag_error << endl;
 
         // Matrix<double,3,3> tmp1 = C_N2B * sk(mag_ned);
-        Eigen::Matrix3f tmp1 = sk(mag_sense) * 2.0;
+        Matrix3f tmp1 = sk(mag_sense) * 2.0;
         for ( int j = 0; j < 3; j++ ) {
             for ( int i = 0; i < 3; i++ ) {
                 H(6+i,6+j) = tmp1(i,j);
@@ -441,10 +437,10 @@ void EKF15_mag::measurement_update(IMUdata imu, GPSdata gps) {
     nav.vd = nav.vd + x(5);
 
     // Attitude correction
-    Eigen::Quaternionf dq = Eigen::Quaternionf(1.0, x(6), x(7), x(8));
+    Quaternionf dq = Quaternionf(1.0, x(6), x(7), x(8));
     quat = (quat * dq).normalized();
 
-    Eigen::Vector3f att_vec = quat2eul(quat);
+    Vector3f att_vec = quat2eul(quat);
     nav.phi = att_vec(0);
     nav.the = att_vec(1);
     nav.psi = att_vec(2);

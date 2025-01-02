@@ -16,24 +16,23 @@
 
 #pragma once
 
-#include <math.h>
-#include <eigen.h>
-#include <Eigen/Geometry>
-// #include "eigen3/Eigen/Core"
-// #include "eigen3/Eigen/Geometry"
-// #include "eigen3/Eigen/LU"
+#if defined(ARDUINO)
+# include <eigen.h>
+# include <Eigen/Geometry>
+#else
+# include <math.h>
+# include <eigen3/Eigen/Core>
+# include <eigen3/Eigen/Geometry>
+# include <eigen3/Eigen/LU>
+#endif
+
+using namespace Eigen;
 
 #include "nav_structs.h"
 
 // define some types for notational convenience and consistency
-//typedef Eigen::Matrix<float,6,6> Matrix6f;
-//typedef Eigen::Matrix<float,12,12> Matrix12f;
-//typedef Eigen::Matrix<float,15,15> Matrix15f;
-//typedef Eigen::Matrix<float,6,15> Matrix6x15f;
-//typedef Eigen::Matrix<float,15,6> Matrix15x6f;
-//typedef Eigen::Matrix<float,15,12> Matrix15x12f;
-typedef Eigen::Matrix<float,6,1> Vector6f;
-typedef Eigen::Matrix<float,15,1> Vector15f;
+typedef Matrix<float,6,1> Vector6f;
+typedef Matrix<float,15,1> Vector15f;
 
 class EKF15 {
 
@@ -60,18 +59,18 @@ private:
 
     // make our big matrices dynamic (so they get allocated on the
     // heap) to play nice on embedded systems with small stacks.
-    Eigen::MatrixXf F, PHI, P, Qw, Q, ImKH, KRKt, I15; // 15x15
-    Eigen::MatrixXf G;                                 // 15x12
-    Eigen::MatrixXf K;                                 // 15x6
-    Eigen::MatrixXf Rw;                                // 12x12
-    Eigen::MatrixXf H;                                 // 6x15
-    Eigen::MatrixXf R;                                 // 6x6
-    Vector15f x;                                       // 15x1
-    Vector6f y;                                        // 6x1
-    Eigen::Matrix3f C_N2B, C_B2N, I3 /* identity */, temp33;
-    Eigen::Vector3f grav, f_b, om_ib, pos_ins_ned, pos_gps_ned, dx, mag_ned;
+    MatrixXf F, PHI, P, Qw, Q, ImKH, KRKt, I15; // 15x15
+    MatrixXf G;                                 // 15x12
+    MatrixXf K;                                 // 15x6
+    MatrixXf Rw;                                // 12x12
+    MatrixXf H;                                 // 6x15
+    MatrixXf R;                                 // 6x6
+    Vector15f x;                                // 15x1
+    Vector6f y;                                 // 6x1
+    Matrix3f C_N2B, C_B2N, I3, temp33;
+    Vector3f grav, f_b, om_ib, dx, mag_ned;
 
-    Eigen::Quaternionf quat;
+    Quaternionf quat;
 
     IMUdata imu_last;
     NAVconfig config;

@@ -28,8 +28,6 @@ const float P_GB_INIT = 0.01745;  // 5 deg/s
 const double Rew = 6.359058719353925e+006; // earth radius
 const double Rns = 6.386034030458164e+006; // earth radius
 
-const float g = 9.814;
-
 // BRT: (1) I think there are some several identity and sparse
 // matrices, so probably some optimization still left there.  (2)
 // Seems like a lot of the transforms could be more efficiently done
@@ -87,10 +85,9 @@ void EKF15::init(IMUdata imu, GPSdata gps) {
     I15.setIdentity();
     I3.setIdentity();
 
-
     // Assemble the matrices
     // .... gravity, g
-    grav = Eigen::Vector3f(0.0, 0.0, g);
+    grav = Vector3f(0.0, 0.0, g);
 
     // ... H
     H.setZero();
@@ -151,7 +148,7 @@ void EKF15::init(IMUdata imu, GPSdata gps) {
 
     // tilt compensated heading
     nav.psi = atan2(imu.hz*sin(nav.phi)-imu.hy*cos(nav.phi),imu.hx*cos(nav.the)+imu.hy*sin(nav.the)*sin(nav.phi)+imu.hz*sin(nav.the)*cos(nav.phi));
-    //printf("tilt compensated psi: %.2f\n", nav.psi*R2D);
+    // printf("tilt compensated psi: %.2f\n", nav.psi*R2D);
 
     quat = eul2quat(nav.phi, nav.the, nav.psi);
 
@@ -159,11 +156,15 @@ void EKF15::init(IMUdata imu, GPSdata gps) {
     nav.aby = 0.0;
     nav.abz = 0.0;
 
-    // I might want to initialize these to zero assuming imu driver
-    // has made some plausible attempt to zero it's own gyro biases.
-    nav.gbx = imu.p;
-    nav.gby = imu.q;
-    nav.gbz = imu.r;
+    // Assume IMU has made no attempt to zero its biases
+    // nav.gbx = imu.p;
+    // nav.gby = imu.q;
+    // nav.gbz = imu.r;
+
+    // Assume IMU has already zero'd its biases
+    nav.gbx = 0;
+    nav.gby = 0;
+    nav.gbz = 0;
 
     imu_last = imu;
 
@@ -177,15 +178,15 @@ void EKF15::time_update(IMUdata imu) {
     // This computes the navigation state at the DAQ's Time Stamp
     float imu_dt = imu.time - imu_last.time;
     if ( imu_dt < 0.0 ) { imu_dt = 0.0; }
-    if ( imu_dt > 1.0 ) { imu_dt = 1.0; }
+    if ( imu_dt > 0.1 ) { imu_dt = 0.1; }
     nav.time = imu.time;
 
     // ==================  Time Update  ===================
 
     // Attitude Update
     // ... Calculate Navigation Rate
-    Eigen::Vector3f vel_vec(nav.vn, nav.ve, nav.vd);
-    Eigen::Vector3d pos_ref(nav.lat, nav.lon, nav.alt);
+    Vector3f vel_vec(nav.vn, nav.ve, nav.vd);
+    Vector3d pos_ref(nav.lat, nav.lon, nav.alt);
 
     if ( false ) {
         // Get the new Specific forces and Rotation Rate from previous
@@ -222,15 +223,15 @@ void EKF15::time_update(IMUdata imu) {
 
     imu_last = imu;
 
-    Eigen::Quaternionf dq = Eigen::Quaternionf(1.0, 0.5*om_ib(0)*imu_dt, 0.5*om_ib(1)*imu_dt, 0.5*om_ib(2)*imu_dt);
+    Quaternionf dq = Quaternionf(1.0, 0.5*om_ib(0)*imu_dt, 0.5*om_ib(1)*imu_dt, 0.5*om_ib(2)*imu_dt);
     quat = (quat * dq).normalized();
 
     if (quat.w() < 0) {
         // Avoid quaternion flips sign
-        quat = Eigen::Quaternionf(-quat.w(), -quat.x(), -quat.y(), -quat.z());
+        quat = Quaternionf(-quat.w(), -quat.x(), -quat.y(), -quat.z());
     }
 
-    Eigen::Vector3f att_vec = quat2eul(quat);
+    Vector3f att_vec = quat2eul(quat);
     nav.phi = att_vec(0);
     nav.the = att_vec(1);
     nav.psi = att_vec(2);
@@ -325,15 +326,15 @@ void EKF15::measurement_update(GPSdata gps) {
     // ==================  GPS Update  ===================
 
     // Position, converted to NED
-    Eigen::Vector3d pos_ref(nav.lat, nav.lon, nav.alt);
-    Eigen::Vector3d pos_ins_ecef = lla2ecef(pos_ref);
+    Vector3d pos_ref(nav.lat, nav.lon, nav.alt);
+    Vector3d pos_ins_ecef = lla2ecef(pos_ref);
 
-    Eigen::Vector3d pos_gps(gps.lat*D2R, gps.lon*D2R, gps.alt);
-    Eigen::Vector3d pos_gps_ecef = lla2ecef(pos_gps);
+    Vector3d pos_gps(gps.lat*D2R, gps.lon*D2R, gps.alt);
+    Vector3d pos_gps_ecef = lla2ecef(pos_gps);
 
-    Eigen::Vector3d pos_error_ecef = pos_gps_ecef - pos_ins_ecef;
+    Vector3d pos_error_ecef = pos_gps_ecef - pos_ins_ecef;
 
-    Eigen::Vector3f pos_error_ned = ecef2ned(pos_error_ecef, pos_ref);
+    Vector3f pos_error_ned = ecef2ned(pos_error_ecef, pos_ref);
 
     // Create Measurement: y
     y(0) = pos_error_ned(0);
@@ -376,10 +377,10 @@ void EKF15::measurement_update(GPSdata gps) {
     nav.vd = nav.vd + x(5);
 
     // Attitude correction
-    Eigen::Quaternionf dq = Eigen::Quaternionf(1.0, x(6), x(7), x(8));
+    Quaternionf dq = Quaternionf(1.0, x(6), x(7), x(8));
     quat = (quat * dq).normalized();
 
-    Eigen::Vector3f att_vec = quat2eul(quat);
+    Vector3f att_vec = quat2eul(quat);
     nav.phi = att_vec(0);
     nav.the = att_vec(1);
     nav.psi = att_vec(2);
