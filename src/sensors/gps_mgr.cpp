@@ -1,10 +1,9 @@
 #include <Arduino.h>
 #include <TimeLib.h>
 
+// #include "../nav/coremag.h"
 #include "../nodes.h"
-
 #include "../util/constants.h"
-#include "../nav/coremag.h"
 #include "gps_mgr.h"
 
 #include "../sensors/UBLOX8/UBLOX8.h"
@@ -33,10 +32,10 @@ void gps_mgr_t::update() {
                 // first 3d fix
                 gps_acquired = true;
                 gps_settle_timer = 0;
-                update_magvar();
+                // update_magvar();
                 Serial.println("GPS: 3d fix acquired.");
                 Serial.print("GPS: unix time = "); Serial.println((double)unix_usec / 1000000.0, 3);
-                Serial.print("Local magvar (deg) = "); Serial.println(magvar_rad*r2d, 2);
+                // Serial.print("Local magvar (deg) = "); Serial.println(magvar_rad*r2d, 2);
             } else if ( not gps_settled and gps_settle_timer > 10000 ) {  // 10 seconds
                 printf("GPS: settled for 10 seconds.\n");
                 gps_settled = true;
@@ -96,20 +95,20 @@ void gps_mgr_t::update_unix_usec() {
     unix_usec += gps_data.nano / 1000;
 }
 
-void gps_mgr_t::update_magvar() {
-    long int jd = unixdate_to_julian_days( unix_usec / 1000000 );
-    Serial.print("GPS: julian days = "); Serial.println(jd);
-    double lat_rad = (gps_data.lat / 10000000.0) * d2r;
-    double lon_rad = (gps_data.lon / 10000000.0) * d2r;
-    float alt_m = gps_data.hMSL / 1000.0;
-    double fields[6];
-    magvar_rad = calc_magvar( lat_rad, lon_rad, alt_m / 1000.0, jd, fields );
-    mag_ned(0) = fields[3];
-    mag_ned(1) = fields[4];
-    mag_ned(2) = fields[5];
-    mag_ned.normalize();
-    Serial.print("GPS: ideal mag vector = ");
-    Serial.print(mag_ned(0), 3); Serial.print(" ");
-    Serial.print(mag_ned(1), 3); Serial.print(" ");
-    Serial.print(mag_ned(2), 3); Serial.println("");
-}
+// void gps_mgr_t::update_magvar() {
+//     long int jd = unixdate_to_julian_days( unix_usec / 1000000 );
+//     Serial.print("GPS: julian days = "); Serial.println(jd);
+//     double lat_rad = (gps_data.lat / 10000000.0) * d2r;
+//     double lon_rad = (gps_data.lon / 10000000.0) * d2r;
+//     float alt_m = gps_data.hMSL / 1000.0;
+//     double fields[6];
+//     magvar_rad = calc_magvar( lat_rad, lon_rad, alt_m / 1000.0, jd, fields );
+//     mag_ned(0) = fields[3];
+//     mag_ned(1) = fields[4];
+//     mag_ned(2) = fields[5];
+//     mag_ned.normalize();
+//     Serial.print("GPS: ideal mag vector = ");
+//     Serial.print(mag_ned(0), 3); Serial.print(" ");
+//     Serial.print(mag_ned(1), 3); Serial.print(" ");
+//     Serial.print(mag_ned(2), 3); Serial.println("");
+// }

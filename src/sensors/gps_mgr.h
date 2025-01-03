@@ -22,8 +22,8 @@ public:
     bool gps_settled = false;
     elapsedMillis gps_settle_timer = 0;
     uint64_t unix_usec;
-    float magvar_rad;
-    Vector3f mag_ned;
+    // float magvar_rad;
+    // Vector3f mag_ned;
 
     void init();
     void update();
@@ -33,5 +33,5 @@ private:
     ublox8_nav_pvt_t gps_data;
 
     void update_unix_usec();
-    void update_magvar();
+    // void update_magvar();
 };

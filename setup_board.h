@@ -24,7 +24,7 @@
 #endif
 
 // Firmware rev (needs to be updated here manually to match release number)
-const int FIRMWARE_REV = 420;
+const int FIRMWARE_REV = 421;
 
 // this is the master loop update rate.
 #if defined(ARDUINO_TEENSY40) || defined(ARDUINO_TEENSY41)
