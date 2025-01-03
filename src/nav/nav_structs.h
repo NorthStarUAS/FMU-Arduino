@@ -13,24 +13,24 @@
 #pragma once
 
 struct IMUdata {
-    float time;             // seconds
-    float p, q, r;		    // rad/sec
-    float ax, ay, az;		// m/sec^2
-    float hx, hy, hz;		// guass
-    float temp;             // C
+    float time_sec;                  // seconds
+    float p_rps, q_rps, r_rps;		 // rad/sec
+    float ax_mps2, ay_mps2, az_mps2; // m/sec^2
+    float hx, hy, hz;		         // guass (direction is important, not units)
+    float temp_C;                    // C
 };
 
 struct GPSdata {
-    float time;             // seconds
-    double unix_sec;		// seconds in unix time reference
-    double lat, lon;        // rad
-    float alt;              // meter
-    float vn, ve, vd;		// m/sec
+    float time_sec;                  // seconds
+    double unix_sec;		         // seconds in unix time reference
+    double lat_deg, lon_deg;         // rad
+    float alt_m;                     // meter
+    float vn_mps, ve_mps, vd_mps;	 // m/sec
     int sats;
 };
 
 struct Airdata {
-    float time;             // seconds
+    float time_sec;         // seconds
     float static_press;     // mbar
     float diff_press;		// pa
     float temp;             // degree C
@@ -52,16 +52,16 @@ enum errdefs {
 
 /// Navigation filter data structure
 struct NAVdata {
-    float time;             // [sec], timestamp of NAV filter
-    double lat;             // [rad], geodetic latitude estimate
-    double lon;             // [rad], geodetic longitude estimate
-    float alt;              // [m], altitude relative to WGS84 estimate
-    float vn;               // [m/sec], north velocity estimate
-    float ve;               // [m/sec], east velocity estimate
-    float vd;               // [m/sec], down velocity estimate
-    float phi;              // [rad], Euler roll angle estimate
-    float the;              // [rad], Euler pitch angle estimate
-    float psi;              // [rad], Euler yaw angle estimate
+    float time_sec;         // [sec], timestamp of NAV filter
+    double lat_rad;         // [rad], geodetic latitude estimate
+    double lon_rad;         // [rad], geodetic longitude estimate
+    float alt_m;            // [m], altitude relative to WGS84 estimate
+    float vn_mps;           // [m/sec], north velocity estimate
+    float ve_mps;           // [m/sec], east velocity estimate
+    float vd_mps;           // [m/sec], down velocity estimate
+    float phi_rad;          // [rad], Euler roll angle estimate
+    float the_rad;          // [rad], Euler pitch angle estimate
+    float psi_rad;          // [rad], Euler yaw angle estimate
     float qw, qx, qy, qz;   // Quaternion estimate
     float abx, aby, abz;    // [m/sec^2], accelerometer bias estimate
     float gbx, gby, gbz;    // [rad/sec], rate gyro bias estimate
