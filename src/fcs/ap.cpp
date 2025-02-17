@@ -66,22 +66,22 @@ bool AutoPilot::build() {
         string config_path = "/config/fcs/" + child_name; // fixme: can we just pass the node, not the name here?
         string module = component.getString("module");
         if ( module == "pid" ) {
-            APComponent *c = new AuraPID( config_path );
+            ap_component_t *c = new ap_pid_t( config_path );
             components.push_back( c );
         // } else if ( module == "pid_velocity" ) {
-        //     APComponent *c = new AuraPIDVel( config_path );
+        //     ap_component_t *c = new AuraPIDVel( config_path );
         //     components.push_back( c );
         // } else if ( module == "dtss" ) {
-        //     APComponent *c = new AuraDTSS( config_path );
+        //     ap_component_t *c = new AuraDTSS( config_path );
         //     components.push_back( c );
         // } else if ( module == "predict_simple" ) {
-        //     APComponent *c = new AuraPredictor( config_path );
+        //     ap_component_t *c = new AuraPredictor( config_path );
         //     components.push_back( c );
         // } else if ( module == "filter" ) {
-        //     APComponent *c = new AuraDigitalFilter( config_path );
+        //     ap_component_t *c = new AuraDigitalFilter( config_path );
         //     components.push_back( c );
         // } else if ( module == "summer" ) {
-        //     APComponent *c = new AuraSummer( config_path );
+        //     ap_component_t *c = new AuraSummer( config_path );
         //     components.push_back( c );
         } else {
             printf("Unknown AP module name: %s\n", module.c_str());

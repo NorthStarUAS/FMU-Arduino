@@ -37,7 +37,7 @@ typedef Matrix<double, Dynamic, Dynamic> MatrixXd;
 typedef Matrix<double, Dynamic, 1> VectorXd;
 
 
-class AuraDTSS : public APComponent {
+class AuraDTSS : public ap_component_t {
 
 private:
 

@@ -25,14 +25,11 @@
 
 #include "pid.h"
 
-AuraPID::AuraPID( string config_path ):
+ap_pid_t::ap_pid_t( string config_path ):
     do_reset(true),
-    proportional( false ),
-    integral( false ),
-    iterm( 0.0 ),
     y_n( 0.0 ),
-    y_n_1( 0.0 )/*,
-                  r_n( 0.0 )*/
+    y_n_1( 0.0 ),
+    iterm( 0.0 )
 {
     size_t pos;
 
@@ -83,11 +80,11 @@ AuraPID::AuraPID( string config_path ):
     config_node = component_node.getChild( "config" );
 }
 
-void AuraPID::reset() {
+void ap_pid_t::reset() {
     do_reset = true;
 }
 
-void AuraPID::update( double dt ) {
+void ap_pid_t::update( double dt ) {
     enabled = enable_node.getBool(enable_attr.c_str());
 
     bool debug = component_node.getBool("debug");

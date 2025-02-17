@@ -24,7 +24,7 @@ using std::string;
 
 #include "component.h"
 
-class AuraPredictor : public APComponent {
+class AuraPredictor : public ap_component_t {
 
 private:
 

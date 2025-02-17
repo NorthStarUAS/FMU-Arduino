@@ -44,5 +44,5 @@ public:
 private:
 
     bool serviceable;
-    vector<APComponent *> components;
+    vector<ap_component_t *> components;
 };

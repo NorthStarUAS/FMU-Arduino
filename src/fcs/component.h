@@ -32,7 +32,7 @@ using std::string;
  * Base class for other autopilot components
  */
 
-class APComponent {
+class ap_component_t {
 
 protected:
 
@@ -58,12 +58,12 @@ protected:
 
 public:
 
-    APComponent() :
+    ap_component_t() :
       honor_passive( false ),
       enabled( false )
     { }
 
-    virtual ~APComponent() {}
+    virtual ~ap_component_t() {}
 
     virtual void reset() = 0;
     virtual void update( double dt ) = 0;

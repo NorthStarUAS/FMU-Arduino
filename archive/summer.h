@@ -24,7 +24,7 @@ using std::string;
 
 #include "component.h"
 
-class AuraSummer : public APComponent {
+class AuraSummer : public ap_component_t {
 
 private:
     // support multiple input nodes

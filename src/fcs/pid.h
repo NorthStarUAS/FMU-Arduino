@@ -26,25 +26,20 @@ using std::string;
 
 #include "component.h"
 
-class AuraPID : public APComponent {
+class ap_pid_t : public ap_component_t {
 
 private:
 
     bool do_reset;
 
-    bool proportional;		// proportional component data
-    bool integral;		// integral component data
-    double iterm;		// integral summer
-
-    // Input values
-    double y_n;                 // measured process value (input)
+    double y_n;         // measured process value (input)
     double y_n_1;		// previous process value (input)
-    //double r_n;                 // reference (set point) value
+    double iterm;		// integral summer
 
 public:
 
-    AuraPID( string config_path );
-    ~AuraPID() {}
+    ap_pid_t( string config_path );
+    ~ap_pid_t() {}
 
     void reset() override;
     void update( double dt ) override;
