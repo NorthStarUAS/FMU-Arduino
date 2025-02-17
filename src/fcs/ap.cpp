@@ -32,12 +32,12 @@ using std::string;
 using std::ostringstream;
 
 #include "ap.h"
-#include "dig_filter.h"
-#include "dtss.h"
+// #include "dig_filter.h"
+// #include "dtss.h"
 #include "pid.h"
-#include "pid_vel.h"
-#include "predictor.h"
-#include "summer.h"
+// #include "pid_vel.h"
+// #include "predictor.h"
+// #include "summer.h"
 
 
 void AutoPilot::init() {
@@ -68,21 +68,21 @@ bool AutoPilot::build() {
         if ( module == "pid" ) {
             APComponent *c = new AuraPID( config_path );
             components.push_back( c );
-        } else if ( module == "pid_velocity" ) {
-            APComponent *c = new AuraPIDVel( config_path );
-            components.push_back( c );
-        } else if ( module == "dtss" ) {
-            APComponent *c = new AuraDTSS( config_path );
-            components.push_back( c );
-        } else if ( module == "predict_simple" ) {
-            APComponent *c = new AuraPredictor( config_path );
-            components.push_back( c );
-        } else if ( module == "filter" ) {
-            APComponent *c = new AuraDigitalFilter( config_path );
-            components.push_back( c );
-        } else if ( module == "summer" ) {
-            APComponent *c = new AuraSummer( config_path );
-            components.push_back( c );
+        // } else if ( module == "pid_velocity" ) {
+        //     APComponent *c = new AuraPIDVel( config_path );
+        //     components.push_back( c );
+        // } else if ( module == "dtss" ) {
+        //     APComponent *c = new AuraDTSS( config_path );
+        //     components.push_back( c );
+        // } else if ( module == "predict_simple" ) {
+        //     APComponent *c = new AuraPredictor( config_path );
+        //     components.push_back( c );
+        // } else if ( module == "filter" ) {
+        //     APComponent *c = new AuraDigitalFilter( config_path );
+        //     components.push_back( c );
+        // } else if ( module == "summer" ) {
+        //     APComponent *c = new AuraSummer( config_path );
+        //     components.push_back( c );
         } else {
             printf("Unknown AP module name: %s\n", module.c_str());
             return false;

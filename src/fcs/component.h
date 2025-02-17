@@ -38,8 +38,8 @@ protected:
 
     PropertyNode component_node;
 
-    vector <PropertyNode> enables_node;
-    vector <string> enables_attr;
+    PropertyNode enable_node;
+    string enable_attr;
 
     bool honor_passive;
     bool enabled;
@@ -49,10 +49,10 @@ protected:
 
     PropertyNode ref_node;
     string ref_attr;
-    double ref_value;
+    // double ref_value;
 
-    vector <PropertyNode> output_node;
-    vector <string> output_attr;
+    PropertyNode output_node;
+    string output_attr;
 
     PropertyNode config_node;
 

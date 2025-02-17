@@ -40,28 +40,17 @@ AuraPID::AuraPID( string config_path ):
     vector <string> children;
 
     // enable
-    PropertyNode node = component_node.getChild( "enable" );
-    children = node.getChildren();
-    printf("enables: %u prop(s)\n", children.size());
-    for ( int i = 0; i < node.getLen("prop"); i++ ) {
-        string enable_prop = node.getString("prop", i);
-        printf("  %s\n", enable_prop.c_str());
-        pos = enable_prop.rfind("/");
-        if ( pos != string::npos ) {
-            string path = enable_prop.substr(0, pos);
-            string attr = enable_prop.substr(pos+1);
-            PropertyNode en_node( path );
-            enables_node.push_back( en_node );
-            enables_attr.push_back( attr );
-        } else {
-            printf("WARNING: requested bad enable path: %s\n",
-                   enable_prop.c_str());
-        }
+    string enable_prop = component_node.getString("enable");
+    pos = enable_prop.rfind("/");
+    if ( pos != string::npos ) {
+        string path = enable_prop.substr(0, pos);
+        enable_node = PropertyNode(path);
+        enable_attr = enable_prop.substr(pos+1);
+        printf("enable: %s / %s\n", path.c_str(), enable_attr.c_str());
     }
 
     // input
-    node = component_node.getChild( "input" );
-    string input_prop = node.getString("prop");
+    string input_prop = component_node.getString("input");
     pos = input_prop.rfind("/");
     if ( pos != string::npos ) {
         string path = input_prop.substr(0, pos);
@@ -71,40 +60,23 @@ AuraPID::AuraPID( string config_path ):
     }
 
     // reference
-    node = component_node.getChild( "reference" );
-    string ref_prop = node.getString("prop");
-    ref_value = node.getDouble("value");
+    string ref_prop = component_node.getString("reference");
     pos = ref_prop.rfind("/");
     if ( pos != string::npos ) {
         string path = ref_prop.substr(0, pos);
         ref_attr = ref_prop.substr(pos+1);
-        printf("ref path = %s attr = %s\n", path.c_str(), ref_attr.c_str());
         ref_node = PropertyNode( path );
-    } else {
-        printf("ref value = %.2f\n", ref_value);
+        printf("reference: %s / %s\n", path.c_str(), ref_attr.c_str());
     }
 
     // output
-    node = component_node.getChild( "output" );
-    children = node.getChildren();
-    for ( unsigned int i = 0; i < children.size(); ++i ) {
-        if ( children[i].substr(0,4) == "prop" ) {
-            string output_prop = node.getString(children[i].c_str());
-            pos = output_prop.rfind("/");
-            if ( pos != string::npos ) {
-                string path = output_prop.substr(0, pos);
-                string attr = output_prop.substr(pos+1);
-                PropertyNode onode( path );
-                output_node.push_back( onode );
-                output_attr.push_back( attr );
-            } else {
-                printf("WARNING: requested bad output path: %s\n",
-                       output_prop.c_str());
-            }
-        } else {
-            printf("WARNING: unknown tag in output section: %s\n",
-                   children[i].c_str());
-        }
+    string output_prop = component_node.getString("output");
+    pos = output_prop.rfind("/");
+    if ( pos != string::npos ) {
+        string path = output_prop.substr(0, pos);
+        output_attr = output_prop.substr(pos+1);
+        output_node = PropertyNode( path );
+        printf("output: %s / %s\n", path.c_str(), output_attr.c_str());
     }
 
     // config
@@ -116,26 +88,12 @@ void AuraPID::reset() {
 }
 
 void AuraPID::update( double dt ) {
-    // test if all of the provided enable flags are true
-    enabled = true;
-    for ( unsigned int i = 0; i < enables_node.size(); i++ ) {
-        if ( !enables_node[i].getBool(enables_attr[i].c_str()) ) {
-            enabled = false;
-            break;
-        }
-    }
+    enabled = enable_node.getBool(enable_attr.c_str());
 
     bool debug = component_node.getBool("debug");
     if ( debug ) printf("Updating %s\n", get_name().c_str());
     y_n = input_node.getDouble(input_attr.c_str());
-
-    double r_n = 0.0;
-    if ( ref_attr == "" ) {
-        // printf("no ref_prop, let's hope for ref_value\n");
-        r_n = ref_value;
-    } else {
-        r_n = ref_node.getDouble(ref_attr.c_str());
-    }
+    double r_n = ref_node.getDouble(ref_attr.c_str());
 
     double error = r_n - y_n;
 
@@ -181,7 +139,7 @@ void AuraPID::update( double dt ) {
     // iterm) then unset the do_reset flag.
     if ( do_reset ) {
         if ( Ti > 0.0001 ) {
-            double u_n = output_node[0].getDouble(output_attr[0].c_str());
+            double u_n = output_node.getDouble(output_attr.c_str());
             // and clip
             if ( u_n < u_min ) { u_n = u_min; }
             if ( u_n > u_max ) { u_n = u_max; }
@@ -220,9 +178,6 @@ void AuraPID::update( double dt ) {
         // this will force a reset when component becomes enabled
         do_reset = true;
     } else {
-        // Copy the result to the output node(s)
-        for ( unsigned int i = 0; i < output_node.size(); i++ ) {
-            output_node[i].setDouble( output_attr[i].c_str(), output );
-        }
+        output_node.setDouble( output_attr.c_str(), output );
     }
 }

@@ -11,8 +11,8 @@
         "display_units": "kts"
     },
     "HIL_testing": {
-        "enable": false,
-        "inceptors": "rc",
+        "enable": true,
+        "inceptors": "sim",
         "effectors": "sim"
     },
     "imu-calibration": {
