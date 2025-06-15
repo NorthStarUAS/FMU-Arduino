@@ -11,17 +11,17 @@ public:
     ~calib_home_task_t() {}
 
     void activate();
-    void update(float dt);
+    void update( float dt );
     bool is_complete();
     void close();
 
 private:
 
-    float timer = 0.0;
     float duration_sec = 30.0;
-    int counter = 0;
     double longitude_sum = 0.0;
     double latitude_sum = 0.0;
     float altitude_sum = 0.0;
+    float timer = 0.0;
+    int counter = 0;
 
 };
