@@ -6,6 +6,9 @@ Notes for setting up HIL testing
 
     Simulator$ ./run_jsbsim.py --model Rascal110 --takeoff S10:02
 
+    Note: sim won't init/trim until after you start the visuals
+    (so it can get the correct ground elevation)
+
 ## Run the Out-the-window Visuals
 
 Note: the first time you run the visuals in a new area, allow some time (a
@@ -17,7 +20,8 @@ trim until it receives a valid ground elevation from the visuals.
 
 ## Turn on the FMU Hardware
 
-* Plug in your teensy flight controller via USB to your host computer.
+* Plug in your teensy flight controller via USB to your host computer.  (Note:
+  plug in direct, not via radio modem for HIL testing)
 * Power on the teensy.
 * If you have integrated the RC receiver and set that up, power up your RC
   transmitter.
