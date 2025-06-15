@@ -5,7 +5,7 @@
 // initialize ground estimator variables
 void ground_est_t::init() {
     airdata_ground_alt.set_time_factor(30.0);
-    gps_ground_alt.set_time_factor(30.0);
+    // gps_ground_alt.set_time_factor(30.0);
 }
 
 void ground_est_t::update(float dt) {
@@ -33,13 +33,20 @@ void ground_est_t::update(float dt) {
         // ok it's a bit weird, but we just save agl here, we don't need to
         // publish the baro ground altitude, just the difference
     }
-    environment_node.setDouble("altitude_agl_m", airdata_altitude_m - airdata_ground_alt.get_value());
+    environment_node.setDouble("airdata_agl_m", airdata_altitude_m - airdata_ground_alt.get_value());
 
-    if ( gps_node.getInt("status") >= 3 ) {
-        if ( not environment_node.getBool("is_airborne") ) {
-            gps_ground_alt.update( gps_node.getDouble("altitude_m"), dt );
-            // publish 'gps' ground altitude average
-            environment_node.setDouble( "altitude_ground_m", gps_ground_alt.get_value() );
+    // if ( gps_node.getInt("status") >= 3 ) {
+    //     if ( not environment_node.getBool("is_airborne") ) {
+    //         gps_ground_alt.update( gps_node.getDouble("altitude_m"), dt );
+    //         // publish 'gps' ground altitude average
+    //         environment_node.setDouble( "altitude_ground_m", gps_ground_alt.get_value() );
+    //     }
+    // }
+
+    if ( home_node.getBool("valid") ) {
+        environment_node.setDouble( "altitude_ground_m", home_node.getDouble("altitude_m") );
+        if ( nav_node.getInt("status") == 2 ) {
+            environment_node.setDouble( "altitude_agl_m", nav_node.getDouble("altitude_m") - home_node.getDouble("altitude_m") );
         }
     }
 }
