@@ -138,6 +138,21 @@ void mixer_t::sas_update() {
 void mixer_t::mixing_update() {
     outputs = M * inputs;
 
+    // if no home location calibrated and not airborne, then force motor_enable
+    // = false here.  The intent is to prevent launch before an explicit home
+    // position has been set.
+    //
+    // If the launch is performed under manual control and the FCS is activated
+    // once in the air, then the is_airborne flag will prevent the system from
+    // killing power here and the system should fly on.
+    //
+    // Until an explicit home calibration is performed, the startup location is
+    // the default home location, but this may not be great for autoland
+    // purposes (probably you powered up in your staging/prep area!)
+    if ( not home_node.getBool("calibrated") and not environment_node.getBool("is_airborne") ) {
+        inceptors_node.setBool("motor_enable", false);
+    }
+
     if ( not inceptors_node.getBool("motor_enable") ) {
         outputs[0] = 0.0;
     }
