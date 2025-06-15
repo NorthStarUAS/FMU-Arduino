@@ -12,6 +12,7 @@
 
 void home_mgr_t::init() {
     home_node.setBool("valid", false);
+    home_node.setBool("calibrated", false);
 }
 
 void home_mgr_t::update() {
