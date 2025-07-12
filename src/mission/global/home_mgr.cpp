@@ -21,13 +21,15 @@ void home_mgr_t::update() {
             // Save current position as startup position
             startup_node.setDouble("longitude_deg", gps_node.getDouble("longitude_deg"));
             startup_node.setDouble("latitude_deg", gps_node.getDouble("latitude_deg"));
-            startup_node.setDouble("altitude_m", gps_node.getDouble("altitude_m"));
+            startup_node.setDouble("baro_altitude_m", airdata_node.getDouble("altitude_m"));
+            startup_node.setDouble("gps_altitude_m", gps_node.getDouble("altitude_m"));
             startup_node.setBool("valid", true);
 
             // Set initial "home" position.
             home_node.setDouble("longitude_deg", gps_node.getDouble("longitude_deg"));
             home_node.setDouble("latitude_deg", gps_node.getDouble("latitude_deg"));
-            home_node.setDouble("altitude_m", gps_node.getDouble("altitude_m"));
+            home_node.setDouble("baro_altitude_m", airdata_node.getDouble("altitude_m"));
+            home_node.setDouble("gps_altitude_m", gps_node.getDouble("altitude_m"));
             home_node.setDouble("azimuth_deg", 0.0);
             home_node.setBool("valid", true);
         }
