@@ -4,7 +4,7 @@
 
 // initialize ground estimator variables
 void ground_est_t::init() {
-    airdata_ground_alt.set_time_factor(30.0);
+    est_airdata_ground_m.set_time_factor(30.0);
     // gps_ground_alt.set_time_factor(30.0);
 }
 
@@ -18,41 +18,32 @@ void ground_est_t::update(float dt) {
     // the ground, versus starting up in the air!
     float airdata_altitude_m = airdata_node.getDouble("altitude_m");
 
-    // make sure airdata_ground_alt is inited to something even if we manage to
+    // make sure est_airdata_ground_m is inited to something even if we manage to
     // startup with is_airborne = true (but also make sure the airdata node has
     // hopefully some sensible data.)
-    if ( not ground_inited and airdata_node.getUInt("millis") > 1000 ) {
-        airdata_ground_alt.init( airdata_altitude_m );
-        ground_inited = true;
+    if ( not est_ground_inited and airdata_node.getUInt("millis") > 1000 ) {
+        est_airdata_ground_m.init( airdata_altitude_m );
+        est_ground_inited = true;
     }
 
     // update ground altitude estimates while not airborne
     // fixme: create a settled (not moving) parameter and use that?
     if ( not environment_node.getBool("is_airborne") ) {
-        airdata_ground_alt.update( airdata_altitude_m, dt );
+        est_airdata_ground_m.update( airdata_altitude_m, dt );
         // ok it's a bit weird, but we just save agl here, we don't need to
         // publish the baro ground altitude, just the difference
     }
-    environment_node.setDouble("airdata_agl_m", airdata_altitude_m - airdata_ground_alt.get_value());
-
-    // if ( gps_node.getInt("status") >= 3 ) {
-    //     if ( not environment_node.getBool("is_airborne") ) {
-    //         gps_ground_alt.update( gps_node.getDouble("altitude_m"), dt );
-    //         // publish 'gps' ground altitude average
-    //         environment_node.setDouble( "altitude_ground_m", gps_ground_alt.get_value() );
-    //     }
-    // }
 
     if ( home_node.getBool("valid") ) {
-        environment_node.setDouble( "altitude_ground_m", home_node.getDouble("altitude_m") );
-        if ( nav_node.getInt("status") == 2 ) {
-            environment_node.setDouble( "altitude_agl_m", nav_node.getDouble("altitude_m") - home_node.getDouble("altitude_m") );
-        } else if ( gps_node.getInt("status") >= 3 ) {
-            // fallback if nav filter status bad
-            environment_node.setDouble( "altitude_agl_m", gps_node.getDouble("altitude_m") - home_node.getDouble("altitude_m") );
-        } else {
-            // double fallback to barometric agl estimate if gps and nav are bad
-            environment_node.setDouble( "altitude_agl_m", environment_node.getDouble("airdata_agl_m") );
+        environment_node.setDouble("altitude_ground_m", home_node.getDouble("baro_altitude_m"));
+        environment_node.setDouble("altitude_agl_m", airdata_altitude_m - home_node.getDouble("baro_altitude_m"));
+        // this could serve as a fallback AGL measure ... but is not currently used. (nav filter seems less reliable than raw gps)
+        if ( gps_node.getInt("status") >= 3 ) {
+            environment_node.setDouble("gps_altitude_agl_m", gps_node.getDouble("altitude_m") - home_node.getDouble("gps_altitude_m"));
         }
+    } else {
+        // no home survey yet, so use our on-the-[not]-fly[ing] estimate of ground alt
+        environment_node.setDouble("altitude_ground_m", est_airdata_ground_m.get_value());
+        environment_node.setDouble("altitude_agl_m", airdata_altitude_m - est_airdata_ground_m.get_value());
     }
 }

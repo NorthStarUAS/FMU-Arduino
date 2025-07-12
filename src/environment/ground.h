@@ -8,9 +8,9 @@ class ground_est_t {
 
 private:
 
-    LowPassFilter airdata_ground_alt;
+    LowPassFilter est_airdata_ground_m;
     // LowPassFilter gps_ground_alt;
-    bool ground_inited = false;
+    bool est_ground_inited = false;
 
 public:
 
