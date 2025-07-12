@@ -15,7 +15,8 @@ void calib_home_task_t::activate() {
 
     latitude_sum = 0.0;
     longitude_sum = 0.0;
-    altitude_sum = 0.0;
+    baro_altitude_sum = 0.0;
+    gps_altitude_sum = 0.0;
     timer = 0.0;
     counter = 0;
 
@@ -47,7 +48,8 @@ void calib_home_task_t::update( float dt ) {
         // sample current position
         latitude_sum += gps_node.getDouble("latitude_deg");
         longitude_sum += gps_node.getDouble("longitude_deg");
-        altitude_sum += gps_node.getDouble("altitude_m");
+        baro_altitude_sum += airdata_node.getDouble("altitude_m");
+        gps_altitude_sum += gps_node.getDouble("altitude_m");
         counter += 1;
         timer += dt;
     }
@@ -62,7 +64,8 @@ bool calib_home_task_t::is_complete() {
             // we successfully accumulated valid data points while on the ground
             home_node.setDouble("longitude_deg", longitude_sum / (double)counter);
             home_node.setDouble("latitude_deg", latitude_sum / (double)counter);
-            home_node.setDouble("altitude_m", altitude_sum / (float)counter);
+            home_node.setDouble("baro_altitude_m", baro_altitude_sum / (float)counter);
+            home_node.setDouble("gps_altitude_m", gps_altitude_sum / (float)counter);
             home_node.setBool("valid", true);
 
             // mark calibration as good

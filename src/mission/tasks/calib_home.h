@@ -20,7 +20,8 @@ private:
     float duration_sec = 30.0;
     double longitude_sum = 0.0;
     double latitude_sum = 0.0;
-    float altitude_sum = 0.0;
+    float baro_altitude_sum = 0.0;
+    float gps_altitude_sum = 0.0;
     float timer = 0.0;
     int counter = 0;
 
