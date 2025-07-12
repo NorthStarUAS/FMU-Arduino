@@ -163,6 +163,10 @@ void imu_mgr_t::update() {
 
     Vector3f mags_precal;
     mags_precal << hx_raw, hy_raw, hz_raw;
+    // we only care about dirction, not units, so normalizing the mag vector
+    // here and keeping component values <= 1 helps preserve max resolution
+    // later when we encode the message.
+    mags_precal.stableNormalize();
     mags_raw.head(3) = strapdown * mags_precal;
     mags_raw(3) = 1.0;
 
