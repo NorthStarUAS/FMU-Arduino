@@ -90,7 +90,9 @@ void launch_task_t::update(float dt) {
             power = 0.0;
         }
         if ( not is_airborne ) {
-            // run up throttle over the specified interval
+            // run up throttle over the specified interval. if we get airborne
+            // before full power, we'll switch to tecs anyway and that will
+            // carry the power command going forward
             power += dt / throttle_time_sec;
             if ( power > 1.0 ) {
                 power = 1.0;
