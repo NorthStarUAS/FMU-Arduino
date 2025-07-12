@@ -78,6 +78,9 @@ void write_imu_ascii() {
     write_padded_double(imu_node.getDouble("ax_mps2"), 2); Serial.print(" ");
     write_padded_double(imu_node.getDouble("ay_mps2"), 2); Serial.print(" ");
     write_padded_double(imu_node.getDouble("az_mps2"), 2); Serial.print(" ");
+    write_padded_double(imu_node.getDouble("hx_raw"), 2); Serial.print(" ");
+    write_padded_double(imu_node.getDouble("hy_raw"), 2); Serial.print(" ");
+    write_padded_double(imu_node.getDouble("hz_raw"), 2); Serial.print(" ");
     Serial.print(imu_node.getDouble("temp_C"), 1); Serial.println();
 }
 
