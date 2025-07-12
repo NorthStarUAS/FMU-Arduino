@@ -1,6 +1,6 @@
 {
     "airdata": {
-        "pitot": "ms55",
+        "pitot": "ms45",
         "pitot_calibrate_factor": 1.0
     },
     "power": {
