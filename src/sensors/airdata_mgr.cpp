@@ -150,6 +150,13 @@ void airdata_mgr_t::compute_airspeed() {
 
     float diff_press_pa = airdata_node.getDouble("diff_press_pa");
 
+    // fixme: field triage
+    if ( airdata_node.getBool("zero") ) {
+        airdata_node.setBool("zero", false);
+        airspeed_inited = false;
+        airspeed_init_start_millis = 0;
+    }
+
     // zero calibrate the diff pressure sensor
     if ( not airspeed_inited ) {
         if ( airspeed_init_start_millis > 0 ) {
