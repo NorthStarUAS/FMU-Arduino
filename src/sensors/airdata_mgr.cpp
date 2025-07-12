@@ -118,8 +118,11 @@ void airdata_mgr_t::compute_altitude() {
     //
     // This formula tracks pretty well < 10k but starts to diverge at the higher altitudes.
 
+    float baro_press_raw_mbar = airdata_node.getDouble("baro_press_pa") * 0.01; // baro (converted from Pa to mbar)
+    float baro_press_filt = static_press_butter.update(baro_press_raw_mbar);
+
     const float P0 = 1013.25;	// standard sea level pressure (mbar)
-    float P = airdata_node.getDouble("baro_press_pa") * 0.01; // baro (converted from Pa to mbar)
+    float P = baro_press_filt;
     if ( P < 0.1 ) {
         P = P0;
     }
@@ -128,8 +131,8 @@ void airdata_mgr_t::compute_altitude() {
     // temperature or at best, cabin temp.  This formula wants outside air temp.
     // We probably do not have that so just pick the standard temp and live with
     // a consistent error that doesn't drift with board or aircraft cabin temp
-    // changes. Later we have a later system that estimates the error between
-    // gps altitude and pressure altitude so we can auto correct these errors
+    // changes. We have a system (later) that estimates the error between gps
+    // altitude and pressure altitude so we can auto correct these errors
     // anyway.
     const float T = 15.0;	// standard temp
 
@@ -148,7 +151,7 @@ void airdata_mgr_t::compute_airspeed() {
     // specified in Pa (N/m^2) where 1 psi == 6900 Pa, then the
     // velocity will be in meters per second.
 
-    float diff_press_pa = airdata_node.getDouble("diff_press_pa");
+    float diff_press_raw_pa = airdata_node.getDouble("diff_press_pa");
 
     // fixme: field triage
     if ( airdata_node.getBool("zero") ) {
@@ -160,7 +163,7 @@ void airdata_mgr_t::compute_airspeed() {
     // zero calibrate the diff pressure sensor
     if ( not airspeed_inited ) {
         if ( airspeed_init_start_millis > 0 ) {
-            pitot_sum += diff_press_pa;
+            pitot_sum += diff_press_raw_pa;
             pitot_count++;
             pitot_offset = pitot_sum / (double)pitot_count;
             /* printf("a1 raw=%.1f filt=%.1f a1 off=%.1f a1 sum=%.1f a1 count=%d\n",
@@ -177,12 +180,12 @@ void airdata_mgr_t::compute_airspeed() {
         }
     }
 
-    float pitot_butter = pitot_filter.update(diff_press_pa);
+    float diff_press_filt = diff_press_butter.update(diff_press_raw_pa);
     float pitot_cal = config_airdata_node.getDouble("pitot_calibrate");
     if ( pitot_cal < 0.5 or pitot_cal > 1.5 ) {
         pitot_cal = 1.0;
     }
-    float Pa = pitot_butter - pitot_offset;
+    float Pa = diff_press_filt - pitot_offset;
     if ( Pa < 0 ) { Pa = 0.0; }
     float airspeed_mps = sqrt( 2*Pa / 1.225 ) * pitot_cal;
     airdata_node.setDouble( "airspeed_mps", airspeed_mps );

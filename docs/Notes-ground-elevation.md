@@ -5,10 +5,17 @@
 * gps
   * can have big jumps as solution changes over time
 * barometer (measuring cabin pressure)
-  * don't fully trust the pressure -> altimeter formula is accurate across a 400' elevation change?
-  * biased by airspeed when the sensor is in the cabin interior
+  * don't fully trust the pressure -> altimeter formula is accurate across a
+    400' elevation change?  But good enough if we are self consistent I think
+    (i.e. always fly with baro estimate of agl versus switching or blending with
+    gps or nav solution).
+  * biased by airspeed when the sensor is in the cabin interior.  But maybe only
+    be 2-3 meters ... still more accurate than nav/gps and we could potentially
+    model or correct for this bias?
 * navigation filter (gps + imu)
   * biased by gps
+  * large phantom altitude deviations due to .... solution noise ... ????  gps
+    alt tracks baro alt, but nav alt wanders along it's own path?
   * possibly (rare!) can get corrupted if ekf solution barfs
 * blended baro + gps = "true"
   * responds to change with same characteristics as pressure alt
@@ -30,9 +37,12 @@
 * drives me nuts, any of these can be better than the others on any given flight
   on any given day.
 * I have never found a clear winner.
-* For now I want to lean towards the nav filter (possible latency issue when
+* ~~For now I want to lean towards the nav filter (possible latency issue when
   descending on landing?)  Gps itself pretty heavily filters (delays) altitude
-  and vertical velocity as well (although less so than altittud)
+  and vertical velocity as well (although less so than altittud)~~
+* For now I want to lean towards the baro altitude.  Recent data points to that
+  being most stable/predictable/reliable altitude source despite possible speed
+  bias and weather change bias.
 * AGL is an input to "is_airborne" so a gps sensor "jump" due to interference,
   loss of some sats, poor fix, etc. could potentially contribute to an
   inadvertant is_airborne==True scenario when we don't want to think we are
@@ -65,7 +75,7 @@
   running averages when we think we are on the ground?
 * how can we force a home calibration before launch is enabled?
 
-## first test:
+## first test
 
 * somehow motor enable without calibrating home
 * careful of potential circular dependency between home_mgr, nav_mgr, ground, and airdata

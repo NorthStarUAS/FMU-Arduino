@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../nodes.h"
+#include "../../setup_board.h"
 #include "../util/butter.h"
 
 class airdata_mgr_t {
@@ -21,10 +22,12 @@ private:
     uint32_t pitot_count = 0;
     float pitot_offset = 0.0;
 
-    // 2nd order filter, 100hz sample rate expected, 3rd field is
-    // cutoff freq.  higher freq value == noisier, a value near 1 hz
-    // should work well for airspeed.
-    ButterworthFilter pitot_filter = ButterworthFilter(2, 100, 0.8);
+    // 2nd order filter, MASTER_HZ (main update loop rate) sample rate, 3rd
+    // field is cutoff freq.  higher freq value == noisier, a value near 1 hz
+    // should work well for airspeed, will start with a similar value for
+    // altitude.
+    ButterworthFilter diff_press_butter = ButterworthFilter(2, MASTER_HZ, 0.8);
+    ButterworthFilter static_press_butter = ButterworthFilter(2, MASTER_HZ, 1.0);
 
     void compute_altitude();
     void compute_airspeed();
