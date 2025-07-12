@@ -47,7 +47,7 @@ void ground_est_t::update(float dt) {
         environment_node.setDouble( "altitude_ground_m", home_node.getDouble("altitude_m") );
         if ( nav_node.getInt("status") == 2 ) {
             environment_node.setDouble( "altitude_agl_m", nav_node.getDouble("altitude_m") - home_node.getDouble("altitude_m") );
-        } else if ( gps_node.getInt("") >= 3 ) } {
+        } else if ( gps_node.getInt("status") >= 3 ) {
             // fallback if nav filter status bad
             environment_node.setDouble( "altitude_agl_m", gps_node.getDouble("altitude_m") - home_node.getDouble("altitude_m") );
         } else {
