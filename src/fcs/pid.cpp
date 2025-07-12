@@ -2,7 +2,7 @@
 //
 // Written by Curtis Olson, started January 2004.
 //
-// Copyright (C) 2004-2017  Curtis L. Olson  - curtolson@flightgear.org
+// Copyright (C) 2004-2025 Curtis L. Olson - curtolson@flightgear.org
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Library General Public
@@ -34,7 +34,6 @@ ap_pid_t::ap_pid_t( string config_path ):
     size_t pos;
 
     component_node = PropertyNode( config_path );
-    vector <string> children;
 
     // enable
     string enable_prop = component_node.getString("enable");
@@ -155,6 +154,7 @@ void ap_pid_t::update( double dt ) {
     y_n_1 = y_n;
     double dterm = Kd * -dy / dt;
 
+    // anti-windup
     double output = pterm + iterm + dterm;
     if ( output < u_min ) {
         if ( Ti > 0.0001 ) {
