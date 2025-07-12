@@ -27,7 +27,7 @@ private:
     // should work well for airspeed, will start with a similar value for
     // altitude.
     ButterworthFilter diff_press_butter = ButterworthFilter(2, MASTER_HZ, 0.8);
-    ButterworthFilter static_press_butter = ButterworthFilter(2, MASTER_HZ, 1.0);
+    ButterworthFilter static_press_butter = ButterworthFilter(2, MASTER_HZ, 0.5);
 
     void compute_altitude();
     void compute_airspeed();
