@@ -5,7 +5,7 @@
 #include "tasks/circle.h"
 #include "tasks/idle.h"
 #include "tasks/launch.h"
-#include "tasks/land3.h"
+#include "tasks/land4.h"
 #include "tasks/preflight.h"
 #include "tasks/calib_home.h"
 #include "tasks/route.h"
@@ -26,8 +26,8 @@ void mission_mgr_t::update(float dt) {
     home_mgr.update();
     motor_safety.update();
 
-    // lost link action
-    if ( not comms_node.getBool("link_state") and last_link_state ) {
+    // lost link action, but only if airborne
+    if ( not comms_node.getBool("link_state") and last_link_state and environment_node.getBool("is_airborne") ) {
         // link became bad, circle home, minimum agl is 200'
         event_mgr->add_event("mission", "circle home");
         mission_node.setString("request", "circle_home");
@@ -165,7 +165,7 @@ void mission_mgr_t::start_land_task() {
         event_mgr->add_event("mission", current_task->name + " already active");
     } else {
         // create and activate task
-        land_task_t *land = new land_task_t();
+        land_task4_t *land = new land_task4_t();
         new_task(land);
     }
 }
