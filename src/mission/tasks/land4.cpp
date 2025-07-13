@@ -47,6 +47,12 @@ void land_task4_t::build_approach(PropertyNode config_node) {
     // this task.
 
     // fetch config parameters
+    if ( config_node.hasChild("transit_alt_agl_ft") ) {
+        transit_alt_agl_ft = config_node.getDouble("transit_alt_agl_ft");
+        if ( transit_alt_agl_ft < 100.0 ) {
+            transit_alt_agl_ft = 100.0;
+        }
+    }
     circle_radius_m = config_node.getDouble("circle_radius_m");
     if ( circle_radius_m < 50.0 ) {
         circle_radius_m = 50.0;
@@ -142,9 +148,9 @@ void land_task4_t::update(float dt) {
     // stick/elevator (negative elevator is up.)
     float alt_bias_ft = alt_base_agl_ft - inceptors_node.getDouble("pitch") * 25.0;
 
-    // compute minimum 'safe' altitude
-    float safe_dist_m = M_PI * circle_radius_m + final_leg_m;
-    float safe_alt_ft = safe_dist_m * tan_gs * m2ft + alt_bias_ft;
+    // compute minimum 'safe' altitude (replaced by explicit transit_alt_agl_ft)
+    // float safe_dist_m = M_PI * circle_radius_m + final_leg_m;
+    // float safe_alt_ft = safe_dist_m * tan_gs * m2ft + alt_bias_ft;
 
     float circle_pos = 0.0;
     string mode = mission_node.getString("mode");
@@ -210,19 +216,19 @@ void land_task4_t::update(float dt) {
     float cur_ref_alt = refs_node.getDouble("altitude_agl_ft");
     float new_ref_alt = alt_m * m2ft + alt_bias_ft;
 
-    // prior to glide slope capture, never allow target altitude lower than safe
-    // altitude
-    if ( not gs_capture ) {
-        // printf("safe: %.1f new: %.1f\n", safe_alt_ft, new_ref_alt);
-        if ( new_ref_alt < safe_alt_ft ) {
-            new_ref_alt = safe_alt_ft;
-        }
-    }
-
     // We want to avoid wasting energy needlessly gaining altitude. Once the
-    // approach has started, never raise the target altitude.
+    // landing task has started, don't climb above the current ref altitude ...
     if ( new_ref_alt > cur_ref_alt ) {
         new_ref_alt = cur_ref_alt;
+    }
+
+    // ... unless prior to descent circle capture, never allow target altitude
+    // lower than transit altitude
+    if ( not circle_capture ) {
+        // printf("safe: %.1f new: %.1f\n", safe_alt_ft, new_ref_alt);
+        if ( new_ref_alt < transit_alt_agl_ft ) {
+            new_ref_alt = transit_alt_agl_ft;
+        }
     }
 
     refs_node.setDouble("altitude_agl_ft", new_ref_alt);
@@ -254,12 +260,13 @@ void land_task4_t::update(float dt) {
     }
     // printf()"dist_rem_m = %.1f gs = %.1f secs = %.1f", dist_rem_m, ground_speed_ms, seconds_to_touchdown);
 
-    if ( gs_capture and seconds_to_touchdown <= flare_seconds and not in_flare ) {
-        // within x seconds of touchdown horizontally.  Note these are padded
-        // numbers because we don't know the truth exactly ... we could easily
-        // be closer or lower or further or higher.  Our flare strategy is to
-        // smoothly pull throttle to idle, while smoothly pitching to the target
-        // flare pitch (as configured in the task definition.)
+    if ( mode == "route" and seconds_to_touchdown <= flare_seconds and not in_flare ) {
+        // within x seconds of touchdown horizontally and in route mode (final
+        // approach leg).  Note these are padded numbers because we don't know
+        // the truth exactly ... we could easily be closer or lower or further
+        // or higher.  Our flare strategy is to smoothly pull throttle to idle,
+        // while smoothly pitching to the target flare pitch (as configured in
+        // the task definition.)
         event_mgr->add_event("land", "start flare");
         in_flare = true;
         flare_start_time = imu_node.getUInt("millis") / 1000.0;
@@ -281,6 +288,16 @@ void land_task4_t::update(float dt) {
         //       elapsed, percent,
         //       approach_speed_kt - percent * flare_pitch_range,
         //       approach_throttle * (1.0 - percent))
+
+        if ( alt_base_agl_ft >= 50 and elapsed > flare_seconds ) {
+            // special logic for landing practice/demo: we are at the end of the
+            // flare procedure, but have specified an alt_base raising the
+            // landing pattern above ground, so immediate transition to the
+            // launch task (not tested, but if we are somehow on the ground now,
+            // motor enable should be false and we won't be able to actually
+            // launch)
+            mission_node.setString("request", "launch");
+        }
     }
 
     // if ( display_on ) {

@@ -19,10 +19,11 @@ public:
 private:
 
     float alt_base_agl_ft = 0.0;
-    float tan_gs = 0.0;
-    float circle_radius_m = 0.0;
+    float transit_alt_agl_ft = 150.0;
+    float tan_gs = 5.0;
+    float circle_radius_m = 75.0;
     float flare_pitch_deg = 0.0;
-    float flare_seconds = 0.0;
+    float flare_seconds = 5.0;
     float side = -1.0;
     float flare_start_time = 0.0;
     float approach_power = 0.0;
