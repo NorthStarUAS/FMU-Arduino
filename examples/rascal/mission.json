@@ -15,10 +15,10 @@
     "alt_base_agl_ft": 0,
     "approach_speed_kt": 25,
     "direction": "left",
-    "extend_final_leg_m": 0,
+    "final_leg_m": 75,
     "flare_pitch_deg": 4,
     "flare_seconds": 5.0,
-    "glideslope_deg": 3.0,
+    "glideslope_deg": 6,
     "lateral_offset_m": 0.0,
     "circle_radius_m": 75
   },
