@@ -183,9 +183,11 @@ void land_task4_t::update(float dt) {
         if ( circle_pos > 180.0 ) { circle_pos -= 360.0; }
         // printf("circle_pos: %.1f, %.1f, %.1f %.1f\n", nav_node.getDouble("groundtrack_deg"), current_crs, final_heading_deg, circle_pos);
         float angle_rem_rad = M_PI;
-        if ( circle_capture and circle_pos > -10 ) {
-            // circling, captured circle, and within 180 degrees towards tangent
-            // point (or just slightly passed)
+        if ( circle_capture and gs_capture and circle_pos > -10 ) {
+            // circling, captured circle, captured glideslope and within 180
+            // degrees towards tangent point (or just slightly passed).
+            // Otherwise hold minimum of final_leg_m + M_PI * circle_radius for
+            // dist remaining until glideslope acquired
             angle_rem_rad = circle_pos * d2r;
         }
         // distance to edge of circle + remaining circumference of circle +
@@ -195,7 +197,7 @@ void land_task4_t::update(float dt) {
         if ( circle_capture and gs_capture ) {
             // we are on the circle and on the glide slope, lets look for our
             // lateral exit point
-            if ( fabs(circle_pos) <= 10.0 ) {
+            if ( fabs(circle_pos) <= 5.0 ) {
                 event_mgr->add_event("land", "transition to final");
                 mission_node.setString("mode", "route");
             }
