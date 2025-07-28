@@ -273,4 +273,5 @@ void airdata_mgr_t::update() {
         // airdata_node.setDouble("diff_press_pa", 819.2); // should be a little over 70 kts
         compute_airspeed();
     }
+    airdata_node.setBool("pitot_found", pitot_found);
 }
