@@ -1,5 +1,7 @@
 #pragma once
 
+#include <math.h>
+
 // angles
 const float d2r = M_PI / 180.0;
 const float r2d = 180.0 / M_PI;
