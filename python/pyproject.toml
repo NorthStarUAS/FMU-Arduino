@@ -1,0 +1,16 @@
+[build-system]
+requires = ["scikit-build-core>=0.5.0", "pybind11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "nstFMU"
+version = "4.2.1"
+description = "North Star UAS FMU Modules"
+authors = [{ name = "curtolson@flightgear.org" }]
+requires-python = ">=3.8"
+
+[project.urls]
+Homepage = "https://github.com/NorthStarUAS"
+
+[tool.scikit-build]
+wheel.expand-macos-universal-tags = true
