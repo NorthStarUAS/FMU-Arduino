@@ -896,6 +896,7 @@ static bool save_json( const char *file_path, Value *v ) {
         return false;
     }
 #else
+    string new_name = (string)file_path + ".new";
     const int open_fd = ::open(file_path, O_WRONLY | O_CREAT, 0660);
     if (open_fd == -1) {
         printf("Open %s failed: %d\n", file_path, errno);
