@@ -1,5 +1,6 @@
 #pragma once
 
+#define _USE_MATH_DEFINES  // make msvc happy
 #include <math.h>
 
 // angles
