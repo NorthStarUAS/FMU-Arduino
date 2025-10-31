@@ -24,6 +24,7 @@
 #endif
 
 // Firmware rev (needs to be updated here manually to match release number)
+// (Note: bump the version number in the python package directly too)
 const int FIRMWARE_REV = 421;
 
 // this is the master loop update rate.
