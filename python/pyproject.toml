@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "nstFMU"
-version = "4.2.1"
+version = "4.2.1"  # (Reminder: bump the firmware rev in the setup_board.h file to match)
 description = "North Star UAS FMU Modules"
 authors = [{ name = "curtolson@flightgear.org" }]
 requires-python = ">=3.8"
