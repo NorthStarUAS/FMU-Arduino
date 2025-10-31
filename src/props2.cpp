@@ -11,7 +11,13 @@
 #  include <iostream>
 #  include <filesystem>
 #  include <fcntl.h>
-#  include <io.h>
+#  if defined(_WIN32)
+#    include <io.h>
+#  else
+#    include <sys/stat.h>
+#    include <sys/statfs.h>
+#    include <unistd.h>
+#  endif
 // #  include <sys/types.h>
 #endif
 
