@@ -1,12 +1,18 @@
 #if defined(ARDUINO)
 #  include <SD.h>
    extern FS *configfs;  // SD or LittleFS_Program (or other) defined in the top level sketch
-#else
+#elif defined(OLD_C_STYLE)
 #  include <sys/stat.h>
 #  include <sys/statfs.h>
 #  include <sys/types.h>
 #  include <fcntl.h>            // open()
 #  include <unistd.h>           // read()
+#else
+#  include <iostream>
+#  include <filesystem>
+#  include <fcntl.h>
+#  include <io.h>
+// #  include <sys/types.h>
 #endif
 
 #include <math.h>
@@ -777,9 +783,9 @@ bool PropertyNode::load_json( const char *file_path, Value *v ) {
 
     // read from file
 #if defined(ARDUINO)
-    ssize_t read_len = open_fd.read(read_buf, file_size);
+    int read_len = open_fd.read(read_buf, file_size);
 #else
-    ssize_t read_len = read(open_fd, read_buf, file_size);
+    int read_len = read(open_fd, read_buf, file_size);
 #endif
     if ( read_len == -1 ) {
         printf("Read failed: %s - %d\n", file_path, errno);
@@ -863,6 +869,9 @@ static bool save_json( const char *file_path, Value *v ) {
     // long lFreeClusters = sdcard.vol()->freeClusterCount();
     // uint64_t free_bytes = lFreeClusters * 512;  // clusters are always 512k
     uint64_t free_bytes = configfs->totalSize() - configfs->usedSize();
+#elif defined(_WIN32)
+    // assume sufficient space, I don't want to write a check right now
+    uint64_t free_bytes = buffer.GetSize() + 1;
 #else
     struct statfs statfs_buf;
     uint64_t free_bytes;
