@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(nstFMU LANGUAGES CXX)
 
+find_package(Python COMPONENTS Interpreter Development)
 find_package(pybind11 CONFIG REQUIRED)
 
 # FCS module
