@@ -16,7 +16,7 @@
 
 #include "nav_constants.h"
 #include "nav_functions.h"
-#include "ekf15.h"
+#include "ekf15_eigen_llt.h"
 
 const float P_P_INIT = 10.0;
 const float P_V_INIT = 1.0;
@@ -25,8 +25,8 @@ const float P_HDG_INIT = 3.14159; // 180 deg
 const float P_AB_INIT = 0.9810;   // 0.5*g
 const float P_GB_INIT = 0.01745;  // 5 deg/s
 
-const double Rew = 6.359058719353925e+006; // earth radius
-const double Rns = 6.386034030458164e+006; // earth radius
+// const double Rew = 6.359058719353925e+006; // earth radius
+// const double Rns = 6.386034030458164e+006; // earth radius
 
 // BRT: (1) I think there are some several identity and sparse
 // matrices, so probably some optimization still left there.  (2)
@@ -36,15 +36,20 @@ const double Rns = 6.386034030458164e+006; // earth radius
 // lot of these multi line equations with temp matrices can be
 // compressed.
 
-void EKF15::set_config(NAVconfig _config) {
+// quick helper function
+float clamp(float val, float min, float max) {
+    return (val < min) ? min : (val > max ? max : val);
+}
+
+void EKF15_eigen_llt::set_config(NAVconfig _config) {
     config = _config;
 }
 
-NAVconfig EKF15::get_config() {
+NAVconfig EKF15_eigen_llt::get_config() {
     return config;
 }
 
-void EKF15::default_config()
+void EKF15_eigen_llt::default_config()
 {
     config.sig_w_ax = 0.05;     // Std dev of Accelerometer Wide Band Noise (m/s^2)
     config.sig_w_ay = 0.05;
@@ -63,7 +68,7 @@ void EKF15::default_config()
     config.sig_mag      = 0.3;  // Magnetometer measurement noise std dev (normalized -1 to 1)
 }
 
-void EKF15::init(IMUdata imu, GPSdata gps) {
+void EKF15_eigen_llt::init(IMUdata imu, GPSdata gps) {
     F.resize(15,15);
     PHI.resize(15,15);
     P.resize(15,15);
@@ -72,6 +77,8 @@ void EKF15::init(IMUdata imu, GPSdata gps) {
     ImKH.resize(15,15);
     KRKt.resize(15,15);
     I15.resize(15,15);
+    S.resize(15,15);
+    PHt.resize(15,15);
 
     G.resize(15,12);
     K.resize(15,6);
@@ -126,9 +133,9 @@ void EKF15::init(IMUdata imu, GPSdata gps) {
     nav.Pgbx = P(12,12);  nav.Pgby = P(13,13);  nav.Pgbz = P(14,14);
 
     // .. then initialize states with GPS Data
-    nav.lat_rad = gps.lat_deg*D2R;
-    nav.lon_rad = gps.lon_deg*D2R;
-    nav.alt_m = gps.alt_m;
+    nav.latitude_deg = gps.latitude_deg;
+    nav.longitude_deg = gps.longitude_deg;
+    nav.altitude_m = gps.altitude_m;
 
     nav.vn_mps = gps.vn_mps;
     nav.ve_mps = gps.ve_mps;
@@ -136,21 +143,27 @@ void EKF15::init(IMUdata imu, GPSdata gps) {
 
     // ... and initialize states with IMU Data, theta from Ax, aircraft
     // at rest
-    nav.the_rad = asin(imu.ax_mps2/g);
+    float theta_rad = asin(clamp(imu.ax_mps2/g, -1.0, 1.0));
+    nav.theta_deg = theta_rad * r2d;
     // phi from Ay, aircraft at rest
-    nav.phi_rad = asin(imu.ay_mps2/(g*cos(nav.the_rad)));
+    float phi_rad = 0.0;
+    if ( fabs(cos(theta_rad)) > 0.01 ) {
+        phi_rad = asin(clamp(imu.ay_mps2/(g*cos(theta_rad)), -1.0, 1.0));
+    }
+    nav.phi_deg = phi_rad * r2d;
 
     // this is atan2(x, -y) because the aircraft body X,Y axis are
     // swapped with the cartesion axes from the top down perspective
-    // nav.psi = 90*D2R - atan2(imu.hx, -imu.hy);
-    // printf("ekf: hx: %.2f hy: %.2f psi: %.2f\n", imu.hx, imu.hy, nav.psi*R2D);
-    // printf("atan2: %.2f\n", atan2(imu.hx, -imu.hy)*R2D);
+    // nav.psi_rad = 90*D2R - atan2(imu.hx, -imu.hy);
+    // printf("ekf: hx: %.2f hy: %.2f psi: %.2f\n", imu.hx, imu.hy, nav.psi_rad*r2d);
+    // printf("atan2: %.2f\n", atan2(imu.hx, -imu.hy)*r2d);
 
     // tilt compensated heading
-    nav.psi_rad = atan2(imu.hz*sin(nav.phi_rad)-imu.hy*cos(nav.phi_rad),imu.hx*cos(nav.the_rad)+imu.hy*sin(nav.the_rad)*sin(nav.phi_rad)+imu.hz*sin(nav.the_rad)*cos(nav.phi_rad));
-    // printf("tilt compensated psi: %.2f\n", nav.psi*R2D);
+    float psi_rad = atan2(imu.hz*sin(phi_rad)-imu.hy*cos(phi_rad),imu.hx*cos(theta_rad)+imu.hy*sin(theta_rad)*sin(phi_rad)+imu.hz*sin(theta_rad)*cos(phi_rad));
+    nav.psi_deg = psi_rad * r2d;
+    // printf("tilt compensated psi: %.2f\n", nav.psi*r2d);
 
-    quat = eul2quat(nav.phi_rad, nav.the_rad, nav.psi_rad);
+    quat = eul2quat(phi_rad, theta_rad, psi_rad);
 
     nav.abx = 0.0;
     nav.aby = 0.0;
@@ -173,7 +186,7 @@ void EKF15::init(IMUdata imu, GPSdata gps) {
 }
 
 // Main get_nav filter function
-void EKF15::time_update(IMUdata imu) {
+void EKF15_eigen_llt::time_update(IMUdata imu) {
     // compute time-elapsed 'dt'
     // This computes the navigation state at the DAQ's Time Stamp
     float imu_dt = imu.time_sec - imu_last.time_sec;
@@ -185,8 +198,7 @@ void EKF15::time_update(IMUdata imu) {
 
     // Attitude Update
     // ... Calculate Navigation Rate
-    Vector3f vel_vec(nav.vn_mps, nav.ve_mps, nav.vd_mps);
-    Vector3d pos_ref(nav.lat_rad, nav.lon_rad, nav.alt_m);
+    Vector3d pos_ref(nav.latitude_deg*d2r, nav.longitude_deg*d2r, nav.altitude_m);
 
     if ( false ) {
         // Get the new Specific forces and Rotation Rate from previous
@@ -232,9 +244,9 @@ void EKF15::time_update(IMUdata imu) {
     }
 
     Vector3f att_vec = quat2eul(quat);
-    nav.phi_rad = att_vec(0);
-    nav.the_rad = att_vec(1);
-    nav.psi_rad = att_vec(2);
+    nav.phi_deg = att_vec(0)*r2d;
+    nav.theta_deg = att_vec(1)*r2d;
+    nav.psi_deg = att_vec(2)*r2d;
 
     // AHRS Transformations
     C_N2B = quat2dcm(quat);
@@ -249,10 +261,11 @@ void EKF15::time_update(IMUdata imu) {
     nav.vd_mps += imu_dt*dx(2);
 
     // Position Update
+    Vector3f vel_vec(nav.vn_mps, nav.ve_mps, nav.vd_mps);
     dx = llarate(vel_vec, pos_ref);
-    nav.lat_rad += imu_dt*dx(0);
-    nav.lon_rad += imu_dt*dx(1);
-    nav.alt_m += imu_dt*dx(2);
+    nav.latitude_deg += imu_dt*dx(0)*r2d;
+    nav.longitude_deg += imu_dt*dx(1)*r2d;
+    nav.altitude_m += imu_dt*dx(2);
 
     // JACOBIAN
     F.setZero();
@@ -264,9 +277,9 @@ void EKF15::time_update(IMUdata imu) {
     // ... gs2att
     temp33 = C_B2N * sk(f_b);
 
-    F(3,6) = -2.0*temp33(0,0);  F(3,7) = -2.0*temp33(0,1);  F(3,8) = -2.0*temp33(0,2);
-    F(4,6) = -2.0*temp33(1,0);  F(4,7) = -2.0*temp33(1,1);  F(4,8) = -2.0*temp33(1,2);
-    F(5,6) = -2.0*temp33(2,0);  F(5,7) = -2.0*temp33(2,1);  F(5,8) = -2.0*temp33(2,2);
+    F(3,6) = -temp33(0,0);  F(3,7) = -temp33(0,1);  F(3,8) = -temp33(0,2);
+    F(4,6) = -temp33(1,0);  F(4,7) = -temp33(1,1);  F(4,8) = -temp33(1,2);
+    F(5,6) = -temp33(2,0);  F(5,7) = -temp33(2,1);  F(5,8) = -temp33(2,2);
 
     // ... gs2acc
     F(3,9) = -C_B2N(0,0);  F(3,10) = -C_B2N(0,1);  F(3,11) = -C_B2N(0,2);
@@ -306,7 +319,8 @@ void EKF15::time_update(IMUdata imu) {
 
     // Discrete Process Noise
     Qw = G * Rw * G.transpose() * imu_dt;		// Qw = dt*G*Rw*G'
-    Q = PHI * Qw;					// Q = (I+F*dt)*Qw
+    // Q = PHI * Qw;					// Q = (I+F*dt)*Qw              // Demoz
+    Q = PHI * Qw * PHI.transpose();	    // Q = PHI*Qw*PHI'              // Both ChatGPT and CoPilot claim this is more correct
     Q = (Q + Q.transpose()) * 0.5;			// Q = 0.5*(Q+Q')
 
     // Covariance Time Update
@@ -322,14 +336,14 @@ void EKF15::time_update(IMUdata imu) {
     // ==================  DONE Time Update  ===================
 }
 
-void EKF15::measurement_update(GPSdata gps) {
+void EKF15_eigen_llt::measurement_update(GPSdata gps) {
     // ==================  GPS Update  ===================
 
     // Position, converted to NED
-    Vector3d pos_ref(nav.lat_rad, nav.lon_rad, nav.alt_m);
+    Vector3d pos_ref(nav.latitude_deg*d2r, nav.longitude_deg*d2r, nav.altitude_m);
     Vector3d pos_ins_ecef = lla2ecef(pos_ref);
 
-    Vector3d pos_gps(gps.lat_deg*D2R, gps.lon_deg*D2R, gps.alt_m);
+    Vector3d pos_gps(gps.latitude_deg*d2r, gps.longitude_deg*d2r, gps.altitude_m);
     Vector3d pos_gps_ecef = lla2ecef(pos_gps);
 
     Vector3d pos_error_ecef = pos_gps_ecef - pos_ins_ecef;
@@ -347,7 +361,18 @@ void EKF15::measurement_update(GPSdata gps) {
 
     // Kalman Gain
     // K = P*H'*inv(H*P*H'+R)
-    K = P * H.transpose() * (H * P * H.transpose() + R).inverse();
+    if ( false ) {
+        // original inverse()
+        K = P * H.transpose() * (H * P * H.transpose() + R).inverse();
+    } else {
+        // alternate formulation that avoids computing the inverse.  Not faster,
+        // but more numerically stable.
+        S   = H * P * H.transpose() + R;
+        S = (S + S.transpose()) * 0.5f; // copilot suggestion to force S symmetry
+        PHt = P * H.transpose();
+        Eigen::LLT<MatrixXf> llt(S);
+        K = llt.solve(PHt.transpose()).transpose();
+    }
 
     // Covariance Update
     ImKH = I15 - K * H;	                // ImKH = I - K*H
@@ -355,6 +380,7 @@ void EKF15::measurement_update(GPSdata gps) {
     KRKt = K * R * K.transpose();		// KRKt = K*R*K'
 
     P = ImKH * P * ImKH.transpose() + KRKt;	// P = ImKH*P*ImKH' + KRKt
+    P = (P + P.transpose()) * 0.5;			// P = 0.5*(P+P') to force P symmetry
 
     nav.Pp0 = P(0,0);     nav.Pp1 = P(1,1);     nav.Pp2 = P(2,2);
     nav.Pv0 = P(3,3);     nav.Pv1 = P(4,4);     nav.Pv2 = P(5,5);
@@ -364,26 +390,28 @@ void EKF15::measurement_update(GPSdata gps) {
 
     // State Update
     x = K * y;
-    double denom = fabs(1.0 - (ECC2 * sin(nav.lat_rad) * sin(nav.lat_rad)));
+    double lat_rad = nav.latitude_deg*d2r;
+    double lon_rad = nav.longitude_deg*d2r;
+    double denom = fabs(1.0 - (ECC2 * sin(lat_rad) * sin(lat_rad)));
     double denom_sqrt = sqrt(denom);
     double Re = EarthRadius / denom_sqrt;
     double Rn = EarthRadius * (1-ECC2) * denom_sqrt / denom;
-    nav.alt_m = nav.alt_m - x(2);
-    nav.lat_rad = nav.lat_rad + x(0)/(Re + nav.alt_m);
-    nav.lon_rad = nav.lon_rad + x(1)/(Rn + nav.alt_m)/cos(nav.lat_rad);
+    nav.altitude_m = nav.altitude_m - x(2);
+    nav.latitude_deg = (lat_rad + x(0)/(Re + nav.altitude_m))*r2d;
+    nav.longitude_deg = (lon_rad + x(1)/(Rn + nav.altitude_m)/cos(lat_rad))*r2d;
 
     nav.vn_mps = nav.vn_mps + x(3);
     nav.ve_mps = nav.ve_mps + x(4);
     nav.vd_mps = nav.vd_mps + x(5);
 
     // Attitude correction
-    Quaternionf dq = Quaternionf(1.0, x(6), x(7), x(8));
+    Quaternionf dq = Quaternionf(1.0, 0.5*x(6), 0.5*x(7), 0.5*x(8));
     quat = (quat * dq).normalized();
 
     Vector3f att_vec = quat2eul(quat);
-    nav.phi_rad = att_vec(0);
-    nav.the_rad = att_vec(1);
-    nav.psi_rad = att_vec(2);
+    nav.phi_deg = att_vec(0)*r2d;
+    nav.theta_deg = att_vec(1)*r2d;
+    nav.psi_deg = att_vec(2)*r2d;
 
     nav.abx += x(9);
     nav.aby += x(10);
@@ -395,7 +423,7 @@ void EKF15::measurement_update(GPSdata gps) {
 }
 
 
-NAVdata EKF15::get_nav() {
+NAVdata EKF15_eigen_llt::get_nav() {
     nav.qw = quat.w();
     nav.qx = quat.x();
     nav.qy = quat.y();

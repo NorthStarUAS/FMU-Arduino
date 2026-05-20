@@ -101,9 +101,9 @@ void nav_mgr_t::update() {
     GPSdata gps1;
     gps1.time_sec = gps_node.getDouble("timestamp");
     gps1.unix_sec = gps_node.getDouble("unix_sec");
-    gps1.lat_deg = gps_node.getDouble("latitude_deg");
-    gps1.lon_deg = gps_node.getDouble("longitude_deg");
-    gps1.alt_m = gps_node.getDouble("altitude_m");
+    gps1.latitude_deg = gps_node.getDouble("latitude_deg");
+    gps1.longitude_deg = gps_node.getDouble("longitude_deg");
+    gps1.altitude_m = gps_node.getDouble("altitude_m");
     gps1.vn_mps = gps_node.getDouble("vn_mps");
     gps1.ve_mps = gps_node.getDouble("ve_mps");
     gps1.vd_mps = gps_node.getDouble("vd_mps");
@@ -155,20 +155,20 @@ void nav_mgr_t::update() {
 
         // publish
         nav_node.setUInt("millis", imu_node.getUInt("millis"));
-        nav_node.setDouble("latitude_deg", data.lat_rad * R2D);
-        nav_node.setDouble("longitude_deg", data.lon_rad * R2D);
-        nav_node.setInt("latitude_raw", intround(data.lat_rad * R2D * 10000000));
-        nav_node.setInt("longitude_raw", intround(data.lon_rad * R2D * 10000000));
-        nav_node.setDouble("altitude_m", data.alt_m);
+        nav_node.setDouble("latitude_deg", data.latitude_deg);
+        nav_node.setDouble("longitude_deg", data.longitude_deg);
+        nav_node.setInt("latitude_raw", intround(data.latitude_deg * 10000000));
+        nav_node.setInt("longitude_raw", intround(data.longitude_deg * 10000000));
+        nav_node.setDouble("altitude_m", data.altitude_m);
         nav_node.setDouble("vn_mps", data.vn_mps);
         nav_node.setDouble("ve_mps", data.ve_mps);
         nav_node.setDouble("vd_mps", data.vd_mps);
-        nav_node.setDouble("phi_rad", data.phi_rad);
-        nav_node.setDouble("the_rad", data.the_rad);
-        nav_node.setDouble("psi_rad", data.psi_rad);
-        nav_node.setDouble("roll_deg", data.phi_rad * R2D);
-        nav_node.setDouble("pitch_deg", data.the_rad * R2D);
-        nav_node.setDouble("yaw_deg", data.psi_rad * R2D);
+        nav_node.setDouble("phi_rad", data.phi_deg * d2r);
+        nav_node.setDouble("the_rad", data.theta_deg * d2r);
+        nav_node.setDouble("psi_rad", data.psi_deg * d2r);
+        nav_node.setDouble("roll_deg", data.phi_deg);
+        nav_node.setDouble("pitch_deg", data.theta_deg);
+        nav_node.setDouble("yaw_deg", data.psi_deg);
         nav_node.setDouble("p_bias", data.gbx);
         nav_node.setDouble("q_bias", data.gby);
         nav_node.setDouble("r_bias", data.gbz);
@@ -186,7 +186,7 @@ void nav_mgr_t::update() {
         nav_node.setDouble("Pa2", data.Pa2);
 
         // compute ground speed and track
-        float hdg = (M_PI * 0.5 - atan2(data.vn_mps, data.ve_mps)) * R2D;
+        float hdg = (M_PI * 0.5 - atan2(data.vn_mps, data.ve_mps)) * r2d;
         float vel_ms = sqrt(data.vn_mps*data.vn_mps + data.ve_mps*data.ve_mps);
         nav_node.setDouble("groundtrack_deg", hdg);
         nav_node.setDouble("groundspeed_mps", vel_ms);

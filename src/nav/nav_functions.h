@@ -16,8 +16,6 @@
  * \author University of Minnesota
  * \author Aerospace Engineering and Mechanics
  * \copyright Copyright 2011 Regents of the University of Minnesota. All rights reserved.
- *
- * $Id: nav_functions.h 922 2012-10-17 19:14:09Z joh07594 $
  */
 
 #pragma once
@@ -27,8 +25,8 @@
 # include <eigen.h>
 # include <Eigen/Geometry>
 #else
-# include "eigen3/Eigen/Core"
-# include "eigen3/Eigen/Geometry"
+# include "Eigen/Core"
+# include "Eigen/Geometry"
 #endif
 using namespace Eigen;
 

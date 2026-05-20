@@ -1,5 +1,6 @@
 #pragma once
 
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 #define EARTH_RATE   0.00007292115   		/* rotation rate of earth (rad/sec) */
@@ -25,7 +26,7 @@
 const float g = 9.814;
 
 /* additional constants */
-const double D2R = M_PI / 180.0; // degrees to radians
-const double R2D = 180.0 / M_PI; // radians to degrees
-const double F2M = 0.3048;       // feets to meters
-const double M2F = 1.0 / F2M;    // meters to feets
+const double d2r = M_PI / 180.0;  // degrees to radians
+const double r2d = 180.0 / M_PI;  // radians to degrees
+const double ft2m = 0.3048;       // feets to meters
+const double m2ft = 1.0 / ft2m;   // meters to feets

@@ -21,27 +21,31 @@
 # include <Eigen/Geometry>
 #else
 # include <math.h>
-# include <eigen3/Eigen/Core>
-# include <eigen3/Eigen/Geometry>
-# include <eigen3/Eigen/LU>
+# include <Eigen/Core>
+# include <Eigen/Geometry>
+# include <Eigen/LU>
 #endif
 
 using namespace Eigen;
 
 #include "nav_structs.h"
 
+#if defined(ARDUINO)
+#undef F
+#endif
+
 // define some types for notational convenience and consistency
 typedef Matrix<float,6,1> Vector6f;
 typedef Matrix<float,15,1> Vector15f;
 
-class EKF15 {
+class EKF15_eigen_llt {
 
 public:
 
-    EKF15() {
+    EKF15_eigen_llt() {
         default_config();
     }
-    ~EKF15() {}
+    ~EKF15_eigen_llt() {}
 
     // set/get error characteristics of navigation sensors
     void set_config(NAVconfig _config);
@@ -60,6 +64,7 @@ private:
     // make our big matrices dynamic (so they get allocated on the
     // heap) to play nice on embedded systems with small stacks.
     MatrixXf F, PHI, P, Qw, Q, ImKH, KRKt, I15; // 15x15
+    MatrixXf S, PHt;                            // 15x15
     MatrixXf G;                                 // 15x12
     MatrixXf K;                                 // 15x6
     MatrixXf Rw;                                // 12x12

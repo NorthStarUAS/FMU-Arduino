@@ -5,7 +5,7 @@
 #include "../props2.h"
 
 #include "nav_structs.h"
-#include "ekf15.h"
+#include "ekf15_eigen_llt.h"
 #include "ekf15_mag.h"
 
 class nav_mgr_t {
@@ -15,7 +15,7 @@ private:
     PropertyNode config_nav_node;
     bool ekf_inited = false;
     unsigned long int gps_last_millis = 0;
-    EKF15 ekf;
+    EKF15_eigen_llt ekf;
     EKF15_mag ekf_mag;
 
 public:
