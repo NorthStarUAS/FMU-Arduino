@@ -29,7 +29,7 @@ trim until it receives a valid ground elevation from the visuals.
 Go to examples/skywalker/config.json
 
 * HIL_testing
-  * enable = "True"
+  * enable = true
   * inceptors = "rc" (transmitter) or "sim" (joystick)
 
 Copy this config file to: Files / Teensy MTP Disk / SD Card / config.json

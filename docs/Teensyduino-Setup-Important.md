@@ -22,15 +22,6 @@ venturing down this path.
 
 ## Fix Option 1
 
-\#define new buffer sizes in setup_board.h -- but so far I haven't reliably
-unraveled the \#include order to make this work right.
-
-These probably have to be defined at the IDE level (global build environment,
--D_VARIABLE_=VALUE) and couldn't be set in some #include file in the project
-source code.
-
-## Fix Option 2
-
 Edit Teensyduino Core files to increase hard coded buffer sizes
 
 In the spirit of minimizing changes to the stock arduino/teensyduino
@@ -40,15 +31,25 @@ My installation is under ~/.arduino15, your mileage may vary on different OS's
 or versions.
 
 1. GPS port (Marmot v1.7)
-    * ~/.arduino15/packages/teensy/hardware/avr/1.59.0/cores/teensy3/serial3.c
-    * ~/.arduino15/packages/teensy/hardware/avr/1.59.0/cores/teensy4/HardwareSerial3.c
+    * ~/.arduino15/packages/teensy/hardware/avr/1.60.0/cores/teensy3/serial3.c
+    * ~/.arduino15/packages/teensy/hardware/avr/1.60.0/cores/teensy4/HardwareSerial3.cpp
 
     SERIAL3_TX_BUFFER_SIZE 255
     SERIAL3_RX_BUFFER_SIZE 255
 
 2. radio modem port (comms with host) (Marmot v1.7)
-    * ~/.arduino15/packages/teensy/hardware/avr/1.59.0/cores/teensy3/serial4.c
-    * ~/.arduino15/packages/teensy/hardware/avr/1.59.0/cores/teensy4/HardwareSerial4.c
+    * ~/.arduino15/packages/teensy/hardware/avr/1.60.0/cores/teensy3/serial4.c
+    * ~/.arduino15/packages/teensy/hardware/avr/1.60.0/cores/teensy4/HardwareSerial4.cpp
 
     SERIAL4_TX_BUFFER_SIZE 512
     SERIAL4_RX_BUFFER_SIZE 512
+
+## Fix Option 2
+
+\#define new buffer sizes in setup_board.h -- but so far I haven't reliably
+unraveled the \#include order to make this work right.
+
+These probably have to be defined at the IDE level (global build environment,
+-D_VARIABLE_=VALUE) and couldn't be set in some #include file in the project
+source code.
+
