@@ -1,5 +1,7 @@
 # NorthStarUAS FMU (for Teensy/Arduino)
 
+NOTICE: This project has moved to Codeberg.org <https://codeberg.org/NorthStarUAS>
+
 This is an Arduino (Teensyduino) sketch for building the heart of a UAV
 autopilot.  The FMU-Arduino sketch is intended to create a full fledged
 autopilot from an inexpensive teensy board and a collection of inexpensive
